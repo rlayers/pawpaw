@@ -205,7 +205,7 @@ Project Link: [https://github.com/rlayers/segments](https://github.com/rlayers/s
 [issues-shield]: https://img.shields.io/github/issues/rlayers/segments.svg?style=for-the-badge
 [issues-url]: https://github.com/rlayers/segments/issues
 [license-shield]: https://img.shields.io/github/license/rlayers/segments.svg?style=for-the-badge
-[license-url]: https://github.com/rlayers/segments/blob/master/LICENSE.txt
+[license-url]: https://github.com/rlayers/segments/blob/master/LICENSE
 [watchers-shield]: https://img.shields.io/github/watchers/rlayers/segments.svg?style=for-the-badge
 [watchers-url]: https://github.com/rlayers/segments/watchers
 [product-screenshot]: images/screenshot.png

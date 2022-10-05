@@ -12,6 +12,6 @@ class TestItorator(_TestIto):
         self.add_chars_as_children(root, 'Child')
 
         reflect = Reflect()
-        rv: typing.List[Ito] = [*reflect.traverse(root)]
+        rv: typing.List[Ito] = [*reflect._iter(root)]
         self.assertEqual(1, len(rv))
         self.assertIs(root, ito)

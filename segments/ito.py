@@ -295,6 +295,17 @@ class Ito:
     def __len__(self) -> int:
         return self.stop - self.start
 
+    def __getitem__(self, key: int | slice) -> str:
+        if isinstance(key, int):
+            start, end = slice_indices_to_span(self, key, None, self.start)
+            return self._string[start]
+        
+        if isinstance(key, slice):
+            span = slice_indices_to_span(self, key.start, key.stop, self.start)
+            return self._string[slice(*span)]
+        
+        raise Errors.parameter_invalid_type('key', key, int, slice)
+
     #region traversal
 
     def get_root(self) -> C | None:

@@ -7,6 +7,7 @@ import typing
 import regex
 from segments import Errors, Ito
 
+
 C_ITOR_FUNC = typing.Callable[[Ito], 'Itorator']
 
 
@@ -100,30 +101,35 @@ class Extract(Itorator):
         self.limit = limit
         self.descriptor_func = descriptor_func
         self.group_filter = group_filter
-        self._gf()  # Invoke to perform error check
 
-    def _gf(self):
-        if self.group_filter is None:
-            return lambda i, m_, g: True
+    @property
+    def group_filter(self) -> typing.Callable[[Ito, regex.Match, str], bool]:
+        return self._group_filter
+    
+    @group_filter.setter
+    def group_filter(self, group_filter: collections.abc.Container[str] | typing.Callable[[Ito, regex.Match, str], bool] | None) -> None:
+        if group_filter is None:
+            self._group_filter = lambda i, m_, g: True
 
-        if isinstance(self.group_filter, typing.Callable):  # TODO : Better type check
-            return self.group_filter
+        elif isinstance(group_filter, typing.Callable):  # TODO : Better type check
+            self._group_filter = group_filter
 
-        if isinstance(self.group_filter, collections.abc.Container):
-            return lambda i, m_, g: g in self.group_filter
+        elif isinstance(group_filter, collections.abc.Container):
+            self._group_filter = lambda i, m_, g: g in self.group_filter
 
-        raise Errors.parameter_invalid_type(
-            'group_filter',
-            self.group_filter,
-            typing.Container[str],
-            typing.Callable[[Ito, regex.Match, str], bool],
-            types.NoneType)
+        else:
+            raise Errors.parameter_invalid_type(
+                'group_filter',
+                group_filter,
+                typing.Container[str],
+                typing.Callable[[Ito, regex.Match, str], bool],
+                types.NoneType)
 
     def _iter(self, ito: Ito) -> typing.Iterable[Ito]:
         for count, m in enumerate(ito.regex_finditer(self.re), 1):
             path_stack: typing.List[Ito] = []
             rv: typing.List[Ito] = []
-            filtered_gns = (gn for gn in m.re.groupindex.keys() if self._gf()(ito, m, gn))
+            filtered_gns = (gn for gn in m.re.groupindex.keys() if self._group_filter(ito, m, gn))
             span_gns = ((span, gn) for gn in filtered_gns for span in m.spans(gn))
             for span, gn in sorted(span_gns, key=lambda val: (val[0][0], -val[0][1])):
                 ito = ito.clone(*span, self.descriptor_func(ito, m, gn))

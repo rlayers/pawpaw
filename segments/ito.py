@@ -372,10 +372,10 @@ class Ito:
 
     #region str equivalence methods
 
-    def str_count(self, sub: str, start: int = None, end: int = None) -> int:
+    def str_count(self, sub: str, start: int | None = None, end: int | None = None) -> int:
         return self._string.count(sub, *slice_indices_to_span(self, start, end, self.start))
 
-    def str_endswith(self, suffix: str | typing.Tuple[str, ...], start: int = None, end: int = None) -> bool:
+    def str_endswith(self, suffix: str | typing.Tuple[str, ...], start: int | None = None, end: int | None = None) -> bool:
         if suffix is None:
             raise Errors.parameter_invalid_type('suffix', suffix, str, typing.Tuple[str, ...])
         elif start is not None and start > len(self):  # Weird rule, but this is how python str works
@@ -384,10 +384,10 @@ class Ito:
             norms = slice_indices_to_span(self, start, end, self.start)
             return self._string.endswith(suffix, *norms)
 
-    def str_find(self, sub: str, start: int = None, end: int = None):
+    def str_find(self, sub: str, start: int | None = None, end: int | None = None) -> int:
         return self._string.find(sub, *slice_indices_to_span(self, start, end, self.start))
 
-    def str_index(self, sub: str, start: int = None, end: int = None) -> int:
+    def str_index(self, sub: str, start: int | None = None, end: int | None = None) -> int:
         return self._string.index(sub, *slice_indices_to_span(self, start, end, self.start))
 
     #region 'is' predicates
@@ -456,7 +456,7 @@ class Ito:
 
     #endregion
 
-    def str_lstrip(self, *chars) -> Ito:
+    def str_lstrip(self, chars: str | None) -> Ito:
         pass
 
     def str_partition(self, sep) -> typing.Tuple[C, C, C]:
@@ -472,31 +472,64 @@ class Ito:
                 return self.clone(stop=i), self.clone(i, i+len(sep)), self.clone(i+len(sep))
 
     def str_removeprefix(self, prefix: str) -> Ito:
-        # i = self.str_startswtih(prefix)
-        # string[:-len(suffix)].
-        pass
+        if self.str_startswtih(prefix):
+            return self.clone(len(prefix))
+        else:
+            return self.clone()
 
     def str_removesuffix(self, suffix: str) -> Ito:
-        pass
+        if self.str_endswtih(suffix):
+            return self.clone(stop=-len(suffix))
+        else:
+            return self.clone()
+        
+    def str_rfind(self, sub: str, start: int | None = None, end: int | None = None) -> int:
+        return self._string.rfind(sub, *slice_indices_to_span(self, start, end, self.start))
 
-    #########
-    #########
-
-    def str_split(self, sep: str = None, maxsplit: int = -1, descriptor: str = None) -> typing.List[Ito]:
+    def str_rindex(self, sub: str, start: int | None = None, end: int | None = None) -> int:
+        return self._string.rindex(sub, *slice_indices_to_span(self, start, end, self.start))
+    
+    def str_rpartition(self, sep) -> typing.Tuple[C, C, C]:
         if sep is None:
-            return [self.clone()]
+            raise ValueError('must be str, not NoneType')
         elif sep == '':
             raise ValueError('empty separator')
         else:
-            d = self.descriptor if descriptor is None else descriptor
+            i = self.str_rfind(sep)
+            if i == -1:
+                return self.clone(self.stop), self.clone(self.stop), self.clone()
+            else:
+                return self.clone(stop=i), self.clone(i, i+len(sep)), self.clone(i+len(sep))    
+
+    def str_rsplit(self, sep: str = None, maxsplit: int = -1) -> typing.List[Ito]:
+        if sep is None:
+            return self.str_split(sep, maxsplit)  # rsplit has same effect as split when sep is None
+        elif sep == '':
+            raise ValueError('empty separator')
+        else:
+            pass
+        
+    def str_rstrip(self, chars: str | None) -> typing.List[Ito]:
+        pass
+
+    def str_split(self, sep: str = None, maxsplit: int = -1) -> typing.List[Ito]:
+        if sep is None:
+            # TODO : split on consecutive runs of whitespace
+            pass
+        elif sep == '':
+            raise ValueError('empty separator')
+        else:
             rv: typing.List[Ito] = []
             i = self.start
             while (j := self._string.find(sep, i, self.stop)) >= 0:
                 rv.append(self.clone(i, j, d))
                 i = j + len(sep)
             if i <= self.stop:
-                rv.append(self.clone(i, descriptor=d))
+                rv.append(self.clone(i))
             return rv
+        
+    def str_splitlines(self, keepends: bool = False) -> Typing.List[Ito]:
+        pass
 
     def str_startswith(
             self,
@@ -509,8 +542,11 @@ class Ito:
         elif start is not None and start > len(self):  # Weird rule, but this is how python str works
             return False
         else:
-            norms = slice_indices_to_span(self, start, end, self.start)
-            return self._string.startswith(prefix, *norms)
+            span = slice_indices_to_span(self, start, end, self.start)
+            return self._string.startswith(prefix, *span)
+        
+    def str_strip(self, chars: str | None = None) -> Ito:
+        pass
 
     #endregion
 

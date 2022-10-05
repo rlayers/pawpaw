@@ -1,15 +1,14 @@
 from __future__ import annotations
+import types
 from abc import ABC, abstractmethod
-import collections
-import enum
-import typing
-import enum
+import collections.abc
 import typing
 
 import regex
-from segments import Errors, Span, Ito, ChildItos
+from segments import Errors, Ito
 
 C_ITOR_FUNC = typing.Callable[[Ito], 'Itorator']
+
 
 class Itorator(ABC):
     def __init__(self):
@@ -28,7 +27,7 @@ class Itorator(ABC):
         elif isinstance(itor, collections.abc.Callable):
             self.__itor_next = Wrap(itor)
         else:
-            raise Errors.parameter_invalid_type('itor', itor, Itorator, C_ITOR_FUNC, None)
+            raise Errors.parameter_invalid_type('itor', itor, Itorator, C_ITOR_FUNC, types.NoneType)
 
     @property
     def itor_children(self) -> Itorator:
@@ -41,7 +40,7 @@ class Itorator(ABC):
         elif isinstance(itor, collections.abc.Callable):
             self.__itor_children = Wrap(itor)
         else:
-            raise Errors.parameter_invalid_type('itor', itor, Itorator, C_ITOR_FUNC, None)
+            raise Errors.parameter_invalid_type('itor', itor, Itorator, C_ITOR_FUNC, types.NoneType)
 
     @abstractmethod
     def _iter(self, ito: Ito) -> typing.Iterable[Ito]:
@@ -54,14 +53,23 @@ class Itorator(ABC):
     def _do_next(self, ito: Ito) -> typing.Iterable[Ito]:
         if self.__itor_next is None:
             yield ito
-            return
+        else:
+            yield from self.__itor_next._do_all(ito)
 
-        yield from self.__itor_next.traverse(ito)
+    def _do_all(self, ito: Ito) -> typing.Iterable[Ito]:
+        if (parent := ito.parent) is not None:
+            parent.children.remove(ito)
+
+        for cur in self._iter(ito):
+            if parent:
+                parent.children.add(cur)
+
+            self._do_children(cur)
+
+            yield from self._do_next(cur)
 
     def traverse(self, ito: Ito) -> typing.Iterable[Ito]:
-        for i in self._iter(ito.clone()):
-            self._do_children(i)
-            yield from self._do_next(i)
+        yield from self._do_all(ito.clone())
 
 
 class Wrap(Itorator):
@@ -83,10 +91,10 @@ class Reflect(Itorator):
 
 class Extract(Itorator):
     def __init__(self,
-                re: regex.Pattern,
-                limit: int | None = None,
-                descriptor_func: typing.Callable[[Ito, regex.Match, str], str] = lambda ito, match, group: group,
-                group_filter: typing.abc.Container[str] | typing.Callable[[Ito, regex.Match, str], bool] | None = None):
+                 re: regex.Pattern,
+                 limit: int | None = None,
+                 descriptor_func: typing.Callable[[Ito, regex.Match, str], str] = lambda ito, match, group: group,
+                 group_filter: collections.abc.Container[str] | typing.Callable[[Ito, regex.Match, str], bool] | None = None):
         super().__init__()
         self.re = re
         self.limit = limit
@@ -104,7 +112,12 @@ class Extract(Itorator):
         if isinstance(self.group_filter, collections.abc.Container):
             return lambda i, m_, g: g in self.group_filter
 
-        raise Errors.parameter_invalid_type('group_filter', self.group_filter, typing.Container[str], typing.Callable[[Ito, regex.Match, str], bool], None)
+        raise Errors.parameter_invalid_type(
+            'group_filter',
+            self.group_filter,
+            typing.Container[str],
+            typing.Callable[[Ito, regex.Match, str], bool],
+            types.NoneType)
 
     def _iter(self, ito: Ito) -> typing.Iterable[Ito]:
         for count, m in enumerate(ito.regex_finditer(self.re), 1):
@@ -127,5 +140,3 @@ class Extract(Itorator):
 
             if self.limit is not None and self.limit == count:
                 return
-
-

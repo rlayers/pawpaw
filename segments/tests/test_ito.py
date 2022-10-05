@@ -2,8 +2,8 @@ import itertools
 import warnings
 
 import regex
-from segments import Span, Ito, slice_indices_to_span
-from segments.tests.util import _TestIto, RandSpans, RandSubstrings
+from segments import Ito, slice_indices_to_span
+from segments.tests.util import _TestIto, RandSubstrings
 
 
 class TestIto(_TestIto):
@@ -340,7 +340,7 @@ class TestIto(_TestIto):
         self.assertIsNone(ito.value_func)
         self.assertEqual(s, ito.__value__())
 
-        f = lambda ito: ito.__str__() * 2
+        f = lambda i: i.__str__() * 2
         ito.value_func = f
         self.assertEqual(f, ito.value_func)
         self.assertEqual(s * 2, ito.__value__())

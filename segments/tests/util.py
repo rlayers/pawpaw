@@ -1,4 +1,4 @@
-import collections
+import collections.abc
 import random
 import typing
 from unittest import TestCase

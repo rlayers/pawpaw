@@ -1,6 +1,6 @@
 from __future__ import annotations
 import bisect
-import collections
+import collections.abc
 import itertools
 import types
 import typing
@@ -50,11 +50,12 @@ def slice_indices_to_span(
 class Ito:
     #region ctors
 
-    def __init__(self,
-         string: str,
-         start: int | None = None,
-         stop: int | None = None,
-         descriptor: str | None = None
+    def __init__(
+            self,
+            string: str,
+            start: int | None = None,
+            stop: int | None = None,
+            descriptor: str | None = None
     ):
         if string is None:
             raise Errors.parameter_not_none('string')
@@ -94,10 +95,11 @@ class Ito:
 
         return rv
 
-    def offset(self,
-        start: int = 0,
-        stop: int = 0,
-        descriptor: str | None = None
+    def offset(
+            self,
+            start: int = 0,
+            stop: int = 0,
+            descriptor: str | None = None
     ) -> Ito:
         if not isinstance(start, int):
             raise Errors.parameter_invalid_type('start', start, int)
@@ -132,7 +134,7 @@ class Ito:
     @classmethod
     def from_match(cls,
                    match: regex.Match,
-                   group: typing.Iterable[str | int] = 0,
+                   group: str | int = 0,
                    descriptor: str = None
                    ) -> C:
         if match is None:
@@ -142,9 +144,11 @@ class Ito:
 
         if group is None:
             raise Errors.parameter_not_none('group')
+
         return cls(match.string, *match.span(group), descriptor=descriptor)
 
-    def _gf(self,
+    @classmethod
+    def _gf(cls,
             group_filter: typing.Iterable[str] | typing.Callable[[regex.Match, str], bool] | None
             ) -> typing.Callable[[regex.Match, str], bool]:
         if group_filter is None:
@@ -156,12 +160,18 @@ class Ito:
         if hasattr(group_filter, '__contains__'):
             return lambda m_, g: g in group_filter
 
-        raise Errors.parameter_invalid_type('group_filter', group_filter, typing.Iterable[str], typing.Callable[[Ito, regex.Match, str], bool], types.NoneType)
+        raise Errors.parameter_invalid_type(
+            'group_filter',
+            group_filter,
+            typing.Iterable[str],
+            typing.Callable[[Ito, regex.Match, str], bool],
+            types.NoneType)
 
-    def from_match_ex(self,
-                 match: regex.Match,
-                 descriptor_func: typing.Callable[[regex.Match, str], str] = lambda ito, match, group: group,
-                 group_filter: typing.Iterable[str] | typing.Callable[[regex.Match, str], bool] | None = None
+    def from_match_ex(
+            self,
+            match: regex.Match,
+            descriptor_func: typing.Callable[[regex.Match, str], str] = lambda ito, match, group: group,
+            group_filter: typing.Iterable[str] | typing.Callable[[regex.Match, str], bool] | None = None
     ) -> typing.Iterable[C]:
         path_stack: typing.List[Ito] = []
         rv: typing.List[Ito] = []
@@ -186,10 +196,11 @@ class Ito:
         return [cls(string, *s, descriptor=descriptor) for s in spans]
 
     @classmethod
-    def from_substrings(cls,
-        string: str,
-        *substrings: str,
-        descriptor: str | None = None
+    def from_substrings(
+            cls,
+            string: str,
+            *substrings: str,
+            descriptor: str | None = None
     ) -> typing.Iterable[C]:
         """
         :param string:
@@ -352,9 +363,6 @@ class Ito:
             norms = slice_indices_to_span(self, start, end, self.start)
             return self._string.endswith(suffix, *norms)
 
-
-        return self._string.endswith(suffix, *slice_indices_to_span(self, start, end, self.start))
-
     def str_find(self, sub: str, start: int = None, end: int = None):
         return self._string.find(sub, *slice_indices_to_span(self, start, end, self.start))
 
@@ -469,7 +477,12 @@ class Ito:
                 rv.append(self.clone(i, descriptor=d))
             return rv
 
-    def str_startswith(self, prefix: str | typing.Tuple[str, ...], start: int | None = None, end: int | None = None) -> bool:
+    def str_startswith(
+            self,
+            prefix: str | typing.Tuple[str, ...],
+            start: int | None = None,
+            end: int | None = None
+    ) -> bool:
         if prefix is None:
             raise Errors.parameter_invalid_type('prefix', prefix, str, typing.Tuple[str, ...])
         elif start is not None and start > len(self):  # Weird rule, but this is how python str works
@@ -556,7 +569,7 @@ class ChildItos(collections.abc.Sequence):
         del self.__store[key]
 
     def remove(self, ito: Ito):
-        i = self.__bfind_start(ito.start)
+        i = self.__bfind_start(ito)
         if i >= 0 and self.__store[i] is ito:
             self.__delitem__(i)
         else:
@@ -574,7 +587,7 @@ class ChildItos(collections.abc.Sequence):
 
     #region Add & Update
 
-    def __setitem__(self, key: int | slice, value: Ito | typing.Iterable[Ito] ) -> None:
+    def __setitem__(self, key: int | slice, value: Ito | typing.Iterable[Ito]) -> None:
         if isinstance(key, int):
             if not isinstance(value, Ito):
                 raise Errors.parameter_invalid_type('value', value, Ito)

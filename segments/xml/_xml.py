@@ -6,3 +6,12 @@ import xml.parsers.expat as expat
 
 import regex
 from segments.ito import Span, Ito
+
+class XmlStrings:
+  pass
+
+class XmlRegexes:
+  pass
+
+class XmlParser:
+  pass

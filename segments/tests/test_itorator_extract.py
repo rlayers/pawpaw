@@ -8,7 +8,7 @@ from segments.tests.util import _TestIto
 
 
 class TestExtract(_TestIto):
-    def test_traverse(self):
+    def test_iter(self):
         s = 'ten 10 eleven 11 twelve 12 '
         root = Ito(s)
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')

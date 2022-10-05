@@ -10,7 +10,12 @@ import regex
 from segments.errors import Errors
 
 
-Span = typing.Tuple[int, int]
+# Span = typing.Tuple[int, int]
+# Span = collections.namedtuple('start', 'stop')
+class Span(typing.NamedTuple):
+    start: int
+    stop: int
+        
 
 C = typing.TypeVar('C', bound='Ito')
 
@@ -44,7 +49,7 @@ def slice_indices_to_span(
         stop = min(length, stop) if stop >= 0 else max(0, length + stop)
         stop += offset
 
-    return start, stop
+    return Span(start, stop)
 
 
 class Ito:
@@ -283,7 +288,10 @@ class Ito:
 
     #endregion
 
+    #region __x__ methods
+        
     def __repr__(self) -> str:
+        # TODO : Add children to repr str?
         return f'segments.Ito({self._string.__repr__()}, {self.start}, {self.stop}, {self.descriptor.__repr__()})'
 
     def __str__(self) -> str:
@@ -297,14 +305,16 @@ class Ito:
 
     def __getitem__(self, key: int | slice) -> str:
         if isinstance(key, int):
-            start, end = slice_indices_to_span(self, key, None, self.start)
-            return self._string[start]
+            span = slice_indices_to_span(self, key, None, self.start)
+            return self._string[span.start]
         
         if isinstance(key, slice):
             span = slice_indices_to_span(self, key.start, key.stop, self.start)
             return self._string[slice(*span)]
         
         raise Errors.parameter_invalid_type('key', key, int, slice)
+        
+    #endregion
 
     #region traversal
 

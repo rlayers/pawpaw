@@ -2,9 +2,8 @@ import random
 import typing
 
 import regex
-from ito import Ito, Span
-from ito.tests.rand import RandSpans
-
+from segments import Span, Ito
+from segments.tests.util import RandSpans
 
 
 def dump_itos(*itos: Ito, indent='', __str__: bool = True):
@@ -12,22 +11,6 @@ def dump_itos(*itos: Ito, indent='', __str__: bool = True):
         s = f' .__str__():"{ito.__str__()}"' if __str__ else ''
         print(f'{indent}{i:,}: .span={ito.span} .descriptor="{ito.descriptor}{s}"')
         dump_itos(*ito.children, indent=indent+'  ', __str__=__str__)
-#
-# s = 'one 1 two 2 three 3 '
-# root = Ito(s)
-# print(f'root:')
-# dump_itos(root)
-# print()
-#
-# # re = regex.compile(r'(?P<combo>(?:(?P<word>\w+) (?P<digits>\d+) )+)')
-# re = regex.compile(r'(?P<combo>(?P<word>\w+) (?P<digits>\d+) )+')
-# # re = regex.compile(r'(?:(?P<word>\w+) (?P<digits>\d+) )+')
-# desc_func = lambda ito, m, g: 'root' if g == '' else g
-# itor = Extract(re, extract_group_zero=True, descriptor_func=desc_func)
-# dump_itos(*itor.traverse(root))
-# print()
-#
-# print('Itor')
 
 
 def test_add_hierarchical():

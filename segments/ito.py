@@ -2,6 +2,7 @@ from __future__ import annotations
 import bisect
 import collections
 import itertools
+import types
 import typing
 import warnings
 
@@ -30,7 +31,7 @@ def slice_indices_to_span(
     if start is None:
         start = offset
     elif not isinstance(start, int):
-        raise Errors.parameter_invalid_type('start', start, int, None)
+        raise Errors.parameter_invalid_type('start', start, int, types.NoneType)
     else:
         start = min(length, start) if start >= 0 else max(0, length + start)
         start += offset
@@ -38,7 +39,7 @@ def slice_indices_to_span(
     if stop is None:
         stop = length + offset
     elif not isinstance(stop, int):
-        raise Errors.parameter_invalid_type('stop', stop, int, None)
+        raise Errors.parameter_invalid_type('stop', stop, int, types.NoneType)
     else:
         stop = min(length, stop) if stop >= 0 else max(0, length + stop)
         stop += offset
@@ -67,7 +68,7 @@ class Ito:
             raise Errors.parameter_invalid_type('descriptor', descriptor, str)
         self.descriptor = descriptor
 
-        self._value_func: typing.Callable[[Ito], typing.Any] = None
+        self._value_func: typing.Callable[[Ito], typing.Any] | None = None
 
         self._parent = None
         self._children = ChildItos(self)
@@ -133,14 +134,14 @@ class Ito:
                    match: regex.Match,
                    group: typing.Iterable[str | int] = 0,
                    descriptor: str = None
-                   ) -> typing.Iterable[C]:
+                   ) -> C:
         if match is None:
-            raise Errors.error_parameter_not_none('match')
+            raise Errors.parameter_not_none('match')
         elif not isinstance(match, regex.Match):
-            raise Errors.error_parameter_invalid_type('match', match, regex.Match)
+            raise Errors.parameter_invalid_type('match', match, regex.Match)
 
         if group is None:
-            raise Errors.error_parameter_not_none('group')
+            raise Errors.parameter_not_none('group')
         return cls(match.string, *match.span(group), descriptor=descriptor)
 
     def _gf(self,
@@ -155,7 +156,7 @@ class Ito:
         if hasattr(group_filter, '__contains__'):
             return lambda m_, g: g in group_filter
 
-        raise Errors.parameter_invalid_type('group_filter', group_filter, typing.Iterable[str], typing.Callable[[Ito, regex.Match, str], bool], None)
+        raise Errors.parameter_invalid_type('group_filter', group_filter, typing.Iterable[str], typing.Callable[[Ito, regex.Match, str], bool], types.NoneType)
 
     def from_match_ex(self,
                  match: regex.Match,
@@ -163,12 +164,12 @@ class Ito:
                  group_filter: typing.Iterable[str] | typing.Callable[[regex.Match, str], bool] | None = None
     ) -> typing.Iterable[C]:
         path_stack: typing.List[Ito] = []
-        rv: typing.List[Ito]
+        rv: typing.List[Ito] = []
         gf = self._gf(group_filter)
         filtered_gns = (gn for gn in match.re.groupindex.keys() if gf(match, gn))
-        span_gns = ((span, gn) for gn in filtered_gns for span in m.spans(gn))
+        span_gns = ((span, gn) for gn in filtered_gns for span in match.spans(gn))
         for span, gn in sorted(span_gns, key=lambda val: (val[0][0], -val[0][1])):
-            ito = ito.clone(*span, descriptor_func(ito, match, gn))
+            ito = Ito(match.string, *span, descriptor=descriptor_func(match, gn))
             while len(path_stack) > 0 and (ito.start < path_stack[-1].start or ito.stop > path_stack[-1].stop):
                 path_stack.pop()
             if len(path_stack) == 0:
@@ -310,10 +311,8 @@ class Ito:
         it_str, it_start, it_stop, it_children = itertools.tee(itos, 4)
 
         strs = set(ito.string for ito in it_str)
-        if len(strs) == 0:
-            return None
         if len(strs) > 1:
-            raise ValueError(f'parameter \'{itos}\' have differening values for .string')
+            raise ValueError(f'parameter \'{itos}\' have differing values for .string')
 
         start = min(ito.start for ito in it_start)
         stop = max(ito.stop for ito in it_stop)
@@ -344,8 +343,17 @@ class Ito:
     def str_count(self, sub: str, start: int = None, end: int = None) -> int:
         return self._string.count(sub, *slice_indices_to_span(self, start, end, self.start))
 
-    def str_endswith(self, suffix: str, start: int = None, end: int = None) -> bool:
-        return self._string.count(suffix, *slice_indices_to_span(self, start, end, self.start))
+    def str_endswith(self, suffix: str | typing.Tuple[str, ...], start: int = None, end: int = None) -> bool:
+        if suffix is None:
+            raise Errors.parameter_invalid_type('suffix', suffix, str, typing.Tuple[str, ...])
+        elif start is not None and start > len(self):  # Weird rule, but this is how python str works
+            return False
+        else:
+            norms = slice_indices_to_span(self, start, end, self.start)
+            return self._string.endswith(suffix, *norms)
+
+
+        return self._string.endswith(suffix, *slice_indices_to_span(self, start, end, self.start))
 
     def str_find(self, sub: str, start: int = None, end: int = None):
         return self._string.find(sub, *slice_indices_to_span(self, start, end, self.start))
@@ -422,7 +430,7 @@ class Ito:
     def str_lstrip(self, *chars) -> Ito:
         pass
 
-    def str_partition(self, sep) -> Ito:
+    def str_partition(self, sep) -> typing.Tuple[C, C, C]:
         if sep is None:
             raise ValueError('must be str, not NoneType')
         elif sep == '':
@@ -461,9 +469,9 @@ class Ito:
                 rv.append(self.clone(i, descriptor=d))
             return rv
 
-    def str_startswith(self, prefix: str | typing.Tuple[str], start: int | None = None, end: int | None = None) -> bool:
+    def str_startswith(self, prefix: str | typing.Tuple[str, ...], start: int | None = None, end: int | None = None) -> bool:
         if prefix is None:
-            raise ValueError('str_startswith first arg must be str or a tuple of str, not NoneType')
+            raise Errors.parameter_invalid_type('prefix', prefix, str, typing.Tuple[str, ...])
         elif start is not None and start > len(self):  # Weird rule, but this is how python str works
             return False
         else:

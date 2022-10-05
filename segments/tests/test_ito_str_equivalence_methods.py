@@ -1,13 +1,52 @@
-import random
-import typing
 from unittest import TestCase
-import warnings
 
-import regex
 from segments import Ito
 
 
 class TestItoStrEquivalenceMethods(TestCase):
+
+    def test_str_count(self):
+        s = 'ab' * 10
+        i = Ito(s, 2, -2)
+        self.assertEqual(s.count('ab', 2, -2), i.str_count('ab'))
+        self.assertEqual(s.count('ab', 4, -4), i.str_count('ab', 2, -2))
+
+    def test_str_endswith(self):
+        string = f' {"abc" * 2} '
+        ito = Ito(string, 1, -1)
+
+        sep = None
+        with self.subTest(sep=sep):
+            with self.assertRaises(TypeError):
+                ito.str_startswith(sep)
+
+        for sep in ['', 'a', 'b', 'ab', 'bc', 'c', 'abc', 'z']:
+            with self.subTest(sep=sep):
+                for start in [-100, -1, None, 0, 1, 100]:
+                    with self.subTest(start=start):
+                        for end in [-100, -1, None, 0, 1, 100]:
+                            with self.subTest(end=end):
+                                expected = string.strip().endswith(sep, start, end)
+                                actual = ito.str_endswith(sep, start, end)
+                                self.assertEqual(expected, actual)
+
+    def test_str_find(self):
+        s = 'abcdefgh'
+        i = Ito(s, 2, -2)
+        self.assertEqual(s.find('ab', 2, -2), i.str_find('ab'))
+        self.assertEqual(s.find('cd', 2, -2), i.str_find('cd'))
+        self.assertEqual(s.find('cd', 3, -3), i.str_find('cd', 1, -1))
+        self.assertEqual(s.find('de', 3, -3), i.str_find('de', 1, -1))
+
+    def test_str_index(self):
+        s = 'abcdefgh'
+        i = Ito(s, 2, -2)
+        with self.assertRaises(ValueError):
+            i.str_index('ab')
+        self.assertEqual(s.find('cd', 2, -2), i.str_index('cd'))
+        with self.assertRaises(ValueError):
+            i.str_index('cd', 1, -1)
+        self.assertEqual(s.find('de', 3, -3), i.str_index('de', 1, -1))
 
     #region 'is' methods
 
@@ -116,7 +155,7 @@ class TestItoStrEquivalenceMethods(TestCase):
         sep = ''
         with self.subTest(sep=sep):
             with self.assertRaises(ValueError):
-               ito.str_split(sep)
+                ito.str_split(sep)
 
         for sep in [None, 'a', 'b', 'ab', 'bc', 'c', 'abc', 'z']:
             with self.subTest(sep=sep):
@@ -130,8 +169,8 @@ class TestItoStrEquivalenceMethods(TestCase):
 
         sep = None
         with self.subTest(sep=sep):
-            with self.assertRaises(ValueError):
-               ito.str_startswith(sep)
+            with self.assertRaises(TypeError):
+                ito.str_startswith(sep)
 
         for sep in ['', 'a', 'b', 'ab', 'bc', 'c', 'abc', 'z']:
             with self.subTest(sep=sep):

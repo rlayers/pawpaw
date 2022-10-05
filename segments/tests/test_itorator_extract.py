@@ -13,7 +13,7 @@ class TestExtract(_TestIto):
         root = Ito(s)
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
         itor = Extract(re)
-        rv: typing.List[Ito] = [*itor._iter(root)]
+        rv = itor._iter(root)
         itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]
         grouped = {k: [v for v in itos if v.descriptor == k] for k, val in itertools.groupby(itos, lambda x: x.descriptor)}
 
@@ -40,7 +40,7 @@ class TestExtract(_TestIto):
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
         df = lambda i, m, g: g + 'x' if g == 'char' else g
         itor = Extract(re, descriptor_func=df)
-        rv: typing.List[Ito] = [*itor._iter(root)]
+        rv = itor._iter(root)
         itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]
         grouped = {k: [v for v in itos if v.descriptor == k] for k, val in itertools.groupby(itos, lambda x: x.descriptor)}
 
@@ -67,7 +67,7 @@ class TestExtract(_TestIto):
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )')
         limit = 2
         itor = Extract(re, limit=2)
-        rv: typing.List[Ito] = [*itor._iter(root)]
+        rv = itor._iter(root)
 
         itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]
         grouped = {k: [v for v in itos if v.descriptor == k] for k, val in itertools.groupby(itos, lambda x: x.descriptor)}
@@ -95,7 +95,7 @@ class TestExtract(_TestIto):
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
         gf = ('phrase', 'word')
         itor = Extract(re, group_filter=gf)
-        rv: typing.List[Ito] = [*itor._iter(root)]
+        rv = itor._iter(root)
         itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]
         grouped = {k: [v for v in itos if v.descriptor == k] for k, val in itertools.groupby(itos, lambda x: x.descriptor)}
 
@@ -117,7 +117,7 @@ class TestExtract(_TestIto):
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
         gf = lambda i, m, g: g in ('phrase', 'number')
         itor = Extract(re, group_filter=gf)
-        rv: typing.List[Ito] = [*itor._iter(root)]
+        rv = itor._iter(root)
         itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]
         grouped = {k: [v for v in itos if v.descriptor == k] for k, val in itertools.groupby(itos, lambda x: x.descriptor)}
 

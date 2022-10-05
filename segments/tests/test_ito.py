@@ -357,6 +357,46 @@ class TestIto(_TestIto):
 
     #region __x__ methods
 
+    def test_repr(self):
+        s = 'x123x'
+        span = 1, -1
+        start, stop = slice_indices_to_span(s, *span)
+        desc = 'd'
+        ito = Ito(s, *span, desc)
+        
+        expected = f'segments.Ito({s.__repr__()}, {start}, {stop}, {desc.__repr__()})'
+        actual = ito.__repr__()
+        self.assertEqual(expected, actual)
+        
+        i = actua.index('.')
+        self.assertEqual(ito, eval(actual[i+1:]))
+    
+    def test_str(self):
+        s = 'x123x'
+        i = Ito(s, 1, -1)
+        self.assertEqual(s[1:-1], f'{i}')
+    
+    def test_value(self):
+        pass
+    
+    def test_len(self):
+        s = 'x123x'
+        i = Ito(s, 1, -1)
+        self.assertEqual(3, len(i))
+    
+    def test_getitem(self):
+        s = 'x123x'
+        i = Ito(s, 1, -1)
+        self.assertEqual('1', i[0])
+        self.assertEqual('3', i[-1])
+        self.assertEqual('123', i[:])
+        self.assertEqual('23', i[1:])
+        self.assertEqual('2', i[1:-1])
+        self.assertEqual('12', i[:-1])
+
+        with self.assertRaises(TypeError):
+            self.assertEqual('2', i['1'])
+            
     #endregion
 
     #region combinatorics

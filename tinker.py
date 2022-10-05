@@ -2,8 +2,15 @@ import random
 import typing
 
 import regex
-from segments import Span, Ito
+from segments import Span, Ito, __version__
 from segments.tests.util import RandSpans
+
+
+print(__version__)
+print(__version__.major)
+print(__version__.pre_release)
+print(__version__.asdict())
+exit(0)
 
 
 def dump_itos(*itos: Ito, indent='', __str__: bool = True):

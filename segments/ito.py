@@ -284,7 +284,7 @@ class Ito:
     #endregion
 
     def __repr__(self) -> str:
-        return f'{self.span}: \'{self.__str__()}\''
+        return f'segments.Ito({self._string.__repr__()}, {self.start}, {self.stop}, {self.descriptor.__repr__()})'
 
     def __str__(self) -> str:
         return self._string[slice(*self.span)]

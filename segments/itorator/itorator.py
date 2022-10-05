@@ -44,25 +44,34 @@ class Itorator(ABC):
             raise Errors.parameter_invalid_type('itor', itor, Itorator, C_ITOR_FUNC, types.NoneType)
 
     @abstractmethod
-    def _iter(self, ito: Ito) -> typing.Iterable[Ito]:
+    def _iter(self, ito: Ito) -> typing.Sequence[Ito]:
         pass
 
     def _do_children(self, ito: Ito) -> None:
         if self.__itor_children is not None:
-            ito.children.add(*self.__itor_children.traverse(ito))
+            itor_n = self.__itor_children.itor_next
+            for c in self.__itor_children._iter(ito)
+                ito.children.add(c)
+                if itor_n is not None:
+                    for i in itor_n._traverse(c)
+                        pass  # force iter walk
 
     def _do_next(self, ito: Ito) -> typing.Iterable[Ito]:
         if self.__itor_next is None:
             yield ito
         else:
-            yield from self.__itor_next._do_all(ito)
+            yield from self.__itor_next._traverse(ito)
 
-    def _do_all(self, ito: Ito) -> typing.Iterable[Ito]:
+    def _traverse(self, ito: Ito) -> typing.Iterable[Ito]:
+        # Process ._iter with parent in place:
+        curs = self._iter(cur)
+        
+        # ...now remove from parent (if any)
         if (parent := ito.parent) is not None:
             parent.children.remove(ito)
 
-        for cur in self._iter(ito):
-            if parent:
+        for cur in curs:
+            if parent is not None:
                 parent.children.add(cur)
 
             self._do_children(cur)
@@ -70,15 +79,15 @@ class Itorator(ABC):
             yield from self._do_next(cur)
 
     def traverse(self, ito: Ito) -> typing.Iterable[Ito]:
-        yield from self._do_all(ito.clone())
+        yield from self._traverse(ito.clone())
 
 
 class Wrap(Itorator):
-    def __init__(self, f: C_ITOR_FUNC):
+    def __init__(self, f: typing.Callable[[Ito], typing.Sequence[Ito]]):
         super().__init__()
         self.__f = f
 
-    def _iter(self, ito: Ito) -> typing.Iterable[Ito]:
+    def _iter(self, ito: Ito) -> typing.Sequence[Ito]:
         yield from self.__f(ito)
 
 
@@ -86,8 +95,8 @@ class Reflect(Itorator):
     def __init__(self):
         super().__init__()
 
-    def _iter(self, ito: Ito) -> typing.Iterable[Ito]:
-        yield ito
+    def _iter(self, ito: Ito) -> typing.Sequence[Ito]:
+        yield ito,
 
 
 class Extract(Itorator):
@@ -125,10 +134,11 @@ class Extract(Itorator):
                 typing.Callable[[Ito, regex.Match, str], bool],
                 types.NoneType)
 
-    def _iter(self, ito: Ito) -> typing.Iterable[Ito]:
+    def _iter(self, ito: Ito) -> typing.Sequence[Ito]:
+        rv = typing.List[Ito] = []
         for count, m in enumerate(ito.regex_finditer(self.re), 1):
             path_stack: typing.List[Ito] = []
-            rv: typing.List[Ito] = []
+            match_itos: typing.List[Ito] = []
             filtered_gns = (gn for gn in m.re.groupindex.keys() if self._group_filter(ito, m, gn))
             span_gns = ((span, gn) for gn in filtered_gns for span in m.spans(gn))
             for span, gn in sorted(span_gns, key=lambda val: (val[0][0], -val[0][1])):
@@ -136,13 +146,15 @@ class Extract(Itorator):
                 while len(path_stack) > 0 and (ito.start < path_stack[-1].start or ito.stop > path_stack[-1].stop):
                     path_stack.pop()
                 if len(path_stack) == 0:
-                    rv.append(ito)
+                    match_itos.append(ito)
                 else:
                     path_stack[-1].children.add(ito)
 
                 path_stack.append(ito)
 
-            yield from rv
+            rv.extend(match_itos)
 
             if self.limit is not None and self.limit == count:
-                return
+                break
+
+        return rv

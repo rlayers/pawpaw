@@ -7,49 +7,11 @@ import typing
 import warnings
 
 import regex
+from segments.span import Span
 from segments.errors import Errors
 
 
-# Span = typing.Tuple[int, int]
-# Span = collections.namedtuple('start', 'stop')
-class Span(typing.NamedTuple):
-    start: int
-    stop: int
-        
-
 C = typing.TypeVar('C', bound='Ito')
-
-
-def slice_indices_to_span(
-        basis: int | collections.abc.Sized,
-        start: int | None = None,
-        stop: int | None = None,
-        offset: int = 0
-) -> Span:
-    if isinstance(basis, int):
-        length = basis
-    elif isinstance(basis, collections.abc.Sized):
-        length = len(basis)
-    else:
-        raise Errors.parameter_invalid_type('basis', basis, int, collections.abc.Sized)
-
-    if start is None:
-        start = offset
-    elif not isinstance(start, int):
-        raise Errors.parameter_invalid_type('start', start, int, types.NoneType)
-    else:
-        start = min(length, start) if start >= 0 else max(0, length + start)
-        start += offset
-
-    if stop is None:
-        stop = length + offset
-    elif not isinstance(stop, int):
-        raise Errors.parameter_invalid_type('stop', stop, int, types.NoneType)
-    else:
-        stop = min(length, stop) if stop >= 0 else max(0, length + stop)
-        stop += offset
-
-    return Span(start, stop)
 
 
 class Ito:
@@ -68,7 +30,7 @@ class Ito:
             raise Errors.parameter_invalid_type('string', string, str)
         self._string = string
 
-        self._span = slice_indices_to_span(string, start, stop)
+        self._span = Span.from_indices(string, start, stop)
 
         if descriptor is not None and not isinstance(descriptor, str):
             raise Errors.parameter_invalid_type('descriptor', descriptor, str)
@@ -132,7 +94,7 @@ class Ito:
 
     def slice(self, start: int = None, stop: int = None, descriptor: str = None) -> Ito:
         return self.clone(
-            *slice_indices_to_span(self, start, stop, self.start),
+            *Span.from_indices(self, start, stop, self.start),
             self.descriptor if descriptor is None else descriptor
         )
 
@@ -306,11 +268,11 @@ class Ito:
 
     def __getitem__(self, key: int | slice) -> str:
         if isinstance(key, int):
-            span = slice_indices_to_span(self, key, None, self.start)
+            span = Span.from_indices(self, key, None, self.start)
             return self._string[span.start]
         
         if isinstance(key, slice):
-            span = slice_indices_to_span(self, key.start, key.stop, self.start)
+            span = Span.from_indices(self, key.start, key.stop, self.start)
             return self._string[slice(*span)]
         
         raise Errors.parameter_invalid_type('key', key, int, slice)
@@ -354,7 +316,7 @@ class Ito:
     #region str equivalence methods
 
     def str_count(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.count(sub, *slice_indices_to_span(self, start, end, self.start))
+        return self._string.count(sub, *Span.from_indices(self, start, end, self.start))
 
     def str_endswith(self, suffix: str | typing.Tuple[str, ...], start: int | None = None, end: int | None = None) -> bool:
         if suffix is None:
@@ -362,14 +324,14 @@ class Ito:
         elif start is not None and start > len(self):  # Weird rule, but this is how python str works
             return False
         else:
-            norms = slice_indices_to_span(self, start, end, self.start)
+            norms = Span.from_indices(self, start, end, self.start)
             return self._string.endswith(suffix, *norms)
 
     def str_find(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.find(sub, *slice_indices_to_span(self, start, end, self.start))
+        return self._string.find(sub, *Span.from_indices(self, start, end, self.start))
 
     def str_index(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.index(sub, *slice_indices_to_span(self, start, end, self.start))
+        return self._string.index(sub, *Span.from_indices(self, start, end, self.start))
 
     #region 'is' predicates
 
@@ -465,10 +427,10 @@ class Ito:
             return self.clone()
         
     def str_rfind(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.rfind(sub, *slice_indices_to_span(self, start, end, self.start))
+        return self._string.rfind(sub, *Span.from_indices(self, start, end, self.start))
 
     def str_rindex(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.rindex(sub, *slice_indices_to_span(self, start, end, self.start))
+        return self._string.rindex(sub, *Span.from_indices(self, start, end, self.start))
     
     def str_rpartition(self, sep) -> typing.Tuple[C, C, C]:
         if sep is None:
@@ -524,7 +486,7 @@ class Ito:
         elif start is not None and start > len(self):  # Weird rule, but this is how python str works
             return False
         else:
-            span = slice_indices_to_span(self, start, end, self.start)
+            span = Span.from_indices(self, start, end, self.start)
             return self._string.startswith(prefix, *span)
         
     def str_strip(self, chars: str | None = None) -> Ito:
@@ -654,7 +616,7 @@ class ChildItos(collections.abc.Sequence):
         if isinstance(key, int):
             if not isinstance(value, Ito):
                 raise Errors.parameter_invalid_type('value', value, Ito)
-            start, stop = slice_indices_to_span(self, key)
+            start, stop = Span.from_indices(self, key)
             del self[start]
             self.__ensure_between(value, start, start)
             value._set_parent(self.__parent)
@@ -665,7 +627,7 @@ class ChildItos(collections.abc.Sequence):
             if isinstance(value, Ito):
                 value = [value]
             if isinstance(value, typing.Iterable):
-                start, stop = slice_indices_to_span(self, key.start, key.stop)
+                start, stop = Span.from_indices(self, key.start, key.stop)
                 del self[key]
                 for ito in value:
                     if not isinstance(ito, Ito):

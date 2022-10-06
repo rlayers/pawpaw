@@ -2,7 +2,7 @@ import itertools
 import warnings
 
 import regex
-from segments import Ito, slice_indices_to_span
+from segments import Span, Ito
 from segments.tests.util import _TestIto, RandSubstrings
 
 
@@ -16,13 +16,13 @@ class TestIto(_TestIto):
                         for stop in (-100, -1, None, 0, 1, 100):
                             with self.subTest(stop=stop):
                                 _slice = slice(start, stop)
-                                i, j = slice_indices_to_span(string, start, stop)
+                                i, j = Span.from_indices(string, start, stop)
                                 self.assertEqual(string[_slice], string[i:j])
 
         basis = 1.0
         with self.subTest(basis=basis):
             with self.assertRaises(TypeError):
-                slice_indices_to_span(basis, 1)
+                Span.from_indices(basis, 1)
 
     #endregion
 
@@ -360,7 +360,7 @@ class TestIto(_TestIto):
     def test_repr(self):
         s = 'x123x'
         span = 1, -1
-        start, stop = slice_indices_to_span(s, *span)
+        start, stop = Span.from_indices(s, *span)
         desc = 'd'
         ito = Ito(s, *span, desc)
         

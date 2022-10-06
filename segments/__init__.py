@@ -1,7 +1,10 @@
 from segments._version import __version__
 del _version
 
-from segments.ito import Span, Ito, ChildItos, slice_indices_to_span
+from segments.span import Span
+del span
+
+from segments.ito import Ito, ChildItos
 del ito
 
 from segments.errors import Errors

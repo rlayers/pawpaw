@@ -3,7 +3,7 @@ import random
 import typing
 from unittest import TestCase
 
-from segments import Span, Ito, slice_indices_to_span
+from segments import Span, Ito
 
 
 class _TestIto(TestCase):
@@ -42,7 +42,7 @@ class RandSpans:
         self.gap = gap
 
     def generate(self, basis: int | collections.abc.Sized, start: int | None = None, stop: int | None = None) -> typing.Iterable[Span]:
-        i, stop = slice_indices_to_span(basis, start, stop)
+        i, stop = Span.from_indices(basis, start, stop)
         while i < stop:
             k = i + random.randint(*self.size)
             k = min(k, stop)

@@ -6,7 +6,7 @@ from segments.tests.util import _TestIto
 
 
 class TestItorator(_TestIto):
-    """Uses Reflect and Wrap classes, which have trivial implemntation, to test base class functionality"""
+    """Uses Reflect and Wrap classes, which have trivial implementation, to test base class functionality"""
     def test_traverse(self):
         s = 'abc'
         root = Ito(s)

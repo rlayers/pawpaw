@@ -2,63 +2,93 @@
  Segments and Span
 ==================
 
-Segment
-=======
+Introduction
+============
 
-segment
-  Given a ``str`` of length ``n``, consists of start and stop values that are:
-  
-  1. ordered
-  2. between zero and ``n`` inclusive
+The segments modules simplifies segmentation of character data...
 
-For a given ``str``, a segment_ defines a substring of characters that are *contained in* or *equal to* the ``str``.  If the segment_ has a non-zero start value, or a stop value less than ``len(str)``, then it defines a *proper substring*, i.e., one that is *non-equal* to ``str``.  A segmentsegment whose stop and start values are equal is valid, and defines an *empty substring* (i.e., zero length) at a specific location.
+definitions:
+
+string
+    a ordered sequence of characters
+
+substring
+    a sequence of characters that are *contained in* or *equal to* a reference string
+
+proper substring
+    a substring that is *not equal to* the reference string
+
+Note that a substring may occur in multiple locations within a string.  A **segment**, by contrast, identifies a *specific* substring.  This is done by capturing the *inclusive starting* and *exclusive stopping* locations where the substring occurs.  Valid segments have ``start`` and ``stop`` values that are:
+
+    1. ordered
+    2. between zero and ``n`` inclusive
+
+.. sidebar:: Segment as a vector
+
+   A segment can be thought of as a one dimensional vector having a location at ``start``, and a length of ``stop-start``.
+
+It is possible for a segment to have identical ``start`` and ``stop`` values, in which case it defines an *empty substring* (i.e., zero length) at a *specific location*.
+
+A segment having a non-zero ``start`` value, *or* a ``stop`` value less than the ``n`` defines a *proper substring*.
 
 Span
 ====
 
-In Python, a segment_ can be represented by a ``tuple`` of ``int`` values.  This is defined in segments as ``Span``, which is based on Python's NamedTuple_::
+A segment can be represented in Python with a 2-``tuple`` of ``int`` values.  The segments module provides a class called ``Span``\ [#]_ to represent a segment.  ``Span`` is based on Python's `NamedTuple <https://docs.python.org/3/library/collections.html?highlight=namedtuple#collections.namedtuple>`_, which results in tuple-like objects that:
 
-    >>> Span(0, 3)
-    Span(start=0, stop=3)
-
-The use of ``NamedTuple`` results in tuple-like objects that:
 - have fields accessible by attribute lookup
 - are indexable and iterable
 - require no more memory than regular tuples
-::
-    >>> s = Span(0, 3)
-    >>> s.stop
-    3
 
-A ``Span`` can be used as start and stop values wherever needed.   For example, the ``str.find`` methdod locates the first occurrence of a substring, and features optional ``start`` and ``end`` parameters that indicate where in the ``str`` to search.  These parameters can be supplied via a ``Span``
-    
+``Span`` objects can be easily created:
 
-Blah::
-    >>> s = ' has leading and trailing spaces '
-    >>> span = Span(1, len(s) - 1)
-    >>> s.find(' ', *span)  # Find index of first non-leading space
-    4
+>>> Span(0, 3)
+Span(start=0, stop=3)
 
-Likewise, a ``Span`` can be easily converted to a Python ``slice``::
-    >>> s = ' has leading and trailing spaces '
-    >>> span = Span(1, len(s) - 1)
-    >>> _slice = slice(*span)
-    >>> s[_slice]  # slice off leading and trailing spaces
-    'has leading and trailing spaces'
+and used as direct replacement for for in placewherever a tuple would be:
 
-Python's ``slice`` constructor has start and stop parameters, however, these values are *indices*, which can be omitted or have negative values.  So although a segment_ can always be converted to a slice, the reverse is not true::
-    >>> s = slice(-10, 1)
-    >>> (s.start, s.stop)
-    (-10, 1)  # tuple has negative value - not a valid segment
-    >>> s = slice(3)
-    >>> (s.start, s.stop)
-    (None, 3)  # tuple lacks a start value - not a valid segment
+>>> 'The vals are %d and %d.' % Span(2, 5)
+'The vals are 2 and 5' % Span(2, 5)
 
-Further Considerations
-======================
-A segment_ can be thought of as a one dimenstional vector having a *location* at start, and a *length* of stop minus stop.  For example::
-    >>> s = Span(3, 5)
-    >>> location = span.start
-    >>> length = span.stop - span.start
+Many ``str`` methods feature ``start`` and ``end`` parameters, which can be supplied via a ``Span``.  For example
 
-.. _NamedTuple: https://docs.python.org/3/library/collections.html?highlight=namedtuple#collections.namedtuple
+>>> s = '1. This sentence has "1" as a prefix.'
+>>> span = Span(1, len(s))
+>>> s.find('1', *span)  # Find index of '1' starting after the first char
+22
+
+Slice Coordination
+==================
+
+A ``Span`` can be easily converted to a Python ``slice``
+
+>>> s = ' leading and trailing spaces '
+>>> span = Span(1, len(s) - 1)
+>>> _slice = slice(*span)
+>>> s[_slice]  # strip leading and trailing chars
+'leading and trailing spaces'
+
+However, a ``Span`` and ``slice`` are not equivalent.  A Python's ``slice`` constructor has ``start`` and ``stop`` parameters[#]_, but they are optional *Python-style indices*, which can have negative values.  So although a segment_ can always be converted to a slice, the reverse is not true::
+  
+  s = slice(-10, 1)
+  print((s.start, s.stop))  # (-10, 1): tuple has negative value - not valid Span
+  s = slice(3)
+  print((s.start, s.stop))  # (None, 3): tuple has mising start - not valid Span
+  
+To convert a ``slice`` to a ``span``, the indices must be normalized to valid locations within the reference string.  For example, given a ``str`` of length ``n`` and a ``slice(1, -1)``, the associated span would be ``Span(1, n - 1)``.  ``Span`` offers a static constructor method for this purpose:
+
+>>> s = 'abcd'
+>>> slice_ = slice(1, -1)
+>>> Span.from_indices(s, slice_.start, slice_.stop)
+Span(start=1, stop=3)
+
+``.from_indices`` needs to know the length of the reference string, which is supplied via the ``basis`` parameter.  ``basis`` can be an ``int`` or any ``Sized`` type supporting a ``len`` call.
+
+.. admonition:: Key Concept
+
+   ``Ito`` segments are immutable
+
+
+.. [#] The choice of *Span* for this type name instead of *Segment* is based on the extensive use of *span* in the ``re`` and ``regex`` modules.
+
+.. [#] Python's ``slice`` constructor also features a ``step`` parameter, which defaults to 1. Slicing a ``str`` with ``step`` values other than 1 does not result in a *proper substring*, i.e., the resulting ``str`` is not contained within the starting ``str``.

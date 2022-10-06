@@ -298,6 +298,7 @@ class Ito:
         return self._string[slice(*self.span)]
 
     def __value__(self) -> typing.Any:
+        # TODO : Make this a '__x' only method
         return self.__str__()
 
     def __len__(self) -> int:
@@ -314,26 +315,6 @@ class Ito:
         
         raise Errors.parameter_invalid_type('key', key, int, slice)
         
-    #endregion
-
-    #region traversal
-
-    def get_root(self) -> C | None:
-        rv = self.parent
-
-        while rv is not None:
-            rv = rv.parent
-
-        return rv
-
-    def walk_descendants_levels(self, start: int = 0) -> typing.Iterable[typing.Tuple[int, C]]:
-        for child in self.children:
-            yield start, child
-            yield from child.walk_descendants_levels(start+1)
-
-    def walk_descendants(self) -> typing.Iterable[C]:
-        yield from (ito for lvl, ito in self.walk_descendants_levels())
-
     #endregion
 
     #region combinatorics
@@ -551,6 +532,29 @@ class Ito:
 
     #endregion
 
+    #region traversal
+
+    def get_root(self) -> C | None:
+        rv = self.parent
+
+        while rv is not None:
+            rv = rv.parent
+
+        return rv
+
+    def walk_descendants_levels(self, start: int = 0) -> typing.Iterable[typing.Tuple[int, C]]:
+        for child in self.children:
+            yield start, child
+            yield from child.walk_descendants_levels(start+1)
+
+    def walk_descendants(self) -> typing.Iterable[C]:
+        yield from (ito for lvl, ito in self.walk_descendants_levels())
+
+    #endregion
+
+    #region query
+    
+    #endregion
 
 class ChildItos(collections.abc.Sequence):
     def __init__(self, parent: Ito, *itos: Ito):

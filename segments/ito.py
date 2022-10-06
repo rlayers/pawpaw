@@ -592,6 +592,7 @@ class ChildItos(collections.abc.Sequence):
 
         if self.__is_stop_gt_next_start(i_end, ito):
             raise ValueError('parameter \'ito\' overlaps with next')
+            
     #endregion
 
     #region Collection & Set

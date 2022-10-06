@@ -1,0 +1,64 @@
+==================
+ Segments and Span
+==================
+
+Segment
+=======
+
+segment
+  Given a ``str`` of length ``n``, consists of start and stop values that are:
+  
+  1. ordered
+  2. between zero and ``n`` inclusive
+
+For a given ``str``, a segment_ defines a substring of characters that are *contained in* or *equal to* the ``str``.  If the segment_ has a non-zero start value, or a stop value less than ``len(str)``, then it defines a *proper substring*, i.e., one that is *non-equal* to ``str``.  A segmentsegment whose stop and start values are equal is valid, and defines an *empty substring* (i.e., zero length) at a specific location.
+
+Span
+====
+
+In Python, a segment_ can be represented by a ``tuple`` of ``int`` values.  This is defined in segments as ``Span``, which is based on Python's NamedTuple_::
+
+    >>> Span(0, 3)
+    Span(start=0, stop=3)
+
+The use of ``NamedTuple`` results in tuple-like objects that:
+- have fields accessible by attribute lookup
+- are indexable and iterable
+- require no more memory than regular tuples
+::
+    >>> s = Span(0, 3)
+    >>> s.stop
+    3
+
+A ``Span`` can be used as start and stop values wherever needed.   For example, the ``str.find`` methdod locates the first occurrence of a substring, and features optional ``start`` and ``end`` parameters that indicate where in the ``str`` to search.  These parameters can be supplied via a ``Span``
+    
+
+Blah::
+    >>> s = ' has leading and trailing spaces '
+    >>> span = Span(1, len(s) - 1)
+    >>> s.find(' ', *span)  # Find index of first non-leading space
+    4
+
+Likewise, a ``Span`` can be easily converted to a Python ``slice``::
+    >>> s = ' has leading and trailing spaces '
+    >>> span = Span(1, len(s) - 1)
+    >>> _slice = slice(*span)
+    >>> s[_slice]  # slice off leading and trailing spaces
+    'has leading and trailing spaces'
+
+Python's ``slice`` constructor has start and stop parameters, however, these values are *indices*, which can be omitted or have negative values.  So although a segment_ can always be converted to a slice, the reverse is not true::
+    >>> s = slice(-10, 1)
+    >>> (s.start, s.stop)
+    (-10, 1)  # tuple has negative value - not a valid segment
+    >>> s = slice(3)
+    >>> (s.start, s.stop)
+    (None, 3)  # tuple lacks a start value - not a valid segment
+
+Further Considerations
+======================
+A segment_ can be thought of as a one dimenstional vector having a *location* at start, and a *length* of stop minus stop.  For example::
+    >>> s = Span(3, 5)
+    >>> location = span.start
+    >>> length = span.stop - span.start
+
+.. _NamedTuple: https://docs.python.org/3/library/collections.html?highlight=namedtuple#collections.namedtuple

@@ -472,13 +472,13 @@ class Ito:
                 return self.clone(stop=i), self.clone(i, i+len(sep)), self.clone(i+len(sep))
 
     def str_removeprefix(self, prefix: str) -> Ito:
-        if self.str_startswtih(prefix):
+        if self.str_startswith(prefix):
             return self.clone(len(prefix))
         else:
             return self.clone()
 
     def str_removesuffix(self, suffix: str) -> Ito:
-        if self.str_endswtih(suffix):
+        if self.str_endswith(suffix):
             return self.clone(stop=-len(suffix))
         else:
             return self.clone()
@@ -513,16 +513,17 @@ class Ito:
         pass
 
     def str_split(self, sep: str = None, maxsplit: int = -1) -> typing.List[Ito]:
+        # TODO : handle maxsplit
         if sep is None:
-            # TODO : split on consecutive runs of whitespace
-            pass
+            # TODO : improve algorithm : split on consecutive runs of whitespace
+            return [*Ito.from_substrings(self.string, *self.__str__().split())]
         elif sep == '':
             raise ValueError('empty separator')
         else:
             rv: typing.List[Ito] = []
             i = self.start
             while (j := self._string.find(sep, i, self.stop)) >= 0:
-                rv.append(self.clone(i, j, d))
+                rv.append(self.clone(i, j))
                 i = j + len(sep)
             if i <= self.stop:
                 rv.append(self.clone(i))

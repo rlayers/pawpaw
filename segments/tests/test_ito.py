@@ -368,7 +368,7 @@ class TestIto(_TestIto):
         actual = ito.__repr__()
         self.assertEqual(expected, actual)
         
-        i = actua.index('.')
+        i = actual.index('.')
         self.assertEqual(ito, eval(actual[i+1:]))
     
     def test_str(self):

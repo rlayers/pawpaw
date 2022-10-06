@@ -13,7 +13,7 @@ class TestItorator(_TestIto):
         self.add_chars_as_children(root, 'Child')
 
         reflect = Reflect()
-        rv = reflect.traverse(root)
+        rv = [*reflect.traverse(root)]
             
         self.assertEqual(1, len(rv))
         ito = rv[0]
@@ -28,8 +28,8 @@ class TestItorator(_TestIto):
 
         reflect = Reflect()
         apply_desc = 'x'
-        reflect.itor_next = lambda ito: [ito.clone(descriptor=apply_desc)]
-        rv = reflect.traverse(root)
+        reflect.itor_next = lambda ito: (ito.clone(descriptor=apply_desc),)
+        rv = [*reflect.traverse(root)]
             
         self.assertEqual(1, len(rv))
         ito = rv[0]
@@ -43,8 +43,8 @@ class TestItorator(_TestIto):
 
         reflect = Reflect()
         apply_desc = 'x'
-        reflect.itor_children = lambda ito: (ito.clone(i, i+1, apply_desc) for i, c in enumerate(s))
-        rv = reflect.traverse(root)
+        reflect.itor_children = lambda ito: tuple(ito.clone(i, i+1, apply_desc) for i, c in enumerate(s))
+        rv = [*reflect.traverse(root)]
             
         self.assertEqual(1, len(rv))
         ito = rv[0]
@@ -59,7 +59,7 @@ class TestItorator(_TestIto):
         reflect = Reflect()
         reflect.itor_children = lambda ito: tuple(ito.clone(i, i+1, 'char') for i in range(*ito.span))
         reflect.itor_children.itor_next = lambda ito: tuple(ito.clone(descriptor='changed') if i.parent is not None else i for i in [ito])
-        rv = reflect.traverse(root)
+        rv = [*reflect.traverse(root)]
             
         self.assertEqual(1, len(rv))
         ito = rv[0]

@@ -1,7 +1,7 @@
 import typing
 
 
-class PreRelease(typing.NameTuple):
+class PreRelease(typing.NamedTuple):
     kind: str
     number: int
 
@@ -9,7 +9,7 @@ class PreRelease(typing.NameTuple):
         return f'{self.kind}{self.number}'
       
       
-class Version(typing.NameTuple):
+class Version(typing.NamedTuple):
     major: int
     minor: int
     micro: int

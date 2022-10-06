@@ -12,6 +12,6 @@ class TestItorator(_TestIto):
         self.add_chars_as_children(root, 'Child')
 
         reflect = Reflect()
-        rv: typing.Sequence[Ito] = reflect._iter(root)
+        rv = reflect._iter(root)
         self.assertEqual(1, len(rv))
-        self.assertIs(root, ito)
+        self.assertIs(root, rv[0])

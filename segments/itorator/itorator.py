@@ -9,6 +9,7 @@ from segments import Errors, Ito
 
 
 C_ITOR_FUNC = typing.Callable[[Ito], 'Itorator']
+C_I2_FUNC = typing.Callable[[Ito], typing.Sequence[Ito]]
 
 
 class Itorator(ABC):
@@ -48,12 +49,13 @@ class Itorator(ABC):
         pass
 
     def _do_children(self, ito: Ito) -> None:
-        if self.__itor_children is not None:
-            itor_n = self.__itor_children.itor_next
-            for c in self.__itor_children._iter(ito)
+        itor_c = self.__itor_children
+        if itor_c is not None:
+            itor_n = itor_c.itor_next
+            for c in itor_c._iter(ito):
                 ito.children.add(c)
                 if itor_n is not None:
-                    for i in itor_n._traverse(c)
+                    for i in itor_n._traverse(c):
                         pass  # force iter walk
 
     def _do_next(self, ito: Ito) -> typing.Iterable[Ito]:
@@ -64,7 +66,7 @@ class Itorator(ABC):
 
     def _traverse(self, ito: Ito) -> typing.Iterable[Ito]:
         # Process ._iter with parent in place:
-        curs = self._iter(cur)
+        curs = self._iter(ito)
         
         # ...now remove from parent (if any)
         if (parent := ito.parent) is not None:
@@ -83,12 +85,12 @@ class Itorator(ABC):
 
 
 class Wrap(Itorator):
-    def __init__(self, f: typing.Callable[[Ito], typing.Sequence[Ito]]):
+    def __init__(self, f: C_I2_FUNC):
         super().__init__()
         self.__f = f
 
     def _iter(self, ito: Ito) -> typing.Sequence[Ito]:
-        yield from self.__f(ito)
+        return self.__f(ito)
 
 
 class Reflect(Itorator):
@@ -96,7 +98,7 @@ class Reflect(Itorator):
         super().__init__()
 
     def _iter(self, ito: Ito) -> typing.Sequence[Ito]:
-        yield ito,
+        return ito,
 
 
 class Extract(Itorator):
@@ -124,7 +126,7 @@ class Extract(Itorator):
             self._group_filter = group_filter
 
         elif isinstance(group_filter, collections.abc.Container):
-            self._group_filter = lambda i, m_, g: g in self.group_filter
+            self._group_filter = lambda i, m_, g: g in group_filter
 
         else:
             raise Errors.parameter_invalid_type(
@@ -135,7 +137,7 @@ class Extract(Itorator):
                 types.NoneType)
 
     def _iter(self, ito: Ito) -> typing.Sequence[Ito]:
-        rv = typing.List[Ito] = []
+        rv: typing.List[Ito] = []
         for count, m in enumerate(ito.regex_finditer(self.re), 1):
             path_stack: typing.List[Ito] = []
             match_itos: typing.List[Ito] = []

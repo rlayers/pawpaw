@@ -62,6 +62,27 @@ class Ito:
 
         return rv
 
+    # TODO : Settle on a clone method!
+    def clone_ex(self,
+              start: int | None = None,
+              stop: int | None = None,
+              descriptor: str | None = None,
+              omit_children: bool = False
+              ) -> Ito:
+        rv = self.__class__(
+            self._string,
+            *Span.from_indices(self, start, stop, self.start),
+            self.descriptor if descriptor is None else descriptor
+        )
+
+        if self._value_func is not None:
+            rv.value_func = self._value_func
+
+        if not omit_children:
+            rv.children.add(*(c.clone(omit_children=False) for c in self._children))
+
+        return rv
+
     def offset(
             self,
             start: int = 0,
@@ -400,7 +421,7 @@ class Ito:
     #endregion
 
     def str_lstrip(self, chars: str | None) -> Ito:
-        pass
+        raise NotImplemented()
 
     def str_partition(self, sep) -> typing.Tuple[C, C, C]:
         if sep is None:
@@ -450,18 +471,49 @@ class Ito:
         elif sep == '':
             raise ValueError('empty separator')
         else:
-            pass
-        
+            raise NotImplemented()
+
     def str_rstrip(self, chars: str | None) -> typing.List[Ito]:
         pass
 
     def str_split(self, sep: str = None, maxsplit: int = -1) -> typing.List[Ito]:
         # TODO : handle maxsplit
-        if sep is None:
-            # TODO : improve algorithm : split on consecutive runs of whitespace
-            return [*Ito.from_substrings(self.string, *self.__str__().split())]
-        elif sep == '':
+        if sep == '':
             raise ValueError('empty separator')
+
+        elif sep is None:
+            rv : typing.List[Ito] = []
+            start: int
+            in_whitespace = True
+            for i, c in enumerate(self, self.start):
+                if in_whitespace:
+                    if not c.isspace():
+                        start = i
+                        in_whitespace = False
+                else:
+                    if c.isspace():
+                        rv.append(self.clone(start, i))
+                        in_whitespace = True
+            if not in_whitespace:
+                rv.append(self.clone(start, i + 1))
+            return rv
+
+            # rv : typing.List[Ito] = []
+            # start: int
+            # in_whitespace = True
+            # for i, c in enumerate(self):
+            #     if in_whitespace:
+            #         if not c.isspace():
+            #             start = i
+            #             in_whitespace = False
+            #     else:
+            #         if c.isspace():
+            #             rv.append(self.clone(start, i))
+            #             in_whitespace = True
+            # if not in_whitespace:
+            #     rv.append(self.clone_ex(start, i + 1))
+            # return rv
+
         else:
             rv: typing.List[Ito] = []
             i = self.start
@@ -470,6 +522,13 @@ class Ito:
                 i = j + len(sep)
             if i <= self.stop:
                 rv.append(self.clone(i))
+            # rv: typing.List[Ito] = []
+            # i = self.start
+            # while (j := self._string.find(sep, i, self.stop)) >= 0:
+            #     rv.append(Ito(self.string, i, j))
+            #     i = j + len(sep)
+            # if i <= self.stop:
+            #     rv.append(self.string, i)
             return rv
         
     def str_splitlines(self, keepends: bool = False) -> Typing.List[Ito]:

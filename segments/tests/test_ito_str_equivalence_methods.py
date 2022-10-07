@@ -1,9 +1,10 @@
 from unittest import TestCase
 
 from segments import Ito
+from segments.tests.util import _TestIto
 
 
-class TestItoStrEquivalenceMethods(TestCase):
+class TestItoStrEquivalenceMethods(_TestIto):
 
     def test_str_count(self):
         s = 'ab' * 10
@@ -124,6 +125,9 @@ class TestItoStrEquivalenceMethods(TestCase):
 
     #endregion
 
+    def test_str_lstrip(self):
+        self.assertTrue(False)
+
     def test_str_partition(self):
         string = f' abc '
         ito = Ito(string, 1, -1)
@@ -143,25 +147,52 @@ class TestItoStrEquivalenceMethods(TestCase):
                 self.assertListEqual(expected, actual)
 
     def test_str_removeprefix(self):
-        pass
+        self.assertTrue(False)
 
     def test_str_removesuffix(self):
-        pass
+        self.assertTrue(False)
+
+    def test_str_rfind(self):
+        self.assertTrue(False)
+
+    def test_str_rindex(self):
+        self.assertTrue(False)
+    def test_str_rpartition(self):
+        self.assertTrue(False)
+
+    def test_str_rsplit(self):
+        self.assertTrue(False)
+
+    def test_str_rstrip(self):
+        self.assertTrue(False)
 
     def test_str_split(self):
-        string = f' {"abc" * 3} '
-        ito = Ito(string, 1, -1)
+        with self.subTest(sep=None):
+            for s in ['', ' ', ' a', ' a', ' a ', ' a b', ' a b ', '\ta\nb\rc']:
+                with self.subTest(string=s):
+                    ito = Ito(s)
+                    expected = [*Ito.from_substrings(s, *s.split())]
+                    actual = ito.str_split()
+                    self.assertEqual(len(expected), len(actual))
+                    for e, a in zip(expected, actual):
+                        self.assertEqual(e, a)
+
+        s = f' {"abc" * 3} '
+        ito = Ito(s, 1, -1)
 
         sep = ''
-        with self.subTest(sep=sep):
+        with self.subTest(sep=sep, string=s):
             with self.assertRaises(ValueError):
                 ito.str_split(sep)
 
-        for sep in [None, 'a', 'b', 'ab', 'bc', 'c', 'abc', 'z']:
-            with self.subTest(sep=sep):
-                expected = list(s for s in string.strip().split(sep))
+        for sep in ['a', 'b', 'ab', 'bc', 'c', 'abc', 'z']:
+            with self.subTest(sep=sep, string=s):
+                expected = list(s for s in s.strip().split(sep))
                 actual = list(i.__str__() for i in ito.str_split(sep))
                 self.assertListEqual(expected, actual)
+
+    def test_str_splitlines(self):
+        self.assertTrue(False)
 
     def test_str_startswith(self):
         string = f' {"abc" * 2} '
@@ -181,3 +212,6 @@ class TestItoStrEquivalenceMethods(TestCase):
                                 expected = string.strip().startswith(sep, start, end)
                                 actual = ito.str_startswith(sep, start, end)
                                 self.assertEqual(expected, actual)
+
+    def test_str_strip(self):
+        self.assertTrue(False)

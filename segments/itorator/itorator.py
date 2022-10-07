@@ -8,63 +8,65 @@ import regex
 from segments import Errors, Ito
 
 
-C_ITOR_FUNC = typing.Callable[[Ito], 'Itorator']
-C_I2_FUNC = typing.Callable[[Ito], typing.Sequence[Ito]]
+C_IT_ITO = typing.Iterable[Ito]
+F_ITO_2_ITOR = typing.Callable[[Ito], 'Itorator']
+
+C_SQ_ITO = typing.Sequence[Ito]
+F_ITO_2_ITOS = typing.Callable[[Ito], typing.Sequence[Ito]]
 
 
 class Itorator(ABC):
     def __init__(self):
-        self.__itor_next: Itorator | None = None
-        self.__itor_children: Itorator | None = None
+        self.__itor_next: F_ITO_2_ITOR | None = None
+        self.__itor_children: F_ITO_2_ITOR | None = None
         #self.post_process: typing.Callable[[typing.Iterable[Ito]], typing.Iterable[Ito]] = lambda itos: itos
 
     @property
-    def itor_next(self) -> Itorator:
+    def itor_next(self) -> F_ITO_2_ITOR:
         return self.__itor_next
 
     @itor_next.setter
-    def itor_next(self, itor: Itorator | C_ITOR_FUNC | None):
-        if isinstance(itor, Itorator | None):
-            self.__itor_next = itor
-        elif isinstance(itor, collections.abc.Callable):
-            self.__itor_next = Wrap(itor)
+    def itor_next(self, val: Itorator | F_ITO_2_ITOR | None):
+        if isinstance(val, Itorator):
+            self.__itor_next = lambda ito: val
+        elif val is None or isinstance(val, collections.abc.Callable):  # TODO : Better type checking on Callable
+            self.__itor_next = val
         else:
-            raise Errors.parameter_invalid_type('itor', itor, Itorator, C_ITOR_FUNC, types.NoneType)
+            raise Errors.parameter_invalid_type('val', val, Itorator, F_ITO_2_ITOR, types.NoneType)
 
     @property
-    def itor_children(self) -> Itorator:
+    def itor_children(self) -> F_ITO_2_ITOR:
         return self.__itor_children
 
     @itor_children.setter
-    def itor_children(self, itor: Itorator | C_ITOR_FUNC | None):
-        if isinstance(itor, Itorator | None):
-            self.__itor_children = itor
-        elif isinstance(itor, collections.abc.Callable):
-            self.__itor_children = Wrap(itor)
+    def itor_children(self, val: Itorator | F_ITO_2_ITOR | None):
+        if isinstance(val, Itorator):
+            self.__itor_children = lambda ito: val
+        elif val is None or isinstance(val, collections.abc.Callable):  # TODO : Better type checking on Callable
+            self.__itor_children = val
         else:
-            raise Errors.parameter_invalid_type('itor', itor, Itorator, C_ITOR_FUNC, types.NoneType)
+            raise Errors.parameter_invalid_type('val', val, Itorator, F_ITO_2_ITOR, types.NoneType)
 
     @abstractmethod
-    def _iter(self, ito: Ito) -> typing.Sequence[Ito]:
+    def _iter(self, ito: Ito) -> C_SQ_ITO:
         pass
 
     def _do_children(self, ito: Ito) -> None:
-        itor_c = self.__itor_children
-        if itor_c is not None:
-            itor_n = itor_c.itor_next
+        if self.__itor_children is not None:
+            itor_c = self.__itor_children(ito)
             for c in itor_c._iter(ito):
                 ito.children.add(c)
-                if itor_n is not None:
-                    for i in itor_n._traverse(c):
-                        pass  # force iter walk
+                for i in itor_c._do_next(c):
+                    pass  # force iter walk
 
-    def _do_next(self, ito: Ito) -> typing.Iterable[Ito]:
+    def _do_next(self, ito: Ito) -> C_IT_ITO:
         if self.__itor_next is None:
             yield ito
         else:
-            yield from self.__itor_next._traverse(ito)
+            itor_n = self.__itor_next(ito)
+            yield from itor_n._traverse(ito)
 
-    def _traverse(self, ito: Ito) -> typing.Iterable[Ito]:
+    def _traverse(self, ito: Ito) -> C_IT_ITO:
         # Process ._iter with parent in place:
         curs = self._iter(ito)
         
@@ -80,16 +82,16 @@ class Itorator(ABC):
 
             yield from self._do_next(cur)
 
-    def traverse(self, ito: Ito) -> typing.Iterable[Ito]:
+    def traverse(self, ito: Ito) -> C_IT_ITO:
         yield from self._traverse(ito.clone())
 
 
 class Wrap(Itorator):
-    def __init__(self, f: C_I2_FUNC):
+    def __init__(self, f: F_ITO_2_ITOS):
         super().__init__()
         self.__f = f
 
-    def _iter(self, ito: Ito) -> typing.Sequence[Ito]:
+    def _iter(self, ito: Ito) -> C_SQ_ITO:
         return self.__f(ito)
 
 
@@ -97,16 +99,18 @@ class Reflect(Itorator):
     def __init__(self):
         super().__init__()
 
-    def _iter(self, ito: Ito) -> typing.Sequence[Ito]:
+    def _iter(self, ito: Ito) -> C_SQ_ITO:
         return ito,
 
 
 class Extract(Itorator):
+    F_ITO_M_STR_2_B = typing.Callable[[Ito, regex.Match, str], bool]
+
     def __init__(self,
                  re: regex.Pattern,
                  limit: int | None = None,
                  descriptor_func: typing.Callable[[Ito, regex.Match, str], str] = lambda ito, match, group: group,
-                 group_filter: collections.abc.Container[str] | typing.Callable[[Ito, regex.Match, str], bool] | None = None):
+                 group_filter: collections.abc.Container[str] | F_ITO_M_STR_2_B | None = None):
         super().__init__()
         self.re = re
         self.limit = limit
@@ -118,7 +122,7 @@ class Extract(Itorator):
         return self._group_filter
     
     @group_filter.setter
-    def group_filter(self, group_filter: collections.abc.Container[str] | typing.Callable[[Ito, regex.Match, str], bool] | None) -> None:
+    def group_filter(self, group_filter: collections.abc.Container[str] | F_ITO_M_STR_2_B | None) -> None:
         if group_filter is None:
             self._group_filter = lambda i, m_, g: True
 
@@ -133,10 +137,10 @@ class Extract(Itorator):
                 'group_filter',
                 group_filter,
                 typing.Container[str],
-                typing.Callable[[Ito, regex.Match, str], bool],
+                self.F_ITO_M_STR_2_B,
                 types.NoneType)
 
-    def _iter(self, ito: Ito) -> typing.Sequence[Ito]:
+    def _iter(self, ito: Ito) -> C_SQ_ITO:
         rv: typing.List[Ito] = []
         for count, m in enumerate(ito.regex_finditer(self.re), 1):
             path_stack: typing.List[Ito] = []

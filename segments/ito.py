@@ -112,12 +112,12 @@ class Ito:
     @classmethod
     def from_substrings(
             cls,
-            string: str,
+            basis: str | Ito,
             *substrings: str,
-            descriptor: str | None = None
+            desc: str | None = None
     ) -> typing.Iterable[C]:
         """
-        :param string:
+        :param basis:
         :param substrings: must be:
             1. present in string
             2. ordered left to right
@@ -136,14 +136,21 @@ class Ito:
                 ('ab', 'ce') -> returns 2 Ito objects with spans (0,2) and (4,6)
 
                 ('ab', 'ab', 'ce') -> returns 3 Ito objects with spans (0,2), (2,4) and (4,6)
-        :param descriptor:
+        :param desc:
         :return:
         """
-        i = 0
-        for sub in substrings:
-            i = string.index(sub, i)
+        if isinstance(basis, str):
+            s = basis
+            i, j = Span.from_indices(basis)
+        elif isinstance(basis, Ito):
+            s = basis.string
+            i, j = basis.span
+        else:
+            raise Errors.parameter_invalid_type('basis', basis, str, Ito)
+        for sub in substring:
+            i = s.index(sub, i, j)
             k = i + len(sub)
-            yield cls(string, i, k, descriptor)
+            yield cls(s, i, k, desc)
             i = k
             
     def clone(self,

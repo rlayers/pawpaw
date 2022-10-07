@@ -181,11 +181,11 @@ class Ito:
 
     @property
     def start(self) -> int:
-        return self._span[0]
+        return self._span.start
 
     @property
     def stop(self) -> int:
-        return self._span[1]
+        return self._span.stop
 
     @property
     def parent(self) -> Ito:

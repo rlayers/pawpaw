@@ -7,44 +7,75 @@ Introduction
 
 A segment requires a reference string in order to fully describe a substring.  Likewise, a ``Span`` requires a reference ``str`` for context.  The segments module pairs a ``Span`` and ``str`` together as an *In Text Object*\ [#]_, which is implemented in the class ``Ito``.
 
+Instantiation
+=============
+
+Creating from a ``str``
+~~~~~~~~~~~~~~~~~~~~~~~
+
 Instantiating an ``Ito`` against a reference ``str`` is straightforward:
 
 >>> s = 'Hello, World!'
 >>> Ito(s)
 segments.Ito('Hello, World!', 0, 13, None)
 
-The ``str`` value supplied to the constructor is accessible via a ``.string`` property.  The constructor features optional ``start`` and ``stop`` parameters, which are are *Python-style indices*.  The values for ``str``, ``start``, and ``stop`` are used to create a ``Span``, which is accessible via the ``.span`` property
+The ``str`` value supplied to the constructor is accessible via a ``.string`` property.  The constructor features optional ``start`` and ``stop`` parameters, which are are *Python-style indices*.  The values for ``str``, ``start``, and ``stop`` are used to create a ``Span``, which is accessible via the ``.span`` property:
 
->>> s = 'abcd'
->>> i = Ito(s, 1, -1)
+>>> i = Ito('abcd', 1, -1)
 >>> i.span
 Span(start=1, stop=3)
 
 The ``start`` and ``stop`` values for the span are accessible via ``.start`` and ``.stop`` properties on *both* the ``Ito`` and ``Span``:
 
-An ``Ito`` also features a ``.descriptor`` property, which serves as a tag to describe the *type* of segment referred to.  The descriptor is an optional parameter in the constructor:
+>>> i = Ito('abc')
+>>> i.span == (i.start, i.stop)
+True
+
+``Ito`` also features a ``.descriptor`` property, which serves as a tag to describe the *type* of segment referred to.  An optional ``descriptor`` property is available in the constructor:
 
 >>> s = 'John Doe'
->>> i1 = Ito(s, stop=4, descriptor='First')
->>> i2 = Ito(s, 5, descriptor='Last')
+>>> i1 = Ito(s, stop=4, descriptor='FN')
+>>> i2 = Ito(s, 5, descriptor='LN')
 >>> f'{i1.descriptor}: "{i1}";  {i2.descriptor}: "{i2}"'
-'First: "John"; Last: "Doe"'
+'FN: "John"; LN: "Doe"'
 
-The values provided The The ``.string`` property.  , which is accessible via the ``.span`` property.    
+The ``.string``, ``.start``, ``.stop``, and ``.span`` properties are all read-only and invariant.  On the ``.span`` property can be changed post-instantiation.  This is by design and ensures that the substring described by an ``Ito`` is an immutable object\ [#]_ in the segments module.  Trying to set any of these values results in an Error:
 
-
-The ``.string``, ``.strt``, ``.stop``, and ``.span`` properties are all read-only and invariant.  On the ``.span`` property can be changed post-instantiation.  This is by design and ensure that segments are immutable objects\ [#]_ in the segments module.
+>>> i = Ito('abc')
+>>> i.string = 'xyz'
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+Attribute Error: can't set attribute 'string'
 
 .. admonition:: Key Concept
 
    ``Ito`` segments are immutable
 
+Creating from another ``Ito``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A common task involves creating one substring from another.  This is easily performed by supplying an ``Ito`` as the *basis* to the constructor instead of a string.  The ``start`` and ``stop`` parameters are *relative to the basis*:
+
+>>> s = '_abc_'
+>>> i1 = Ito(s, 1, -1)   # substring 'abc'
+>>> i2 = Ito(i1, 1, -1)  # indices relative to i1, not s
+>>> print(i2, *i2.span)
+b 2 3
+
+Creating from substrings
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+A common Python task involves creating or receiving substrings.  ``Ito`` provides a convenient ``classmethod`` called ``.from_substrings`` that, when supplied with a *basis* ``str`` and a sequence of non-overlapping substrings, will generate a sequence of Ito objects:
+
+>>> s = 'A B C'
+>>> [*Ito.from_substrings(s, *s.split())]
+[segments.Ito('A B C', 0, 1, None), segments.Ito('A B C', 2, 3, None), segments.Ito('A B C', 4, 5, None)]
 
 
 Cloning
 =======
 
-To create a duplicate ``Ito``:
+To create a duplicate ``Ito``:'
 
 >>> s = ' abc '
 >>> i = Ito(s, 1, -1, descriptor='original')

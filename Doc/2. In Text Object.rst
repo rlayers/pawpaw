@@ -1,0 +1,36 @@
+===============
+ In Text Object
+===============
+
+Introduction
+============
+
+.. admonition:: Key Concept
+
+   ``Ito`` segments are immutable
+
+
+
+Cloning
+=======
+
+To create a duplicate ``Ito``:
+
+>>> s = ' abc '
+>>> i = Ito(s, 1, -1, descriptor='original')
+>>> Ito(s, *i.span, descriptor='duplicate')
+segments.Ito(' abc ', 1, 4, 'duplicate')
+
+This is supported via the static constructor ``.clone``
+
+>>> s = ' abc '
+>>> i = Ito(s, 1, -1, descriptor='original')
+>>> i.clone(descriptor='duplicate')
+segments.Ito(' abc ', 1, 4, 'duplicate')
+
+Like the ``Ito`` constructor, the ``.clone`` method supports ``start`` and ``stop`` parameters that are *Python-style indices.*  This enables easy creation of *relative* clones:
+
+>>> s = ' abc '
+>>> i = Ito(s, descriptor='original')
+>>> i.clone(1, -1, 'duplicate')  # indices relative to i, not str
+segments.Ito(' abc ', 2, 3, 'duplicate')

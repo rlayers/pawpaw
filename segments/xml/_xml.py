@@ -43,13 +43,13 @@ class XmlParser(ET.XMLParser):
         def char_offset_from(self, byte_offset: int) -> int:
             return len(self.bytes[0:byte_offset].decode(self.encoding))
 
-        # MISC DOCS
-        # MISC DOCS
-        # MISC DOCS
-        # MISC DOCS
-        # MISC DOCS
-        # MISC DOCS
-        # MISC DOCS
+        """
+        Note : parser.CurrentColumnNumber is not well defined.  From official Python documentation:
+        
+            "Current columns number in the parser input"
+            
+       Assumption made here is that "column number" refers to chars, and may differ from bytes when unicode combining graphemes are encountered
+        """
         def char_offset_from_ex(self, parser: ET.XMLParser) -> str:
             if self.last_line_indexed < parser.CurrentLineNumber:
                 current_line_indexed = parser.CurrentLineNumber

@@ -167,4 +167,4 @@ An ``Ito`` is not an arbitray data collection.  Rather, it defines segments wiht
 
 .. [#] In Python, strings are also immutable.
 
-.. [#] Because a child ``Ito`` must be equal to or contained by a parent ``Ito``, this is a *tree* type graph.
+.. [#] Because a child ``Ito`` must be equal to or contained by a parent ``Ito``, this is a *tree* graph.

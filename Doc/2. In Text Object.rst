@@ -72,8 +72,20 @@ A common Python task involves creating or receiving substrings.  ``Ito`` provide
 [segments.Ito('A B C', 0, 1, None), segments.Ito('A B C', 2, 3, None), segments.Ito('A B C', 4, 5, None)]
 
 
+Creating from substrings
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+**TODO**
+
+
+Creating from ``regex.Match``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**TODO**
+
+
 Cloning
-=======
+~~~~~~~
 
 To create a duplicate ``Ito``:'
 
@@ -96,6 +108,63 @@ Like the ``Ito`` constructor, the ``.clone`` method supports ``start`` and ``sto
 >>> i.clone(1, -1, 'duplicate')  # indices relative to i, not str
 segments.Ito(' abc ', 2, 3, 'duplicate')
 
+
+Usage
+=====
+
+``str`` usage
+~~~~~~~~~~~~~
+
+__x__ support
+~~~~~~~~~~~~~
+** TODO **
+
+
+``join`` method
+~~~~~~~~~~~~~~~~~~
+** TODO **
+
+
+``value`` 
+~~~~~~~~~
+** TODO **
+
+
+str equivalence methods
+~~~~~~~~~~~~~~~~~~~~~~~
+** TODO **
+
+
+regex equivalence methods
+~~~~~~~~~~~~~~~~~~~~~~~~~
+** TODO **
+
+
+``children`` 
+============
+
+An ``Ito`` is fully hierarchical through its ``.parent`` and ``.children`` properties.  This allows an ``Ito`` to both represent a segment and act as a node within a graph\ [#]_.
+
+.. admonition:: Key Concept
+
+   Given a set of rules that identify segment lineages, an ``Ito`` hierarchy can be used as topologically complete data collection for all discovered segments.
+   
+   The ``.desc`` property allows for users to define the *type* of segment an ``Ito`` refers to.  For example, a set of NLP rules might create segments of type *paragraph*, *sentence*, *word*, etc.  Conversely, rules for XML segmentation have segments named *element*, *attribute*, *key*, *value*, etc.
+
+.. admonition:: Key Concept
+
+   Segment relevance is determined by both a) the location of ``Ito`` within its hierarchy and b) the .desc for the ``Ito``
+   
+
+An ``Ito`` is not an arbitray data collection.  Rather, it defines segments wihtin text and can have ancestors, siblings, and decendants.  This results in several implicit assumptions:
+
+* Children are contained in their parent: The ``.span`` for a child ``Ito`` is contained within the ``.span`` of its ``.parent``
+* Non-overlapping siblings: An ``Ito`` does not overlap any other ``Ito`` objects that share the same ``.parent``
+* Ordered siblings: Siblings are ordered within their parent by their ``.span.start``; because they are non-overlapping, the ``.span.stop`` for an ``Ito`` will always be less than or equal to the ``.span.start`` of the subsequent sibling
+
+
 .. [#] The name "In Test Object" is historical, and dates back to earlier projects I developed.  I've chosen to keep this name because "Ito" makes for a short, convenient type name.
 
 .. [#] In Python, strings are also immutable.
+
+.. [#] Because a child ``Ito`` must be equal to or contained by a parent ``Ito``, this is a *tree* type graph.

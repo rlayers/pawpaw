@@ -5,6 +5,36 @@
 Introduction
 ============
 
+A segment requires a reference string in order to fully describe a substring.  Likewise, a ``Span`` requires a reference ``str`` for context.  The segments module pairs a ``Span`` and ``str`` together as an *In Text Object*\ [#]_, which is implemented in the class ``Ito``.
+
+Instantiating an ``Ito`` against a reference ``str`` is straightforward:
+
+>>> s = 'Hello, World!'
+>>> Ito(s)
+segments.Ito('Hello, World!', 0, 13, None)
+
+The ``str`` value supplied to the constructor is accessible via a ``.string`` property.  The constructor features optional ``start`` and ``stop`` parameters, which are are *Python-style indices*.  The values for ``str``, ``start``, and ``stop`` are used to create a ``Span``, which is accessible via the ``.span`` property
+
+>>> s = 'abcd'
+>>> i = Ito(s, 1, -1)
+>>> i.span
+Span(start=1, stop=3)
+
+The ``start`` and ``stop`` values for the span are accessible via ``.start`` and ``.stop`` properties on *both* the ``Ito`` and ``Span``:
+
+An ``Ito`` also features a ``.descriptor`` property, which serves as a tag to describe the *type* of segment referred to.  The descriptor is an optional parameter in the constructor:
+
+>>> s = 'John Doe'
+>>> i1 = Ito(s, stop=4, descriptor='First')
+>>> i2 = Ito(s, 5, descriptor='Last')
+>>> f'{i1.descriptor}: "{i1}";  {i2.descriptor}: "{i2}"'
+'First: "John"; Last: "Doe"'
+
+The values provided The The ``.string`` property.  , which is accessible via the ``.span`` property.    
+
+
+The ``.string``, ``.strt``, ``.stop``, and ``.span`` properties are all read-only and invariant.  On the ``.span`` property can be changed post-instantiation.  This is by design and ensure that segments are immutable objects\ [#]_ in the segments module.
+
 .. admonition:: Key Concept
 
    ``Ito`` segments are immutable
@@ -34,3 +64,7 @@ Like the ``Ito`` constructor, the ``.clone`` method supports ``start`` and ``sto
 >>> i = Ito(s, descriptor='original')
 >>> i.clone(1, -1, 'duplicate')  # indices relative to i, not str
 segments.Ito(' abc ', 2, 3, 'duplicate')
+
+.. [#] The name "In Test Object" is historical, and dates back to earlier projects I developed.  I've chosen to keep this name because "Ito" makes for a short, convenient type name.
+
+.. [#] In Python, strings are also immutable.

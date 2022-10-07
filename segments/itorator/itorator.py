@@ -8,18 +8,20 @@ import regex
 from segments import Errors, Ito
 
 
-C_IT_ITO = typing.Iterable[Ito]
 F_ITO_2_ITOR = typing.Callable[[Ito], 'Itorator']
 
-C_SQ_ITO = typing.Sequence[Ito]
-F_ITO_2_ITOS = typing.Callable[[Ito], typing.Sequence[Ito]]
+C_SQ_ITOS = typing.Sequence[Ito]
+F_ITO_2_SQ_ITOS = typing.Callable[[Ito], C_SQ_ITOS]
+
+C_IT_ITOS = typing.Iterable[Ito]
+F_ITO_2_IT_ITOS = typing.Callable[[Ito], C_IT_ITOS]
 
 
 class Itorator(ABC):
     def __init__(self):
         self.__itor_next: F_ITO_2_ITOR | None = None
         self.__itor_children: F_ITO_2_ITOR | None = None
-        #self.post_process: typing.Callable[[typing.Iterable[Ito]], typing.Iterable[Ito]] = lambda itos: itos
+        #self.post_process: typing.Callable[[C_IT_ITOS], C_IT_ITOS] = lambda itos: itos
 
     @property
     def itor_next(self) -> F_ITO_2_ITOR:
@@ -48,7 +50,7 @@ class Itorator(ABC):
             raise Errors.parameter_invalid_type('val', val, Itorator, F_ITO_2_ITOR, types.NoneType)
 
     @abstractmethod
-    def _iter(self, ito: Ito) -> C_SQ_ITO:
+    def _iter(self, ito: Ito) -> C_SQ_ITOS:
         pass
 
     def _do_children(self, ito: Ito) -> None:
@@ -59,14 +61,14 @@ class Itorator(ABC):
                 for i in itor_c._do_next(c):
                     pass  # force iter walk
 
-    def _do_next(self, ito: Ito) -> C_IT_ITO:
+    def _do_next(self, ito: Ito) -> C_IT_ITOS:
         if self.__itor_next is None:
             yield ito
         else:
             itor_n = self.__itor_next(ito)
             yield from itor_n._traverse(ito)
 
-    def _traverse(self, ito: Ito) -> C_IT_ITO:
+    def _traverse(self, ito: Ito) -> C_IT_ITOS:
         # Process ._iter with parent in place:
         curs = self._iter(ito)
         
@@ -82,16 +84,16 @@ class Itorator(ABC):
 
             yield from self._do_next(cur)
 
-    def traverse(self, ito: Ito) -> C_IT_ITO:
+    def traverse(self, ito: Ito) -> C_IT_ITOS:
         yield from self._traverse(ito.clone())
 
 
 class Wrap(Itorator):
-    def __init__(self, f: F_ITO_2_ITOS):
+    def __init__(self, f: F_ITO_2_SQ_ITOS):
         super().__init__()
         self.__f = f
 
-    def _iter(self, ito: Ito) -> C_SQ_ITO:
+    def _iter(self, ito: Ito) -> C_SQ_ITOS:
         return self.__f(ito)
 
 
@@ -99,7 +101,7 @@ class Reflect(Itorator):
     def __init__(self):
         super().__init__()
 
-    def _iter(self, ito: Ito) -> C_SQ_ITO:
+    def _iter(self, ito: Ito) -> C_SQ_ITOS:
         return ito,
 
 
@@ -140,7 +142,7 @@ class Extract(Itorator):
                 self.F_ITO_M_STR_2_B,
                 types.NoneType)
 
-    def _iter(self, ito: Ito) -> C_SQ_ITO:
+    def _iter(self, ito: Ito) -> C_SQ_ITOS:
         rv: typing.List[Ito] = []
         for count, m in enumerate(ito.regex_finditer(self.re), 1):
             path_stack: typing.List[Ito] = []

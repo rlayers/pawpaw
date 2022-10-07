@@ -22,24 +22,24 @@ class TestIto(_TestIto):
 
     def test_start(self):
         s = 'abc'
-        span = (1, 2)
+        span = Span(1, 2)
         i = Ito(s, *span)
-        self.assertEqual(span[0], i.start)
+        self.assertEqual(span.start, i.start)
 
     def test_stop(self):
         s = 'abc'
-        span = (1, 2)
+        span = Span(1, 2)
         i = Ito(s, *span)
-        self.assertEqual(span[1], i.stop)
+        self.assertEqual(span.stop, i.stop)
 
-    def test_valid_parent(self):
+    def test_set_parent_valid(self):
         s = 'abc'
         i1 = Ito(s)
         i2 = i1.clone(1, 2)
         i2._set_parent(i1)
         self.assertEqual(i1, i2.parent)
 
-    def test_invalid_parent(self):
+    def test_set_parent_invalid_parent(self):
         s = '__abc__'
         i1 = Ito(s, 1, -1)
 

@@ -1,7 +1,7 @@
 import sys
 # Force Python XML parser, not faster C accelerators because we can't hook the C implementation (3.x hack)
 sys.modules['_elementtree'] = None
-import xml.etree.ElementTree as Et
+import xml.etree.ElementTree as ET
 import xml.parsers.expat as expat
 
 import regex
@@ -11,7 +11,7 @@ from segments.itorator import Extract
 
 class XmlStrings:
     NAME = r'(?P<Name>[^ />=]+)'
-    VALUE = r'"(?P<Value>[^"]+)"'
+    VALUE = r'="(?P<Value>[^"]+)"'
     NAME_VALUE = NAME + VALUE
 
     NS_NAME = r'(?:(?P<Namespace>[^: ]+):)?' + NAME
@@ -23,7 +23,7 @@ class XmlRegexes:
     attribute = regex.compile(r'(?P<Attribute>' + XmlStrings.NS_NAME_VALUE + r')', regex.DOTALL)
 
 
-class XmlParser(Et.XMLParser):
+class XmlParser(ET.XMLParser):
     class _InternalIndexingParser:
         def __init__(self, text: str, encoding: str):
             self.text = text
@@ -50,7 +50,7 @@ class XmlParser(Et.XMLParser):
         # MISC DOCS
         # MISC DOCS
         # MISC DOCS
-        def char_offset_from_ex(self, parser: Et.XMLParser) -> str:
+        def char_offset_from_ex(self, parser: ET.XMLParser) -> str:
             if self.last_line_indexed < parser.CurrentLineNumber:
                 current_line_indexed = parser.CurrentLineNumber
                 current_line_char_offset = self.last_line_char_offset + len(
@@ -75,7 +75,7 @@ class XmlParser(Et.XMLParser):
         self.ignore_empties = ignore_empties
         self._indexing_parser: XmlParser._InternalIndexingParser | None = None
 
-    def _start(self, *args, **kwargs) -> Et.Element:
+    def _start(self, *args, **kwargs) -> ET.Element:
         # Assume default XML parser (expat)
         element = super()._start(*args, **kwargs)
         element._start_line_number = self.parser.CurrentLineNumber
@@ -84,7 +84,7 @@ class XmlParser(Et.XMLParser):
         element._start_char_index = self._indexing_parser.char_offset_from_ex(self.parser)
         return element
 
-    def _end(self, *args, **kwargs) -> Et.Element:
+    def _end(self, *args, **kwargs) -> ET.Element:
         # Assume default XML parser (expat)
         element = super()._end(*args, **kwargs)
         element._end_line_number = self.parser.CurrentLineNumber
@@ -98,13 +98,14 @@ class XmlParser(Et.XMLParser):
         self._indexing_parser = self._InternalIndexingParser(data, self.encoding)
         super().feed(data)
 
-    def _extract_itos(self, element: Et.Element):
+    def _extract_itos(self, element: ET.Element):
         start_tag = Ito(self._text, element._start_char_index, self._text.index('>', element._start_char_index + 1) + 1, descriptor='Start_Tag')
         start_tag.children.add(*self._tag_extractor.traverse(start_tag))
+        # want to search attributes starting from start_tag.find('*[d:Tag]).stop+1
         start_tag.children.add(*self._attributes_extractor.traverse(start_tag))
 
-        if (element._end_char_index + 2) < len(self._text) and self._text[element._end_char_index:element._end_char_index+2] == '</':
-            end_tag = Ito(self._text, element._end_char_index, self._text.index('>', element._end_char_index+1) + 1, descriptor='End_Tag')
+        if (element._end_char_index + 2) < len(self._text) and self._text[element._end_char_index:element._end_char_index + 2] == '</':
+            end_tag = Ito(self._text, element._end_char_index, self._text.index('>', element._end_char_index + 1) + 1, descriptor='End_Tag')
             end_index = end_tag.stop
         else:
             end_tag = None
@@ -123,8 +124,8 @@ class XmlParser(Et.XMLParser):
                 ito.children.add(child._ito)
                 if child.tail is not None:
                     if element.text is not None or not(self.ignore_empties and not str.isspace(element.tail)):
-                        text = Ito(self._text, child._ito.stop, child._ito.stop + len(child.tail), descriptor='Text')
-                        ito.children.add(text)
+                        ito_text = Ito(self._text, child._ito.stop, child._ito.stop + len(child.tail), descriptor='Text')
+                        ito.children.add(ito_text)
             if end_tag is not None:
                 ito.children.add(end_tag)
 
@@ -132,5 +133,5 @@ class XmlParser(Et.XMLParser):
 
     def close(self):
         rv = super().close()
-        self.extract_itos(rv)
+        self._extract_itos(rv)
         return rv

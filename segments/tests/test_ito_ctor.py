@@ -7,38 +7,37 @@ from segments.tests.util import _TestIto, RandSubstrings
 
 
 class TestItoCtor(_TestIto):
-    def test_ctor_string_only(self):
-        for string in None, '', 'a', 'abc':
-            with self.subTest(string=string):
-                if string is None:
-                    with self.assertRaises(ValueError):
-                        Ito(None)
-                else:
-                    ito = Ito(string)
-                    self.assertEqual(string, ito.string)
+    def test_ctor_invalid_basis(self):
+        for basis in None, 1:
+            with self.subTest(basis=basis):
+                with self.assertRaises(TypeError):
+                    Ito(basis)
 
-    def test_ctor_indices_default(self):
-        string = 'abc'
-        for start in None, 0:
-            with self.subTest(start=start):
-                for stop in None, len(string):
-                    with self.subTest(stop=stop):
-                        ito = Ito(string, start, stop)
-                        self.assertEqual(0, ito.start)
-                        self.assertEqual(len(string), ito.stop)
+    def test_ctor_str_defaults(self):
+        for basis in '', ' ', 'a', 'abc':
+            with self.subTest(basis=basis):
+                i = Ito(basis)
+                self.assertEquals(s, i.string)
+                self.assertEquals(s, i[:])
+                self.assertEquals((0, len(s)), i.span)
 
-    def test_ctor_indices_non_defaults(self):
+    def test_ctor_str_non_defaults(self):
         string = 'abcd'
         indices = -100, *range(-3, 3), 100
         for start in indices:
-            with self.subTest(start=start):
-                for stop in indices:
-                    with self.subTest(stop=stop):
-                        sliced = string[start:stop]
-                        ito = Ito(string, start, stop)
-                        self.assertLessEqual(0, ito.start)
-                        self.assertGreaterEqual(len(string), ito.stop)
-                        self.assertEqual(sliced, ito.__str__())
+            for stop in indices:
+                with self.subTest(bais=s, start=start, stop=stop):
+                    ls = len(s)
+                    start_t = min(ls, start) if start >= 0 else max(0, ls + start)
+                    stop_t = min(ls, stop) if stop >= 0 else max(0, ls + stop)
+                    if start_t > stop_t:
+                        with self.assertRaises(ValueError):
+                            i = Ito(s, start, stop)
+                    else:
+                        i = Ito(s, start, stop)
+                        self.assertLessEqual(0, i.start)
+                        self.assertGreaterEqual(ls, i.stop)
+                        self.assertEqual(s[start:stop], i[:])
 
     def test_clone_basic(self):
         string = 'abc'

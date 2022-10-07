@@ -15,22 +15,26 @@ C = typing.TypeVar('C', bound='Ito')
 
 
 class Ito:
-    #region ctors
+    #region ctors & clone
 
     def __init__(
             self,
-            string: str,
+            basis: str | Ito,
             start: int | None = None,
             stop: int | None = None,
             descriptor: str | None = None
     ):
-        if string is None:
-            raise Errors.parameter_not_none('string')
-        elif not isinstance(string, str):
-            raise Errors.parameter_invalid_type('string', string, str)
-        self._string = string
+        if isinstance(basis, str):
+            self._string = basis
+            offset = 0
+            
+        elif isinstance(basis, Ito):
+            self._string = basis.string
+            offset = basis.start
+        else:
+            raise Errors.parameter_invalid_type('basis', basis, str, Ito)
 
-        self._span = Span.from_indices(string, start, stop)
+        self._span = Span.from_indices(basis, start, stop, offset)
 
         if descriptor is not None and not isinstance(descriptor, str):
             raise Errors.parameter_invalid_type('descriptor', descriptor, str)
@@ -40,84 +44,6 @@ class Ito:
 
         self._parent = None
         self._children = ChildItos(self)
-
-    def clone(self,
-              start: int | None = None,
-              stop: int | None = None,
-              descriptor: str | None = None,
-              omit_children: bool = False
-              ) -> Ito:
-        rv = self.__class__(
-            self._string,
-            self.start if start is None else start,
-            self.stop if stop is None else stop,
-            self.descriptor if descriptor is None else descriptor
-        )
-
-        if self._value_func is not None:
-            rv.value_func = self._value_func
-
-        if not omit_children:
-            rv.children.add(*(c.clone(omit_children=False) for c in self._children))
-
-        return rv
-
-    # TODO : Settle on a clone method!
-    def clone_ex(self,
-              start: int | None = None,
-              stop: int | None = None,
-              descriptor: str | None = None,
-              omit_children: bool = False
-              ) -> Ito:
-        rv = self.__class__(
-            self._string,
-            *Span.from_indices(self, start, stop, self.start),
-            self.descriptor if descriptor is None else descriptor
-        )
-
-        if self._value_func is not None:
-            rv.value_func = self._value_func
-
-        if not omit_children:
-            rv.children.add(*(c.clone(omit_children=False) for c in self._children))
-
-        return rv
-
-    def offset(
-            self,
-            start: int = 0,
-            stop: int = 0,
-            descriptor: str | None = None
-    ) -> Ito:
-        if not isinstance(start, int):
-            raise Errors.parameter_invalid_type('start', start, int)
-        target_start = self.start + start
-        if not 0 <= target_start <= len(self._string):
-            warnings.warn(
-                f'.offset called with parameter \'start\' = {start} for ito with .span = {self.span}.',
-                stacklevel=2
-            )
-
-        if not isinstance(stop, int):
-            raise Errors.parameter_invalid_type('stop', stop, int)
-        target_stop = self.stop + stop
-        if not 0 <= target_stop <= len(self._string):
-            warnings.warn(
-                f'.offset called with parameter \'stop\' = {stop} for ito with .span = {self.span}.',
-                stacklevel=2
-            )
-
-        return self.clone(
-            target_start,
-            target_stop,
-            self.descriptor if descriptor is None else descriptor
-        )
-
-    def slice(self, start: int = None, stop: int = None, descriptor: str = None) -> Ito:
-        return self.clone(
-            *Span.from_indices(self, start, stop, self.start),
-            self.descriptor if descriptor is None else descriptor
-        )
 
     @classmethod
     def from_match(cls,
@@ -219,6 +145,27 @@ class Ito:
             k = i + len(sub)
             yield cls(string, i, k, descriptor)
             i = k
+            
+    def clone(self,
+              start: int | None = None,
+              stop: int | None = None,
+              descriptor: str | None = None,
+              omit_children: bool = False
+              ) -> Ito:
+        rv = self.__class__(
+            self._string,
+            self.start if start is None else start,
+            self.stop if stop is None else stop,
+            self.descriptor if descriptor is None else descriptor
+        )
+
+        if self._value_func is not None:
+            rv.value_func = self._value_func
+
+        if not omit_children:
+            rv.children.add(*(c.clone(omit_children=False) for c in self._children))
+
+        return rv
 
     #endregion
 

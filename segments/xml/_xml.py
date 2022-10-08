@@ -99,32 +99,32 @@ class XmlParser(ET.XMLParser):
         super().feed(data)
 
     def _extract_itos(self, element: ET.Element):
-        start_tag = Ito(self._text, element._start_char_index, self._text.index('>', element._start_char_index + 1) + 1, descriptor='Start_Tag')
+        start_tag = Ito(self._text, element._start_char_index, self._text.index('>', element._start_char_index + 1) + 1, desc='Start_Tag')
         start_tag.children.add(*self._tag_extractor.traverse(start_tag))
         # want to search attributes starting from start_tag.find('*[d:Tag]).stop+1
         start_tag.children.add(*self._attributes_extractor.traverse(start_tag))
 
         if (element._end_char_index + 2) < len(self._text) and self._text[element._end_char_index:element._end_char_index + 2] == '</':
-            end_tag = Ito(self._text, element._end_char_index, self._text.index('>', element._end_char_index + 1) + 1, descriptor='End_Tag')
+            end_tag = Ito(self._text, element._end_char_index, self._text.index('>', element._end_char_index + 1) + 1, desc='End_Tag')
             end_index = end_tag.stop
         else:
             end_tag = None
             end_index = element._end_char_index
 
-        ito = Ito(self._text, start_tag.start, end_index, descriptor='Element')
+        ito = Ito(self._text, start_tag.start, end_index, desc='Element')
         ito.value_func = lambda i: element
 
         ito.children.add(start_tag)
         if element.text is not None:
             if element.text is not None or not(self.ignore_empties and str.isspace(element.text)):
-                text = Ito(self._text, start_tag.stop, start_tag.stop + len(element.text), descriptor='Text')
+                text = Ito(self._text, start_tag.stop, start_tag.stop + len(element.text), desc='Text')
                 ito.children.add(text)
             for child in element:
                 self._extract_itos(child)
                 ito.children.add(child._ito)
                 if child.tail is not None:
                     if element.text is not None or not(self.ignore_empties and not str.isspace(element.tail)):
-                        ito_text = Ito(self._text, child._ito.stop, child._ito.stop + len(child.tail), descriptor='Text')
+                        ito_text = Ito(self._text, child._ito.stop, child._ito.stop + len(child.tail), desc='Text')
                         ito.children.add(ito_text)
             if end_tag is not None:
                 ito.children.add(end_tag)

@@ -13,23 +13,21 @@ class TestItoStrEquivalenceMethods(_TestIto):
         self.assertEqual(s.count('ab', 4, -4), i.str_count('ab', 2, -2))
 
     def test_str_endswith(self):
-        string = f' {"abc" * 2} '
-        ito = Ito(string, 1, -1)
+        s = f' {"abc" * 2} '
+        ito = Ito(s, 1, -1)
 
         sep = None
-        with self.subTest(sep=sep):
+        with self.subTest(basis=s, sep=sep):
             with self.assertRaises(TypeError):
                 ito.str_startswith(sep)
 
         for sep in ['', 'a', 'b', 'ab', 'bc', 'c', 'abc', 'z']:
-            with self.subTest(sep=sep):
-                for start in [-100, -1, None, 0, 1, 100]:
-                    with self.subTest(start=start):
-                        for end in [-100, -1, None, 0, 1, 100]:
-                            with self.subTest(end=end):
-                                expected = string.strip().endswith(sep, start, end)
-                                actual = ito.str_endswith(sep, start, end)
-                                self.assertEqual(expected, actual)
+            for start in [-100, -1, None, 0, 1, 100]:
+                for end in [-100, -1, None, 0, 1, 100]:
+                    with self.subTest(basis=s, sep=sep, start=start, end=end):
+                        expected = s.strip().endswith(sep, start, end)
+                        actual = ito.str_endswith(sep, start, end)
+                        self.assertEqual(expected, actual)
 
     def test_str_find(self):
         s = 'abcdefgh'

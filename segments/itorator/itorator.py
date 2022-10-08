@@ -111,12 +111,12 @@ class Extract(Itorator):
     def __init__(self,
                  re: regex.Pattern,
                  limit: int | None = None,
-                 descriptor_func: typing.Callable[[Ito, regex.Match, str], str] = lambda ito, match, group: group,
+                 desc_func: typing.Callable[[Ito, regex.Match, str], str] = lambda ito, match, group: group,
                  group_filter: collections.abc.Container[str] | F_ITO_M_STR_2_B | None = None):
         super().__init__()
         self.re = re
         self.limit = limit
-        self.descriptor_func = descriptor_func
+        self.desc_func = desc_func
         self.group_filter = group_filter
 
     @property
@@ -150,7 +150,7 @@ class Extract(Itorator):
             filtered_gns = (gn for gn in m.re.groupindex.keys() if self._group_filter(ito, m, gn))
             span_gns = ((span, gn) for gn in filtered_gns for span in m.spans(gn))
             for span, gn in sorted(span_gns, key=lambda val: (val[0][0], -val[0][1])):
-                ito = ito.clone(*span, self.descriptor_func(ito, m, gn))
+                ito = ito.clone(*span, self.desc_func(ito, m, gn))
                 while len(path_stack) > 0 and (ito.start < path_stack[-1].start or ito.stop > path_stack[-1].stop):
                     path_stack.pop()
                 if len(path_stack) == 0:

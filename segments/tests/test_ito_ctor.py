@@ -17,9 +17,9 @@ class TestItoCtor(_TestIto):
         for basis in '', ' ', 'a', 'abc':
             with self.subTest(basis=basis):
                 i = Ito(basis)
-                self.assertEquals(s, i.string)
-                self.assertEquals(s, i[:])
-                self.assertEquals((0, len(s)), i.span)
+                self.assertEquals(basis, i.string)
+                self.assertEquals(basis, i[:])
+                self.assertEquals((0, len(basis)), i.span)
 
     def test_ctor_str_non_defaults(self):
         s = 'abcd'
@@ -52,15 +52,15 @@ class TestItoCtor(_TestIto):
 
         desc = 'x'
         with self.subTest(group='Absent'):
-            ito = Ito.from_match(m, descriptor=desc)
+            ito = Ito.from_match(m, desc=desc)
             self.assertEqual(m.group(), ito.__str__())
-            self.assertEqual(desc, ito.descriptor)
+            self.assertEqual(desc, ito.desc)
 
         for group in 0, 1, 'fn', 2, 'ln':
             with self.subTest(group=group):
-                ito = Ito.from_match(m, group, descriptor=desc)
+                ito = Ito.from_match(m, group, desc=desc)
                 self.assertEqual(m.group(group), ito.__str__())
-                self.assertEqual(desc, ito.descriptor)
+                self.assertEqual(desc, ito.desc)
 
     def test_from_substrings(self):
         string = 'abcd' * 10
@@ -93,7 +93,7 @@ class TestItoCtor(_TestIto):
     def test_clone_basic(self):
         string = 'abc'
         d = 'x'
-        ito = Ito(string, 1, 2, descriptor=d)
+        ito = Ito(string, 1, 2, desc=d)
 
         params = [
             {
@@ -111,7 +111,7 @@ class TestItoCtor(_TestIto):
             {
                 'start': 0,
                 'stop': len(string),
-                'descriptor': 'z'
+                'desc': 'z'
             }
         ]
 
@@ -121,14 +121,14 @@ class TestItoCtor(_TestIto):
                     string,
                     pdict.get('start', ito.start),
                     pdict.get('stop', ito.stop),
-                    pdict.get('descriptor', ito.descriptor),
+                    pdict.get('desc', ito.desc),
                 )
                 clone = ito.clone(**pdict)
                 self.assertEqual(expected, clone)
 
     def test_clone_children(self):
         s = 'abc'
-        parent = Ito(s, descriptor='parent')
+        parent = Ito(s, desc='parent')
         self.add_chars_as_children(parent, 'child')
 
         for oc in (True, False):

@@ -28,14 +28,14 @@ class TestItorator(_TestIto):
 
         reflect = Reflect()
         apply_desc = 'x'
-        reflect.itor_next = Wrap(lambda ito: (ito.clone(descriptor=apply_desc),))
+        reflect.itor_next = Wrap(lambda ito: (ito.clone(desc=apply_desc),))
         rv = [*reflect.traverse(root)]
             
         self.assertEqual(1, len(rv))
         ito = rv[0]
         self.assertIsNot(root, ito)
         self.assertEqual(len(root.children), len(ito.children))
-        self.assertEqual(apply_desc, ito.descriptor)
+        self.assertEqual(apply_desc, ito.desc)
 
     def test_traverse_with_children(self):
         s = 'abc'
@@ -50,7 +50,7 @@ class TestItorator(_TestIto):
         ito = rv[0]
         self.assertIsNot(root, ito)
         self.assertEqual(len(s), len(ito.children))
-        self.assertTrue(all(c.descriptor == apply_desc for c in ito.children))
+        self.assertTrue(all(c.desc == apply_desc for c in ito.children))
         
     def test_traverse_with_carry_through(self):
         s = 'abc'
@@ -60,7 +60,7 @@ class TestItorator(_TestIto):
         reflect = Reflect()
         make_chars = Wrap(lambda ito: tuple(ito.clone(i, i+1, 'char') for i in range(*ito.span)))
         reflect.itor_children = make_chars
-        rename = Wrap(lambda ito: tuple(ito.clone(descriptor=d_changed) if i.parent is not None else i for i in [ito]))
+        rename = Wrap(lambda ito: tuple(ito.clone(desc=d_changed) if i.parent is not None else i for i in [ito]))
         make_chars.itor_next = rename
         rv = [*reflect.traverse(root)]
             
@@ -68,4 +68,4 @@ class TestItorator(_TestIto):
         ito = rv[0]
         self.assertIsNot(root, ito)
         self.assertEqual(len(s), len(ito.children))
-        self.assertTrue(all(c.descriptor == d_changed for c in ito.children))
+        self.assertTrue(all(c.desc == d_changed for c in ito.children))

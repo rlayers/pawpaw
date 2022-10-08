@@ -22,7 +22,7 @@ class Ito:
             basis: str | Ito,
             start: int | None = None,
             stop: int | None = None,
-            descriptor: str | None = None
+            desc: str | None = None
     ):
         if isinstance(basis, str):
             self._string = basis
@@ -36,9 +36,9 @@ class Ito:
 
         self._span = Span.from_indices(basis, start, stop, offset)
 
-        if descriptor is not None and not isinstance(descriptor, str):
-            raise Errors.parameter_invalid_type('descriptor', descriptor, str)
-        self.descriptor = descriptor
+        if desc is not None and not isinstance(desc, str):
+            raise Errors.parameter_invalid_type('descriptor', desc, str)
+        self.desc = desc
 
         self._value_func: typing.Callable[[Ito], typing.Any] | None = None
 
@@ -49,7 +49,7 @@ class Ito:
     def from_match(cls,
                    match: regex.Match,
                    group: str | int = 0,
-                   descriptor: str = None
+                   desc: str = None
                    ) -> C:
         if match is None:
             raise Errors.parameter_not_none('match')
@@ -59,7 +59,7 @@ class Ito:
         if group is None:
             raise Errors.parameter_not_none('group')
 
-        return cls(match.string, *match.span(group), descriptor=descriptor)
+        return cls(match.string, *match.span(group), desc=desc)
 
     @classmethod
     def _gf(cls,
@@ -93,7 +93,7 @@ class Ito:
         filtered_gns = (gn for gn in match.re.groupindex.keys() if gf(match, gn))
         span_gns = ((span, gn) for gn in filtered_gns for span in match.spans(gn))
         for span, gn in sorted(span_gns, key=lambda val: (val[0][0], -val[0][1])):
-            ito = Ito(match.string, *span, descriptor=descriptor_func(match, gn))
+            ito = Ito(match.string, *span, desc=descriptor_func(match, gn))
             while len(path_stack) > 0 and (ito.start < path_stack[-1].start or ito.stop > path_stack[-1].stop):
                 path_stack.pop()
             if len(path_stack) == 0:
@@ -107,7 +107,7 @@ class Ito:
 
     @classmethod
     def from_spans(cls, string: str, *spans: Span, descriptor: str | None = None) -> typing.List[C]:
-        return [cls(string, *s, descriptor=descriptor) for s in spans]
+        return [cls(string, *s, desc=descriptor) for s in spans]
 
     @classmethod
     def from_substrings(
@@ -147,23 +147,23 @@ class Ito:
             i, j = basis.span
         else:
             raise Errors.parameter_invalid_type('basis', basis, str, Ito)
-        for sub in substring:
+        for sub in substrings:
             i = s.index(sub, i, j)
             k = i + len(sub)
             yield cls(s, i, k, desc)
             i = k
-            
+
     def clone(self,
               start: int | None = None,
               stop: int | None = None,
-              descriptor: str | None = None,
+              desc: str | None = None,
               omit_children: bool = False
               ) -> Ito:
         rv = self.__class__(
             self._string,
             self.start if start is None else start,
             self.stop if stop is None else stop,
-            self.descriptor if descriptor is None else descriptor
+            self.desc if desc is None else desc
         )
 
         if self._value_func is not None:
@@ -226,10 +226,10 @@ class Ito:
     #endregion
 
     #region __x__ methods
-        
+
     def __repr__(self) -> str:
         # TODO : Add children to repr str?
-        return f'segments.Ito({self._string.__repr__()}, {self.start}, {self.stop}, {self.descriptor.__repr__()})'
+        return f'segments.Ito({self._string.__repr__()}, {self.start}, {self.stop}, {self.desc.__repr__()})'
 
     def __str__(self) -> str:
         return self._string[slice(*self.span)]
@@ -245,19 +245,19 @@ class Ito:
         if isinstance(key, int):
             span = Span.from_indices(self, key, None, self.start)
             return self._string[span.start]
-        
+
         if isinstance(key, slice):
             span = Span.from_indices(self, key.start, key.stop, self.start)
             return self._string[slice(*span)]
-        
+
         raise Errors.parameter_invalid_type('key', key, int, slice)
-        
+
     #endregion
 
     #region combinatorics
 
     @classmethod
-    def join(cls, *itos: C, descriptor: str | None = None) -> C:
+    def join(cls, *itos: C, desc: str | None = None) -> C:
         it_str, it_start, it_stop, it_children = itertools.tee(itos, 4)
 
         strs = set(ito.string for ito in it_str)
@@ -266,7 +266,7 @@ class Ito:
 
         start = min(ito.start for ito in it_start)
         stop = max(ito.stop for ito in it_stop)
-        rv = Ito(strs.pop(), start, stop, descriptor)
+        rv = Ito(strs.pop(), start, stop, desc)
 
         children = itertools.chain.from_iterable(ito.children for ito in itos)
         rv.children.add(*(c.clone() for c in children))
@@ -296,11 +296,9 @@ class Ito:
     def str_endswith(self, suffix: str | typing.Tuple[str, ...], start: int | None = None, end: int | None = None) -> bool:
         if suffix is None:
             raise Errors.parameter_invalid_type('suffix', suffix, str, typing.Tuple[str, ...])
-        elif start is not None and start > len(self):  # Weird rule, but this is how python str works
-            return False
-        else:
-            norms = Span.from_indices(self, start, end, self.start)
-            return self._string.endswith(suffix, *norms)
+        # Python has odd rules for how .endswith works when start & end are inconsistent...
+        # ...so just slice and use Python rather than trying to replicate the weirdness
+        return self[:].endswith(suffix, start, end)
 
     def str_find(self, sub: str, start: int | None = None, end: int | None = None) -> int:
         return self._string.find(sub, *Span.from_indices(self, start, end, self.start))
@@ -496,11 +494,9 @@ class Ito:
     ) -> bool:
         if prefix is None:
             raise Errors.parameter_invalid_type('prefix', prefix, str, typing.Tuple[str, ...])
-        elif start is not None and start > len(self):  # Weird rule, but this is how python str works
-            return False
-        else:
-            span = Span.from_indices(self, start, end, self.start)
-            return self._string.startswith(prefix, *span)
+        # Python has odd rules for how .startswith works when start & end are inconsistent...
+        # ...so just slice and use Python rather than trying to replicate the weirdness
+        return self[:].startswith(prefix, start, end)
         
     def str_strip(self, chars: str | None = None) -> Ito:
         pass

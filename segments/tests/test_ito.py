@@ -134,16 +134,16 @@ class TestIto(_TestIto):
         s = 'abc 123'
         joined_desc = 'joined'
 
-        children = [*Ito.from_substrings(s, *s.split(' '), descriptor='children')]
+        children = [*Ito.from_substrings(s, *s.split(), desc='children')]
         for child in children:
-            child.children.add(*Ito.from_substrings(s, *child.__str__(), descriptor='grandchild'))
+            child.children.add(*Ito.from_substrings(s, *child.__str__(), desc='grandchild'))
         grandchildren = [*itertools.chain.from_iterable(ito.children for ito in children)]
 
-        joined = Ito.join(*children, descriptor=joined_desc)
+        joined = Ito.join(*children, desc=joined_desc)
         self.assertIsNot(joined, children[0])
         self.assertIsNot(joined, children[1])
         self.assertEqual(s, joined.__str__())
-        self.assertEqual(joined_desc, joined.descriptor)
+        self.assertEqual(joined_desc, joined.desc)
         self.assertEqual(len(grandchildren), len(joined.children))
         for gc1, gc2 in zip(grandchildren, joined.children):
             self.assertEqual(gc1, gc2)

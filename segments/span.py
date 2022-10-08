@@ -41,7 +41,6 @@ class Span(typing.NamedTuple):
             stop = min(length, stop) if stop >= 0 else max(0, length + stop)
             stop += offset
             
-        if start > stop:
-            raise ValueError('start\'s effective index is greater than stop\'s')
+        stop = max(start, stop)
 
         return Span(start, stop)

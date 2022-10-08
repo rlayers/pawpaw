@@ -9,24 +9,24 @@ from segments.tests.util import _TestIto, RandSpans
 class TestChildItos(_TestIto):
     def test_add_one(self):
         string = 'abcdef'
-        parent = Ito(string, descriptor='parent')
-        child = parent.clone(1, descriptor='child')
+        parent = Ito(string, desc='parent')
+        child = parent.clone(1, desc='child')
         parent.children.add(child)
         self.assertEqual(1, len(parent.children))
         self.assertIs(child, parent.children[0])
 
     def test_add_several_ordered(self):
         string = 'abcdef'
-        parent = Ito(string, descriptor='parent')
-        self.add_chars_as_children(parent, descriptor='child')
+        parent = Ito(string, desc='parent')
+        self.add_chars_as_children(parent, desc='child')
         self.assertEqual(len(string), len(parent.children))
         for i, c in enumerate(parent.children):
             self.assertEqual(string[i], c.__str__())
 
     def test_add_several_unordered(self):
         string = 'abcdef'
-        parent = Ito(string, descriptor='parent')
-        self.add_chars_as_children(parent, descriptor='child')
+        parent = Ito(string, desc='parent')
+        self.add_chars_as_children(parent, desc='child')
         children = [*parent.children]
         parent.children.clear()
         random.shuffle(children)
@@ -38,7 +38,7 @@ class TestChildItos(_TestIto):
 
     def test_add_generator_ordered(self):
         string = 'abcdef'
-        parent = Ito(string, descriptor='parent')
+        parent = Ito(string, desc='parent')
         g = (parent.clone(i, i + 1, 'Child') for i in range(parent.start, parent.stop))
         parent.children.add(*g)
         self.assertEqual(len(string), len(parent.children))
@@ -47,7 +47,7 @@ class TestChildItos(_TestIto):
 
     def test_add_generator_reverse_order(self):
         string = 'abcdef'
-        parent = Ito(string, descriptor='parent')
+        parent = Ito(string, desc='parent')
         g = (parent.clone(i, i + 1, 'Child') for i in range(len(string) - 1, -1, -1))
         parent.children.add(*g)
         self.assertEqual(len(string), len(parent.children))
@@ -56,7 +56,7 @@ class TestChildItos(_TestIto):
 
     def test_add_hierarchical(self):
         string = ' ' * 4096
-        root = Ito(string, descriptor='root')
+        root = Ito(string, desc='root')
         levels = 20
         parents = [root]
 
@@ -81,8 +81,8 @@ class TestChildItos(_TestIto):
 
     def test_del_key_int(self):
         string = py_string.ascii_lowercase
-        parent = Ito(string, descriptor='parent')
-        self.add_chars_as_children(parent, descriptor='child')
+        parent = Ito(string, desc='parent')
+        self.add_chars_as_children(parent, desc='child')
 
         with self.subTest(position='start'):
             child = parent.children[0]
@@ -109,8 +109,8 @@ class TestChildItos(_TestIto):
 
     def test_del_key_slice(self):
         string = py_string.ascii_lowercase
-        parent = Ito(string, descriptor='parent')
-        self.add_chars_as_children(parent, descriptor='child')
+        parent = Ito(string, desc='parent')
+        self.add_chars_as_children(parent, desc='child')
 
         with self.subTest(position='start'):
             children = parent.children[:2]
@@ -141,16 +141,16 @@ class TestChildItos(_TestIto):
 
     def test_indexer_set_key_int_invalid(self):
         string = py_string.ascii_lowercase
-        parent = Ito(string, descriptor='parent')
-        self.add_chars_as_children(parent, descriptor='child')
+        parent = Ito(string, desc='parent')
+        self.add_chars_as_children(parent, desc='child')
 
         with self.assertRaises(TypeError):
             parent.children[0] = 'abc'
 
     def test_indexer_set_key_int(self):
         string = py_string.ascii_lowercase
-        parent = Ito(string, descriptor='parent')
-        self.add_chars_as_children(parent, descriptor='child')
+        parent = Ito(string, desc='parent')
+        self.add_chars_as_children(parent, desc='child')
 
         with self.subTest(position='start'):
             child = parent.children[0]
@@ -182,8 +182,8 @@ class TestChildItos(_TestIto):
 
     def test_indexer_set_key_slice(self):
         string = py_string.ascii_lowercase
-        parent = Ito(string, descriptor='parent')
-        self.add_chars_as_children(parent, descriptor='child')
+        parent = Ito(string, desc='parent')
+        self.add_chars_as_children(parent, desc='child')
 
         with self.subTest(position='start'):
             children = parent.children[:2]

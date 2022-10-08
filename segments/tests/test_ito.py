@@ -7,7 +7,7 @@ from segments.tests.util import _TestIto, RandSubstrings
 
 
 class TestIto(_TestIto):
-    #region properties
+    # region properties
 
     def test_string(self):
         s = 'abc'
@@ -82,9 +82,9 @@ class TestIto(_TestIto):
         i = Ito('abc')
         self.assertIsNotNone(i.children)
 
-    #endregion
+    # endregion
 
-    #region __x__ methods
+    # region __x__ methods
 
     def test_repr(self):
         s = 'x123x'
@@ -126,9 +126,9 @@ class TestIto(_TestIto):
         with self.assertRaises(TypeError):
             self.assertEqual('2', i['1'])
             
-    #endregion
+    # endregion
 
-    #region combinatorics
+    # region combinatorics
 
     def test_join(self):
         s = 'abc 123'
@@ -148,4 +148,4 @@ class TestIto(_TestIto):
         for gc1, gc2 in zip(grandchildren, joined.children):
             self.assertEqual(gc1, gc2)
 
-    #endregion
+    # endregion

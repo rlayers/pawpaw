@@ -30,7 +30,7 @@ class TestItoStrEquivalenceMethods(_TestIto):
                         self.assertEqual(expected, actual)
 
     def test_str_find(self):
-        s = 'abcdefgh'
+        s = 'abcdefgh' * 2
         i = Ito(s, 2, -2)
         self.assertEqual(s.find('ab', 2, -2), i.str_find('ab'))
         self.assertEqual(s.find('cd', 2, -2), i.str_find('cd'))
@@ -38,16 +38,16 @@ class TestItoStrEquivalenceMethods(_TestIto):
         self.assertEqual(s.find('de', 3, -3), i.str_find('de', 1, -1))
 
     def test_str_index(self):
-        s = 'abcdefgh'
+        s = '12' + 'abcd' * 2 + '34'
         i = Ito(s, 2, -2)
         with self.assertRaises(ValueError):
-            i.str_index('ab')
-        self.assertEqual(s.find('cd', 2, -2), i.str_index('cd'))
+            i.str_index('12')
+        self.assertEqual(s.index('cd', 2, -2), i.str_index('cd'))
         with self.assertRaises(ValueError):
-            i.str_index('cd', 1, -1)
-        self.assertEqual(s.find('de', 3, -3), i.str_index('de', 1, -1))
+            i.str_index('ab', 1, 3)
+        self.assertEqual(s.index('ab', 4), i.str_index('ab', 1))
 
-    #region 'is' methods
+    # region 'is' methods
 
     def test_str_isalnum(self):
         for string in ('', 'abc', '123', 'abc123', '!@#', 'a!2#c'):
@@ -116,16 +116,40 @@ class TestItoStrEquivalenceMethods(_TestIto):
                 self.assertEqual(string.isidentifier(), ito.str_isidentifier())
 
     def test_str_isupper(self):
-        for string in ('', 'abc', 'abc123', 'AbC', 'AB', 'AB12', '123'):
-            with self.subTest(string=string):
-                ito = Ito(string)
-                self.assertEqual(string.isupper(), ito.str_isupper())
+        for s in '', 'abc', 'abc123', 'AbC', 'AB', 'AB12', '123':
+            with self.subTest(string=s):
+                ito = Ito(s)
+                self.assertEqual(s.isupper(), ito.str_isupper())
 
-    #endregion
+    # endregion
+
+    # region strip methods
 
     def test_str_lstrip(self):
-        self.assertTrue(False)
+        for s in '', 'abc', 'abc123', 'a1b2c3':
+            for chars in None, '', 'a', 'ba', 'c', 'cb', 'x', 'ac', '32ba', '123abc':
+                with self.subTest(string=s, chars=chars):
+                    i = Ito(s)
+                    self.assertEqual(s.lstrip(chars), i.str_lstrip(chars)[:])
+                    
+    def test_str_rstrip(self):
+        for s in '', 'abc', 'abc123', 'a1b2c3':
+            for chars in None, '', 'a', 'ba', 'c', 'cb', 'x', 'ac', '32ba', '123abc':
+                with self.subTest(string=s, chars=chars):
+                    i = Ito(s)
+                    self.assertEqual(s.rstrip(chars), i.str_rstrip(chars)[:])
 
+    def test_str_strip(self):
+        for s in '', 'abc', 'abc123', 'a1b2c3':
+            for chars in None, '', 'a', 'ba', 'c', 'cb', 'x', 'ac', '32ba', '123abc':
+                with self.subTest(string=s, chars=chars):
+                    i = Ito(s)
+                    self.assertEqual(s.strip(chars), i.str_strip(chars)[:])
+
+    # endregion
+
+    # region partition and split methods
+    
     def test_str_partition(self):
         string = f' abc '
         ito = Ito(string, 1, -1)
@@ -144,53 +168,113 @@ class TestItoStrEquivalenceMethods(_TestIto):
                 actual = list(i.__str__() for i in actual)
                 self.assertListEqual(expected, actual)
 
-    def test_str_removeprefix(self):
-        self.assertTrue(False)
-
-    def test_str_removesuffix(self):
-        self.assertTrue(False)
-
-    def test_str_rfind(self):
-        self.assertTrue(False)
-
-    def test_str_rindex(self):
-        self.assertTrue(False)
     def test_str_rpartition(self):
-        self.assertTrue(False)
+        string = f' abc '
+        ito = Ito(string, 1, -1)
+
+        for sep in [None, '']:
+            with self.subTest(sep=sep):
+                with self.assertRaises(ValueError):
+                    ito.str_rpartition(sep)
+
+        for sep in ['a', 'b', 'ab', 'bc', 'abc', 'z']:
+            with self.subTest(sep=sep):
+                expected = string.strip().rpartition(sep)
+                actual = ito.str_rpartition(sep)
+                self.assertEqual(type(expected), type(actual))
+                expected = list(expected)
+                actual = list(i.__str__() for i in actual)
+                self.assertListEqual(expected, actual)
 
     def test_str_rsplit(self):
-        self.assertTrue(False)
 
-    def test_str_rstrip(self):
-        self.assertTrue(False)
-
-    def test_str_split(self):
         with self.subTest(sep=None):
             for s in ['', ' ', ' a', ' a', ' a ', ' a b', ' a b ', '\ta\nb\rc']:
-                with self.subTest(string=s):
-                    ito = Ito(s)
-                    expected = [*Ito.from_substrings(s, *s.split())]
-                    actual = ito.str_split()
-                    self.assertEqual(len(expected), len(actual))
-                    for e, a in zip(expected, actual):
-                        self.assertEqual(e, a)
+                for maxsplit in -1, 0, 1:
+                    with self.subTest(string=s, sep=None, maxsplit=maxsplit):
+                        ito = Ito(s)
+                        expected = [*Ito.from_substrings(s, *s.rsplit(maxsplit=maxsplit))]
+                        actual = ito.str_rsplit(maxsplit=maxsplit)
+                        self.assertEqual(len(expected), len(actual))
+                        for e, a in zip(expected, actual):
+                            self.assertEqual(e, a)
 
-        s = f' {"abc" * 3} '
+        s = f' {"xyz" * 3} '
         ito = Ito(s, 1, -1)
 
         sep = ''
-        with self.subTest(sep=sep, string=s):
+        with self.subTest(string=s, sep=sep):
+            with self.assertRaises(ValueError):
+                ito.str_rsplit(sep)
+
+        for sep in ['x', 'y', 'xy', 'yz', 'z', 'xyz', 'z']:
+            for maxsplit in -1, 0, 1:
+                with self.subTest(string=s, sep=sep, maxsplit=maxsplit):
+                    expected = list(s for s in s.strip().rsplit(sep, maxsplit))
+                    actual = list(i.__str__() for i in ito.str_rsplit(sep, maxsplit))
+                    self.assertListEqual(expected, actual)
+
+    def test_str_split(self):
+        with self.subTest(sep=None):
+            for s in ['', ' ', ' a', ' a', ' a ', ' a b', ' a b ', '\ta\nb\rc', 'a b c d e']:
+                for maxsplit in -1, 0, 1:
+                    with self.subTest(string=s, sep=None, maxsplit=maxsplit):
+                        ito = Ito(s)
+                        expected = [*Ito.from_substrings(s, *s.split(maxsplit=maxsplit))]
+                        actual = ito.str_split(maxsplit=maxsplit)
+                        self.assertEqual(len(expected), len(actual))
+                        for e, a in zip(expected, actual):
+                            self.assertEqual(e, a)
+
+        s = f' {"xyz" * 3} '
+        ito = Ito(s, 1, -1)
+
+        sep = ''
+        with self.subTest(string=s, sep=sep):
             with self.assertRaises(ValueError):
                 ito.str_split(sep)
 
-        for sep in ['a', 'b', 'ab', 'bc', 'c', 'abc', 'z']:
-            with self.subTest(sep=sep, string=s):
-                expected = list(s for s in s.strip().split(sep))
-                actual = list(i.__str__() for i in ito.str_split(sep))
-                self.assertListEqual(expected, actual)
+        for sep in ['x', 'y', 'xy', 'yz', 'z', 'xyz', 'z']:
+            for maxsplit in -1, 0, 1:
+                with self.subTest(string=s, sep=sep, maxsplit=maxsplit):
+                    expected = list(s for s in s.strip().split(sep, maxsplit))
+                    actual = list(i.__str__() for i in ito.str_split(sep, maxsplit))
+                    self.assertListEqual(expected, actual)
 
     def test_str_splitlines(self):
         self.assertTrue(False)
+
+    # endregion
+
+    def test_str_removeprefix(self):
+        s = '_abc_'
+        i = Ito(s, 1, -1)
+        self.assertEqual(s[1:-1].removeprefix('_'), i.str_removeprefix('_')[:])
+        self.assertEqual(s[1:-1].removeprefix('a'), i.str_removeprefix('a')[:])
+
+    def test_str_removesuffix(self):
+        s = '_abc_'
+        i = Ito(s, 1, -1)
+        self.assertEqual(s[1:-1].removesuffix('_'), i.str_removesuffix('_')[:])
+        self.assertEqual(s[1:-1].removesuffix('c'), i.str_removesuffix('c')[:])
+
+    def test_str_rfind(self):
+        s = 'abcdefgh' * 2
+        i = Ito(s, 2, -2)
+        self.assertEqual(s.rfind('ab', 2, -2), i.str_rfind('ab'))
+        self.assertEqual(s.rfind('cd', 2, -2), i.str_rfind('cd'))
+        self.assertEqual(s.rfind('cd', 3, -3), i.str_rfind('cd', 1, -1))
+        self.assertEqual(s.rfind('de', 3, -3), i.str_rfind('de', 1, -1))
+
+    def test_str_rindex(self):
+        s = '12' + 'abcd' * 2 + '34'
+        i = Ito(s, 2, -2)
+        with self.assertRaises(ValueError):
+            i.str_rindex('34')
+        self.assertEqual(s.rindex('cd', 2, -2), i.str_rindex('cd'))
+        with self.assertRaises(ValueError):
+            i.str_rindex('cd', -5, -3)
+        self.assertEqual(s.rindex('ab', 4), i.str_rindex('ab', 1))
 
     def test_str_startswith(self):
         string = f' {"abc" * 2} '
@@ -210,6 +294,3 @@ class TestItoStrEquivalenceMethods(_TestIto):
                                 expected = string.strip().startswith(sep, start, end)
                                 actual = ito.str_startswith(sep, start, end)
                                 self.assertEqual(expected, actual)
-
-    def test_str_strip(self):
-        self.assertTrue(False)

@@ -15,7 +15,7 @@ C = typing.TypeVar('C', bound='Ito')
 
 
 class Ito:
-    #region ctors & clone
+    # region ctors & clone
 
     def __init__(
             self,
@@ -174,9 +174,9 @@ class Ito:
 
         return rv
 
-    #endregion
+    # endregion
 
-    #region properties
+    # region properties
 
     @property
     def string(self) -> str:
@@ -223,9 +223,9 @@ class Ito:
             setattr(self, '__value__', f.__get__(self))
         self._value_func = f
 
-    #endregion
+    # endregion
 
-    #region __x__ methods
+    # region __x__ methods
 
     def __repr__(self) -> str:
         # TODO : Add children to repr str?
@@ -252,9 +252,9 @@ class Ito:
 
         raise Errors.parameter_invalid_type('key', key, int, slice)
 
-    #endregion
+    # endregion
 
-    #region combinatorics
+    # region combinatorics
 
     @classmethod
     def join(cls, *itos: C, desc: str | None = None) -> C:
@@ -273,9 +273,9 @@ class Ito:
 
         return rv
 
-    #endregion
+    # endregion
 
-    #region regex equivalence methods
+    # region regex equivalence methods
 
     def regex_match(self, re: regex.Pattern) -> regex.Match:
         return re.match(self.string, *self.span)
@@ -286,9 +286,9 @@ class Ito:
     def regex_finditer(self, re: regex.Pattern) -> typing.Iterable[regex.Match]:
         return re.finditer(self.string, *self.span)
 
-    #endregion
+    # endregion
 
-    #region str equivalence methods
+    # region str equivalence methods
 
     def str_count(self, sub: str, start: int | None = None, end: int | None = None) -> int:
         return self._string.count(sub, *Span.from_indices(self, start, end, self.start))
@@ -296,9 +296,21 @@ class Ito:
     def str_endswith(self, suffix: str | typing.Tuple[str, ...], start: int | None = None, end: int | None = None) -> bool:
         if suffix is None:
             raise Errors.parameter_invalid_type('suffix', suffix, str, typing.Tuple[str, ...])
-        # Python has odd rules for how .endswith works when start & end are inconsistent...
-        # ...so just slice and use Python rather than trying to replicate the weirdness
-        return self[:].endswith(suffix, start, end)
+
+        # The subsequent block captures the strange behavior of Python's str.endswith
+        if start is not None and start != 0:
+            ls = len(self)
+            if start > ls:
+                return False
+
+            start_c = 0 if start is None else start if start >= 0 else ls + start
+            end_c = ls if end is None else end if end >= 0 else ls + end
+            if start_c > end_c:  # inconsistent start/end
+                return False
+
+        # Ok, just do what you would expect
+        norms = Span.from_indices(self, start, end, self.start)
+        return self._string.endswith(suffix, *norms)
 
     def str_find(self, sub: str, start: int | None = None, end: int | None = None) -> int:
         return self._string.find(sub, *Span.from_indices(self, start, end, self.start))
@@ -306,7 +318,7 @@ class Ito:
     def str_index(self, sub: str, start: int | None = None, end: int | None = None) -> int:
         return self._string.index(sub, *Span.from_indices(self, start, end, self.start))
 
-    #region 'is' predicates
+    # region 'is' predicates
 
     def __str_is_helper_all(self, predicate: typing.Callable[[str], bool]) -> bool:
         if self.start == self.stop:
@@ -370,10 +382,37 @@ class Ito:
                     return False
         return alphas
 
-    #endregion
+    # endregion
 
-    def str_lstrip(self, chars: str | None) -> Ito:
-        raise NotImplemented()
+    # region strip methods
+
+    def __f_c_in(self, chars: str | None) -> typing.Callable[[int], bool]:
+        if chars is None or chars == '':
+            return lambda i: self._string[i].isspace()
+        else:
+            return lambda i: self._string[i] in chars
+
+    def str_lstrip(self, chars: str | None = None) -> Ito:
+        f_c_in = self.__f_c_in(chars)
+        i = self.start
+        while i < self.stop and f_c_in(i):
+            i += 1
+        return self.clone(i)
+
+    def str_rstrip(self, chars: str | None = None) -> typing.List[Ito]:
+        f_c_in = self.__f_c_in(chars)
+        i = self.stop - 1
+        while i >= 0 and f_c_in(i):
+            i -= 1
+
+        return self.clone(stop=i+1)
+
+    def str_strip(self, chars: str | None = None) -> Ito:
+        return self.str_lstrip(chars).str_rstrip(chars)
+
+    # endregion
+
+    # region partition and split methods
 
     def str_partition(self, sep) -> typing.Tuple[C, C, C]:
         if sep is None:
@@ -387,24 +426,6 @@ class Ito:
             else:
                 return self.clone(stop=i), self.clone(i, i+len(sep)), self.clone(i+len(sep))
 
-    def str_removeprefix(self, prefix: str) -> Ito:
-        if self.str_startswith(prefix):
-            return self.clone(len(prefix))
-        else:
-            return self.clone()
-
-    def str_removesuffix(self, suffix: str) -> Ito:
-        if self.str_endswith(suffix):
-            return self.clone(stop=-len(suffix))
-        else:
-            return self.clone()
-        
-    def str_rfind(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.rfind(sub, *Span.from_indices(self, start, end, self.start))
-
-    def str_rindex(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.rindex(sub, *Span.from_indices(self, start, end, self.start))
-    
     def str_rpartition(self, sep) -> typing.Tuple[C, C, C]:
         if sep is None:
             raise ValueError('must be str, not NoneType')
@@ -415,76 +436,154 @@ class Ito:
             if i == -1:
                 return self.clone(self.stop), self.clone(self.stop), self.clone()
             else:
-                return self.clone(stop=i), self.clone(i, i+len(sep)), self.clone(i+len(sep))    
+                return self.clone(stop=i), self.clone(i, i + len(sep)), self.clone(i + len(sep))
+
+    def __nearest_non_ws_sub(self, start: int, reverse: bool = False) -> Ito | None:
+        if reverse:
+            stop = -1
+            step = -1
+        else:
+            stop = self.stop
+            step = 1
+
+        def from_idxs():
+            if step == 1:
+                return self.clone(non_ws_i, i)
+            else:
+                return self.clone(i + 1, non_ws_i + 1)
+
+        non_ws_i: 0
+        in_ws = True
+        for i in range(start, stop, step):
+            c = self[i]
+            if in_ws:
+                if not c.isspace():
+                    non_ws_i = i
+                    in_ws = False
+            else:
+                if c.isspace():
+                    return from_idxs()
+
+        if not in_ws:
+            i += step
+            return from_idxs()
 
     def str_rsplit(self, sep: str = None, maxsplit: int = -1) -> typing.List[Ito]:
         if sep is None:
-            return self.str_split(sep, maxsplit)  # rsplit has same effect as split when sep is None
+            rv: typing.List[Ito] = []
+            if self._string == '':
+                return rv
+
+            i = self.stop - 1
+            rv: typing.List[Ito] = []
+            while (sub := self.__nearest_non_ws_sub(i, True)) is not None and maxsplit != 0:
+                rv.append(sub)
+                i = sub.start - 1
+                maxsplit -= 1
+            rv.reverse()
+
+            if maxsplit == 0:
+                head_stop = self.stop if len(rv) == 0 else rv[0].start
+                head = self.clone(stop=head_stop).str_rstrip()
+                if len(head) > 0:
+                    rv.insert(0, head)
+            return rv
+
+        elif not isinstance(sep, str):
+            raise Errors.parameter_invalid_type('sep', sep, str, types.NoneType)
+
         elif sep == '':
             raise ValueError('empty separator')
-        else:
-            raise NotImplemented()
 
-    def str_rstrip(self, chars: str | None) -> typing.List[Ito]:
-        pass
+        else:
+            if maxsplit == 0:
+                return [self.clone()]
+
+            rv: typing.List[Ito] = []
+            i = self.stop
+            while (j := self._string.rfind(sep, self.start, i)) >= 0 and maxsplit != 0:
+                rv.insert(0, self.clone(j + len(sep), i))
+                i = j
+                maxsplit -= 1
+            # if i >= self.start + len(sep) and maxsplit != 0:
+            #     rv.insert(0, self.clone(i - len(sep), i))
+            if i >= self.start and maxsplit != 0:
+                rv.insert(0, self.clone(stop=i))
+
+            if maxsplit == 0:
+                head_stop = self.stop if len(rv) == 0 else rv[0].start
+                head = self.clone(stop=head_stop).str_removesuffix(sep)
+                if len(head) > 0:
+                    rv.insert(0, head)
+            return rv
 
     def str_split(self, sep: str = None, maxsplit: int = -1) -> typing.List[Ito]:
-        # TODO : handle maxsplit
-        if sep == '':
+        if sep is None:
+            rv: typing.List[Ito] = []
+            if self._string == '':
+                return rv
+
+            i = self.start
+            while (sub := self.__nearest_non_ws_sub(i)) is not None and maxsplit != 0:
+                rv.append(sub)
+                i = sub.stop
+                maxsplit -= 1
+
+            if maxsplit == 0:
+                tail_start = self.start if len(rv) == 0 else rv[-1].stop
+                tail = self.clone(tail_start).str_lstrip()
+                if len(tail) > 0:
+                    rv.append(tail)
+            return rv
+
+        elif not isinstance(sep, str):
+            raise Errors.parameter_invalid_type('sep', sep, str, types.NoneType)
+
+        elif sep == '':
             raise ValueError('empty separator')
 
-        elif sep is None:
-            rv : typing.List[Ito] = []
-            start: int
-            in_whitespace = True
-            for i, c in enumerate(self, self.start):
-                if in_whitespace:
-                    if not c.isspace():
-                        start = i
-                        in_whitespace = False
-                else:
-                    if c.isspace():
-                        rv.append(self.clone(start, i))
-                        in_whitespace = True
-            if not in_whitespace:
-                rv.append(self.clone(start, i + 1))
-            return rv
-
-            # rv : typing.List[Ito] = []
-            # start: int
-            # in_whitespace = True
-            # for i, c in enumerate(self):
-            #     if in_whitespace:
-            #         if not c.isspace():
-            #             start = i
-            #             in_whitespace = False
-            #     else:
-            #         if c.isspace():
-            #             rv.append(self.clone(start, i))
-            #             in_whitespace = True
-            # if not in_whitespace:
-            #     rv.append(self.clone_ex(start, i + 1))
-            # return rv
-
         else:
+            if maxsplit == 0:
+                return [self.clone()]
+
             rv: typing.List[Ito] = []
             i = self.start
-            while (j := self._string.find(sep, i, self.stop)) >= 0:
+            while (j := self._string.find(sep, i, self.stop)) >= 0 and maxsplit != 0:
                 rv.append(self.clone(i, j))
                 i = j + len(sep)
-            if i <= self.stop:
+                maxsplit -= 1
+            if i <= self.stop and maxsplit != 0:
                 rv.append(self.clone(i))
-            # rv: typing.List[Ito] = []
-            # i = self.start
-            # while (j := self._string.find(sep, i, self.stop)) >= 0:
-            #     rv.append(Ito(self.string, i, j))
-            #     i = j + len(sep)
-            # if i <= self.stop:
-            #     rv.append(self.string, i)
+
+            if maxsplit == 0:
+                tail_start = self.start if len(rv) == 0 else rv[-1].stop
+                tail = self.clone(tail_start).str_removeprefix(sep)
+                if len(tail) > 0:
+                    rv.append(tail)
             return rv
-        
-    def str_splitlines(self, keepends: bool = False) -> Typing.List[Ito]:
+
+    def str_splitlines(self, keepends: bool = False) -> typing.List[Ito]:
         pass
+
+    # endregion
+
+    def str_removeprefix(self, prefix: str) -> Ito:
+        if self.str_startswith(prefix):
+            return Ito(self, len(prefix), desc=self.desc)
+        else:
+            return self.clone()
+
+    def str_removesuffix(self, suffix: str) -> Ito:
+        if self.str_endswith(suffix):
+            return Ito(self, stop=-len(suffix), desc=self.desc)
+        else:
+            return self.clone()
+        
+    def str_rfind(self, sub: str, start: int | None = None, end: int | None = None) -> int:
+        return self._string.rfind(sub, *Span.from_indices(self, start, end, self.start))
+
+    def str_rindex(self, sub: str, start: int | None = None, end: int | None = None) -> int:
+        return self._string.rindex(sub, *Span.from_indices(self, start, end, self.start))
 
     def str_startswith(
             self,
@@ -494,16 +593,25 @@ class Ito:
     ) -> bool:
         if prefix is None:
             raise Errors.parameter_invalid_type('prefix', prefix, str, typing.Tuple[str, ...])
-        # Python has odd rules for how .startswith works when start & end are inconsistent...
-        # ...so just slice and use Python rather than trying to replicate the weirdness
-        return self[:].startswith(prefix, start, end)
-        
-    def str_strip(self, chars: str | None = None) -> Ito:
-        pass
 
-    #endregion
+        # The subsequent block captures the strange behavior of Python's str.startswith
+        if start is not None and start != 0:
+            ls = len(self)
+            if start > ls:
+                return False
 
-    #region traversal
+            start_c = 0 if start is None else start if start >= 0 else ls + start
+            end_c = ls if end is None else end if end >= 0 else ls + end
+            if start_c > end_c:  # inconsistent start/end
+                return False
+
+        # Ok, just do what you would expect
+        norms = Span.from_indices(self, start, end, self.start)
+        return self._string.startswith(prefix, *norms)
+
+    # endregion
+
+    # region traversal
 
     def get_root(self) -> C | None:
         rv = self.parent
@@ -521,11 +629,11 @@ class Ito:
     def walk_descendants(self) -> typing.Iterable[C]:
         yield from (ito for lvl, ito in self.walk_descendants_levels())
 
-    #endregion
+    # endregion
 
-    #region query
+    # region query
     
-    #endregion
+    # endregion
 
 class ChildItos(collections.abc.Sequence):
     def __init__(self, parent: Ito, *itos: Ito):
@@ -533,7 +641,7 @@ class ChildItos(collections.abc.Sequence):
         self.__store: typing.List[Ito] = []
         self.add(*itos)
 
-    #region search & index
+    # region search & index
 
     def __bfind_start(self, ito: C) -> int:
         i = bisect.bisect_left(self.__store, ito.start, key=lambda j: j.start)
@@ -568,9 +676,9 @@ class ChildItos(collections.abc.Sequence):
         if self.__is_stop_gt_next_start(i_end, ito):
             raise ValueError('parameter \'ito\' overlaps with next')
             
-    #endregion
+    # endregion
 
-    #region Collection & Set
+    # region Collection & Set
 
     def __contains__(self, ito) -> bool:
         return self.__bfind_start(ito) >= 0
@@ -581,18 +689,18 @@ class ChildItos(collections.abc.Sequence):
     def __len__(self) -> int:
         return len(self.__store)
 
-    #endregion
+    # endregion
 
-    #region Sequence
+    # region Sequence
 
     def __getitem__(self, key: int | slice) -> C | typing.List[C]:
         if isinstance(key, int) or isinstance(key, slice):
             return self.__store[key]
         raise Errors.parameter_invalid_type('key', key, int, slice)
 
-    #endregion
+    # endregion
 
-    #region Removal
+    # region Removal
 
     def __delitem__(self, key: int | slice) -> None:
         if not (isinstance(key, int) or isinstance(key, slice)):
@@ -617,9 +725,9 @@ class ChildItos(collections.abc.Sequence):
     def clear(self):
         self.__delitem__(slice(None))
 
-    #endregion
+    # endregion
 
-    #region Add & Update
+    # region Add & Update
 
     def __setitem__(self, key: int | slice, value: Ito | typing.Iterable[Ito]) -> None:
         if isinstance(key, int):

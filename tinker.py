@@ -1,10 +1,15 @@
-import random
+import sys
+# Force Python XML parser, not faster C accelerators because we can't hook the C implementation (3.x hack)
+sys.modules['_elementtree'] = None
+import xml.etree.ElementTree as ET
+import xml.parsers.expat as expat
+
 import typing
 
 import regex
 from segments import Span, Ito, __version__
-from segments.xml import XmlParser
-from segments.tests.util import RandSpans
+import segments.xml
+from segments.itorator import Extract
 
 
 # print(__version__)
@@ -13,11 +18,10 @@ from segments.tests.util import RandSpans
 # print(__version__.asdict())
 # exit(0)
 
-
 def dump_itos(*itos: Ito, indent='', __str__: bool = True):
     for i, ito in enumerate(itos):
         s = f' .__str__():"{ito.__str__()}"' if __str__ else ''
-        print(f'{indent}{i:,}: .span={ito.span} .descriptor="{ito.descriptor}{s}"')
+        print(f'{indent}{i:,}: .span={ito.span} .desc="{ito.desc}"{s}"')
         dump_itos(*ito.children, indent=indent+'  ', __str__=__str__)
 
 
@@ -52,27 +56,6 @@ sample_xml = """<?xml version="1.0"?>
     </country>
 </data>"""
 
-NAME = r'(?P<Name>[^ />=]+)'
-VALUE = r'="(?P<Value>[^"]+)"'
-NAME_VALUE = NAME + VALUE
-
-NS_NAME = r'(?:(?P<Namespace>[^: ]+):)?' + NAME
-NS_NAME_VALUE = NS_NAME + VALUE
-
-ns_tag = regex.compile(r'\<(?P<Tag>' + NS_NAME + r')', regex.DOTALL)
-attribute = regex.compile(r'(?P<Attribute>' + NS_NAME_VALUE + r')', regex.DOTALL)
-
-m = ns_tag.match('<country name="Liechtenstein">')
-print(m.group('Tag'))
-# m = attribute.match('<country name="Liechtenstein">')
-# print(m.group('Attribute'))
-m = attribute.match('name="Liechtenstein"')
-print(m.group('Attribute'))
-# exit(0)
-
-import xml.etree.ElementTree as ET
-root = ET.fromstring(sample_xml, parser=XmlParser())
-# root = ET.fromstring(sample_xml)
+root = ET.fromstring(sample_xml, parser=segments.xml.XmlParser())
 dump_itos(root._ito)
-
-
+exit(0)

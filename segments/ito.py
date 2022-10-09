@@ -2,9 +2,11 @@ from __future__ import annotations
 import bisect
 import collections.abc
 import itertools
+import json
+import operator
+import pickle
 import types
 import typing
-import warnings
 
 import regex
 from segments.span import Span
@@ -157,7 +159,7 @@ class Ito:
               start: int | None = None,
               stop: int | None = None,
               desc: str | None = None,
-              omit_children: bool = False
+              clone_children: bool = True
               ) -> Ito:
         rv = self.__class__(
             self._string,
@@ -169,8 +171,8 @@ class Ito:
         if self._value_func is not None:
             rv.value_func = self._value_func
 
-        if not omit_children:
-            rv.children.add(*(c.clone(omit_children=False) for c in self._children))
+        if clone_children:
+            rv.children.add(*(c.clone() for c in self._children))
 
         return rv
 
@@ -222,6 +224,74 @@ class Ito:
         else:
             setattr(self, '__value__', f.__get__(self))
         self._value_func = f
+
+    # endregion
+
+    # region serialization
+
+    # region pickling
+
+    @classmethod
+    def pickle_loads(cls, pickle_str: str, ito_str: str) -> Ito:
+        rv = pickle.load(pickle_str)
+        rv._string = ito_str
+        return rv
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state['parent']
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self._parent = None
+        for child in self.children:
+            child._parent = self
+
+    # endregion
+
+    # region JSON
+
+    class JsonEncoderStringless(json.JSONEncoder):
+        def default(self, o: typing.Any) -> typing.Dict:
+            return {
+                '__type__': 'Ito',
+                '_span': o.span,
+                'desc': o.desc,
+                'children': [self.default(c) for c in o.children]
+            }
+
+    class JsonEncoder(json.JSONEncoder):
+        def default(self, o: typing.Any) -> typing.Dict:
+            return {
+                '__type__': 'Ito',
+                'string': o.string,
+                'ito': Ito.JsonEncoderStringless.default(o)
+            }
+
+    @classmethod
+    def json_decoder_stringless(cls, obj: typing.Dict) -> Ito | typing.Dict:
+        if (t := obj.get('__type__')) is not None and t == 'Ito':
+            rv = Ito('', desc=obj['desc'])
+            rv._span = Span(obj['desc'])
+            rv.children.add(obj['children'])
+            return rv
+        else:
+            return obj
+
+    @classmethod
+    def json_decoder(cls, obj: typing.Dict) -> Ito | typing.Dict:
+        if (t := obj.get('__type__')) is not None:
+            if t == 'Tuple[str, Ito]':
+                rv = obj['ito']
+                rv._string = obj['string']
+                return rv
+        elif t == 'Ito':
+            return cls.json_decoder_stringless(obj)
+        else:
+            return obj
+
+    # endregion
 
     # endregion
 
@@ -399,7 +469,7 @@ class Ito:
             i += 1
         return self.clone(i)
 
-    def str_rstrip(self, chars: str | None = None) -> typing.List[Ito]:
+    def str_rstrip(self, chars: str | None = None) -> Ito:
         f_c_in = self.__f_c_in(chars)
         i = self.stop - 1
         while i >= 0 and f_c_in(i):
@@ -613,12 +683,10 @@ class Ito:
 
     # region traversal
 
-    def get_root(self) -> C | None:
-        rv = self.parent
-
-        while rv is not None:
-            rv = rv.parent
-
+    def get_root(self) -> Ito | None:
+        rv: Ito | None = None
+        while (parent := self.parent) is not None:
+            rv = parent
         return rv
 
     def walk_descendants_levels(self, start: int = 0) -> typing.Iterable[typing.Tuple[int, C]]:
@@ -632,8 +700,408 @@ class Ito:
     # endregion
 
     # region query
-    
+
+    _MUST_SCAPE_FILTER_VALUE_CHARS = ('\\', '[', ']', '/', ',', '{', '}',)
+
+    @classmethod
+    def filter_value_escape(cls, value: str) -> str:
+        rv = value.replace('\\', '\\\\')  # Must do backslash before other chars
+        for c in filter(lambda c: c != '\\', cls._MUST_SCAPE_FILTER_VALUE_CHARS):
+            rv = rv.replace(c, f'\\{c}')
+        return rv
+
+    @classmethod
+    def filter_value_descape(cls, value: str) -> str:
+        rv = ''
+        escape = False
+        for c in value:
+            if escape or c != '\\':
+                rv += c
+                escape = False
+            else:
+                escape = True
+
+        if escape:
+            raise ValueError(f'found escape with no succeeding character in \'value\'')
+
+        return rv
+
+    @classmethod
+    def _query_value_split_on_comma(cls, value: str) -> typing.Iterable[str]:
+        cur = ''
+        escape = False
+        for c in value:
+            if escape:
+                cur = f'{cur}\\{c}'
+                escape = False
+            elif c == '\\':
+                escape = True
+            elif c == ', ':
+                if len(cur) > 0:
+                    yield cur
+                cur = ''
+            else:
+                cur += c
+
+        if len(cur) > 0:
+            yield cur
+
+    @classmethod
+    def _query_step_filter(
+            cls,
+            key: str,
+            value: str,
+            values: typing.Dict[str, typing.Any] | None = None,
+            predicates: typing.Dict[str, typing.Callable[[int, Ito], bool]] | None = None
+    ) -> typing.Callable[[typing.Tuple[int, Ito]], bool]:
+        if key == 'd':
+            return lambda kvp: kvp[1].descriptor in [
+                cls.filter_value_descape(s) for s in cls._query_value_split_on_comma(value)]
+
+        if key == 'i':
+            ints: typing.Set[int] = set()
+            for i_chunk in value.split(','):
+                try:
+                    _is = [int(i.strip()) for i in i_chunk.split('-')]
+                except:
+                    raise ValueError(f'invalid integer in \'value\'')
+
+                len_is = len(_is)
+                if len_is == 1:
+                    ints.add(_is[0])
+                elif len_is == 2:
+                    for i in range(*_is):
+                        ints.add(i)
+                else:
+                    raise ValueError('invalid index item \'value\'')
+
+            return lambda kvp: kvp[0] in ints
+
+        if key == 'p':
+            if predicates is None:
+                raise ValueError('predicate expression found, however, no predicates dictionary supplied')
+
+            keys = [cls.filter_value_descape(s) for s in cls._query_value_split_on_comma(value)]
+            ps = [v for k, v in predicates.items() if k in keys]
+            return lambda kvp: any(p(*kvp) for p in ps)
+
+        if key == 's':
+            return lambda kvp: kvp[1].__str__() in [
+                cls.filter_value_descape(s) for s in cls._query_value_split_on_comma(value)
+            ]
+
+        if key == 'sc':
+            return lambda kvp: kvp[1].__str__().casefold() in [
+                cls.filter_value_descape(s).casefold() for s in cls._query_value_split_on_comma(value)
+            ]
+
+        if key == 'v':
+            if values is None:
+                raise ValueError('value expression found, however, no values dictionary supplied')
+
+            keys = [cls.filter_value_descape(s) for s in cls._query_value_split_on_comma(value)]
+            vs = [v for k, v in values.items() if k in keys]
+            return lambda kvp: kvp[1].values() in vs
+
+        raise ValueError(f'invalid filter key \'key\'')
+
+    QUERY_OPERATORS = collections.OrderedDict()
+    QUERY_OPERATORS['&'] = operator.and_
+    QUERY_OPERATORS['|'] = operator.or_
+    QUERY_OPERATORS['^'] = operator.xor
+
+    class _CombinedFilters:
+        def __init__(self, filters: typing.Sequence[regex.Match], operands: typing.Sequence[str]):
+            if len(filters) == 0:
+                raise ValueError(f'empty filters list')
+            self.filters = filters
+
+            if len(operands) != len(filters) - 1:
+                raise ValueError(f'count of operands ({len(operands):,}) must be one less than count of filters ({len(filters):,}')
+            self.operands = operands
+
+        def filter(self, kvp: typing.Tuple[int, Ito]) -> bool:
+            acum = self.filters[0](kvp)
+            for f, o in zip(self.filters[1:], self.operands):
+                op = Ito.QUERY_OPERATORS.get(o)
+                if op is None:
+                    raise ValueError('invalid operator \'{o}\'')
+                cur = f(kvp)
+                acum = op(acum, cur)
+            return acum
+
+    class _CombinedSubqueries:
+        def __init__(self, subqueries: typing.Sequence[str], operands: typing.Sequence[str]):
+            if len(subqueries) == 0:
+                raise ValueError('empty subqueries list')
+            self.subqueries = subqueries
+
+            if len(operands) != len(subqueries) - 1:
+                raise ValueError(f'count of operands ({len(operands):,}) must be one less than count of subqueries ({len(subqueries):,}')
+            self.operands = operands
+
+        def filter(self, kvp: typing.Tuple[int, Ito]) -> bool:
+            acum = kvp[1].find(self.subqueries[0]) is not None
+            for s, o in zip(self.subqueries[1:], self.operands):
+                op = Ito.QUERY_OPERATORS.get(o)
+                if op is None:
+                    raise ValueError('invalid operator \'{o}\'')
+                cur = kvp[1].find(s) is not None
+                acum = op(acum, cur)
+            return acum
+
+    class _PhraseParse:
+        _axis_order_re = regex.compile(r'(?P<a>\.{1,4}|\*{1,2}|\<{1,2}|\>{1,2})\s*(?P<o>[nr])?\s*(P<r>.*)', regex.DOTALL)
+
+        _obs_pat_1 = r'(?<!\\)(?:(?:\\{2})*)'  # Odd number of backslashes ver 1
+        _obs_pat_2 = r'\\(\\\\)*'              # Odd number of backslashes ver 2
+
+        _open_bracket = regex.compile(_obs_pat_1 + r'\[', regex.DOTALL)
+        _close_bracket = regex.compile(_obs_pat_1 + r'\]', regex.DOTALL)
+
+        _open_cur = regex.compile(_obs_pat_1 + r'\{', regex.DOTALL)
+        _close_cur = regex.compile(_obs_pat_1 + r'\}', regex.DOTALL)
+
+        _subquery_re = regex.compile(_obs_pat_1 + r'(?P<sq>\{.*)\s*', regex.DOTALL)
+        _subquery_balanced_splitter = regex.compile(
+            r'(?P<cur>(?<!' + _obs_pat_2 + r')\{(?:(?:' + _obs_pat_2 + r'[{}]|[^{}])++|(?&cur))*(?<!' + _obs_pat_2 + r')\})',
+            regex.DOTALL
+        )
+
+        _filter_balanced_splitter = regex.compile(
+            r'(?P<bra>(?<!' + _obs_pat_2 + r')\[(?:(?:' + _obs_pat_2 + r'[\[\]]|[^\[\]])++|(?&bra))*(?<!' + _obs_pat_2 + r')\])',
+            regex.DOTALL
+        )
+        _filter_re = regex.compile(r'\[(?P<k>[a-z]{1,2}):\s*(?P<v>.+?)\]', regex.DOTALL)
+
+        def __init__(self, phrase: str):
+            # Axis
+            a_o_m = self._axis_order_re.fullmatch(phrase)
+            if a_o_m is None:
+                raise ValueError(f'invalid phrase \'{phrase}\'')
+            self.axis = a_o_m.group('a')
+
+            # Order
+            self.order = a_o_m.group('o')
+
+            # Sub-query
+            self.subquery_operands = []
+            self.subqueries = []
+            s_q_m = self._subquery_re.search(phrase, pos=a_o_m.span('r')[0])
+            if s_q_m is not None:
+                s_q_g = s_q_m.group('sq')
+                if len([*self._open_cur.finditer(s_q_g)]) != len([*self._close_cur.finditer(s_q_g)]):
+                    raise ValueError(f'unbalanced curly braces in sub-query(ies) \'{s_q_g}\'')
+                sqs = [*self._subquery_balanced_splitter.finditer(s_q_g)]
+                last = None
+                for sq in sqs:
+                    if last is not None:
+                        start = last.span(0)[1]
+                        stop = sq.span(0)[0]
+                        op = s_q_g[start:stop].strip()
+                        if len(op) == 0:
+                            raise ValueError(f'missing operator between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
+                        elif op not in Ito.QUERY_OPERATORS.keys():
+                            raise ValueError(
+                                f'invalid subquery operator \'{op}\' between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
+                        self.subqueries.append(sq.group(0)[1:-1])
+                        last = sq
+
+            # Filter
+            self.filter_operands = []
+            self.filters = []
+            f_start = a_o_m.span('r')[0]
+            f_end = a_o_m.span('r')[1] if s_q_m is None else s_q_m.span('sq')[0]
+            filter_str = phrase[f_start:f_end].strip()
+            if len(filter_str) > 0:
+                if len([*self._open_bracket.finditer(filter_str)]) != len([*self._close_bracket.finditer(filter_str)]):
+                    raise ValueError(f'unbalanced brackets in filter(s) \'{filter_str}\'')
+                filts = [*self._filter_balanced_splitter.finditer(filter_str)]
+                last = None
+                for f in filts:
+                    if last is not None:
+                        start = last.span(0)[1]
+                        stop = f.span(0)[0]
+                        op = filter_str[start:stop].strip()
+                        if len(op) == 0:
+                            raise ValueError(
+                                f'missing operator between filters \'{last.group(0)}\' and \'{f.group(0)}\'')
+                        elif op not in Ito.QUERY_OPERATORS.keys():
+                            raise ValueError(
+                                f'invalid filter operator \'{op}\' between filters \'{last.group(0)}\' and \'{f.group(0)}\'')
+                        self.filter_operands.append(op)
+                        m = self._filter_re.fullmatch(f.group(0))
+                        if m is None:
+                            raise ValueError(f'invalid filter \'{f.group(0)}\'')
+                        self.filters.append({'key': m.group('k'), 'val': m.group('v')})
+                        last = f
+
+    @classmethod
+    def _from_axis_order(
+            cls,
+            itos: typing.Iterable[Ito],
+            axis: str, order: str
+    ) -> typing.Iterable[typing.Tuple[int, Ito]]:
+        if order is not None and order not in 'rn':
+            raise ValueError(f'invalid axis order \'{order}\'')
+        reverse = (order == 'r')
+
+        if axis == '....':
+            roots = filter(lambda ito: ito is not None, (i.get_root() for i in itos))
+            yield from ((0, root) for root in roots)
+
+        elif axis == '...':
+            for ito in itos:
+                ancestors = []
+                cur = ito
+                while (cur := cur.parent) is not None:
+                    ancestors.append(cur)
+                if not reverse:  # Already in reverse order
+                    ancestors.reverse()
+                yield from enumerate(ancestors)
+
+        elif axis == '..':
+            yield from ((0, i.parent) for i in itos if i.parent is not None)
+
+        elif axis == '.':
+            yield from enumerate(itos)
+
+        elif axis == '*':
+            for i in itos:
+                if reverse:
+                    yield from enumerate(i.children[::-1])
+                else:
+                    yield from enumerate(i.children)
+
+        elif axis == '**':
+            for i in itos:
+                if reverse:
+                    yield from enumerate([*i.walk_descendants()][::-1])
+                else:
+                    yield from enumerate([*i.walk_descendants()])
+
+        elif axis == '***':
+            raise NotImplemented('Coming soon!')
+
+        elif axis == '<<':
+            for i in itos:
+                if (p := i.parent) is not None:
+                    _slice = p.children[0:p.children.index(i)]
+                    if reverse:
+                        _slice.reverse()
+                    yield from enumerate(_slice)
+
+        elif axis == '<':
+            for i in itos:
+                if (p := i.parent) is not None:
+                    idx = p.children.index(i)
+                    if idx > 0:
+                        yield 0, p.children[idx - 1]
+
+        elif axis == '>':
+            for i in itos:
+                if (p := i.parent) is not None:
+                    idx = p.children.index(i)
+                    if idx < len(p.children) - 1:
+                        yield 0, p.children[idx + 1]
+
+        elif axis == '>>':
+            for i in itos:
+                if (p := i.parent) is not None:
+                    _slice = p.children[p.children.index(i):]
+                    if reverse:
+                        _slice.reverse()
+                    yield from enumerate(_slice)
+
+        raise ValueError(f'invalid axis \'{axis}\'')
+
+    @classmethod
+    def _from_phrase(
+            cls,
+            itos: typing.Iterable[Ito],
+            query_step: str,
+            values: typing.Dict[str, object] | None = None,
+            predicates: typing.Dict[str, typing.Callable[[int, Ito], bool]] | None = None
+    ) -> typing.Iterable[Ito]:
+        qsp = cls._PhraseParse(query_step)
+
+        axis = cls._from_axis_order(itos, qsp.axis, qsp.order)
+
+        if len(qsp.filters) == 0:
+            filt = lambda a: True
+        else:
+            filt = cls._CombinedFilters(
+                [cls._query_step_filter(f['key'], f['val'], values, predicates) for f in qsp.filters],
+                qsp.filter_operands
+            ).filter
+
+        if len(qsp.subqueries) == 0:
+            subq_filt = lambda a: True
+        else:
+            subq_filt = cls._CombinedSubqueries(
+                qsp.subqueries,
+                qsp.subquery_operands
+            ).filter
+
+        combined_filter = lambda a: filt(a) and subq_filt(a)
+
+        yield from (a[1] for a in filter(combined_filter, axis))
+
+    @classmethod
+    def _split_phrases(cls, query: str) -> typing.Iterable[str]:
+        rv = ''
+        escape = False
+        subquery_cnt = 0
+        for c in query:
+            if escape:
+                rv += f'\\{c}'
+                escape = False
+            elif c == '\\':
+                escape = True
+            elif c == '{':
+                rv += c
+                subquery_cnt += 1
+            elif c == '}':
+                rv += c
+                subquery_cnt -= 1
+            elif c == '/' and subquery_cnt == 0:
+                yield rv
+                rv = ''
+            else:
+                rv += c
+
+        if escape:
+            raise ValueError('found escape with no succeeding character in \'{query}\'')
+        else:
+            yield rv
+
+    def find_all(
+            self,
+            query: str,
+            values: typing.Dict[str, typing.Any] | None = None,
+            predicates: typing.Dict[str, typing.Callable[[int, Ito], bool]] | None = None
+    ) -> typing.Iterable[Ito]:
+        if query is None or not query.isprintable():
+            raise Errors.parameter_neither_none_nor_empty('query')
+
+        current = [self]
+        for phrase in self._split_phrases(query):
+            if not phrase.isprintable():
+                raise ValueError('empty phrase identified; one or more orphan separator(s)')
+            current = self._from_phrase(current, phrase, values, predicates)
+
+        yield from current
+
+    def find(
+            self,
+            query: str,
+            values: typing.Dict[str, typing.Any] | None = None,
+            predicates: typing.Dict[str, typing.Callable[[int, Ito], bool]] | None = None
+    ) -> Ito | None:
+        return next(self.find_all(query, values, predicates), None)
+
     # endregion
+
 
 class ChildItos(collections.abc.Sequence):
     def __init__(self, parent: Ito, *itos: Ito):
@@ -825,3 +1293,5 @@ class ChildItos(collections.abc.Sequence):
                 ito.children.add(*tmp)
                 self.__store.insert(i, ito)
                 ito._set_parent(self.__parent)
+
+    # endregion

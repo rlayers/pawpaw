@@ -150,7 +150,7 @@ class Extract(Itorator):
             filtered_gns = (gn for gn in m.re.groupindex.keys() if self._group_filter(ito, m, gn))
             span_gns = ((span, gn) for gn in filtered_gns for span in m.spans(gn))
             for span, gn in sorted(span_gns, key=lambda val: (val[0][0], -val[0][1])):
-                ito = ito.clone(*span, self.desc_func(ito, m, gn))
+                ito = ito.clone(*span, self.desc_func(ito, m, gn), clone_children=False)
                 while len(path_stack) > 0 and (ito.start < path_stack[-1].start or ito.stop > path_stack[-1].stop):
                     path_stack.pop()
                 if len(path_stack) == 0:

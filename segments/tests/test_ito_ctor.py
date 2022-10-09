@@ -131,12 +131,12 @@ class TestItoCtor(_TestIto):
         parent = Ito(s, desc='parent')
         self.add_chars_as_children(parent, 'child')
 
-        for oc in (True, False):
-            with self.subTest(omit_children=oc):
-                clone = parent.clone(omit_children=oc)
+        for cc in (True, False):
+            with self.subTest(clone_children=cc):
+                clone = parent.clone(clone_children=cc)
                 self.assertEqual(parent, clone)
                 self.assertEqual(len(s), len(parent.children))
-                if oc:
+                if cc:
                     self.assertEqual(0, len(clone.children))
                 else:
                     self.assertEqual(len(parent.children), len(clone.children))

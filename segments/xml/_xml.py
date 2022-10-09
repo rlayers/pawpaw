@@ -101,7 +101,6 @@ class XmlParser(ET.XMLParser):
     def _extract_itos(self, element: ET.Element):
         start_tag = Ito(self._text, element._start_char_index, self._text.index('>', element._start_char_index + 1) + 1, desc='Start_Tag')
         start_tag.children.add(*self._tag_extractor.traverse(start_tag))
-        # want to search attributes starting from start_tag.find('*[d:Tag]).stop+1
         start_tag.children.add(*self._attributes_extractor.traverse(start_tag))
 
         if (element._end_char_index + 2) < len(self._text) and self._text[element._end_char_index:element._end_char_index + 2] == '</':

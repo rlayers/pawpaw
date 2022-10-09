@@ -137,9 +137,9 @@ class TestItoCtor(_TestIto):
                 self.assertEqual(parent, clone)
                 self.assertEqual(len(s), len(parent.children))
                 if cc:
-                    self.assertEqual(0, len(clone.children))
-                else:
                     self.assertEqual(len(parent.children), len(clone.children))
+                else:
+                    self.assertEqual(0, len(clone.children))
 
     def test_clone_with_value_func(self):
         string = ' abcdef '

@@ -64,9 +64,10 @@ class Ito:
         return cls(match.string, *match.span(group), desc=desc)
 
     @classmethod
-    def _gf(cls,
+    def _group_filter(
+            cls,
             group_filter: typing.Iterable[str] | typing.Callable[[regex.Match, str], bool] | None
-            ) -> typing.Callable[[regex.Match, str], bool]:
+    ) -> typing.Callable[[regex.Match, str], bool]:
         if group_filter is None:
             return lambda m_, g: True
 
@@ -83,29 +84,43 @@ class Ito:
             typing.Callable[[Ito, regex.Match, str], bool],
             types.NoneType)
 
-    def from_match_ex(
-            self,
-            match: regex.Match,
-            descriptor_func: typing.Callable[[regex.Match, str], str] = lambda ito, match, group: group,
-            group_filter: typing.Iterable[str] | typing.Callable[[regex.Match, str], bool] | None = None
+    @classmethod
+    def from_re(
+            cls,
+            re: regex.Pattern,
+            basis: str | Ito,
+            desc_func: typing.Callable[[regex.Match, str], str] = lambda match, group: group,
+            group_filter: typing.Iterable[str] | typing.Callable[[regex.Match, str], bool] | None = None,
+            limit: int | None = None,
     ) -> typing.Iterable[C]:
-        path_stack: typing.List[Ito] = []
-        rv: typing.List[Ito] = []
-        gf = self._gf(group_filter)
-        filtered_gns = (gn for gn in match.re.groupindex.keys() if gf(match, gn))
-        span_gns = ((span, gn) for gn in filtered_gns for span in match.spans(gn))
-        for span, gn in sorted(span_gns, key=lambda val: (val[0][0], -val[0][1])):
-            ito = Ito(match.string, *span, desc=descriptor_func(match, gn))
-            while len(path_stack) > 0 and (ito.start < path_stack[-1].start or ito.stop > path_stack[-1].stop):
-                path_stack.pop()
-            if len(path_stack) == 0:
-                rv.append(ito)
-            else:
-                path_stack[-1].children.add(ito)
+        if isinstance(basis, str):
+            s = basis
+            span = Span.from_indices(s)
+        elif isinstance(basis, Ito):
+            s = basis.string
+            span = basis.span
+        else:
+            raise Errors.parameter_invalid_type('basis', basis, str, Ito)
+        for count, m in enumerate(re.finditer(s, *span), 1):
+            path_stack: typing.List[Ito] = []
+            match_itos: typing.List[Ito] = []
+            filtered_gns = (gn for gn in m.re.groupindex.keys() if cls._group_filter(group_filter)(m, gn))
+            span_gns = ((span, gn) for gn in filtered_gns for span in m.spans(gn))
+            for span, gn in sorted(span_gns, key=lambda val: (val[0][0], -val[0][1])):
+                ito = Ito(s, *span, desc_func(m, gn))
+                while len(path_stack) > 0 and (ito.start < path_stack[-1].start or ito.stop > path_stack[-1].stop):
+                    path_stack.pop()
+                if len(path_stack) == 0:
+                    match_itos.append(ito)
+                else:
+                    path_stack[-1].children.add(ito)
 
-            path_stack.append(ito)
+                path_stack.append(ito)
 
-        yield from rv
+            yield from match_itos
+
+            if limit is not None and count >= limit:
+                break
 
     @classmethod
     def from_spans(cls, string: str, *spans: Span, descriptor: str | None = None) -> typing.List[C]:
@@ -633,7 +648,8 @@ class Ito:
             return rv
 
     def str_splitlines(self, keepends: bool = False) -> typing.List[Ito]:
-        pass
+        # TODO : Implement this one
+        raise NotImplemented()
 
     # endregion
 
@@ -981,6 +997,7 @@ class Ito:
                     yield from enumerate([*i.walk_descendants()])
 
         elif axis == '***':
+            # TODO : Implement leaf node axis
             raise NotImplemented('Coming soon!')
 
         elif axis == '<<':

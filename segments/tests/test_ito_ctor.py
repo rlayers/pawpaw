@@ -43,7 +43,7 @@ class TestItoCtor(_TestIto):
                             self.assertEqual(basis.string, ito.string)
                             self.assertEqual(basis[start:stop], ito[:])
 
-    def test_from_match(self):
+    def test_from_match_simple(self):
         first = 'John'
         last = 'Doe'
         string = ' '.join((first, last))
@@ -61,6 +61,34 @@ class TestItoCtor(_TestIto):
                 ito = Ito.from_match(m, group, desc=desc)
                 self.assertEqual(m.group(group), ito.__str__())
                 self.assertEqual(desc, ito.desc)
+
+    def test_from_re_str(self):
+        re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')
+        s = 'nine 9 ten 10 eleven 11 twelve 12 thirteen 13'
+
+        root = Ito(s, desc='root')
+        rv = [*Ito.from_re(re, s)]
+        root.children.add(*rv)
+        self.assertEqual(5, len(root.children))
+        itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]
+        grouped = {k: [v for v in itos if v.desc == k] for k, val in itertools.groupby(itos, lambda x: x.desc)}
+        self.assertEqual(5, len(grouped['word']))
+        self.assertEqual(5, len(grouped['number']))
+        self.assertEqual(9, len(grouped['digit']))
+
+    def test_from_re_ito(self):
+        re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')
+        s = 'nine 9 ten 10 eleven 11 twelve 12 thirteen 13'
+
+        root = Ito(s, s.index('ten'), s.index('thirteen'), desc='root')
+        rv = [*Ito.from_re(re, root)]
+        root.children.add(*rv)
+        self.assertEqual(3, len(root.children))
+        itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]
+        grouped = {k: [v for v in itos if v.desc == k] for k, val in itertools.groupby(itos, lambda x: x.desc)}
+        self.assertEqual(3, len(grouped['word']))
+        self.assertEqual(3, len(grouped['number']))
+        self.assertEqual(6, len(grouped['digit']))
 
     def test_from_substrings(self):
         string = 'abcd' * 10

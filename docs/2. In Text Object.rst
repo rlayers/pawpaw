@@ -87,12 +87,27 @@ Creating from ``regex.Match``
 Cloning
 ~~~~~~~
 
-To create a duplicate ``Ito``:'
+Clone versus ctor:
 
->>> s = ' abc '
->>> i = Ito(s, 1, -1, descriptor='original')
->>> Ito(s, *i.span, descriptor='duplicate')
-segments.Ito(' abc ', 1, 4, 'duplicate')
+``.clone()`` preserves:
+
+    * .value
+    * .children
+    * *type* of Ito (i.e., derived)
+
+Prevervation of *type* is important if you have classes derived from ``Ito``:
+The typing is important for derived classes:
+
+>>> class DerivedIto(Ito):
+...     def __init__(self, basis, start=None, stop=None, desc=None):
+...         super().__init__(basis, start, stop, desc)
+...
+>>> i = DerivedIto('abc')
+>>> c = i.clone()
+>>> type(c).__name__
+'DerivedIto'
+
+Blah blah blah
 
 This is supported via the static constructor ``.clone``
 

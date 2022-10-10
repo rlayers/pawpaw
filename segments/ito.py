@@ -21,7 +21,7 @@ class Ito:
 
     def __init__(
             self,
-            basis: str | Ito,
+            basis: str | Ito,  # Rename to 'val'?
             start: int | None = None,
             stop: int | None = None,
             desc: str | None = None
@@ -228,6 +228,9 @@ class Ito:
     def children(self) -> ChildItos:
         return self._children
 
+    def value(self) -> typing.Any:
+        return self.__str__()
+
     @property
     def value_func(self) -> typing.Callable[[Ito], typing.Any]:
         return self._value_func
@@ -235,9 +238,9 @@ class Ito:
     @value_func.setter
     def value_func(self, f: typing.Callable[[Ito], typing.Any]) -> None:
         if f is None:
-            delattr(self, '__value__')
+            delattr(self, 'value')
         else:
-            setattr(self, '__value__', f.__get__(self))
+            setattr(self, 'value', f.__get__(self))
         self._value_func = f
 
     # endregion
@@ -319,9 +322,6 @@ class Ito:
     def __str__(self) -> str:
         return self._string[slice(*self.span)]
 
-    def __value__(self) -> typing.Any:
-        # TODO : Make this a '__x' only method
-        return self.__str__()
 
     def __len__(self) -> int:
         return self.stop - self.start

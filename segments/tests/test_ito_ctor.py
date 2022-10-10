@@ -154,6 +154,32 @@ class TestItoCtor(_TestIto):
                 clone = ito.clone(**pdict)
                 self.assertEqual(expected, clone)
 
+    def test_clone_typing(self):
+        class DerivedIto(Ito):
+            def __init__(
+                    self,
+                    basis: str | Ito,
+                    start: int | None = None,
+                    stop: int | None = None,
+                    desc: str | None = None):
+                super().__init__(basis, start, stop, desc)
+
+        i = DerivedIto('abc')
+        c = i.clone()
+        type(c).__name__
+
+        s = 'abc'
+        parent = DerivedIto(s, desc='parent')
+        self.assertEqual('DerivedIto', type(parent).__name__)
+        self.add_chars_as_children(parent, 'child')
+        self.assertTrue(all(type(c).__name__ == 'DerivedIto' for c in parent.children))
+
+        clone = parent.clone()
+        self.assertEqual(len(parent.children), len(clone.children))
+        for c, cc in zip(parent.children, clone.children):
+            self.assertIsNot(c, cc)
+            self.assertEqual(c, cc)
+
     def test_clone_children(self):
         s = 'abc'
         parent = Ito(s, desc='parent')
@@ -175,19 +201,19 @@ class TestItoCtor(_TestIto):
         f2 = lambda ito: ito.__str__().upper()
 
         root = Ito(string)
-        self.assertEqual(string, root.__value__())
+        self.assertEqual(string, root.value())
 
         clone = root.clone()
-        self.assertEqual(string, clone.__value__())
+        self.assertEqual(string, clone.value())
 
         root.value_func = f1
-        self.assertEqual(f1(root), root.__value__())
-        self.assertEqual(string, clone.__value__())  # Ensure clone didn't change
+        self.assertEqual(f1(root), root.value())
+        self.assertEqual(string, clone.value())  # Ensure clone didn't change
 
         clone.value_func = f2
-        self.assertEqual(f2(clone), clone.__value__())
-        self.assertEqual(f1(root), root.__value__())  # Ensure root didn't change
+        self.assertEqual(f2(clone), clone.value())
+        self.assertEqual(f1(root), root.value())  # Ensure root didn't change
 
         root.value_func = None
-        self.assertEqual(string, root.__value__())
-        self.assertEqual(f2(clone), clone.__value__())  # Ensure clone didn't change
+        self.assertEqual(string, root.value())
+        self.assertEqual(f2(clone), clone.value())  # Ensure clone didn't change

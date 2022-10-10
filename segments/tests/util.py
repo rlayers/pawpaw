@@ -10,8 +10,6 @@ class _TestIto(TestCase):
     @classmethod
     def add_chars_as_children(cls, ito: Ito, desc: str | None) -> None:
         ito.children.add(*(ito.clone(i, i + 1, desc) for i in range(*ito.span)))
-        # for i in range(*ito.span):
-        #     ito.children.add(ito.clone(i, i+1, desc))
 
     def assertEqual(self, first: typing.Any, second: typing.Any, msg: typing.Any = ...) -> None:
         if isinstance(first, Ito) and isinstance(second, Ito):

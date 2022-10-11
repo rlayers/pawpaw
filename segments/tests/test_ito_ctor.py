@@ -1,4 +1,5 @@
 import itertools
+import typing
 import warnings
 
 import regex
@@ -7,6 +8,10 @@ from segments.tests.util import _TestIto, RandSubstrings
 
 
 class TestItoCtor(_TestIto):
+    class IntIto(Ito):
+        def value(self) -> typing.Any:
+            return int(self[:])
+    
     def test_ctor_invalid_src(self):
         for src in None, 1:
             with self.subTest(src=src):
@@ -89,6 +94,18 @@ class TestItoCtor(_TestIto):
         self.assertEqual(3, len(grouped['word']))
         self.assertEqual(3, len(grouped['number']))
         self.assertEqual(6, len(grouped['digit']))
+        
+    def test_from_spans(self):
+        s = 'abcd' * 100
+        spans = [*RandSpans((1, 10), (0, 3)).generate(s)]
+        desc = 'x'
+        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', self.IntIto)):
+            with self.subTest(_class=cls_name):
+                for i in _class.from_spans(s, *spans, desc=desc)
+                    self.assertIsInstance(i, _class)
+                    self.assertIs(s, i.string)
+                    self.assertIn(i.span, spans)
+                    self.assertEqual(desc, i.desc)
 
     def test_from_substrings(self):
         string = 'abcd' * 10

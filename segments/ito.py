@@ -725,8 +725,8 @@ class Ito:
     # region traversal
 
     def get_root(self) -> Ito | None:
-        rv: Ito | None = None
-        while (parent := self.parent) is not None:
+        rv = self
+        while (parent := rv.parent) is not None:
             rv = parent
         return rv
 

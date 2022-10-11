@@ -390,14 +390,40 @@ class Ito:
 
     # region regex equivalence methods
 
+    def regex_finditer(self, re: regex.Pattern) -> typing.Iterable[regex.Match]:
+        return re.finditer(self.string, *self.span)
+
     def regex_match(self, re: regex.Pattern) -> regex.Match:
         return re.match(self.string, *self.span)
 
     def regex_search(self, re: regex.Pattern) -> regex.Match:
         return re.search(self.string, *self.span)
-
-    def regex_finditer(self, re: regex.Pattern) -> typing.Iterable[regex.Match]:
-        return re.finditer(self.string, *self.span)
+    
+    def _regex_split(self, re: regex.Pattern) -> typing.Tuple(typing.List[Ito], typing.List[Ito])
+        parts: typing.List[Ito] = []
+        seps: typing.List[Ito] = []
+        
+        i = self.start
+        for m in self.regex_inditer(re):
+            if maxsplit != 0 and len(parts) > maxsplit:
+                break
+            span = Span(*m.span(0))
+            seps.append(self.clone(*span))
+            if span.start == i:
+                parts.append(self.clone(i, i))
+            else:
+                parts.append(self.clone(i, span.start))
+            i = span.stop
+            
+        if i < self.stop:
+            parts.append(self.clone(i))
+        elif i == self.stop:
+            parts.append(self.clone(i, i))
+            
+        return parts, seps
+    
+    def _regex_split(self, re: regex.Pattern) -> typing.List[Ito]:
+        return self._regex_split(re, maxsplit)[0]
 
     # endregion
 
@@ -713,9 +739,21 @@ class Ito:
                     rv.append(tail)
             return rv
 
+    # Line separators taken from https://docs.python.org/3/library/stdtypes.html
+    _splitlines_re = regex.compile(r'\r\n|\r|\n|\v|\x0b|\f|\x0c|\x1c|\x1d|\x1e|\x85|\u2028|\u2029', regex.DOTALL)
+
     def str_splitlines(self, keepends: bool = False) -> typing.List[Ito]:
-        # TODO : Implement this one
-        raise NotImplemented()
+        parts, seps = self._regex_split(self._splitlines_re)
+        if len(parts[-1]) == 0:
+            del parts[-1]
+            del seps[-1]
+        if len(parts) == 0 or not keepends:
+            return parts
+        rv = [parts.pop(0)]
+        for part, sep in zip(parts, seps):
+            rv.append(part)
+            rv.append(sep)
+        return rv
 
     # endregion
 

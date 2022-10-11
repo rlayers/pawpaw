@@ -35,9 +35,16 @@
 <h3 align="center">segments</h3>
 
   <p align="center">
-    Text Segmentation
+    High Performance Text Segmentation
     <br />
-    <a href="https://github.com/rlayers/segments"><strong>Explore the docs »</strong></a>
+    <ul>
+      <li>Rigorous hierarchical text segmentation</li>
+      <li>Rules pipelining engine to quickly and easily segment complex text</li>
+      <li>Structured query language for searching & querying segmented text</li>
+    </ul>
+    <listitem>
+    <br />
+    <a href="https://github.com/rlayers/segments/docs"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     ·

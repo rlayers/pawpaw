@@ -42,6 +42,17 @@ class Types:
 
 
 class Ito:
+    @classmethod
+    def _to_span(cls, src | Ito, start: int | None = None, stop: int | None = None, desc: str | None = None) -> Span:
+        if isinstance(src, str):
+            offset = 0
+        elif isinstance(src, Ito):
+            offset = src.start
+        else:
+            raise Errors.parameter_invalid_type('src', src, str, Ito)
+            
+        return Span.from_indices(src, start, stop, offset)
+    
     # region ctors & clone
 
     def __init__(
@@ -51,20 +62,12 @@ class Ito:
             stop: int | None = None,
             desc: str | None = None
     ):
-        if isinstance(src, str):
-            self._string = src
-            offset = 0
-            
-        elif isinstance(src, Ito):
-            self._string = src.string
-            offset = src.start
-        else:
-            raise Errors.parameter_invalid_type('src', src, str, Ito)
-
-        self._span = Span.from_indices(src, start, stop, offset)
+        self._span = self._to_span(src, start, stop)  # Checks first 3 params
+        
+        self._string = src.string if isinstance(src, Ito) else src
 
         if desc is not None and not isinstance(desc, str):
-            raise Errors.parameter_invalid_type('descriptor', desc, str)
+            raise Errors.parameter_invalid_type('desc', desc, str)
         self.desc = desc
 
         self._value_func: typing.Callable[[Ito], typing.Any] | None = None
@@ -148,8 +151,8 @@ class Ito:
                 break
 
     @classmethod
-    def from_spans(cls, string: str, *spans: Span, descriptor: str | None = None) -> typing.List[C]:
-        return [cls(string, *s, desc=descriptor) for s in spans]
+    def from_spans(cls, string: str, *spans: Span, desc: str | None = None) -> typing.Iterable[C]:
+        return [cls(string, *s, desc=desc) for s in spans]
 
     @classmethod
     def from_substrings(
@@ -796,7 +799,7 @@ class Ito:
             predicates: typing.Dict[str, typing.Callable[[int, Ito], bool]] | None = None
     ) -> typing.Callable[[typing.Tuple[int, Ito]], bool]:
         if key == 'd':
-            return lambda kvp: kvp[1].descriptor in [
+            return lambda kvp: kvp[1].desc in [
                 cls.filter_value_descape(s) for s in cls._query_value_split_on_comma(value)]
 
         if key == 'i':

@@ -13,7 +13,7 @@ class TestSpan(_TestIto):
                                     _slice = slice(start, stop)
                                     expected = basis[_slice]
                                     span = Span.from_indices(basis, start, stop)
-                                    self.assertEqual(expected, string[span.start:span.stop])
+                                    self.assertEqual(expected, basis[span.start:span.stop])
                                     self.assertEqual(expected, basis[slice(*span)])
 
     def test_from_indices_invalid_base(self):
@@ -25,6 +25,6 @@ class TestSpan(_TestIto):
     def test_from_indices_invalid_indices(self):
         s = 'abc'
         for k, v in {'start': 1.0, 'stop': 1.0}.items():
-            with self.SubTest(basis=s, **{k:v}):
+            with self.subTest(basis=s, **{k:v}):
                 with self.assertRaises(TypeError):
                     Span.from_indices(s, **{k:v})

@@ -13,7 +13,7 @@ class TestItoQuery(_TestIto):
         self.root = Ito(self.src, self.src.index('ten'), self.src.index('thirteen) - 1, desc='root')
         self.root.children.add(*Ito.from_re(re, self.src))
         self.leaves = [d for d in self.root.walk_descendants() if len(d.children) == 0]
-        self.leaf = self.leaves[0]
+        self.leaf = next(i for i in self.leaves if i.parent[:] == 'eleven' and i[:] == 'v')
                                                                         
         self.descs = ['root', 'phrase', 'word', 'char']
 
@@ -104,4 +104,34 @@ class TestItoQuery(_TestIto):
                     actual = [*node.find_all(query)]
                     self.assertListEqual(expected, actual)
 
-    # endregion
+    def test_prior_siblings(self):
+        for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
+            for order in '', 'n', 'r':
+                query = f'<<{order}'
+                with self.subTest(node=node_type, query=query):
+                    if node.parent is None:
+                        expected: List[Ito] = []
+                    else:
+                        i = node.parent.children.index(node)
+                        expected = node.parent.children[:i]
+                    if order == 'r':
+                        expected.reverse()
+                    actual = [*node.find_all(query)]
+                    self.assertListEqual(expected, actual)
+
+    def test_next_siblings(self):
+        for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
+            for order in '', 'n', 'r':
+                query = f'>>{order}'
+                with self.subTest(node=node_type, query=query):
+                    if node.parent is None:
+                        expected: List[Ito] = []
+                    else:
+                        i = node.parent.children.index(node)
+                        expected = node.parent.children[i + 1:]
+                    if order == 'r':
+                        expected.reverse()
+                    actual = [*node.find_all(query)]
+                    self.assertListEqual(expected, actual)
+
+# endregion

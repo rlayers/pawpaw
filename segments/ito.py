@@ -1079,7 +1079,7 @@ class Ito:
         elif axis == '>>':
             for i in itos:
                 if (p := i.parent) is not None:
-                    sliced = p.children[p.children.index(i):]
+                    sliced = p.children[p.children.index(i) + 1:]
                     if reverse:
                         sliced.reverse()
                     yield from enumerate(sliced)

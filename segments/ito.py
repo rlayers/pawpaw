@@ -404,7 +404,7 @@ class Ito:
     # region str equivalence methods
 
     def str_count(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.count(sub, *Span.from_indices(self, start, end, self.start))
+        return self._string.count(sub[:], *Span.from_indices(self, start, end, self.start))
 
     def str_endswith(self, suffix: str | typing.Tuple[str, ...], start: int | None = None, end: int | None = None) -> bool:
         if suffix is None:

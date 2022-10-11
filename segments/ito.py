@@ -406,6 +406,8 @@ class Ito:
     def str_count(self, sub: str, start: int | None = None, end: int | None = None) -> int:
         return self._string.count(sub, *Span.from_indices(self, start, end, self.start))
 
+    # region endswtih, startswtih
+        
     def str_endswith(self, suffix: str | typing.Tuple[str, ...], start: int | None = None, end: int | None = None) -> bool:
         if suffix is None:
             raise Errors.parameter_invalid_type('suffix', suffix, str, typing.Tuple[str, ...])
@@ -425,11 +427,47 @@ class Ito:
         norms = Span.from_indices(self, start, end, self.start)
         return self._string.endswith(suffix, *norms)
 
+    def str_startswith(
+            self,
+            prefix: str | typing.Tuple[str, ...],
+            start: int | None = None,
+            end: int | None = None
+    ) -> bool:
+        if prefix is None:
+            raise Errors.parameter_invalid_type('prefix', prefix, str, typing.Tuple[str, ...])
+
+        # The subsequent block captures the strange behavior of Python's str.startswith
+        if start is not None and start != 0:
+            ls = len(self)
+            if start > ls:
+                return False
+
+            start_c = 0 if start is None else start if start >= 0 else ls + start
+            end_c = ls if end is None else end if end >= 0 else ls + end
+            if start_c > end_c:  # inconsistent start/end
+                return False
+
+        # Ok, just do what you would expect
+        norms = Span.from_indices(self, start, end, self.start)
+        return self._string.startswith(prefix, *norms)
+
+    # endregion
+
+    # region find, index, rfind, rindex
+   
     def str_find(self, sub: str, start: int | None = None, end: int | None = None) -> int:
         return self._string.find(sub, *Span.from_indices(self, start, end, self.start))
 
     def str_index(self, sub: str, start: int | None = None, end: int | None = None) -> int:
         return self._string.index(sub, *Span.from_indices(self, start, end, self.start))
+    
+    def str_rfind(self, sub: str, start: int | None = None, end: int | None = None) -> int:
+        return self._string.rfind(sub, *Span.from_indices(self, start, end, self.start))
+
+    def str_rindex(self, sub: str, start: int | None = None, end: int | None = None) -> int:
+        return self._string.rindex(sub, *Span.from_indices(self, start, end, self.start))
+
+    # endregion
 
     # region 'is' predicates
 
@@ -681,6 +719,8 @@ class Ito:
 
     # endregion
 
+    # region removeprefix, removesuffix
+
     def str_removeprefix(self, prefix: str) -> Ito:
         if self.str_startswith(prefix):
             return Ito(self, len(prefix), desc=self.desc)
@@ -693,35 +733,7 @@ class Ito:
         else:
             return self.clone()
         
-    def str_rfind(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.rfind(sub, *Span.from_indices(self, start, end, self.start))
-
-    def str_rindex(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.rindex(sub, *Span.from_indices(self, start, end, self.start))
-
-    def str_startswith(
-            self,
-            prefix: str | typing.Tuple[str, ...],
-            start: int | None = None,
-            end: int | None = None
-    ) -> bool:
-        if prefix is None:
-            raise Errors.parameter_invalid_type('prefix', prefix, str, typing.Tuple[str, ...])
-
-        # The subsequent block captures the strange behavior of Python's str.startswith
-        if start is not None and start != 0:
-            ls = len(self)
-            if start > ls:
-                return False
-
-            start_c = 0 if start is None else start if start >= 0 else ls + start
-            end_c = ls if end is None else end if end >= 0 else ls + end
-            if start_c > end_c:  # inconsistent start/end
-                return False
-
-        # Ok, just do what you would expect
-        norms = Span.from_indices(self, start, end, self.start)
-        return self._string.startswith(prefix, *norms)
+    # endregion
 
     # endregion
 

@@ -9,14 +9,13 @@ class TestItoStrEquivalenceMethods(_TestIto):
     def test_str_count(self):
         s = 'ab' * 10
         i = Ito(s, 2, -2)
-        for sub_str in 'ab', 'ba':
-            for sub in sub_str, Ito(sub_str):
-                with self.subTest(sub=sub):
-                    self.assertEqual(i[:].count(sub[:]), i.str_count(sub))
-                    self.assertEqual(i[:].count(sub[:], 2, -2), i.str_count(sub, 2, -2))
-                    self.assertEqual(i[:].count(sub[:], 3, -3), i.str_count(sub, 3, -3))
-                    self.assertEqual(i[:].count(sub[:], 4), i.str_count(sub, 4))
-                    self.assertEqual(i[:].count(sub[:], None, -4), i.str_count(sub, end=-4))
+        for sub in 'ab', 'ba':
+            with self.subTest(sub=sub):
+                self.assertEqual(i[:].count(sub), i.str_count(sub))
+                self.assertEqual(i[:].count(sub, 2, -2), i.str_count(sub, 2, -2))
+                self.assertEqual(i[:].count(sub, 3, -3), i.str_count(sub, 3, -3))
+                self.assertEqual(i[:].count(sub, 4), i.str_count(sub, 4))
+                self.assertEqual(i[:].count(sub, None, -4), i.str_count(sub, end=-4))
 
     def test_str_endswith(self):
         s = f' {"abc" * 2} '

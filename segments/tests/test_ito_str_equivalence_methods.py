@@ -244,7 +244,17 @@ class TestItoStrEquivalenceMethods(_TestIto):
                     self.assertListEqual(expected, actual)
 
     def test_str_splitlines(self):
-        self.assertTrue(False)
+        basis = 'The\nquick\rbrown\r\nfox\vjumped\fover\xc1the\x1dlazy\u2028dogs.'
+        paddings = ('', '\n', '\n\n', '\n\n\n', '\n\n\n\n', '\u2029', '\u2029\u2029')
+        for prefix in paddings:
+            for suffix in paddings:
+                s = f'{prefix}{basis}{suffix};
+                for keepends in True, False:
+                    with self.subTest(string=2, ito_start=1, ito_stop=-1, keepends=keepends):
+                        ito = Ito(s, 1, -1)
+                        expected = s[1:-1].splitlines()
+                        actual = [i[:] for i in ito.str_splitlines(keepends)]
+                        self.assertListEqual(expected, actual)
 
     # endregion
 

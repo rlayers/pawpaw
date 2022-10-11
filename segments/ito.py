@@ -378,7 +378,7 @@ class Ito:
         stop = max(ito.stop for ito in it_stop)
         rv = Ito(strs.pop(), start, stop, desc)
 
-        children = itertools.chain.from_iterable(ito.children for ito in itos)
+        children: typing.Iterable[Ito] = itertools.chain.from_iterable(ito.children for ito in itos)
         rv.children.add(*(c.clone() for c in children))
 
         return rv

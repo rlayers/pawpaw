@@ -757,12 +757,12 @@ class Ito:
 
     # region query
 
-    _MUST_SCAPE_FILTER_VALUE_CHARS = ('\\', '[', ']', '/', ',', '{', '}',)
+    _MUST_ESCAPE_FILTER_VALUE_CHARS = ('\\', '[', ']', '/', ',', '{', '}',)
 
     @classmethod
     def filter_value_escape(cls, value: str) -> str:
         rv = value.replace('\\', '\\\\')  # Must do backslash before other chars
-        for c in filter(lambda c: c != '\\', cls._MUST_SCAPE_FILTER_VALUE_CHARS):
+        for c in filter(lambda c: c != '\\', cls._MUST_ESCAPE_FILTER_VALUE_CHARS):
             rv = rv.replace(c, f'\\{c}')
         return rv
 

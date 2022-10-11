@@ -119,6 +119,36 @@ class TestItoQuery(_TestIto):
                     actual = [*node.find_all(query)]
                     self.assertListEqual(expected, actual)
 
+    def test_next_sibling(self):
+        for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
+            for order in '', 'n', 'r':
+                query = f'<{order}'
+                with self.subTest(node=node_type, query=query):
+                    if node.parent is None:
+                        expected: List[Ito] = []
+                    else:
+                        i = node.parent.children.index(node)
+                        expected = node.parent.children[i-1:i]
+                    if order == 'r':
+                        expected.reverse()
+                    actual = [*node.find_all(query)]
+                    self.assertListEqual(expected, actual)
+
+    def test_prior_sibling(self):
+        for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
+            for order in '', 'n', 'r':
+                query = f'<<{order}'
+                with self.subTest(node=node_type, query=query):
+                    if node.parent is None:
+                        expected: List[Ito] = []
+                    else:
+                        i = node.parent.children.index(node)
+                        expected = node.parent.children[i + 1:i + 2]
+                    if order == 'r':
+                        expected.reverse()
+                    actual = [*node.find_all(query)]
+                    self.assertListEqual(expected, actual)
+
     def test_next_siblings(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for order in '', 'n', 'r':
@@ -134,4 +164,4 @@ class TestItoQuery(_TestIto):
                     actual = [*node.find_all(query)]
                     self.assertListEqual(expected, actual)
 
-# endregion
+    # endregion

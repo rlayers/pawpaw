@@ -907,7 +907,7 @@ class Ito:
             return acum
 
     class _PhraseParse:
-        _axis_order_re = regex.compile(r'(?P<a>\.{1,4}|\*{1,3}|[\<\>]{1,2})\s*(?P<o>[nr])?\s*(?P<r>.*)', regex.DOTALL)
+        _axis_re = regex.compile(r'(?P<a>\-|\.{1,4}|\*{1,3}|\<{1,2}|\>{1,2})\s*(?P<o>[nr])?\s*(?P<r>.*)', regex.DOTALL)
 
         _obs_pat_1 = r'(?<!\\)(?:(?:\\{2})*)'  # Odd number of backslashes ver 1
         _obs_pat_2 = r'\\(\\\\)*'              # Odd number of backslashes ver 2
@@ -931,19 +931,20 @@ class Ito:
         _filter_re = regex.compile(r'\[(?P<k>[a-z]{1,2}):\s*(?P<v>.+?)\]', regex.DOTALL)
 
         def __init__(self, phrase: str):
-            # Axis
-            a_o_m = self._axis_order_re.fullmatch(phrase)
-            if a_o_m is None:
+            a_m = self._axis_re.fullmatch(phrase)
+            if a_m is None:
                 raise ValueError(f'invalid phrase \'{phrase}\'')
-            self.axis = a_o_m.group('a')
+
+            # Axis
+            self.axis = a_m.group('a')
 
             # Order
-            self.order = a_o_m.group('o')
+            self.order = a_m.group('o')
 
             # Sub-query
             self.subquery_operands = []
             self.subqueries = []
-            s_q_m = self._subquery_re.search(phrase, pos=a_o_m.span('r')[0])
+            s_q_m = self._subquery_re.search(phrase, pos=a_m.span('r')[0])
             if s_q_m is not None:
                 s_q_g = s_q_m.group('sq')
                 if len([*self._open_cur.finditer(s_q_g)]) != len([*self._close_cur.finditer(s_q_g)]):
@@ -966,8 +967,8 @@ class Ito:
             # Filter
             self.filter_operands = []
             self.filters = []
-            f_start = a_o_m.span('r')[0]
-            f_end = a_o_m.span('r')[1] if s_q_m is None else s_q_m.span('sq')[0]
+            f_start = a_m.span('r')[0]
+            f_end = a_m.span('r')[1] if s_q_m is None else s_q_m.span('sq')[0]
             filter_str = phrase[f_start:f_end].strip()
             if len(filter_str) > 0:
                 if len([*self._open_bracket.finditer(filter_str)]) != len([*self._close_bracket.finditer(filter_str)]):
@@ -993,18 +994,20 @@ class Ito:
                         last = f
 
     @classmethod
-    def _from_axis_order(
+    def _axis_order_iter(
             cls,
             itos: typing.Iterable[Ito],
-            axis: str, order: str
+            order: str,
+            axis: str
     ) -> typing.Iterable[typing.Tuple[int, Ito]]:
         if order is not None and order not in 'rn':
             raise ValueError(f'invalid axis order \'{order}\'')
         reverse = (order == 'r')
 
         if axis == '....':
-            roots = filter(lambda ito: ito is not None, (i.get_root() for i in itos))
-            yield from ((0, root) for root in roots)
+            for i in itos:
+                if (r := i.get_root()) is not None:
+                    yield 0, r
 
         elif axis == '...':
             for ito in itos:
@@ -1012,15 +1015,23 @@ class Ito:
                 cur = ito
                 while (cur := cur.parent) is not None:
                     ancestors.append(cur)
-                if not reverse:  # Already in reverse order
+                if reverse:
                     ancestors.reverse()
                 yield from enumerate(ancestors)
 
         elif axis == '..':
-            yield from ((0, i.parent) for i in itos if i.parent is not None)
+            for i in itos:
+                if (p := i.parent) is not None:
+                    yield 0, p
 
         elif axis == '.':
-            yield from enumerate(itos)
+            yield from enumerate(itos)  # Special case where each ito gets unique enumeration
+
+        elif axis == '-':
+            rv = list(collections.OrderedDict.fromkeys(itos))
+            if reverse:
+                rv.reverse()
+            yield from enumerate(rv)
 
         elif axis == '*':
             for i in itos:
@@ -1046,10 +1057,10 @@ class Ito:
         elif axis == '<<':
             for i in itos:
                 if (p := i.parent) is not None:
-                    _slice = p.children[0:p.children.index(i)]
+                    sliced = p.children[0:p.children.index(i)]
                     if reverse:
-                        _slice.reverse()
-                    yield from enumerate(_slice)
+                        sliced.reverse()
+                    yield from enumerate(sliced)
 
         elif axis == '<':
             for i in itos:
@@ -1068,10 +1079,10 @@ class Ito:
         elif axis == '>>':
             for i in itos:
                 if (p := i.parent) is not None:
-                    _slice = p.children[p.children.index(i):]
+                    sliced = p.children[p.children.index(i):]
                     if reverse:
-                        _slice.reverse()
-                    yield from enumerate(_slice)
+                        sliced.reverse()
+                    yield from enumerate(sliced)
 
         else:
             raise ValueError(f'invalid axis \'{axis}\'')
@@ -1086,7 +1097,7 @@ class Ito:
     ) -> typing.Iterable[Ito]:
         qsp = cls._PhraseParse(query_step)
 
-        axis = cls._from_axis_order(itos, qsp.axis, qsp.order)
+        axis = cls._axis_order_iter(itos, qsp.axis, qsp.order)
 
         if len(qsp.filters) == 0:
             filt = lambda a: True

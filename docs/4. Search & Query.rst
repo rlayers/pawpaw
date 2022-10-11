@@ -1,0 +1,54 @@
+==============
+Search & Query
+==============
+
+Introduction
+============
+
+A segment requires a reference string in order to fully describe a substring.  Likewise, a ``Span`` requires a reference ``str`` for context.  The segments module pairs a ``Span`` and ``str`` together as an *In Text Object*\ [#]_, which is implemented in the class ``Ito``.
+
+
+Try 1:
+    ==========  ===============
+    Identifier  Meaning
+    ==========  ===============
+    ``....``    root
+    ``...``     ancestors
+    ``..``      parent
+    ``.``       identify (self)
+    ``*``       children
+    ``**``      descendants
+    ``***``     leaves
+    ``<<``      prior siblings
+    ``<``       prior sibling
+    ``>``       next sibling
+    ``>>``      next siblings
+    ==========  ===============
+
+Axis Identifiers
+
+    +------------+-------------------------------------------------------+
+    | Identifier | Meaning                                               |
+    +============+=======================================================+
+    | ``....``   | root(s) of the current Ito(s)                         |
+    +------------+-------------------------------------------------------+
+    | ``...``    | ancestors (nearest to furthest) of the current Ito(s) |
+    +------------+-------------------------------------------------------+
+    | ``..``     | parent                                                |
+    +------------+-------------------------------------------------------+
+    | ``.``      | self                                                  |
+    +------------+-------------------------------------------------------+
+
+
+An ``Ito`` is not an arbitray data collection.  Rather, it defines segments wihtin text and can have ancestors, siblings, and decendants.  This results in several implicit assumptions:
+
+* Children are contained in their parent: The ``.span`` for a child ``Ito`` is contained within the ``.span`` of its ``.parent``
+* Non-overlapping siblings: An ``Ito`` does not overlap any other ``Ito`` objects that share the same ``.parent``
+* Ordered siblings: Siblings are ordered within their parent by their ``.span.start``; because they are non-overlapping, the ``.span.stop`` for an ``Ito`` will always be less than or equal to the ``.span.start`` of the subsequent sibling
+
+
+.. [#] The name "In Test Object" is historical, and dates back to earlier projects I developed.  I've chosen to keep this name because "Ito" makes for a short, convenient type name.
+
+.. [#] In Python, strings are also immutable.
+
+.. [#] Because a child ``Ito`` must be equal to or contained by a parent ``Ito``, this is a *tree* graph.

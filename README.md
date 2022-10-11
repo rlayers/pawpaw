@@ -44,7 +44,7 @@
     </ul>
     <listitem>
     <br />
-    <a href="https://github.com/rlayers/segments/docs"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/rlayers/segments/tree/master/docs"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     ·

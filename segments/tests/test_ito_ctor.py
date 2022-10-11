@@ -7,19 +7,19 @@ from segments.tests.util import _TestIto, RandSubstrings
 
 
 class TestItoCtor(_TestIto):
-    def test_ctor_invalid_basis(self):
-        for basis in None, 1:
-            with self.subTest(basis=basis):
+    def test_ctor_invalid_src(self):
+        for src in None, 1:
+            with self.subTest(src=src):
                 with self.assertRaises(TypeError):
-                    Ito(basis)
+                    Ito(src)
 
     def test_ctor_str_defaults(self):
-        for basis in '', ' ', 'a', 'abc':
-            with self.subTest(basis=basis):
-                i = Ito(basis)
-                self.assertEquals(basis, i.string)
-                self.assertEquals(basis, i[:])
-                self.assertEquals((0, len(basis)), i.span)
+        for src in '', ' ', 'a', 'abc':
+            with self.subTest(src=src):
+                i = Ito(src)
+                self.assertEquals(src, i.string)
+                self.assertEquals(src, i[:])
+                self.assertEquals((0, len(src)), i.span)
 
     def test_ctor_str_non_defaults(self):
         s = 'abcd'
@@ -36,12 +36,12 @@ class TestItoCtor(_TestIto):
         for s in '', ' ', 'a', 'abc', ' abc ':
             for i in None, 0, 1:
                 for j in -1, len(s), None:
-                    basis = Ito(s, i, j)
+                    src = Ito(s, i, j)
                     for start, stop in (None, None), (1, None), (None, -1), (1, -1):
-                        with self.subTest(basis=basis, start=start, stop=stop):
-                            ito = Ito(basis, start, stop)
-                            self.assertEqual(basis.string, ito.string)
-                            self.assertEqual(basis[start:stop], ito[:])
+                        with self.subTest(src=src, start=start, stop=stop):
+                            ito = Ito(src, start, stop)
+                            self.assertEqual(src.string, ito.string)
+                            self.assertEqual(src[start:stop], ito[:])
 
     def test_from_match_simple(self):
         first = 'John'
@@ -158,11 +158,11 @@ class TestItoCtor(_TestIto):
         class DerivedIto(Ito):
             def __init__(
                     self,
-                    basis: str | Ito,
+                    src: str | Ito,
                     start: int | None = None,
                     stop: int | None = None,
                     desc: str | None = None):
-                super().__init__(basis, start, stop, desc)
+                super().__init__(src, start, stop, desc)
 
         i = DerivedIto('abc')
         c = i.clone()

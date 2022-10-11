@@ -17,14 +17,14 @@ class TestItoStrEquivalenceMethods(_TestIto):
         ito = Ito(s, 1, -1)
 
         sep = None
-        with self.subTest(basis=s, sep=sep):
+        with self.subTest(src=s, sep=sep):
             with self.assertRaises(TypeError):
                 ito.str_startswith(sep)
 
         for sep in ['', 'a', 'b', 'ab', 'bc', 'c', 'abc', 'z']:
             for start in [-100, -1, None, 0, 1, 100]:
                 for end in [-100, -1, None, 0, 1, 100]:
-                    with self.subTest(basis=s, sep=sep, start=start, end=end):
+                    with self.subTest(src=s, sep=sep, start=start, end=end):
                         expected = s.strip().endswith(sep, start, end)
                         actual = ito.str_endswith(sep, start, end)
                         self.assertEqual(expected, actual)

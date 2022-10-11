@@ -1,6 +1,7 @@
 from __future__ import annotations
 import bisect
 import collections.abc
+import inspect
 import itertools
 import json
 import operator
@@ -13,7 +14,31 @@ from segments.span import Span
 from segments.errors import Errors
 
 
-C = typing.TypeVar('C', bound='Ito')
+class Types:
+    C = typing.TypeVar('C', bound='Ito')
+
+    F_ITO_2_ITOR = typing.Callable[[C], 'Itorator']
+
+    C_SQ_ITOS = typing.Sequence[C]
+    F_ITO_2_SQ_ITOS = typing.Callable[[C], C_SQ_ITOS]
+
+    C_IT_ITOS = typing.Iterable[C]
+    F_ITO_2_IT_ITOS = typing.Callable[[C], C_IT_ITOS]
+
+    @classmethod
+    def is_callable(cls, val: typing.Any, *params: typing.Type) -> bool:
+        if not isinstance(val, typing.Callable):
+            return False
+
+        ips = inspect.signature(val).parameters
+        if len(params) != len(ips):
+            return False
+
+        for ipv, p in zip(ips.values(), params):
+            if ipv.annotation != inspect._empty and p != ipv.annotation:  # TODO : when p is singular type and annotation is Union
+                return False
+
+        return True
 
 
 class Ito:
@@ -21,22 +46,22 @@ class Ito:
 
     def __init__(
             self,
-            basis: str | Ito,  # Rename to 'val'?
+            src: str | Ito,  # Rename to 'val'?
             start: int | None = None,
             stop: int | None = None,
             desc: str | None = None
     ):
-        if isinstance(basis, str):
-            self._string = basis
+        if isinstance(src, str):
+            self._string = src
             offset = 0
             
-        elif isinstance(basis, Ito):
-            self._string = basis.string
-            offset = basis.start
+        elif isinstance(src, Ito):
+            self._string = src.string
+            offset = src.start
         else:
-            raise Errors.parameter_invalid_type('basis', basis, str, Ito)
+            raise Errors.parameter_invalid_type('src', src, str, Ito)
 
-        self._span = Span.from_indices(basis, start, stop, offset)
+        self._span = Span.from_indices(src, start, stop, offset)
 
         if desc is not None and not isinstance(desc, str):
             raise Errors.parameter_invalid_type('descriptor', desc, str)
@@ -88,19 +113,19 @@ class Ito:
     def from_re(
             cls,
             re: regex.Pattern,
-            basis: str | Ito,
+            src: str | Ito,
             desc_func: typing.Callable[[regex.Match, str], str] = lambda match, group: group,
             group_filter: typing.Iterable[str] | typing.Callable[[regex.Match, str], bool] | None = None,
             limit: int | None = None,
     ) -> typing.Iterable[C]:
-        if isinstance(basis, str):
-            s = basis
+        if isinstance(src, str):
+            s = src
             span = Span.from_indices(s)
-        elif isinstance(basis, Ito):
-            s = basis.string
-            span = basis.span
+        elif isinstance(src, Ito):
+            s = src.string
+            span = src.span
         else:
-            raise Errors.parameter_invalid_type('basis', basis, str, Ito)
+            raise Errors.parameter_invalid_type('src', src, str, Ito)
         for count, m in enumerate(re.finditer(s, *span), 1):
             path_stack: typing.List[Ito] = []
             match_itos: typing.List[Ito] = []
@@ -129,12 +154,12 @@ class Ito:
     @classmethod
     def from_substrings(
             cls,
-            basis: str | Ito,
+            src: str | Ito,
             *substrings: str,
             desc: str | None = None
     ) -> typing.Iterable[C]:
         """
-        :param basis:
+        :param src:
         :param substrings: must be:
             1. present in string
             2. ordered left to right
@@ -156,14 +181,14 @@ class Ito:
         :param desc:
         :return:
         """
-        if isinstance(basis, str):
-            s = basis
-            i, j = Span.from_indices(basis)
-        elif isinstance(basis, Ito):
-            s = basis.string
-            i, j = basis.span
+        if isinstance(src, str):
+            s = src
+            i, j = Span.from_indices(src)
+        elif isinstance(src, Ito):
+            s = src.string
+            i, j = src.span
         else:
-            raise Errors.parameter_invalid_type('basis', basis, str, Ito)
+            raise Errors.parameter_invalid_type('src', src, str, Ito)
         for sub in substrings:
             i = s.index(sub, i, j)
             k = i + len(sub)
@@ -175,7 +200,7 @@ class Ito:
               stop: int | None = None,
               desc: str | None = None,
               clone_children: bool = True
-              ) -> Ito:
+              ) -> C:
         rv = self.__class__(
             self._string,
             self.start if start is None else start,
@@ -867,7 +892,7 @@ class Ito:
             return acum
 
     class _PhraseParse:
-        _axis_order_re = regex.compile(r'(?P<a>\.{1,4}|\*{1,2}|\<{1,2}|\>{1,2})\s*(?P<o>[nr])?\s*(P<r>.*)', regex.DOTALL)
+        _axis_order_re = regex.compile(r'(?P<a>\.{1,4}|\*{1,3}|[\<\>]{1,2})\s*(?P<o>[nr])?\s*(?P<r>.*)', regex.DOTALL)
 
         _obs_pat_1 = r'(?<!\\)(?:(?:\\{2})*)'  # Odd number of backslashes ver 1
         _obs_pat_2 = r'\\(\\\\)*'              # Odd number of backslashes ver 2
@@ -997,8 +1022,11 @@ class Ito:
                     yield from enumerate([*i.walk_descendants()])
 
         elif axis == '***':
-            # TODO : Implement leaf node axis
-            raise NotImplemented('Coming soon!')
+            for i in itos:
+                if reverse:
+                    yield from enumerate([*(d for d in i.walk_descendants() if len(d.children) == 0)][::-1])
+                else:
+                    yield from enumerate([*(d for d in i.walk_descendants() if len(d.children) == 0)])
 
         elif axis == '<<':
             for i in itos:
@@ -1030,7 +1058,8 @@ class Ito:
                         _slice.reverse()
                     yield from enumerate(_slice)
 
-        raise ValueError(f'invalid axis \'{axis}\'')
+        else:
+            raise ValueError(f'invalid axis \'{axis}\'')
 
     @classmethod
     def _from_phrase(

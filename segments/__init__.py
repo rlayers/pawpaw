@@ -7,7 +7,7 @@ del errors
 from segments.span import Span
 del span
 
-from segments.ito import Ito, ChildItos
+from segments.ito import Types, Ito, ChildItos
 del ito
 
 import segments.itorator

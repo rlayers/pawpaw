@@ -54,7 +54,7 @@ Attribute Error: can't set attribute 'string'
 Creating from another ``Ito``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A common task involves creating one substring from another.  This is easily performed by supplying an ``Ito`` as the *basis* to the constructor instead of a string.  The ``start`` and ``stop`` parameters are *relative to the basis*:
+A common task involves creating one substring from another.  This is easily performed by supplying an ``Ito`` as the first parameter, ``src``, to the constructor instead of a ``str``.  The ``start`` and ``stop`` parameters are *relative to ``Ito``.
 
 >>> s = '_abc_'
 >>> i1 = Ito(s, 1, -1)   # substring 'abc'
@@ -65,7 +65,7 @@ b 2 3
 Creating from substrings
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-A common Python task involves creating or receiving substrings.  ``Ito`` provides a convenient ``classmethod`` called ``.from_substrings`` that, when supplied with a *basis* ``str`` and a sequence of non-overlapping substrings, will generate a sequence of Ito objects:
+A common Python task involves creating or receiving substrings.  ``Ito`` provides a convenient ``classmethod`` called ``.from_substrings`` that, when supplied with a ``src`` of type ``str`` and a sequence of non-overlapping substrings, will generate a sequence of Ito objects:
 
 >>> s = 'A B C'
 >>> [*Ito.from_substrings(s, *s.split())]

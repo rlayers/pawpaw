@@ -67,16 +67,16 @@ class TestIto(_TestIto):
         ito = Ito(s)
 
         self.assertIsNone(ito.value_func)
-        self.assertEqual(s, ito.__value__())
+        self.assertEqual(s, ito.value())
 
         f = lambda i: i.__str__() * 2
         ito.value_func = f
         self.assertEqual(f, ito.value_func)
-        self.assertEqual(s * 2, ito.__value__())
+        self.assertEqual(s * 2, ito.value())
 
         ito.value_func = None
         self.assertIsNone(ito.value_func)
-        self.assertEqual(s, ito.__value__())
+        self.assertEqual(s, ito.value())
 
     def test_children(self):
         i = Ito('abc')

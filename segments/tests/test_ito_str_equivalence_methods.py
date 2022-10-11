@@ -192,17 +192,15 @@ class TestItoStrEquivalenceMethods(_TestIto):
                 self.assertListEqual(expected, actual)
 
     def test_str_rsplit(self):
-
-        with self.subTest(sep=None):
-            for s in ['', ' ', ' a', ' a', ' a ', ' a b', ' a b ', '\ta\nb\rc']:
-                for maxsplit in -1, 0, 1:
-                    with self.subTest(string=s, sep=None, maxsplit=maxsplit):
-                        ito = Ito(s)
-                        expected = [*Ito.from_substrings(s, *s.rsplit(maxsplit=maxsplit))]
-                        actual = ito.str_rsplit(maxsplit=maxsplit)
-                        self.assertEqual(len(expected), len(actual))
-                        for e, a in zip(expected, actual):
-                            self.assertEqual(e, a)
+        for s in ['', ' ', ' a', ' a', ' a ', ' a b', ' a b ', '\ta\nb\rc']:
+            for maxsplit in -1, 0, 1:
+                with self.subTest(string=s, sep=None, maxsplit=maxsplit):
+                    ito = Ito(s)
+                    expected = [*Ito.from_substrings(s, *s.rsplit(maxsplit=maxsplit))]
+                    actual = ito.str_rsplit(maxsplit=maxsplit)
+                    self.assertEqual(len(expected), len(actual))
+                    for e, a in zip(expected, actual):
+                        self.assertEqual(e, a)
 
         s = f' {"xyz" * 3} '
         ito = Ito(s, 1, -1)
@@ -220,16 +218,15 @@ class TestItoStrEquivalenceMethods(_TestIto):
                     self.assertListEqual(expected, actual)
 
     def test_str_split(self):
-        with self.subTest(sep=None):
-            for s in ['', ' ', ' a', ' a', ' a ', ' a b', ' a b ', '\ta\nb\rc', 'a b c d e']:
-                for maxsplit in -1, 0, 1:
-                    with self.subTest(string=s, sep=None, maxsplit=maxsplit):
-                        ito = Ito(s)
-                        expected = [*Ito.from_substrings(s, *s.split(maxsplit=maxsplit))]
-                        actual = ito.str_split(maxsplit=maxsplit)
-                        self.assertEqual(len(expected), len(actual))
-                        for e, a in zip(expected, actual):
-                            self.assertEqual(e, a)
+        for s in ['', ' ', ' a', ' a', ' a ', ' a b', ' a b ', '\ta\nb\rc', 'a b c d e']:
+            for maxsplit in -1, 0, 1:
+                with self.subTest(string=s, sep=None, maxsplit=maxsplit):
+                    ito = Ito(s)
+                    expected = [*Ito.from_substrings(s, *s.split(maxsplit=maxsplit))]
+                    actual = ito.str_split(maxsplit=maxsplit)
+                    self.assertEqual(len(expected), len(actual))
+                    for e, a in zip(expected, actual):
+                        self.assertEqual(e, a)
 
         s = f' {"xyz" * 3} '
         ito = Ito(s, 1, -1)

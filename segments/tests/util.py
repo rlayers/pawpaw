@@ -11,15 +11,18 @@ class _TestIto(TestCase):
     def add_chars_as_children(cls, ito: Types.C, desc: str | None) -> None:
         ito.children.add(*(ito.clone(i, i + 1, desc) for i in range(*ito.span)))
 
-    def assertEqual(self, first: typing.Any, second: typing.Any, msg: typing.Any = ...) -> None:
-        if isinstance(first, Ito) and isinstance(second, Ito):
-            self.assertEqual(first.string, second.string, msg)
-            self.assertEqual(first.span, second.span, msg)
-            self.assertEqual(first.desc, second.desc, msg)
-            self.assertIs(first.value_func, second.value_func, msg)
-        else:
-            super().assertEqual(self, first, second, msg)
-
+    def matches_equal(self, first: regex.Match, second: regex.Match, msg: typing.Any = ...) -> None:
+        if first is second:
+            return
+        
+        self.assertListEqual([*first.regs], [*second.regs])
+        self.assertEqual(first.group(0), second.group(0))
+        self.assertSequenceEqual(first.groupdict().keys(), second.groupdict().keys())
+        for v1, v2 in zip(first.groupdict().values(), second.groupdict().values()):
+            self.assertEqual(v1, v2)
+            
+    def setUp(self) -> None:
+        self.addTypeEqualityFunc(regex.Match, self.matches_equal)
 
 class RandSpans:
     def __init__(

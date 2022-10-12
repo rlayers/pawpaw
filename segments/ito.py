@@ -342,12 +342,20 @@ class Ito:
     # endregion
 
     # region __x__ methods
+    
+    def __key(self) -> typing.Tuple[str, Span, str | None, typing.Callable | None]:
+        return self._string, self._span, self.desc, self.value_func
+    
+    def __hash__(self) -> int:
+        return hash(self.__key())
 
     def __eq__(self, o: typing.Any) -> bool:
         """Itos are equal if they have equal:
-            1) .string & .desc values (using string equality not identity)
-            2) .span values
-            3) .value_func values
+        
+            1) type (differing polymorphic instances are considered not equal)
+            2) .string & .desc values (using string equality not identity)
+            3) .span values
+            4) .value_func values
         
         Collection memberships are not considered, i.e., .parent and .children and not considered
         
@@ -363,19 +371,7 @@ class Ito:
         if not isinstance(o, type(self)):
             return False
         
-        if self._string != o._string:
-            return False
-        
-        if self._span != o._span:
-            return False
-        
-        if self.desc != o.desc:
-            return False
-        
-        if self.value_func != o.value_func:
-            return False
-        
-        return True
+        return self.__key() == o.__key()
 
     def __ne__(self, o: typing.Any) -> bool:
         return not self.__eq__(o)

@@ -128,7 +128,7 @@ class XmlParser(ET.XMLParser):
             if end_tag is not None:
                 ito.children.add(end_tag)
 
-            element._ito = ito
+        element._ito = ito
 
     def close(self):
         rv = super().close()

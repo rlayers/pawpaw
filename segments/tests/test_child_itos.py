@@ -71,11 +71,9 @@ class TestChildItos(_TestIto):
         shuffled_descendants = list.copy(ordered_descendants)
         random.shuffle(shuffled_descendants)
 
-        # Add shuffled
+        # Add shuffled and compare
         root.children.add_hierarchical(*shuffled_descendants)
-        # .assertSequenceEqual chockes on long sequences, so iter manually
-        for e, a in zip(ordered_descendants, root.walk_descendants()):
-            self.assertEqual(e, a)
+        self.assertSequenceEqual(ordered_descendants, [*root.walk_descendants()])
 
     def test_del_key_int(self):
         s = py_string.ascii_lowercase

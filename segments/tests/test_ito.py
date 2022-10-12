@@ -150,10 +150,24 @@ class TestIto(_TestIto):
     def test_str(self):
         s = 'x123x'
         i = Ito(s, 1, -1)
+        self.assertEqual(s[1:-1], i.__str__())
+        self.assertEqual(s[1:-1], i[:])
         self.assertEqual(s[1:-1], f'{i}')
     
     def test_value(self):
-        pass
+        f = lambda ito: int(ito[:])
+        s = 'x123x'
+        
+        i = Ito(s, 1, -1)
+        self.assertEqual(i[:], i.value())
+        
+        i.value_func = f
+        self.assertEqual(i.value_func, f)
+        self.assertEqual(f(i[:]), i.value())
+        
+        i.value_func = None
+        self.assertIsNone(i.value_func)
+        self.assertEqual(i[:], i.value())
     
     def test_len(self):
         s = 'x123x'

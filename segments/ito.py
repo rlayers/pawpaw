@@ -1025,8 +1025,8 @@ class Ito:
                         elif op not in Ito.QUERY_OPERATORS.keys():
                             raise ValueError(
                                 f'invalid subquery operator \'{op}\' between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
-                        self.subqueries.append(sq.group(0)[1:-1])
-                        last = sq
+                    self.subqueries.append(sq.group(0)[1:-1])
+                    last = sq
 
             # Filter
             self.filter_operands = []
@@ -1051,11 +1051,11 @@ class Ito:
                             raise ValueError(
                                 f'invalid filter operator \'{op}\' between filters \'{last.group(0)}\' and \'{f.group(0)}\'')
                         self.filter_operands.append(op)
-                        m = self._filter_re.fullmatch(f.group(0))
-                        if m is None:
-                            raise ValueError(f'invalid filter \'{f.group(0)}\'')
-                        self.filters.append({'key': m.group('k'), 'val': m.group('v')})
-                        last = f
+                    m = self._filter_re.fullmatch(f.group(0))
+                    if m is None:
+                        raise ValueError(f'invalid filter \'{f.group(0)}\'')
+                    self.filters.append({'key': m.group('k'), 'val': m.group('v')})
+                    last = f
 
     @classmethod
     def _axis_order_iter(

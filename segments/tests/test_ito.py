@@ -85,6 +85,27 @@ class TestIto(_TestIto):
     # endregion
 
     # region __x__ methods
+    
+    def test_eq_simple(self):
+        s = 'abc'
+        i1 = Ito(s, 1, -1, 'd')
+        
+        for s2 in '', i1.string
+            for start in None, i1.start
+                for stop in None, i1.stop
+                    for d in None, i1.desc
+                        i2 = Ito(s2, start, stop, d)
+                        with self.subTest(first=i1, second=i2):
+                            if i1.string == i2.string and i1.desc == i2.desc and i1.span == i2.span:
+                                self.assertEqual(i1, i2)
+                            else
+                                self.assertNoteEqual(i1, i2)
+                                
+    def test_eq_derived(self):
+        s = 'abc'
+        i1 = Ito(s, 1, -1, 'd')
+        i2 = self.IntIto(s, *i1.span, i1.desc)
+        self.assertNotEqual(i1, i2)
 
     def test_repr(self):
         s = 'x123x'
@@ -97,8 +118,7 @@ class TestIto(_TestIto):
         actual = ito.__repr__()
         self.assertEqual(expected, actual)
         
-        i = actual.index('.')
-        self.assertEqual(ito, eval(actual[i+1:]))
+        self.assertEqual(ito, eval(actual))
     
     def test_str(self):
         s = 'x123x'

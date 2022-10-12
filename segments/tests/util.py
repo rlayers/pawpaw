@@ -18,7 +18,7 @@ class _TestIto(TestCase):
             self.assertEqual(first.desc, second.desc, msg)
             self.assertIs(first.value_func, second.value_func, msg)
         else:
-            TestCase.assertEqual(self, first, second, msg)
+            super().assertEqual(self, first, second, msg)
 
 
 class RandSpans:

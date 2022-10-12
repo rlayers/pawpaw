@@ -205,8 +205,6 @@ class TestIto(_TestIto):
         self.assertIsNot(joined, children[1])
         self.assertEqual(s, joined.__str__())
         self.assertEqual(joined_desc, joined.desc)
-        self.assertEqual(len(grandchildren), len(joined.children))
-        for gc1, gc2 in zip(grandchildren, joined.children):
-            self.assertEqual(gc1, gc2)
+        self.assertListEqual(grandchildren, [*joined.children])
 
     # endregion

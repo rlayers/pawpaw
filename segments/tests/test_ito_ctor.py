@@ -8,10 +8,6 @@ from segments.tests.util import _TestIto, RandSpans, RandSubstrings
 
 
 class TestItoCtor(_TestIto):
-    class IntIto(Ito):
-        def value(self) -> typing.Any:
-            return int(self[:])
-    
     def test_ctor_invalid_src(self):
         for src in None, 1:
             with self.subTest(src=src):
@@ -214,8 +210,8 @@ class TestItoCtor(_TestIto):
 
     def test_clone_with_value_func(self):
         string = ' abcdef '
-        f1 = lambda ito: ito.__str__().strip()
-        f2 = lambda ito: ito.__str__().upper()
+        f1 = lambda ito: ito[:].strip()
+        f2 = lambda ito: ito[:].upper()
 
         root = Ito(string)
         self.assertEqual(string, root.value())

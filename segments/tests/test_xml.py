@@ -57,3 +57,9 @@ class TestXml(_TestIto):
         self.assertEqual(len(expected), len(actual))
         for e, a in zip(expected, actual)
             self.assertIs(e, a)
+            
+        expected = root_e.findall('.//neighbor')
+        actual = [i.value() for i in root_i.find_all('**[d:Element]{*[d:Tag]&[i:0]&[s:neighbor]}')]
+        self.assertEqual(len(expected), len(actual))
+        for e, a in zip(expected, actual)
+            self.assertIs(e, a)

@@ -169,3 +169,16 @@ class TestItoQuery(_TestIto):
                     self.assertListEqual(expected, actual)
 
     # endregion
+    
+    # region filter
+    
+    def test_filter_desc_scalar(self):
+        for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
+            query = f'**[d:{desc}]'
+            with self.subTest(node=node_type, query=query):
+                expected = [d for d in node.walk_descendants() if d.desc == desc]
+                actual = [*node.find_all(query)]
+                self.assertSequenceEqual(expected, actual)
+    
+    # endregion
+

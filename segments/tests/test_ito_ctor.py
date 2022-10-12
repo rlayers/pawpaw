@@ -195,7 +195,7 @@ class TestItoCtor(_TestIto):
         self.assertEqual(len(parent.children), len(clone.children))
         for c, cc in zip(parent.children, clone.children):
             self.assertIsNot(c, cc)
-            self.assertEqual(c, cc)
+            self.itos_equal(c, cc)  # TypeEqualityFun registration won't handle subclassing - call directly
 
     def test_clone_children(self):
         s = 'abc'

@@ -1,4 +1,6 @@
+import typing
 from unittest import TestCase
+
 
 import regex
 from segments import Ito
@@ -10,8 +12,8 @@ class TestItoQuery(_TestIto):
         self.src = 'nine 9 ten 10 eleven 11 twelve 12 thirteen 13'
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')
         
-        self.root = Ito(self.src, self.src.index('ten'), self.src.index('thirteen) - 1, desc='root')
-        self.root.children.add(*Ito.from_re(re, self.src))
+        self.root = Ito(self.src, self.src.index('ten'), self.src.index('thirteen') - 1, desc='root')
+        self.root.children.add(*Ito.from_re(re, self.root))
         self.leaves = [d for d in self.root.walk_descendants() if len(d.children) == 0]
         self.leaf = next(i for i in self.leaves if i.parent[:] == 'eleven' and i[:] == 'v')
                                                                         
@@ -33,11 +35,11 @@ class TestItoQuery(_TestIto):
                 query = f'...{order}'
                 with self.subTest(node=node_type, query=query):
                     expected = self.descs[:self.descs.index(node.desc)]
-                    if order == 'r':
+                    if order != 'r':
                         expected.reverse()
                     actual = [*node.find_all(query)]
                     self.assertEqual(len(expected), len(actual))
-                    for e, a in zip(expected, actual)
+                    for e, a in zip(expected, actual):
                         self.assertEqual(e, a.desc)
 
     def test_axis_parent(self):
@@ -96,7 +98,7 @@ class TestItoQuery(_TestIto):
     def test_axis_leaves(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for order in '', 'n', 'r':
-                query = f'...{order}'
+                query = f'***{order}'
                 with self.subTest(node=node_type, query=query):
                     expected = self.leaves if node is self.root else []
                     if order == 'r':
@@ -110,7 +112,7 @@ class TestItoQuery(_TestIto):
                 query = f'<<{order}'
                 with self.subTest(node=node_type, query=query):
                     if node.parent is None:
-                        expected: List[Ito] = []
+                        expected: typing.List[Ito] = []
                     else:
                         i = node.parent.children.index(node)
                         expected = node.parent.children[:i]
@@ -119,13 +121,13 @@ class TestItoQuery(_TestIto):
                     actual = [*node.find_all(query)]
                     self.assertListEqual(expected, actual)
 
-    def test_next_sibling(self):
+    def test_prior_sibling(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for order in '', 'n', 'r':
                 query = f'<{order}'
                 with self.subTest(node=node_type, query=query):
                     if node.parent is None:
-                        expected: List[Ito] = []
+                        expected: typing.List[Ito] = []
                     else:
                         i = node.parent.children.index(node)
                         expected = node.parent.children[i-1:i]
@@ -134,13 +136,13 @@ class TestItoQuery(_TestIto):
                     actual = [*node.find_all(query)]
                     self.assertListEqual(expected, actual)
 
-    def test_prior_sibling(self):
+    def test_next_sibling(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for order in '', 'n', 'r':
-                query = f'<<{order}'
+                query = f'>{order}'
                 with self.subTest(node=node_type, query=query):
                     if node.parent is None:
-                        expected: List[Ito] = []
+                        expected: typing.List[Ito] = []
                     else:
                         i = node.parent.children.index(node)
                         expected = node.parent.children[i + 1:i + 2]
@@ -155,7 +157,7 @@ class TestItoQuery(_TestIto):
                 query = f'>>{order}'
                 with self.subTest(node=node_type, query=query):
                     if node.parent is None:
-                        expected: List[Ito] = []
+                        expected: typing.List[Ito] = []
                     else:
                         i = node.parent.children.index(node)
                         expected = node.parent.children[i + 1:]

@@ -244,15 +244,36 @@ class TestItoStrEquivalenceMethods(_TestIto):
                     self.assertListEqual(expected, actual)
 
     def test_str_splitlines(self):
+        basis = ''
+        ito = Ito(basis)
+        with self.subTest(string=basis, ito_span=ito.span, keepends=None):
+            expected = basis.splitlines()
+            actual = [i[:] for i in ito.str_splitlines()]
+            self.assertListEqual(expected, actual)
+
+        basis = '\n'
+        ito = Ito(basis)
+        with self.subTest(string=basis, ito_span=ito.span, keepends=None):
+            expected = basis.splitlines()
+            actual = [i[:] for i in ito.str_splitlines()]
+            self.assertListEqual(expected, actual)
+
+        basis = '__'
+        ito = Ito(basis, 1, -1)
+        with self.subTest(string=basis, ito_span=ito.span, keepends=None):
+            expected = basis[slice(*ito.span)].splitlines()
+            actual = [i[:] for i in ito.str_splitlines()]
+            self.assertListEqual(expected, actual)
+
         basis = 'The\nquick\rbrown\r\nfox\vjumped\fover\xc1the\x1dlazy\u2028dogs.'
-        paddings = ('', '\n', '\n\n', '\n\n\n', '\n\n\n\n', '\u2029', '\u2029\u2029')
+        paddings = ('', '\n', '\n\n', '\n\n\n', '\u2029', '\u2029\u2029')
         for prefix in paddings:
             for suffix in paddings:
-                s = f'{prefix}{basis}{suffix};
+                s = f'{prefix}{basis}{suffix}'
+                ito = Ito(s, 1, -1)
                 for keepends in True, False:
-                    with self.subTest(string=2, ito_start=1, ito_stop=-1, keepends=keepends):
-                        ito = Ito(s, 1, -1)
-                        expected = s[1:-1].splitlines()
+                    with self.subTest(string=s, ito_span=ito.span, keepends=keepends):
+                        expected = s[1:-1].splitlines(keepends)
                         actual = [i[:] for i in ito.str_splitlines(keepends)]
                         self.assertListEqual(expected, actual)
 

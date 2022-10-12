@@ -4,7 +4,7 @@ import warnings
 
 import regex
 from segments import Span, Ito
-from segments.tests.util import _TestIto, RandSubstrings
+from segments.tests.util import _TestIto, RandSpans, RandSubstrings
 
 
 class TestItoCtor(_TestIto):
@@ -22,9 +22,9 @@ class TestItoCtor(_TestIto):
         for src in '', ' ', 'a', 'abc':
             with self.subTest(src=src):
                 i = Ito(src)
-                self.assertEquals(src, i.string)
-                self.assertEquals(src, i[:])
-                self.assertEquals((0, len(src)), i.span)
+                self.assertEqual(src, i.string)
+                self.assertEqual(src, i[:])
+                self.assertEqual((0, len(src)), i.span)
 
     def test_ctor_str_non_defaults(self):
         s = 'abcd'
@@ -101,7 +101,7 @@ class TestItoCtor(_TestIto):
         desc = 'x'
         for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', self.IntIto)):
             with self.subTest(_class=cls_name):
-                for i in _class.from_spans(s, *spans, desc=desc)
+                for i in _class.from_spans(s, *spans, desc=desc):
                     self.assertIsInstance(i, _class)
                     self.assertIs(s, i.string)
                     self.assertIn(i.span, spans)

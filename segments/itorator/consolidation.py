@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
 import typing
 
-from segments import Ito
+from segments import Ito, Types
 from segments.errors import Errors
 
 
 class Consolidator(ABC):
     @abstractmethod
-    def traverse(self, itos: typing.Iterable[Ito]) -> typing.Iterable[Ito]:
+    def traverse(self, itos: typing.Iterable[Types.C]) -> typing.Iterable[Types.C]:
         pass
 
 
@@ -15,7 +15,7 @@ class Merge(Consolidator):
     def __init__(
             self,
             window_size: int,
-            predicate: typing.Callable[[typing.List[Ito]], bool],
+            predicate: typing.Callable[[typing.List[Types.C]], bool],
             desc: str | None = None
     ):
         super().__init__()
@@ -26,13 +26,13 @@ class Merge(Consolidator):
         self.window_size = window_size
 
         if not isinstance(predicate, typing.Callable):
-            raise Errors.parameter_invalid_type('predicate', predicate, typing.Callable[[typing.List[Ito]], bool])
+            raise Errors.parameter_invalid_type('predicate', predicate, typing.Callable[[typing.List[Types.C]], bool])
         self.predicate = predicate
 
         self.desc = desc
 
-    def traverse(self, itos: typing.Iterable[Ito]) -> typing.Iterable[Ito]:
-        window: typing.List[Ito] = []
+    def traverse(self, itos: typing.Iterable[Types.C]) -> typing.Iterable[Types.C]:
+        window: typing.List[Types.C] = []
         for ito in itos:
             window.append(ito)
             if len(window) == self.window_size:

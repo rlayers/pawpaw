@@ -3,12 +3,12 @@ import random
 import typing
 from unittest import TestCase
 
-from segments import Span, Ito
+from segments import Span, Ito, Types
 
 
 class _TestIto(TestCase):
     @classmethod
-    def add_chars_as_children(cls, ito: Ito, desc: str | None) -> None:
+    def add_chars_as_children(cls, ito: Types.C, desc: str | None) -> None:
         ito.children.add(*(ito.clone(i, i + 1, desc) for i in range(*ito.span)))
 
     def assertEqual(self, first: typing.Any, second: typing.Any, msg: typing.Any = ...) -> None:

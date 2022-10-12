@@ -343,9 +343,45 @@ class Ito:
 
     # region __x__ methods
 
+    def __eq__(self, o: typing.Any) -> bool:
+        """Itos are equal if they have equal:
+            1) .string & .desc values (using string equality not identity)
+            2) .span values
+            3) .value_func values
+        
+        Collection memberships are not considered, i.e., .parent and .children and not considered
+        
+        Args:
+            o: object to be compared
+        
+        Returns:
+            True or False
+        """
+        if self is o:
+            return True
+        
+        if not isinstance(o, type(self)):
+            return False
+        
+        if self._string != o._string:
+            return False
+        
+        if self._span != o._span:
+            return False
+        
+        if self.desc != o.desc:
+            return False
+        
+        if self.value_func != o.value_func:
+            return False
+        
+        return True
+
+    def __ne__(self, o: typing.Any) -> bool:
+        return not self.__eq__(o)
+
     def __repr__(self) -> str:
-        # TODO : Add children to repr str?
-        return f'segments.Ito({self._string.__repr__()}, {self.start}, {self.stop}, {self.desc.__repr__()})'
+        return f'{type(self).__name__}({self._string.__repr__()}, {self.start}, {self.stop}, {self.desc.__repr__()})'
 
     def __str__(self) -> str:
         return self._string[slice(*self.span)]

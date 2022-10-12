@@ -1,10 +1,9 @@
 import itertools
-import typing
 
 import regex
 from segments import Ito
 from segments.itorator import Extract
-from segments.tests.util import _TestIto
+from tests.util import _TestIto
 
 
 class TestExtract(_TestIto):

@@ -1,9 +1,7 @@
 import itertools
-import warnings
 
-import regex
 from segments import Span, Ito
-from segments.tests.util import _TestIto, RandSubstrings
+from tests.util import _TestIto
 
 
 class TestIto(_TestIto):
@@ -90,16 +88,16 @@ class TestIto(_TestIto):
         s = 'abc'
         i1 = Ito(s, 1, -1, 'd')
         
-        for s2 in '', i1.string
-            for start in None, i1.start
-                for stop in None, i1.stop
-                    for d in None, i1.desc
+        for s2 in '', i1.string:
+            for start in None, i1.start:
+                for stop in None, i1.stop:
+                    for d in None, i1.desc:
                         i2 = Ito(s2, start, stop, d)
                         with self.subTest(first=i1, second=i2):
                             if i1.string == i2.string and i1.desc == i2.desc and i1.span == i2.span:
                                 self.assertEqual(i1, i2)
-                            else
-                                self.assertNoteEqual(i1, i2)
+                            else:
+                                self.assertNotEqual(i1, i2)
                                 
     def test_eq_derived(self):
         s = 'abc'
@@ -109,8 +107,8 @@ class TestIto(_TestIto):
 
     def test_eq_value_func(self):
         s = 'abc'
-        f1 lambda ito: ito[:].strip()
-        f1 lambda ito: ito[:].upper()
+        f1 = lambda ito: ito[:].strip()
+        f2 = lambda ito: ito[:].upper()
         
         i1 = Ito(s, 1, -1, 'd')
         i2 = i1.clone()
@@ -119,13 +117,13 @@ class TestIto(_TestIto):
         i2.value_func = f1
         self.assertNotEqual(i1, i2)        
 
-        i2.value_func = f1
+        i1.value_func = f1
         self.assertEqual(i1, i2)        
 
         i2.value_func = f2
         self.assertNotEqual(i1, i2)        
 
-        i2.value_func = f2
+        i1.value_func = f2
         self.assertEqual(i1, i2)        
 
         i2.value_func = None
@@ -141,7 +139,7 @@ class TestIto(_TestIto):
         desc = 'd'
         ito = Ito(s, *span, desc)
         
-        expected = f'segments.Ito({s.__repr__()}, {start}, {stop}, {desc.__repr__()})'
+        expected = f'Ito({s.__repr__()}, {start}, {stop}, {desc.__repr__()})'
         actual = ito.__repr__()
         self.assertEqual(expected, actual)
         

@@ -1,7 +1,7 @@
 import typing
 
-from segments import Types, Ito
-from segments.tests.util import _TestIto
+from segments import Types
+from tests.util import _TestIto
 
 
 class TestItorator(_TestIto):

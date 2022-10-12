@@ -2,7 +2,7 @@ import random
 import string as py_string
 
 from segments import Ito
-from segments.tests.util import _TestIto, RandSpans
+from tests.util import _TestIto, RandSpans
 
 
 # region add
@@ -19,7 +19,7 @@ class TestChildItos(_TestIto):
         s = 'abcdef'
         parent = Ito(s, desc='parent')
         self.add_chars_as_children(parent, desc='child')
-        self.assertSequenceEqual(s, [i[:] for in in parent.children])
+        self.assertSequenceEqual(s, [i[:] for i in parent.children])
 
     def test_add_several_unordered(self):
         s = 'abcdef'
@@ -30,21 +30,21 @@ class TestChildItos(_TestIto):
         random.shuffle(children)
         for c in children:
             parent.children.add(c)
-        self.assertSequenceEqual(s, [i[:] for in in parent.children])
+        self.assertSequenceEqual(s, [i[:] for i in parent.children])
 
     def test_add_generator_ordered(self):
         s = 'abcdef'
         parent = Ito(s, desc='parent')
         g = (parent.clone(i, i + 1, 'Child') for i in range(parent.start, parent.stop))
         parent.children.add(*g)
-        self.assertSequenceEqual(s, [i[:] for in in parent.children])
+        self.assertSequenceEqual(s, [i[:] for i in parent.children])
 
     def test_add_generator_reverse_order(self):
         s = 'abcdef'
         parent = Ito(s, desc='parent')
         g = (parent.clone(i, i + 1, 'Child') for i in range(len(s) - 1, -1, -1))
         parent.children.add(*g)
-        self.assertSequenceEqual(s, [i[:] for in in parent.children])
+        self.assertSequenceEqual(s, [i[:] for i in parent.children])
 
     def test_add_hierarchical(self):
         s = ' ' * 2048

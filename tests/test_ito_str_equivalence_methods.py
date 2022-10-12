@@ -1,7 +1,5 @@
-from unittest import TestCase
-
 from segments import Ito
-from segments.tests.util import _TestIto
+from tests.util import _TestIto
 
 
 class TestItoStrEquivalenceMethods(_TestIto):

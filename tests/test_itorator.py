@@ -1,8 +1,6 @@
-import typing
-
 from segments import Ito
 from segments.itorator import Reflect, Wrap
-from segments.tests.util import _TestIto
+from tests.util import _TestIto
 
 
 class TestItorator(_TestIto):

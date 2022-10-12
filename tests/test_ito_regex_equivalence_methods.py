@@ -1,8 +1,6 @@
-from unittest import TestCase
-
 import regex
 from segments import Ito
-from segments.tests.util import _TestIto
+from tests.util import _TestIto
 
 
 class TestItoRegexEquivalenceMethods(_TestIto):
@@ -14,13 +12,13 @@ class TestItoRegexEquivalenceMethods(_TestIto):
                 s = f'{padding}{string}{padding}'
                 pad_slice = slice(len(padding), -len(padding))
                 ito = Ito(s, pad_slice.start, pad_slice.stop)
-                for re_str in r' ', r'\w+', r\'(?P<Word>\w+)':
+                for re_str in r' ', r'\w+', r'(?P<Word>\w+)':
                     re = regex.compile(re_str, regex.DOTALL)
                     with self.subTest(string=s, ito=ito, pattern=re.pattern):
                         expected = [*re.finditer(s, pos=pad_slice.start, endpos=pad_slice.stop)]
                         actual = [*ito.regex_finditer(re)]
                         self.assertEqual(len(expected), len(actual))
-                        for e, a in zip(expected, actual)
+                        for e, a in zip(expected, actual):
                             self.assertEqual(e, a)
 
     def test_regex_match(self):
@@ -31,11 +29,11 @@ class TestItoRegexEquivalenceMethods(_TestIto):
                 s = f'{padding}{string}{padding}'
                 pad_slice = slice(len(padding), -len(padding))
                 ito = Ito(s, pad_slice.start, pad_slice.stop)
-                for re_str in r' ', r'\w+', r\'(?P<Word>\w+)':
+                for re_str in r' ', r'\w+', r'(?P<Word>\w+)':
                     re = regex.compile(re_str, regex.DOTALL)
                     with self.subTest(string=s, ito=ito, pattern=re.pattern):
                         expected = re.match(s, pos=pad_slice.start, endpos=pad_slice.stop)
-                        actual = ito.regex_finditer(re)
+                        actual = ito.regex_match(re)
                         self.assertEqual(expected, actual)
 
     def test_regex_search(self):
@@ -46,7 +44,7 @@ class TestItoRegexEquivalenceMethods(_TestIto):
                 s = f'{padding}{string}{padding}'
                 pad_slice = slice(len(padding), -len(padding))
                 ito = Ito(s, pad_slice.start, pad_slice.stop)
-                for re_str in r' ', r'\w+', r\'(?P<Word>\w+)':
+                for re_str in r' ', r'\w+', r'(?P<Word>\w+)':
                     re = regex.compile(re_str, regex.DOTALL)
                     with self.subTest(string=s, ito=ito, pattern=re.pattern):
                         expected = re.search(s, pos=pad_slice.start, endpos=pad_slice.stop)
@@ -59,7 +57,7 @@ class TestItoRegexEquivalenceMethods(_TestIto):
         paddings = '', ' ', '_'
         for string in strings:
             for sep in separators:
-                s = string.repalce(' ', sep)
+                s = string.replace(' ', sep)
                 for padding in paddings:
                     s = f'{padding}{s}{padding}'
                     pad_slice = slice(len(padding), -len(padding))

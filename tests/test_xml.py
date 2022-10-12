@@ -4,7 +4,7 @@ sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 
 import segments
-from segments.tests.util import _TestIto
+from tests.util import _TestIto
 
 
 class TestXml(_TestIto):
@@ -55,11 +55,12 @@ class TestXml(_TestIto):
         expected = root_e.findall('country')
         actual = [i.value() for i in root_i.find_all('*[d:Element]')]
         self.assertEqual(len(expected), len(actual))
-        for e, a in zip(expected, actual)
+        for e, a in zip(expected, actual):
             self.assertIs(e, a)
             
         expected = root_e.findall('.//neighbor')
         actual = [i.value() for i in root_i.find_all('**[d:Element]{*[d:Tag]&[i:0]&[s:neighbor]}')]
+        actual = [i.value() for i in root_i.find_all('**[d:Element]{*[d:Start_Tag]/*[s:neighbor]&[i:0]}')]
         self.assertEqual(len(expected), len(actual))
-        for e, a in zip(expected, actual)
+        for e, a in zip(expected, actual):
             self.assertIs(e, a)

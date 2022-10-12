@@ -1,5 +1,5 @@
 from segments import Span
-from segments.tests.util import _TestIto, RandSubstrings
+from tests.util import _TestIto
 
 
 class TestSpan(_TestIto):

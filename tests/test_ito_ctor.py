@@ -1,10 +1,8 @@
 import itertools
-import typing
-import warnings
 
 import regex
-from segments import Span, Ito
-from segments.tests.util import _TestIto, RandSpans, RandSubstrings
+from segments import Ito
+from tests.util import _TestIto, RandSpans, RandSubstrings
 
 
 class TestItoCtor(_TestIto):
@@ -189,7 +187,7 @@ class TestItoCtor(_TestIto):
             with self.subTest(clone_children=cc):
                 clone = parent.clone(clone_children=cc)
                 if cc:
-                    self.assertSSequenceEqual([*parent.children], [*clone.children])
+                    self.assertSequenceEqual([*parent.children], [*clone.children])
                 else:
                     self.assertEqual(0, len(clone.children))
 

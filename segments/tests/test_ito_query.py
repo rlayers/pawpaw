@@ -9,6 +9,8 @@ from segments.tests.util import _TestIto
 
 class TestItoQuery(_TestIto):
     def setUp(self) -> None:
+        super().setUp
+
         self.src = 'nine 9 ten 10 eleven 11 twelve 12 thirteen 13'
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')
         
@@ -27,7 +29,7 @@ class TestItoQuery(_TestIto):
                 query = f'....{order}'
                 with self.subTest(node=node_type, query=query):
                     i = node.find(query)
-                    self.assertEqual(self.root, i)
+                    self.assertIs(self.root, i)
 
     def test_axis_ancestors(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
@@ -38,7 +40,7 @@ class TestItoQuery(_TestIto):
                     if order != 'r':
                         expected.reverse()
                     actual = [*node.find_all(query)]
-                    self.assertEqual(len(expected), len(actual))
+                    self.assertSequenceEqual(expected, [a.desc for a in actual])
                     for e, a in zip(expected, actual):
                         self.assertEqual(e, a.desc)
 
@@ -48,7 +50,7 @@ class TestItoQuery(_TestIto):
                 query = f'..{order}'
                 with self.subTest(node=node_type, query=query):
                     i = node.find(query)
-                    self.assertEqual(node.parent, i)
+                    self.assertIs(node.parent, i)
 
     def test_axis_self(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():

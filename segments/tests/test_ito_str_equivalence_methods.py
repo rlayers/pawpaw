@@ -198,9 +198,7 @@ class TestItoStrEquivalenceMethods(_TestIto):
                     ito = Ito(s)
                     expected = [*Ito.from_substrings(s, *s.rsplit(maxsplit=maxsplit))]
                     actual = ito.str_rsplit(maxsplit=maxsplit)
-                    self.assertEqual(len(expected), len(actual))
-                    for e, a in zip(expected, actual):
-                        self.assertEqual(e, a)
+                    self.assertListEqual(expected, actual)
 
         s = f' {"xyz" * 3} '
         ito = Ito(s, 1, -1)
@@ -224,9 +222,7 @@ class TestItoStrEquivalenceMethods(_TestIto):
                     ito = Ito(s)
                     expected = [*Ito.from_substrings(s, *s.split(maxsplit=maxsplit))]
                     actual = ito.str_split(maxsplit=maxsplit)
-                    self.assertEqual(len(expected), len(actual))
-                    for e, a in zip(expected, actual):
-                        self.assertEqual(e, a)
+                    self.assertListEqual(expected, actual)
 
         s = f' {"xyz" * 3} '
         ito = Ito(s, 1, -1)

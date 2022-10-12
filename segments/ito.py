@@ -856,7 +856,7 @@ class Ito:
                 escape = False
             elif c == '\\':
                 escape = True
-            elif c == ', ':
+            elif c == ',':
                 if len(cur) > 0:
                     yield cur
                 cur = ''

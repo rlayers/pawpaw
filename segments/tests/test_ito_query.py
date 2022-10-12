@@ -174,11 +174,21 @@ class TestItoQuery(_TestIto):
     
     def test_filter_desc_scalar(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
-            query = f'**[d:{desc}]'
+            for desc in 'word', 'char':
+                query = f'**[d:{desc}]'
+                with self.subTest(node=node_type, query=query):
+                    expected = [d for d in node.walk_descendants() if d.desc == desc]
+                    actual = [*node.find_all(query)]
+                    self.assertSequenceEqual(expected, actual)
+    
+    def test_filter_desc_multiple(self):
+        for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
+            descs = 'word', 'char'
+            query = f'**[d:{",".join(descs)}]'
             with self.subTest(node=node_type, query=query):
-                expected = [d for d in node.walk_descendants() if d.desc == desc]
+                expected = [d for d in node.walk_descendants() if d.desc in descs]
                 actual = [*node.find_all(query)]
-                self.assertSequenceEqual(expected, actual)
+                self.assertSequenceEqual(expected, actual)                
     
     # endregion
 

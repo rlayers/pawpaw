@@ -168,30 +168,17 @@ class TestItoCtor(_TestIto):
                 self.assertEqual(expected, clone)
 
     def test_clone_typing(self):
-        class DerivedIto(Ito):
-            def __init__(
-                    self,
-                    src: str | Ito,
-                    start: int | None = None,
-                    stop: int | None = None,
-                    desc: str | None = None):
-                super().__init__(src, start, stop, desc)
-
-        i = DerivedIto('abc')
-        c = i.clone()
-        type(c).__name__
-
-        s = 'abc'
-        parent = DerivedIto(s, desc='parent')
-        self.assertEqual('DerivedIto', type(parent).__name__)
+        s = '123'
+        parent = self.IntIto(s, desc='parent')
+        self.assertEqual('IntIto', type(parent).__name__)
         self.add_chars_as_children(parent, 'child')
-        self.assertTrue(all(type(c).__name__ == 'DerivedIto' for c in parent.children))
+        self.assertTrue(all(type(c).__name__ == 'IntIto' for c in parent.children))
 
         clone = parent.clone()
         self.assertEqual(len(parent.children), len(clone.children))
         for c, cc in zip(parent.children, clone.children):
             self.assertIsNot(c, cc)
-            self.itos_equal(c, cc)  # TypeEqualityFun registration won't handle subclassing - call directly
+            self.assertEqual(c, cc)
 
     def test_clone_children(self):
         s = 'abc'
@@ -201,10 +188,8 @@ class TestItoCtor(_TestIto):
         for cc in (True, False):
             with self.subTest(clone_children=cc):
                 clone = parent.clone(clone_children=cc)
-                self.assertEqual(parent, clone)
-                self.assertEqual(len(s), len(parent.children))
                 if cc:
-                    self.assertEqual(len(parent.children), len(clone.children))
+                    self.assertSSequenceEqual([*parent.children], [*clone.children])
                 else:
                     self.assertEqual(0, len(clone.children))
 

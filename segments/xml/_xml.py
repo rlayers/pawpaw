@@ -120,15 +120,15 @@ class XmlParser(ET.XMLParser):
                 ito.children.add(text)
             for child in element:
                 self._extract_itos(child)
-                ito.children.add(child._ito)
+                ito.children.add(child.ito)
                 if child.tail is not None:
                     if element.text is not None or not(self.ignore_empties and not str.isspace(element.tail)):
-                        ito_text = Ito(self._text, child._ito.stop, child._ito.stop + len(child.tail), desc='Text')
+                        ito_text = Ito(self._text, child.ito.stop, child.ito.stop + len(child.tail), desc='Text')
                         ito.children.add(ito_text)
             if end_tag is not None:
                 ito.children.add(end_tag)
 
-        element._ito = ito
+        element.ito = ito
 
     def close(self):
         rv = super().close()

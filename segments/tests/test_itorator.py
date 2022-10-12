@@ -18,8 +18,8 @@ class TestItorator(_TestIto):
         self.assertEqual(1, len(rv))
         ito = rv[0]
         self.assertIsNot(root, ito)
-        self.assertEqual(len(root.children), len(ito.children))
         self.assertEqual(root, ito)
+        self.assertEqual([*root.children], [*ito.children])
 
     def test_traverse_with_next(self):
         s = 'abc'
@@ -34,8 +34,8 @@ class TestItorator(_TestIto):
         self.assertEqual(1, len(rv))
         ito = rv[0]
         self.assertIsNot(root, ito)
-        self.assertEqual(len(root.children), len(ito.children))
         self.assertEqual(apply_desc, ito.desc)
+        self.assertEqual([*root.children], [*ito.children])
 
     def test_traverse_with_children(self):
         s = 'abc'
@@ -49,7 +49,7 @@ class TestItorator(_TestIto):
         self.assertEqual(1, len(rv))
         ito = rv[0]
         self.assertIsNot(root, ito)
-        self.assertEqual(len(s), len(ito.children))
+        self.assertSequenceEqual(s, [i[:] for i in ito.children])
         self.assertTrue(all(c.desc == apply_desc for c in ito.children))
         
     def test_traverse_with_carry_through(self):
@@ -67,5 +67,5 @@ class TestItorator(_TestIto):
         self.assertEqual(1, len(rv))
         ito = rv[0]
         self.assertIsNot(root, ito)
-        self.assertEqual(len(s), len(ito.children))
+        self.assertSequenceEqual(s, [i[:] for i in ito.children])
         self.assertTrue(all(c.desc == d_changed for c in ito.children))

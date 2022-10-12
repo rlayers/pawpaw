@@ -70,10 +70,10 @@ A ``Span`` can be easily converted to a Python ``slice``
 
 However, a ``Span`` and ``slice`` are not equivalent.  A Python's ``slice`` constructor has ``start`` and ``stop`` parameters[#]_, but they are optional *Python-style indices*, which can have negative values.  So although a segment_ can always be converted to a slice, the reverse is not true::
   
-  s = slice(-10, 1)
-  print((s.start, s.stop))  # (-10, 1): tuple has negative value - not valid Span
-  s = slice(3)
-  print((s.start, s.stop))  # (None, 3): tuple has mising start - not valid Span
+ s = slice(-10, 1)
+ print((s.start, s.stop))  # (-10, 1): tuple has negative value - not valid Span
+ s = slice(3)
+ print((s.start, s.stop))  # (None, 3): tuple has mising start - not valid Span
   
 To convert a ``slice`` to a ``span``, the indices must be normalized to valid locations within the reference string.  For example, given a ``str`` of length ``n`` and a ``slice(1, -1)``, the associated span would be ``Span(1, n - 1)``.  ``Span`` offers a static constructor method for this purpose:
 

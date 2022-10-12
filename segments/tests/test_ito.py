@@ -107,6 +107,33 @@ class TestIto(_TestIto):
         i2 = self.IntIto(s, *i1.span, i1.desc)
         self.assertNotEqual(i1, i2)
 
+    def test_eq_value_func(self):
+        s = 'abc'
+        f1 lambda ito: ito[:].strip()
+        f1 lambda ito: ito[:].upper()
+        
+        i1 = Ito(s, 1, -1, 'd')
+        i2 = i1.clone()
+        self.assertEqual(i1, i2)        
+
+        i2.value_func = f1
+        self.assertNotEqual(i1, i2)        
+
+        i2.value_func = f1
+        self.assertEqual(i1, i2)        
+
+        i2.value_func = f2
+        self.assertNotEqual(i1, i2)        
+
+        i2.value_func = f2
+        self.assertEqual(i1, i2)        
+
+        i2.value_func = None
+        self.assertNotEqual(i1, i2)        
+
+        i1.value_func = None
+        self.assertEqual(i1, i2)        
+
     def test_repr(self):
         s = 'x123x'
         span = 1, -1

@@ -35,30 +35,25 @@ class TestXml(_TestIto):
     </country>
 </data>"""
 
-        self.xml_et = """<?xml version="1.0"?>
-        <data>
-            <country name="Liechtenstein">
-                <rank>1</rank>
-            </country>
-        </data>"""
-
-        self.root_et = ET.fromstring(self.xml_et, parser=segments.xml.XmlParser())
-
     def test_ctor(self):
         parser = segments.xml.XmlParser()
         self.assertIsNotNone(parser)
 
     def test_basic(self):
-        root = ET.fromstring(self.xml_et, parser=segments.xml.XmlParser())
-        self.assertTrue(hasattr(root, '_ito'))
-        ito_root: segments.Ito = root._ito
-        self.assertEqual('Element', ito_root.desc)
+        root_e = ET.fromstring(self.xml_et, parser=segments.xml.XmlParser())
+        self.assertTrue(hasattr(root_e, 'ito'))
+        
+        root_i: segments.Ito = root_e.ito
+        self.assertEqual('Element', root_i.desc)
+        
+        self.assertIs(root_e, root_i.value())
 
-        for country in root:
-            ito_country = country._ito
-            self.assertEqual('Element', ito_country.desc)
-            start_tag = ito_country.children[0]
-            self.assertTrue('Start_Tag', start_tag.desc)
-            tag_ito = start_tag.children[0]
-            self.assertTrue('Tag', tag_ito.desc)
-            self.assertTrue(country.tag, tag_ito[:])
+    def test_hiearchical(self):
+        root_e = ET.fromstring(self.xml_et, parser=segments.xml.XmlParser())
+        root_i: segments.Ito = root_e.ito        
+            
+        expected = root_e.findall('country')
+        actual = [i.value() for i in root_i.find_all('*[d:Element]')]
+        self.assertEqual(len(expected), len(actual))
+        for e, a in zip(expected, actual)
+            self.assertIs(e, a)

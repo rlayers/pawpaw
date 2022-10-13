@@ -3,13 +3,23 @@ import sys
 sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 import xml.parsers.expat as expat
+import typing
 
 import regex
 from segments import Span, Ito
 from segments.itorator import Extract
-import segments.xml.descriptors as ITO_DESCRIPTORS
 
 
+class _ItoDescriptors(typing.NamedTuple):
+    START_TAG: str
+    END_TAG: str
+    ELEMENT: str
+    TEXT: str
+
+        
+ITO_DESCRIPTORS = _ItoDescriptors('Start_Tag', 'End_Tag', 'Element', 'Text')
+
+        
 class XmlStrings:
     NAME = r'(?P<Name>[^ />=]+)'
     VALUE = r'="(?P<Value>[^"]+)"'

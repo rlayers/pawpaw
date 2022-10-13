@@ -47,6 +47,18 @@ An ``Ito`` is not an arbitray data collection.  Rather, it defines segments wiht
 * Ordered siblings: Siblings are ordered within their parent by their ``.span.start``; because they are non-overlapping, the ``.span.stop`` for an ``Ito`` will always be less than or equal to the ``.span.start`` of the subsequent sibling
 
 
+    ===================  ======  ==============================================================
+    Filter               Abbr    Meaning
+    ===================  ======  ==============================================================
+    ``string-casefold``  ``sc``  A ``str`` used to match against the ``.__str__()`` of the axis
+    ``string``           ``s``   A ``str`` used to match against the ``.__str__()`` of the axis
+    ``desc``             ``d``   A ``str`` used to match against the ``.desc`` of the axis
+    ``index``            ``i``   Blah blah blah
+    ``predicate``        ``p``   Blah blah blah
+    ===================  ======  ==============================================================
+
+
+
 .. [#] The name "In Test Object" is historical, and dates back to earlier projects I developed.  I've chosen to keep this name because "Ito" makes for a short, convenient type name.
 
 .. [#] In Python, strings are also immutable.

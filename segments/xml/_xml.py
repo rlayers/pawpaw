@@ -86,22 +86,22 @@ class XmlParser(ET.XMLParser):
 
     def _start(self, *args, **kwargs) -> ET.Element:
         # Assume default XML parser (expat)
-        element = super()._start(*args, **kwargs)
+        rv = super()._start(*args, **kwargs)
         rv._spans = self.Spans()
         rv._spans.line = Span(self.parser.CurrentLineNumber, -1)
         rv._spans.column = Span(self.parser.CurrentColumnNumber, -1)
         rv._spans.byte = Span(self.parser.CurrentByteIndex, -1)
         rv._spans.char = Span(self._indexing_parser.char_offset_from_ex(self.parser), -1)
-        return element
+        return rv
 
     def _end(self, *args, **kwargs) -> ET.Element:
         # Assume default XML parser (expat)
-        element = super()._end(*args, **kwargs)
+        rv = super()._end(*args, **kwargs)
         rv._spans.line = Span(rv._spans.line.start, self.parser.CurrentLineNumber)
-        rv._spans.column = Span(rv._spans.column.start, self.parser.CurrentColumnNumber
-        rv._spans.byte = Span(rv._spans.byte.start, self.parser.CurrentByteIndex
-        rv._spans.char = Span(rv._spans.char.start, self._indexing_parser.char_offset_from_ex(self.parser)
-        return element
+        rv._spans.column = Span(rv._spans.column.start, self.parser.CurrentColumnNumber)
+        rv._spans.byte = Span(rv._spans.byte.start, self.parser.CurrentByteIndex)
+        rv._spans.char = Span(rv._spans.char.start, self._indexing_parser.char_offset_from_ex(self.parser))
+        return rv
 
     def feed(self, data) -> None:
         self._text = data
@@ -117,7 +117,7 @@ class XmlParser(ET.XMLParser):
         start_tag.children.add(*self._tag_extractor.traverse(start_tag))
         start_tag.children.add(*self._attributes_extractor.traverse(start_tag))
 
-        if (element._spans.char.stop + 2) < len(self._text) and self._text[element._spans.char.stop::element._spans.char.stop + 2] == '</':
+        if (element._spans.char.stop + 2) < len(self._text) and self._text[element._spans.char.stop:element._spans.char.stop + 2] == '</':
             end_tag = Ito(
                 self._text,
                 element._spans.char.stop,

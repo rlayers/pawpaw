@@ -3,6 +3,7 @@ import sys
 sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 
+import segments
 from segments.xml import XmlParser, ITO_DESCRIPTORS
 from tests.util import _TestIto
 
@@ -48,7 +49,7 @@ class TestXml(_TestIto):
 
     def test_hiearchical(self):
         root_e = ET.fromstring(self.xml_et, parser=self.parser)
-        root_i: segments.Ito = root_e.ito        
+        root_i: segments.Ito = root_e.ito
             
         expected = root_e.findall('country')
         actual = [i.value() for i in root_i.find_all(f'*[d:{ITO_DESCRIPTORS.ELEMENT}]')]

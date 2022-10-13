@@ -17,6 +17,8 @@ from segments.errors import Errors
 class Types:
     C = typing.TypeVar('C', bound='Ito')
 
+    F_ITO_2_VAL = typing.Callable[[C], typing.Any]
+
     F_ITO_2_ITOR = typing.Callable[[C], 'Itorator']
 
     C_SQ_ITOS = typing.Sequence[C]
@@ -42,17 +44,6 @@ class Types:
 
 
 class Ito:
-    @classmethod
-    def _to_span(cls, src: str | Types.C, start: int | None = None, stop: int | None = None, desc: str | None = None) -> Span:
-        if isinstance(src, str):
-            offset = 0
-        elif isinstance(src, Ito):
-            offset = src.start
-        else:
-            raise Errors.parameter_invalid_type('src', src, str, Ito)
-            
-        return Span.from_indices(src, start, stop, offset)
-    
     # region ctors & clone
 
     def __init__(
@@ -62,9 +53,16 @@ class Ito:
             stop: int | None = None,
             desc: str | None = None
     ):
-        self._span = self._to_span(src, start, stop)  # Checks first 3 params
-        
         self._string = src.string if isinstance(src, Ito) else src
+
+        if isinstance(src, str):
+            offset = 0
+        elif isinstance(src, Ito):
+            offset = src.start
+        else:
+            raise Errors.parameter_invalid_type('src', src, str, Ito)
+
+        self._span = Span.from_indices(src, start, stop, offset)
 
         if desc is not None and not isinstance(desc, str):
             raise Errors.parameter_invalid_type('desc', desc, str)
@@ -260,11 +258,11 @@ class Ito:
         return self.__str__()
 
     @property
-    def value_func(self) -> typing.Callable[[Types.C], typing.Any]:
+    def value_func(self) -> Types.F_ITO_2_VAL:
         return self._value_func
 
     @value_func.setter
-    def value_func(self, f: typing.Callable[[Types.C], typing.Any]) -> None:
+    def value_func(self, f: Types.F_ITO_2_VAL) -> None:
         if f is None:
             delattr(self, 'value')
         else:
@@ -343,7 +341,7 @@ class Ito:
 
     # region __x__ methods
     
-    def __key(self) -> typing.Tuple[str, Span, str | None, typing.Callable | None]:
+    def __key(self) -> typing.Tuple[str, Span, str | None, typing.Callable[[Types.C], typing.Any] | None]:
         return self._string, self._span, self.desc, self.value_func
     
     def __hash__(self) -> int:
@@ -381,7 +379,6 @@ class Ito:
 
     def __str__(self) -> str:
         return self._string[slice(*self.span)]
-
 
     def __len__(self) -> int:
         return self.stop - self.start
@@ -838,7 +835,6 @@ class Ito:
         QUERY_OPERATORS['|'] = operator.or_
         QUERY_OPERATORS['^'] = operator.xor
 
-        
     @classmethod
     def filter_value_escape(cls, value: str) -> str:
         rv = value.replace('\\', '\\\\')  # Must do backslash before other chars

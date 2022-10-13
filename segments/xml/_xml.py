@@ -3,7 +3,6 @@ import sys
 sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 import xml.parsers.expat as expat
-import typing
 
 import regex
 from segments import Span, Ito
@@ -59,7 +58,7 @@ class XmlParser(ET.XMLParser):
             
        Assumption made here is that "column number" refers to chars, and may differ from bytes when unicode combining graphemes are encountered
         """
-        def char_offset_from_ex(self, parser: ET.XMLParser) -> str:
+        def char_offset_from_ex(self, parser: ET.XMLParser) -> int:
             if self.last_line_indexed < parser.CurrentLineNumber:
                 self.last_line_indexed = parser.CurrentLineNumber
                 

@@ -7,7 +7,7 @@ from tests.util import _TestIto
 
 class TestItoQuery(_TestIto):
     def setUp(self) -> None:
-        super().setUp
+        super().setUp()
 
         self.src = 'nine 9 ten 10 eleven 11 twelve 12 thirteen 13'
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')
@@ -236,7 +236,7 @@ class TestItoQuery(_TestIto):
     def test_filter_index_range(self):
         for node_type, node in {'root': self.root}.items():
             for order in '', 'r':
-                for index in (0,1), (1,2), (0,2):
+                for index in (0, 1), (1, 2), (0, 2):
                     istr = '-'.join(str(i) for i in index)
                     query = f'*{order}[i:{istr}]'
                     with self.subTest(node=node_type, order=order, index=istr, query=query):
@@ -244,22 +244,6 @@ class TestItoQuery(_TestIto):
                         if order == 'r':
                             expected.reverse()
                         expected = expected[slice(*index)]
-                        actual = [*node.find_all(query)]
-                        self.assertSequenceEqual(expected, actual)
-                                        
-    def test_filter_index_range(self):
-        for node_type, node in {'root': self.root}.items():
-            for order in '', 'r':
-                for index in (0,1), (1,2), (0,2):
-                    istr = ','.join(str(i) for i in index)
-                    query = f'*{order}[i:{istr}]'
-                    with self.subTest(node=node_type, order=order, index=istr, query=query):
-                        tmp = [c for c in node.children]
-                        if order == 'r':
-                            tmp.reverse()
-                        expected = []
-                        for i in index:
-                            expected.append(tmp[i])
                         actual = [*node.find_all(query)]
                         self.assertSequenceEqual(expected, actual)
 

@@ -62,8 +62,8 @@ class RandSpans:
 class RandSubstrings(RandSpans):
     def __init__(
             self,
-            size: Span = (1, 1),
-            gap: Span = (0, 0),
+            size: Span = Span(1, 1),
+            gap: Span = Span(0, 0),
     ):
         super().__init__(size, gap)
 

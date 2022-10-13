@@ -63,7 +63,7 @@ class TestChildItos(_TestIto):
                 next_parents.extend(children)
             parents = next_parents
             
-       # Save and clear
+        # Save and clear
         ordered_descendants = [*root.walk_descendants()]
         root.children.clear()
         for d in ordered_descendants:

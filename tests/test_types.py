@@ -17,4 +17,3 @@ class TestItorator(_TestIto):
         my_lam: typing.Callable[[str, int, bool], bool] = lambda a, b, c: True
         self.assertTrue(Types.is_callable(my_lam, str, int, bool))
         self.assertTrue(Types.is_callable(my_lam, bool, int, str))
-

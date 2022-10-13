@@ -1,7 +1,7 @@
 import itertools
 
 import regex
-from segments import Ito
+from segments import Ito, Span
 from tests.util import _TestIto, RandSpans, RandSubstrings
 
 
@@ -91,7 +91,7 @@ class TestItoCtor(_TestIto):
         
     def test_from_spans(self):
         s = 'abcd' * 100
-        spans = [*RandSpans((1, 10), (0, 3)).generate(s)]
+        spans = [*RandSpans(Span(1, 10), Span(0, 3)).generate(s)]
         desc = 'x'
         for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', self.IntIto)):
             with self.subTest(_class=cls_name):
@@ -108,7 +108,7 @@ class TestItoCtor(_TestIto):
         with self.subTest(spacing='Consecutive'):
             for size in ((1, 1), (2, 2), (1, 3), (2, 3)):
                 with self.subTest(size_range=size):
-                    rs = RandSubstrings(size, (0, 0))
+                    rs = RandSubstrings(size, Span(0, 0))
                     subs = [*rs.generate(string, 1, -1)]
                     itos = Ito.from_substrings(string, *subs)
                     self.assertListEqual(subs, [i.__str__() for i in itos])
@@ -116,7 +116,7 @@ class TestItoCtor(_TestIto):
         with self.subTest(spacing='Gaps'):
             for size in ((1, 1), (2, 2), (1, 3), (2, 3)):
                 with self.subTest(size_range=size):
-                    rs = RandSubstrings(size, (1, 2))
+                    rs = RandSubstrings(size, Span(1, 2))
                     subs = [*rs.generate(string, 1, -1)]
                     itos = Ito.from_substrings(string, *subs)
                     self.assertListEqual(subs, [i.__str__() for i in itos])
@@ -124,7 +124,7 @@ class TestItoCtor(_TestIto):
         with self.subTest(spacing='Overlaps'):
             for size in ((3, 3),):
                 with self.subTest(size_range=size):
-                    rs = RandSubstrings(size, (-1, -1))
+                    rs = RandSubstrings(size, Span(-1, -1))
                     subs = [*rs.generate(string, 1, -1)]
                     with self.assertRaises(Exception):
                         itos = [*Ito.from_substrings(string, *subs)]

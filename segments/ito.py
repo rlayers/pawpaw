@@ -310,9 +310,9 @@ class Ito:
     class JsonEncoder(json.JSONEncoder):
         def default(self, o: typing.Any) -> typing.Dict:
             return {
-                '__type__': 'Ito',
+                '__type__': 'typing.Tuple[str, Ito]',
                 'string': o.string,
-                'ito': Ito.JsonEncoderStringless.default(o)
+                'ito': Ito.JsonEncoderStringless().default(o)
             }
 
     @classmethod

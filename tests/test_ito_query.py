@@ -170,6 +170,8 @@ class TestItoQuery(_TestIto):
     
     # region filter
     
+    # region filter desc
+    
     def test_filter_desc_scalar(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for desc in 'word', 'char':
@@ -187,6 +189,36 @@ class TestItoQuery(_TestIto):
                 expected = [d for d in node.walk_descendants() if d.desc in descs]
                 actual = [*node.find_all(query)]
                 self.assertSequenceEqual(expected, actual)
+
+    # endregion
+    
+    # region filter string
+    
+    def test_filter_string_scalar(self):
+        for node_type, node in {'root': self.root}.items():
+            for s in 'ten', 'eleven', 'twelve':
+                query = f'**[s:{Ito.filter_value_escape(s)}]'
+                with self.subTest(node=node_type, query=query):
+                    expected = [d for d in node.walk_descendants() if d[:] == s]
+                    actual = [*node.find_all(query)]
+                    self.assertSequenceEqual(expected, actual)
+    
+    def test_filter_string_multiple(self):
+        for node_type, node in {'root': self.root}.items():
+            strings = 'ten', 'eleven', 'twelve'
+            query = f'**[s:{",".join(Ito.filter_value_escape(s) for s in strings)}]'
+            with self.subTest(node=node_type, query=query):
+                expected = [d for d in node.walk_descendants() if d[:] in strings]
+                actual = [*node.find_all(query)]
+                self.assertSequenceEqual(expected, actual)
+    
+    # endregion
+    
+    # region filter string casefold
+    
+    # endregion
+
+    # region filter index
                 
     def test_filter_index_scalar(self):
         for node_type, node in {'root': self.root}.items():
@@ -247,3 +279,13 @@ class TestItoQuery(_TestIto):
                         self.assertSequenceEqual(expected, actual)
 
     # endregion
+    
+    # region filter predicate
+    
+    # endregion
+
+    # region filter value
+    
+    # endregion
+
+    

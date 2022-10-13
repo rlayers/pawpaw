@@ -7,7 +7,7 @@ from segments.errors import Errors
 
 class Consolidator(ABC):
     @abstractmethod
-    def traverse(self, itos: typing.Iterable[Types.C]) -> typing.Iterable[Types.C]:
+    def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         pass
 
 
@@ -31,7 +31,7 @@ class Merge(Consolidator):
 
         self.desc = desc
 
-    def traverse(self, itos: typing.Iterable[Types.C]) -> typing.Iterable[Types.C]:
+    def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         window: typing.List[Types.C] = []
         for ito in itos:
             window.append(ito)
@@ -66,7 +66,7 @@ class Reduce(Consolidator):
         else:
             raise Errors.parameter_invalid_type('pop_predicate', pop_predicate, typing.Callable)
 
-    def traverse(self, itos: typing.Iterable[Ito]) -> typing.Iterable[Ito]:
+    def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         stack: typing.List[Ito] = []
         for ito in itos:
             if stack:
@@ -113,7 +113,7 @@ class Reclaim(Consolidator):
             if child.start == child.stop:
                 return
 
-    def traverse(self, itos: typing.Iterable[Ito]) -> typing.Iterable[Ito]:
+    def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         for ito in itos:
             clone = ito.clone()
             if ito.parent is not None:
@@ -140,7 +140,7 @@ class PromoteChildren(Consolidator):
             raise Errors.parameter_invalid_type('predicate', predicate, typing.Callable)
         self.predicate = predicate
 
-    def traverse(self, itos: typing.Iterable[Ito]) -> typing.Iterable[Ito]:
+    def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         stack: typing.List[Ito] = []
 
         for ito in itos:

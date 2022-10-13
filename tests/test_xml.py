@@ -3,7 +3,7 @@ import sys
 sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 
-import segments.xml import XmlParser, ITO_DESCRIPTORS
+from segments.xml import XmlParser, ITO_DESCRIPTORS
 from tests.util import _TestIto
 
 
@@ -42,7 +42,7 @@ class TestXml(_TestIto):
         self.assertTrue(hasattr(root_e, 'ito'))
         
         root_i: segments.Ito = root_e.ito
-        self.assertEqual('Element', root_i.desc)
+        self.assertEqual(ITO_DESCRIPTORS.ELEMENT, root_i.desc)
         
         self.assertIs(root_e, root_i.value())
 
@@ -57,7 +57,7 @@ class TestXml(_TestIto):
             self.assertIs(e, a)
             
         expected = root_e.findall('.//neighbor')
-        actual = [i.value() for i in root_i.find_all(f'**[d:{ITO_DESCRIPTORS.ELEMENT}]' + {*[d:' + ITO_DESCRIPTORS.START_TAG + ']/*[s:neighbor]&[i:0]}')]
+        actual = [i.value() for i in root_i.find_all(f'**[d:{ITO_DESCRIPTORS.ELEMENT}]' + '{*[d:' + ITO_DESCRIPTORS.START_TAG + ']/*[s:neighbor]&[i:0]}')]
         self.assertEqual(len(expected), len(actual))
         for e, a in zip(expected, actual):
             self.assertIs(e, a)

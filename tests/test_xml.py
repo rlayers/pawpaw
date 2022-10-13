@@ -3,12 +3,14 @@ import sys
 sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 
-import segments
+import segments.xml import XmlParser, ITO_DESCRIPTORS
 from tests.util import _TestIto
 
 
 class TestXml(_TestIto):
     def setUp(self) -> None:
+        self.parser = XmlParser()        
+        
         # Sample xml taken from https://docs.python.org/3/library/xml.etree.elementtree.html
         self.xml_et = \
 """<?xml version="1.0"?>
@@ -35,12 +37,8 @@ class TestXml(_TestIto):
     </country>
 </data>"""
 
-    def test_ctor(self):
-        parser = segments.xml.XmlParser()
-        self.assertIsNotNone(parser)
-
     def test_basic(self):
-        root_e = ET.fromstring(self.xml_et, parser=segments.xml.XmlParser())
+        root_e = ET.fromstring(self.xml_et, parser=self.parser)
         self.assertTrue(hasattr(root_e, 'ito'))
         
         root_i: segments.Ito = root_e.ito
@@ -49,18 +47,18 @@ class TestXml(_TestIto):
         self.assertIs(root_e, root_i.value())
 
     def test_hiearchical(self):
-        root_e = ET.fromstring(self.xml_et, parser=segments.xml.XmlParser())
+        root_e = ET.fromstring(self.xml_et, parser=self.parser)
         root_i: segments.Ito = root_e.ito        
             
         expected = root_e.findall('country')
-        actual = [i.value() for i in root_i.find_all('*[d:Element]')]
+        actual = [i.value() for i in root_i.find_all(f'*[d:{ITO_DESCRIPTORS.ELEMENT}]')]
         self.assertEqual(len(expected), len(actual))
         for e, a in zip(expected, actual):
             self.assertIs(e, a)
             
         expected = root_e.findall('.//neighbor')
-        actual = [i.value() for i in root_i.find_all('**[d:Element]{*[d:Tag]&[i:0]&[s:neighbor]}')]
-        actual = [i.value() for i in root_i.find_all('**[d:Element]{*[d:Start_Tag]/*[s:neighbor]&[i:0]}')]
+        actual = [i.value() for i in root_i.find_all(f'**[d:{ITO_DESCRIPTORS.ELEMENT}]' + '{*[d:Tag]&[i:0]&[s:neighbor]}')]
+        actual = [i.value() for i in root_i.find_all(f'**[d:{ITO_DESCRIPTORS.ELEMENT}]' + {*[d:' + ITO_DESCRIPTORS.START_TAG + ']/*[s:neighbor]&[i:0]}')]
         self.assertEqual(len(expected), len(actual))
         for e, a in zip(expected, actual):
             self.assertIs(e, a)

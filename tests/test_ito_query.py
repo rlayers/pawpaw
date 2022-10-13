@@ -231,4 +231,19 @@ class TestItoQuery(_TestIto):
                         actual = [*node.find_all(query)]
                         self.assertSequenceEqual(expected, actual)
 
+    def test_filter_index_mix(self):
+        for node_type, node in {'root': self.root}.items():
+            for order in '', 'r':
+                for istr, _slices in (('0,2-4,6', (slice(0, 1), slice(2, 4), slice(6, 7))), ):
+                    query = f'**{order}[i:{istr}]'
+                    with self.subTest(node=node_type, order=order, index=istr, query=query):
+                        tmp = [*node.walk_descendants()]
+                        if order == 'r':
+                            tmp.reverse()
+                        expected = []
+                        for _slice in _slices:
+                            expected.extend(tmp[_slice])
+                        actual = [*node.find_all(query)]
+                        self.assertSequenceEqual(expected, actual)
+
     # endregion

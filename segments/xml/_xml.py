@@ -8,30 +8,21 @@ import typing
 import regex
 from segments import Span, Ito
 from segments.itorator import Extract
-
-
-class _ItoDescriptors(typing.NamedTuple):
-    START_TAG: str
-    END_TAG: str
-    ELEMENT: str
-    TEXT: str
-
-        
-ITO_DESCRIPTORS = _ItoDescriptors('Start_Tag', 'End_Tag', 'Element', 'Text')
+import segments.xml.ito_descriptors as ITO_DESCRIPTORS
 
         
 class XmlStrings:
-    NAME = r'(?P<Name>[^ />=]+)'
-    VALUE = r'="(?P<Value>[^"]+)"'
+    NAME = r'(?P<' + ITO_DESCRIPTORS.NAME + r'>[^ />=]+)'
+    VALUE = r'="(?P<' + ITO_DESCRIPTORS.VALUE + r'>[^"]+)"'
     NAME_VALUE = NAME + VALUE
 
-    NS_NAME = r'(?:(?P<Namespace>[^: ]+):)?' + NAME
+    NS_NAME = r'(?:(?P<' + ITO_DESCRIPTORS.NAMESPACE + r'>[^: ]+):)?' + NAME
     NS_NAME_VALUE = NS_NAME + VALUE
 
 
 class XmlRegexes:
-    ns_tag = regex.compile(r'\<(?P<Tag>' + XmlStrings.NS_NAME + r')', regex.DOTALL)
-    attribute = regex.compile(r'(?P<Attribute>' + XmlStrings.NS_NAME_VALUE + r')', regex.DOTALL)
+    ns_tag = regex.compile(r'\<(?P<' + ITO_DESCRIPTORS.TAG + r'>' + XmlStrings.NS_NAME + r')', regex.DOTALL)
+    attribute = regex.compile(r'(?P<' + ITO_DESCRIPTORS.ATTRIBUTE + r'>' + XmlStrings.NS_NAME_VALUE + r')', regex.DOTALL)
 
 
 class XmlParser(ET.XMLParser):

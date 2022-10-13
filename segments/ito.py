@@ -285,7 +285,7 @@ class Ito:
 
     def __getstate__(self):
         state = self.__dict__.copy()
-        del state['parent']
+        del state['_parent']
         return state
 
     def __setstate__(self, state):
@@ -821,8 +821,8 @@ class Ito:
 
     # region query
 
-    class Query()
-        FILTER_KEYS = collection.OrderedDict()
+    class Query:
+        FILTER_KEYS = collections.OrderedDict()
         FILTER_KEYS['desc'] = 'desc', 'd'
         FILTER_KEYS['string'] = 'string', 's'
         FILTER_KEYS['string-casefold'] = 'string-casefold', 'sc', 'lcs'

@@ -1,5 +1,5 @@
-from segments.xml.ito_descriptors as ITO_DESCRIPTORS
+import segments.xml.ito_descriptors as ITO_DESCRIPTORS
 del ito_descriptors
 
-from ._xml import ITO_DESCRIPTORS, XmlStrings, XmlRegexes, XmlParser
+from ._xml import XmlStrings, XmlRegexes, XmlParser
 del _xml

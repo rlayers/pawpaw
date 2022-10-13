@@ -1,0 +1,22 @@
+[project]
+name = "ito-segments"
+version = "0.0.1"
+authors = [
+  { name="Robert L. Ayers", email="rlayers@yahoo.com" },
+]
+description = "A small example package"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/rlayers/ito-segments"
+"Bug Tracker" = "https://github.com/rlayers/ito-segments/issues"

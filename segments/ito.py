@@ -823,13 +823,13 @@ class Ito:
 
     class Query()
         FILTER_KEYS = collection.OrderedDict()
-        FILTER_KEYS['desc'] = 'd'
-        FILTER_KEYS['string'] = 's'
-        FILTER_KEYS['string-casefold'] = 'sc'
-        FILTER_KEYS['index'] = 'i'
-        FILTER_KEYS['slice'] = 'c'
-        FILTER_KEYS['predicate'] = 'p'
-        FILTER_KEYS['value'] = 'v'
+        FILTER_KEYS['desc'] = 'desc', 'd'
+        FILTER_KEYS['string'] = 'string', 's'
+        FILTER_KEYS['string-casefold'] = 'string-casefold', 'sc', 'lcs'
+        FILTER_KEYS['index'] = 'index', 'i'
+        FILTER_KEYS['slice'] = 'slice', 'c'
+        FILTER_KEYS['predicate'] = 'predicate', 'p'
+        FILTER_KEYS['value'] = 'value', 'v'
 
         MUST_ESCAPE_FILTER_VALUE_CHARS = ('\\', '[', ']', '/', ',', '{', '}',)
         
@@ -890,11 +890,21 @@ class Ito:
             values: typing.Dict[str, typing.Any] | None = None,
             predicates: typing.Dict[str, typing.Callable[[int, Ito], bool]] | None = None
     ) -> typing.Callable[[typing.Tuple[int, Ito]], bool]:
-        if key == 'd':
+        if key in Ito.Query.FILTER_KEYS['desc']:
             return lambda kvp: kvp[1].desc in [
                 cls.filter_value_descape(s) for s in cls._query_value_split_on_comma(value)]
+        
+        if key in Ito.Query.FILTER_KEYS['string']:
+            return lambda kvp: kvp[1].__str__() in [
+                cls.filter_value_descape(s) for s in cls._query_value_split_on_comma(value)
+            ]
 
-        if key == 'i':
+        if key in Ito.Query.FILTER_KEYS['string-casefold']:
+            return lambda kvp: kvp[1].__str__().casefold() in [
+                cls.filter_value_descape(s).casefold() for s in cls._query_value_split_on_comma(value)
+            ]
+
+        if key in Ito.Query.FILTER_KEYS['index']:
             ints: typing.Set[int] = set()
             for i_chunk in value.split(','):
                 try:
@@ -913,7 +923,7 @@ class Ito:
 
             return lambda kvp: kvp[0] in ints
 
-        if key == 'p':
+        if key in Ito.Query.FILTER_KEYS['predicate']:
             if predicates is None:
                 raise ValueError('predicate expression found, however, no predicates dictionary supplied')
 
@@ -921,17 +931,7 @@ class Ito:
             ps = [v for k, v in predicates.items() if k in keys]
             return lambda kvp: any(p(*kvp) for p in ps)
 
-        if key == 's':
-            return lambda kvp: kvp[1].__str__() in [
-                cls.filter_value_descape(s) for s in cls._query_value_split_on_comma(value)
-            ]
-
-        if key == 'sc':
-            return lambda kvp: kvp[1].__str__().casefold() in [
-                cls.filter_value_descape(s).casefold() for s in cls._query_value_split_on_comma(value)
-            ]
-
-        if key == 'v':
+        if key in Ito.Query.FILTER_KEYS['value']:
             if values is None:
                 raise ValueError('value expression found, however, no values dictionary supplied')
 
@@ -1007,7 +1007,7 @@ class Ito:
         @classmethod
         def build_filter_re(cls):
             # Order keys from longest to shortest
-            fks = [*itertools.chian(Ito.Query.FILTER_KEYS.keys(), Ito.Query.FILTER_KEYS.values())]
+            fks = [v for values in Ito.Query.FILTER_KEYS.values() for v in values]
             fks.sort(key=lambda s: len(s), reverse=True)
             fks = '|'.join(regex.escape(k) for k in fks)
             cls._filter_re = regex.compile(r'\[(?P<k>' + fks + r'):\s*(?P<v>.+?)\]', regex.DOTALL)

@@ -821,12 +821,28 @@ class Ito:
 
     # region query
 
-    _MUST_ESCAPE_FILTER_VALUE_CHARS = ('\\', '[', ']', '/', ',', '{', '}',)
+    class Query()
+        FILTER_KEYS = collection.OrderedDict()
+        FILTER_KEYS['desc'] = 'd'
+        FILTER_KEYS['string'] = 's'
+        FILTER_KEYS['string-casefold'] = 'sc'
+        FILTER_KEYS['index'] = 'i'
+        FILTER_KEYS['slice'] = 'c'
+        FILTER_KEYS['predicate'] = 'p'
+        FILTER_KEYS['value'] = 'v'
 
+        MUST_ESCAPE_FILTER_VALUE_CHARS = ('\\', '[', ']', '/', ',', '{', '}',)
+        
+        QUERY_OPERATORS = collections.OrderedDict()
+        QUERY_OPERATORS['&'] = operator.and_
+        QUERY_OPERATORS['|'] = operator.or_
+        QUERY_OPERATORS['^'] = operator.xor
+
+        
     @classmethod
     def filter_value_escape(cls, value: str) -> str:
         rv = value.replace('\\', '\\\\')  # Must do backslash before other chars
-        for c in filter(lambda c: c != '\\', cls._MUST_ESCAPE_FILTER_VALUE_CHARS):
+        for c in filter(lambda c: c != '\\', Query.MUST_ESCAPE_FILTER_VALUE_CHARS):
             rv = rv.replace(c, f'\\{c}')
         return rv
 
@@ -925,11 +941,6 @@ class Ito:
 
         raise ValueError(f'invalid filter key \'key\'')
 
-    QUERY_OPERATORS = collections.OrderedDict()
-    QUERY_OPERATORS['&'] = operator.and_
-    QUERY_OPERATORS['|'] = operator.or_
-    QUERY_OPERATORS['^'] = operator.xor
-
     class _CombinedFilters:
         def __init__(self, filters: typing.Sequence[regex.Match], operands: typing.Sequence[str]):
             if len(filters) == 0:
@@ -943,7 +954,7 @@ class Ito:
         def filter(self, kvp: typing.Tuple[int, Ito]) -> bool:
             acum = self.filters[0](kvp)
             for f, o in zip(self.filters[1:], self.operands):
-                op = Ito.QUERY_OPERATORS.get(o)
+                op = Query.Ito.QUERY_OPERATORS.get(o)
                 if op is None:
                     raise ValueError('invalid operator \'{o}\'')
                 cur = f(kvp)
@@ -963,7 +974,7 @@ class Ito:
         def filter(self, kvp: typing.Tuple[int, Ito]) -> bool:
             acum = kvp[1].find(self.subqueries[0]) is not None
             for s, o in zip(self.subqueries[1:], self.operands):
-                op = Ito.QUERY_OPERATORS.get(o)
+                op = Query.Ito.QUERY_OPERATORS.get(o)
                 if op is None:
                     raise ValueError('invalid operator \'{o}\'')
                 cur = kvp[1].find(s) is not None
@@ -992,9 +1003,19 @@ class Ito:
             r'(?P<bra>(?<!' + _obs_pat_2 + r')\[(?:(?:' + _obs_pat_2 + r'[\[\]]|[^\[\]])++|(?&bra))*(?<!' + _obs_pat_2 + r')\])',
             regex.DOTALL
         )
-        _filter_re = regex.compile(r'\[(?P<k>[a-z]{1,2}):\s*(?P<v>.+?)\]', regex.DOTALL)
+        
+        @classmethod
+        def build_filter_re(cls):
+            # Order keys from longest to shortest
+            fks = [*itertools.chian(Ito.Query.FILTER_KEYS.keys(), Ito.Query.FILTER_KEYS.values())]
+            fks.sort(key=lambda s: len(s), reverse=True)
+            fks = '|'.join(regex.escape(k) for k in fks)
+            cls._filter_re = regex.compile(r'\[(?P<k>' + fks + r'):\s*(?P<v>.+?)\]', regex.DOTALL)
 
         def __init__(self, phrase: str):
+            if not hasattr(self, '_filter_keys'):
+                self.build_filter_re()
+            
             a_m = self._axis_re.fullmatch(phrase)
             if a_m is None:
                 raise ValueError(f'invalid phrase \'{phrase}\'')
@@ -1022,7 +1043,7 @@ class Ito:
                         op = s_q_g[start:stop].strip()
                         if len(op) == 0:
                             raise ValueError(f'missing operator between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
-                        elif op not in Ito.QUERY_OPERATORS.keys():
+                        elif op not in Query.Ito.QUERY_OPERATORS.keys():
                             raise ValueError(
                                 f'invalid subquery operator \'{op}\' between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
                     self.subqueries.append(sq.group(0)[1:-1])
@@ -1047,7 +1068,7 @@ class Ito:
                         if len(op) == 0:
                             raise ValueError(
                                 f'missing operator between filters \'{last.group(0)}\' and \'{f.group(0)}\'')
-                        elif op not in Ito.QUERY_OPERATORS.keys():
+                        elif op not in Query.Ito.QUERY_OPERATORS.keys():
                             raise ValueError(
                                 f'invalid filter operator \'{op}\' between filters \'{last.group(0)}\' and \'{f.group(0)}\'')
                         self.filter_operands.append(op)

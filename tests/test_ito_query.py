@@ -186,7 +186,19 @@ class TestItoQuery(_TestIto):
             with self.subTest(node=node_type, query=query):
                 expected = [d for d in node.walk_descendants() if d.desc in descs]
                 actual = [*node.find_all(query)]
-                self.assertSequenceEqual(expected, actual)                
+                self.assertSequenceEqual(expected, actual)
+                
+    def test_filter_index_scalar(self):
+        for node_type, node in {'root': self.root}.items():
+            for order in '', 'r':
+                for index in 0, 1, 2:
+                    query = f'*{order}[i:{index}]'
+                    with self.subTest(node=node_type, order=order, index=index, query=query):
+                        expected = [c for c in node.children]
+                        if order == 'r':
+                            expected.reverse()
+                        expected = [expecte[index]]
+                        actual = [*node.find_all(query)]
+                        self.assertSequenceEqual(expected, actual)
     
     # endregion
-

@@ -842,7 +842,7 @@ class Ito:
     @classmethod
     def filter_value_escape(cls, value: str) -> str:
         rv = value.replace('\\', '\\\\')  # Must do backslash before other chars
-        for c in filter(lambda c: c != '\\', Query.MUST_ESCAPE_FILTER_VALUE_CHARS):
+        for c in filter(lambda c: c != '\\', Ito.Query.MUST_ESCAPE_FILTER_VALUE_CHARS):
             rv = rv.replace(c, f'\\{c}')
         return rv
 
@@ -895,12 +895,12 @@ class Ito:
                 cls.filter_value_descape(s) for s in cls._query_value_split_on_comma(value)]
         
         if key in Ito.Query.FILTER_KEYS['string']:
-            return lambda kvp: kvp[1].__str__() in [
+            return lambda kvp: kvp[1][:] in [
                 cls.filter_value_descape(s) for s in cls._query_value_split_on_comma(value)
             ]
 
         if key in Ito.Query.FILTER_KEYS['string-casefold']:
-            return lambda kvp: kvp[1].__str__().casefold() in [
+            return lambda kvp: kvp[1][:].casefold() in [
                 cls.filter_value_descape(s).casefold() for s in cls._query_value_split_on_comma(value)
             ]
 
@@ -954,7 +954,7 @@ class Ito:
         def filter(self, kvp: typing.Tuple[int, Ito]) -> bool:
             acum = self.filters[0](kvp)
             for f, o in zip(self.filters[1:], self.operands):
-                op = Query.Ito.QUERY_OPERATORS.get(o)
+                op = Ito.Query.QUERY_OPERATORS.get(o)
                 if op is None:
                     raise ValueError('invalid operator \'{o}\'')
                 cur = f(kvp)
@@ -974,7 +974,7 @@ class Ito:
         def filter(self, kvp: typing.Tuple[int, Ito]) -> bool:
             acum = kvp[1].find(self.subqueries[0]) is not None
             for s, o in zip(self.subqueries[1:], self.operands):
-                op = Query.Ito.QUERY_OPERATORS.get(o)
+                op = Ito.Query.QUERY_OPERATORS.get(o)
                 if op is None:
                     raise ValueError('invalid operator \'{o}\'')
                 cur = kvp[1].find(s) is not None
@@ -1043,7 +1043,7 @@ class Ito:
                         op = s_q_g[start:stop].strip()
                         if len(op) == 0:
                             raise ValueError(f'missing operator between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
-                        elif op not in Query.Ito.QUERY_OPERATORS.keys():
+                        elif op not in Ito.Query.QUERY_OPERATORS.keys():
                             raise ValueError(
                                 f'invalid subquery operator \'{op}\' between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
                     self.subqueries.append(sq.group(0)[1:-1])
@@ -1068,7 +1068,7 @@ class Ito:
                         if len(op) == 0:
                             raise ValueError(
                                 f'missing operator between filters \'{last.group(0)}\' and \'{f.group(0)}\'')
-                        elif op not in Query.Ito.QUERY_OPERATORS.keys():
+                        elif op not in Ito.Query.QUERY_OPERATORS.keys():
                             raise ValueError(
                                 f'invalid filter operator \'{op}\' between filters \'{last.group(0)}\' and \'{f.group(0)}\'')
                         self.filter_operands.append(op)

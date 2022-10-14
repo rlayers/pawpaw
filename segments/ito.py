@@ -822,7 +822,7 @@ class Ito:
         FILTER_KEYS = collections.OrderedDict()
         FILTER_KEYS['desc'] = 'desc', 'd'
         FILTER_KEYS['string'] = 'string', 's'
-        FILTER_KEYS['string-casefold'] = 'string-casefold', 'sc', 'lcs'
+        FILTER_KEYS['string-casefold'] = 'string-casefold', 'scf', 'lcs'
         FILTER_KEYS['index'] = 'index', 'i'
         FILTER_KEYS['slice'] = 'slice', 'c'
         FILTER_KEYS['predicate'] = 'predicate', 'p'
@@ -897,7 +897,7 @@ class Ito:
 
         if key in Ito.Query.FILTER_KEYS['string-casefold']:
             return lambda kvp: kvp[1][:].casefold() in [
-                cls.filter_value_descape(s).casefold() for s in cls._query_value_split_on_comma(value)
+                cls.filter_value_descape(s).casefold() for s in cls._query_value_split_on_comma(value.casefold())
             ]
 
         if key in Ito.Query.FILTER_KEYS['index']:

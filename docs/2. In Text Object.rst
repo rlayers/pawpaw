@@ -7,6 +7,18 @@ Introduction
 
 A segment requires a reference string in order to fully describe a substring.  Likewise, a ``Span`` requires a reference ``str`` for context.  The segments module pairs a ``Span`` and ``str`` together as an *In Text Object*\ [#]_, which is implemented in the class ``Ito``.
 
+Namespace
+=========
+
+``Ito`` is located as a root level object in the namespace ``segments``::
+
+ >>> import segments
+ >>> segments.Ito  # via import
+ <class 'segments.ito.Ito'>
+ >>> from segments import Ito 
+ >>> Ito # via from
+ <class 'segments.ito.Ito'>
+
 Instantiation
 =============
 
@@ -17,7 +29,7 @@ Instantiating an ``Ito`` against a reference ``str`` is straightforward:
 
 >>> s = 'Hello, World!'
 >>> Ito(s)
-segments.Ito('Hello, World!', 0, 13, None)
+Ito('Hello, World!', 0, 13, None)
 
 The ``str`` value supplied to the constructor is accessible via a ``.string`` property.  The constructor features optional ``start`` and ``stop`` parameters, which are are *Python-style indices*.  The values for ``str``, ``start``, and ``stop`` are used to create a ``Span``, which is accessible via the ``.span`` property:
 
@@ -31,12 +43,12 @@ The ``start`` and ``stop`` values for the span are accessible via ``.start`` and
 >>> i.span == (i.start, i.stop)
 True
 
-``Ito`` also features a ``.descriptor`` property, which serves as a tag to describe the *type* of segment referred to.  An optional ``descriptor`` property is available in the constructor:
+``Ito`` also features a ``.desc`` property\ [#]_, which serves as a tag for describing the *type* of segment referred to.  An optional ``desc`` parameter is the fourth and final one in the constructor:
 
 >>> s = 'John Doe'
->>> i1 = Ito(s, stop=4, descriptor='FN')
->>> i2 = Ito(s, 5, descriptor='LN')
->>> f'{i1.descriptor}: "{i1}";  {i2.descriptor}: "{i2}"'
+>>> i1 = Ito(s, stop=4, desc='FN')
+>>> i2 = Ito(s, 5, desc='LN')
+>>> f'{i1.desc}: "{i1}";  {i2.desc}: "{i2}"'
 'FN: "John"; LN: "Doe"'
 
 The ``.string``, ``.start``, ``.stop``, and ``.span`` properties are all read-only and invariant.  On the ``.span`` property can be changed post-instantiation.  This is by design and ensures that the substring described by an ``Ito`` is an immutable object\ [#]_ in the segments module.  Trying to set any of these values results in an Error:
@@ -54,22 +66,26 @@ Attribute Error: can't set attribute 'string'
 Creating from another ``Ito``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-A common task involves creating one substring from another.  This is easily performed by supplying an ``Ito`` as the first parameter, ``src``, to the constructor instead of a ``str``.  The ``start`` and ``stop`` parameters are *relative to ``Ito``.
+Frequently, you will want to create one substring based on another.  This can be achieved by supplying an ``Ito`` as the first parameter to the constructor instead of a ``str``.  The ``start`` and ``stop`` parameters are *relative to what is passed as the first parameter:
 
 >>> s = '_abc_'
->>> i1 = Ito(s, 1, -1)   # substring 'abc'
->>> i2 = Ito(i1, 1, -1)  # indices relative to i1, not s
+>>> i1 = Ito(s, 1, -1)   # 'abc' : indices relative to s
+>>> i2 = Ito(i1, 1, -1)  #   'b' : indices relative to i1, not s
 >>> print(i2, *i2.span)
 b 2 3
 
 Creating from substrings
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-A common Python task involves creating or receiving substrings.  ``Ito`` provides a convenient ``classmethod`` called ``.from_substrings`` that, when supplied with a ``src`` of type ``str`` and a sequence of non-overlapping substrings, will generate a sequence of Ito objects:
+Creating and/or receiving substrings is a common Python task.  ``Ito`` provides a convenient ``classmethod`` named ``.from_substrings`` that, when supplied with a ``src`` of type ``str`` and a sequence of non-overlapping substrings, will generate a sequence of Ito objects:
 
 >>> s = 'A B C'
->>> [*Ito.from_substrings(s, *s.split())]
-[segments.Ito('A B C', 0, 1, None), segments.Ito('A B C', 2, 3, None), segments.Ito('A B C', 4, 5, None)]
+>>> [*Ito.from_substrings(s, *s.split())]  # Creates 3 strs: 'A', 'B', and 'C'
+[Ito('A B C', 0, 1, None), Ito('A B C', 2, 3, None), Ito('A B C', 4, 5, None)]
+
+Like the ``Ito`` constructor, this method allows passing either a ``str`` or an ``Ito`` as the first parameter.  When an ``Ito`` is passed, the substrings must be present in the substring described by the ``Ito``.
+
+
 
 
 Creating from substrings
@@ -112,16 +128,16 @@ Blah blah blah
 This is supported via the static constructor ``.clone``
 
 >>> s = ' abc '
->>> i = Ito(s, 1, -1, descriptor='original')
->>> i.clone(descriptor='duplicate')
-segments.Ito(' abc ', 1, 4, 'duplicate')
+>>> i = Ito(s, 1, -1, 'original')
+>>> i.clone(desc='duplicate')
+Ito(' abc ', 1, 4, 'duplicate')
 
 Like the ``Ito`` constructor, the ``.clone`` method supports ``start`` and ``stop`` parameters that are *Python-style indices.*  This enables easy creation of *relative* clones:
 
 >>> s = ' abc '
->>> i = Ito(s, descriptor='original')
+>>> i = Ito(s, desc='original')
 >>> i.clone(1, -1, 'duplicate')  # indices relative to i, not str
-segments.Ito(' abc ', 2, 3, 'duplicate')
+Ito(' abc ', 2, 3, 'duplicate')
 
 
 Usage
@@ -187,6 +203,8 @@ An ``Ito`` is not an arbitray data collection.  Rather, it defines segments wiht
 
 
 .. [#] The name "In Test Object" is historical, and dates back to earlier projects I developed.  I've chosen to keep this name because "Ito" makes for a short, convenient type name.
+
+.. [#] In earlier versions of the framework, this was named ``descriptor``.  Its usage, however, is frequent.  A ten-character long identifier, although perhaps more descriptive of intent, winds up for less readable and more verbose code.
 
 .. [#] In Python, strings are also immutable.
 

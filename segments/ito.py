@@ -25,7 +25,10 @@ class Types:
     F_ITO_2_SQ_ITOS = typing.Callable[[C], C_SQ_ITOS]
 
     C_IT_ITOS = typing.Iterable[C]
-    F_ITO_2_IT_ITOS = typing.Callable[[C], C_IT_ITOS]
+    F_C_2_IT_ITOS = typing.Callable[[C], C_IT_ITOS]
+    
+    F_C_M_G_2_B = typing.Callable[[C, regex.Match, int | str], bool]
+    F_C_M_G_2_DESC = typing.Callable[[C, regex.Match, int | str], str]
 
     @classmethod
     def is_callable(cls, val: typing.Any, *params: typing.Type) -> bool:
@@ -115,7 +118,7 @@ class Ito:
             cls,
             re: regex.Pattern,
             src: str | Types.C,
-            desc_func: typing.Callable[[regex.Match, str], str] = lambda match, group: group,
+            desc_func: F_C_M_G_2_DESC = lambda ito, match, group: group,
             group_filter: typing.Iterable[str] | typing.Callable[[regex.Match, str], bool] | None = None,
             limit: int | None = None,
     ) -> typing.Iterable[Types.C]:
@@ -133,7 +136,7 @@ class Ito:
             filtered_gns = (gn for gn in m.re.groupindex.keys() if cls._group_filter(group_filter)(m, gn))
             span_gns = ((span, gn) for gn in filtered_gns for span in m.spans(gn))
             for span, gn in sorted(span_gns, key=lambda val: (val[0][0], -val[0][1])):
-                ito = Ito(s, *span, desc_func(m, gn))
+                ito = Ito(s, *span, desc_func(src if isinstance(src, Ito) else None, m, gn))
                 while len(path_stack) > 0 and (ito.start < path_stack[-1].start or ito.stop > path_stack[-1].stop):
                     path_stack.pop()
                 if len(path_stack) == 0:

@@ -9,7 +9,7 @@ class TestItoQuery(_TestIto):
     def setUp(self) -> None:
         super().setUp()
 
-        self.src = 'nine 9 ten 10 eleven 11 twelve 12 thirteen 13'
+        self.src = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')
         
         self.root = Ito(self.src, self.src.index('ten'), self.src.index('thirteen') - 1, desc='root')
@@ -215,6 +215,28 @@ class TestItoQuery(_TestIto):
     # endregion
     
     # region filter string casefold
+    
+    def test_filter_string_casefold_scalar(self):
+        for node_type, node in {'root': self.root}.items():
+            for s in 'ten', 'ELEVEN', 'twelve':
+                for case_func in str.upper, str.casefold, str.lower:
+                    s = case_func(s)
+                    query = f'**[sc:{Ito.filter_value_escape(s)}]'
+                    with self.subTest(node=node_type, query=query):
+                        expected = [d for d in node.walk_descendants() if d[:].casefold() == s.casefold()]
+                        actual = [*node.find_all(query)]
+                        self.assertSequenceEqual(expected, actual)
+    
+    def test_filter_string_casefold_multiple(self):
+        for node_type, node in {'root': self.root}.items():
+            basis = 'ten', 'ELEVEN', 'twelve'
+            for case_func in str.upper, str.casefold, str.lower:
+                cfs = [case_func(s) for s in basis]
+                query = f'**[sc:{",".join(Ito.filter_value_escape(s) for s in cfs)}]'
+                with self.subTest(node=node_type, query=query):
+                        expected = [d for d in node.walk_descendants() if d[:].casefold() in [s.casefold() for s in cfs]
+                        actual = [*node.find_all(query)]
+                        self.assertSequenceEqual(expected, actual)
     
     # endregion
 

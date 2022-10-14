@@ -30,6 +30,11 @@ class TestItoSerialization(_TestIto):
     def test_json_serialize(self):
         word = self.h_ito.find('**[d:Word]')
         js_data = json.dumps(word, cls=Ito.JsonEncoder)
-        expected_prefix = '{"__type__": "typing.Tuple[str, Ito]", "string": "See Jack run.", "ito": {"__type__": "Ito", "_span": [0, 3], "desc": "Word"'
-        self.assertTrue(js_data.startswith(expected_prefix))
-      
+        expected_prefix = '{"__type__": "typing.Tuple[str, Ito]", "string": "' + \
+            word.string + \
+            '", "ito": {"__type__": "Ito", "_span": ' +
+            str(list(word.span)) +\
+            ', "desc": "' + \
+            word.desc + \
+            '"'
+        self.assertTrue(js_data.startswith(expected_prefix))      

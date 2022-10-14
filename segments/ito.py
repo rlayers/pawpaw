@@ -824,7 +824,6 @@ class Ito:
         FILTER_KEYS['string'] = 'string', 's'
         FILTER_KEYS['string-casefold'] = 'string-casefold', 'scf', 'lcs'
         FILTER_KEYS['index'] = 'index', 'i'
-        FILTER_KEYS['slice'] = 'slice', 'c'
         FILTER_KEYS['predicate'] = 'predicate', 'p'
         FILTER_KEYS['value'] = 'value', 'v'
 

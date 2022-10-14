@@ -6,12 +6,12 @@ import collections.abc
 import typing
 
 import regex
-from segments import Errors, Ito, Types
+from segments import Errors, Ito, Types, Span
 
 
 class Itorator(ABC):
     def __init__(self):
-        self.__itor_next: Types.Types.F_ITO_2_ITOR | None = None
+        self.__itor_next: Types.F_ITO_2_ITOR | None = None
         self.__itor_children: Types.F_ITO_2_ITOR | None = None
         #self.post_process: typing.Callable[[Types.C_IT_ITOS], Types.C_IT_ITOS] = lambda itos: itos
 
@@ -103,25 +103,25 @@ class Split(Itorator):
         NONE = 0
         LEADING = 1
         TRAILING = 2
-        
-    
+
     def __init__(
         self,
         re: regex.Pattern,
         group: int | str = 0,
         boundary_retention: BoundaryRetention = BoundaryRetention.NONE,
-        desc: str | None = None):
-        """Given P-O-O-S where P is prefix, - is boundary, O is/are middle part(s), and S is suffix, the 
+        desc: str | None = None
+    ):
+        """Given P-O-O-S where P is prefix, - is boundary, O is/are middle part(s), and S is suffix, the
            behavior is as follows:
-              
+
             * BoundaryRetention.NONE -> P O O S : boundaries are discarded (this is an 'ordinary' split operation)
-              
+
             * BoundaryRetention.LEADING -> -O -O -S : boundaries kept as prefixes, leading P is discarded
-              
+
             * BoundaryRetention.TRAILING -> P- O- O- : boundaries kept as suffixes, trailing S is discarded
-              
+
            Zero-length boundaries are allowable, and any resulting empty Ito's are discarded
-           
+
        Args:
         re: A regex pattern used to find matches
         group: A key used to identify a group from the matches; the resulting group will be used as the boundary;
@@ -129,7 +129,7 @@ class Split(Itorator):
         boundary_retention: A rule used to determine if boundaries are discarded, or else how they are kept
         desc: Value used to pass to the .clone method of a given Ito that is being split; note that because
               the returned Itos can be surrounded by 0, 1, or 2 boundaries, there is no clear desc_func that
-              can be used to to generate dynamic .desc values
+              can be used to generate dynamic .desc values
         """
         super().__init__()
         self.re = re
@@ -138,24 +138,24 @@ class Split(Itorator):
         self.desc = desc
         
     def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:
-        rv = typing.List[Ito] = []
+        rv: typing.List[Ito] = []
         prior: Span | None = None
         for m in ito.regex_finditer(self.re):
             cur = Span(*m.span(self.group))
             if prior is None:
-                if self.boundary_retention = self.BoundaryRetention.LEADING:
+                if self.boundary_retention == self.BoundaryRetention.LEADING:
                     start = stop = 0
                 else:
                     start = ito.start
-                    if self.boundary_retention = self.BoundaryRetention.NONE:
+                    if self.boundary_retention == self.BoundaryRetention.NONE:
                         stop = cur.start
                     else:  # TRAILING
                         stop = cur.stop
             else:
-                if self.boundary_retention = self.BoundaryRetention.NONE:
+                if self.boundary_retention == self.BoundaryRetention.NONE:
                     start = prior.stop
                     stop = cur.start
-                elif self.boundary_retention = self.BoundaryRetention.LEADING:
+                elif self.boundary_retention == self.BoundaryRetention.LEADING:
                     start = prior.start
                     stop = cur.start
                 else:  # TRAILING
@@ -163,18 +163,18 @@ class Split(Itorator):
                     stop = cur.stop
             
             if start != stop:
-                rv.append(ito.clone(start, stop, self.desc)
+                rv.append(ito.clone(start, stop, self.desc))
                           
             prior = cur
 
         if prior is not None and self.boundary_retention != self.BoundaryRetention.TRAILING:
-            if self.boundary_retention = self.BoundaryRetention.NONE:
+            if self.boundary_retention == self.BoundaryRetention.NONE:
                 start = prior.stop
             else:  # LEADING
                 start = prior.start
             stop = ito.stop
             if start != stop:
-                rv.append(ito.clone(start, stop, self.desc)
+                rv.append(ito.clone(start, stop, self.desc))
 
         return rv
 
@@ -213,7 +213,7 @@ class Extract(Itorator):
                 'group_filter',
                 group_filter,
                 typing.Container[str],
-                self.Types.F_C_M_G_2_B,
+                Types.F_C_M_G_2_B,
                 types.NoneType)
 
     def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:

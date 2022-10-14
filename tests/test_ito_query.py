@@ -221,7 +221,7 @@ class TestItoQuery(_TestIto):
             for s in 'ten', 'ELEVEN', 'twelve':
                 for case_func in str.upper, str.casefold, str.lower:
                     s = case_func(s)
-                    query = f'**[sc:{Ito.filter_value_escape(s)}]'
+                    query = f'**[scf:{Ito.filter_value_escape(s)}]'
                     with self.subTest(node=node_type, query=query):
                         expected = [d for d in node.walk_descendants() if d[:].casefold() == s.casefold()]
                         actual = [*node.find_all(query)]
@@ -232,9 +232,9 @@ class TestItoQuery(_TestIto):
             basis = 'ten', 'ELEVEN', 'twelve'
             for case_func in str.upper, str.casefold, str.lower:
                 cfs = [case_func(s) for s in basis]
-                query = f'**[sc:{",".join(Ito.filter_value_escape(s) for s in cfs)}]'
+                query = f'**[scf:{",".join(Ito.filter_value_escape(s) for s in cfs)}]'
                 with self.subTest(node=node_type, query=query):
-                        expected = [d for d in node.walk_descendants() if d[:].casefold() in [s.casefold() for s in cfs]
+                        expected = [d for d in node.walk_descendants() if d[:].casefold() in [s.casefold() for s in cfs]]
                         actual = [*node.find_all(query)]
                         self.assertSequenceEqual(expected, actual)
     

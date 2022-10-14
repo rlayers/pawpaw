@@ -16,15 +16,21 @@ from segments.errors import Errors
 
 class Types:
     C = typing.TypeVar('C', bound='Ito')
+    C_SQ_ITOS = typing.Sequence[C]
+    C_IT_ITOS = typing.Iterable[C]
 
     F_ITO_2_VAL = typing.Callable[[C], typing.Any]
 
+    class Axis(typing.NamedTuple):
+        index: int
+        ito: Types.C
+    C_IT_AXES = typing.Iterable[Axis]
+    F_AXIS_2_B = typing.Callable[[Axis], bool]
+
     F_ITO_2_ITOR = typing.Callable[[C], 'Itorator']
 
-    C_SQ_ITOS = typing.Sequence[C]
     F_ITO_2_SQ_ITOS = typing.Callable[[C], C_SQ_ITOS]
 
-    C_IT_ITOS = typing.Iterable[C]
     F_C_2_IT_ITOS = typing.Callable[[C], C_IT_ITOS]
     
     F_C_M_G_2_B = typing.Callable[[C, regex.Match, int | str], bool]
@@ -118,7 +124,7 @@ class Ito:
             cls,
             re: regex.Pattern,
             src: str | Types.C,
-            desc_func: F_C_M_G_2_DESC = lambda ito, match, group: group,
+            desc_func: Types.F_C_M_G_2_DESC = lambda ito, match, group: group,
             group_filter: typing.Iterable[str] | typing.Callable[[regex.Match, str], bool] | None = None,
             limit: int | None = None,
     ) -> typing.Iterable[Types.C]:
@@ -887,7 +893,7 @@ class Ito:
             value: str,
             values: typing.Dict[str, typing.Any] | None = None,
             predicates: typing.Dict[str, typing.Callable[[int, Ito], bool]] | None = None
-    ) -> typing.Callable[[typing.Tuple[int, Ito]], bool]:
+    ) -> Types.F_AXIS_2_B:
         if key in Ito.Query.FILTER_KEYS['desc']:
             return lambda kvp: kvp[1].desc in [
                 cls.filter_value_descape(s) for s in cls._query_value_split_on_comma(value)]
@@ -937,10 +943,10 @@ class Ito:
             vs = [v for k, v in values.items() if k in keys]
             return lambda kvp: kvp[1].values() in vs
 
-        raise ValueError(f'invalid filter key \'key\'')
+        raise ValueError(f'unknown filter key \'{key}\'')
 
     class _CombinedFilters:
-        def __init__(self, filters: typing.Sequence[regex.Match], operands: typing.Sequence[str]):
+        def __init__(self, filters: typing.Sequence[Types.F_AXIS_2_B], operands: typing.Sequence[str]):
             if len(filters) == 0:
                 raise ValueError(f'empty filters list')
             self.filters = filters
@@ -949,13 +955,13 @@ class Ito:
                 raise ValueError(f'count of operands ({len(operands):,}) must be one less than count of filters ({len(filters):,}')
             self.operands = operands
 
-        def filter(self, kvp: typing.Tuple[int, Ito]) -> bool:
-            acum = self.filters[0](kvp)
+        def filter(self, axis: Types.Axis) -> bool:
+            acum = self.filters[0](axis)
             for f, o in zip(self.filters[1:], self.operands):
                 op = Ito.Query.QUERY_OPERATORS.get(o)
                 if op is None:
                     raise ValueError('invalid operator \'{o}\'')
-                cur = f(kvp)
+                cur = f(axis)
                 acum = op(acum, cur)
             return acum
 
@@ -969,13 +975,13 @@ class Ito:
                 raise ValueError(f'count of operands ({len(operands):,}) must be one less than count of subqueries ({len(subqueries):,}')
             self.operands = operands
 
-        def filter(self, kvp: typing.Tuple[int, Ito]) -> bool:
-            acum = kvp[1].find(self.subqueries[0]) is not None
+        def filter(self, axis: Types.Axis) -> bool:
+            acum = axis[1].find(self.subqueries[0]) is not None
             for s, o in zip(self.subqueries[1:], self.operands):
                 op = Ito.Query.QUERY_OPERATORS.get(o)
                 if op is None:
                     raise ValueError('invalid operator \'{o}\'')
-                cur = kvp[1].find(s) is not None
+                cur = axis[1].find(s) is not None
                 acum = op(acum, cur)
             return acum
 
@@ -1005,10 +1011,7 @@ class Ito:
         @classmethod
         def build_filter_re(cls):
             # Order keys from longest to shortest
-            fks = [v for values in Ito.Query.FILTER_KEYS.values() for v in values]
-            fks.sort(key=lambda s: len(s), reverse=True)
-            fks = '|'.join(regex.escape(k) for k in fks)
-            cls._filter_re = regex.compile(r'\[(?P<k>' + fks + r'):\s*(?P<v>.+?)\]', regex.DOTALL)
+            cls._filter_re = regex.compile(r'\[(?P<k>[a-z\-]+):\s*(?P<v>.+?)\]', regex.DOTALL)
 
         def __init__(self, phrase: str):
             if not hasattr(self, '_filter_keys'):
@@ -1082,7 +1085,7 @@ class Ito:
             itos: typing.Iterable[Types.C],
             axis: str,
             order: str | None
-    ) -> typing.Iterable[typing.Tuple[int, Ito]]:
+    ) -> Types.C_IT_AXES:
         if order is not None and order not in 'rn':
             raise ValueError(f'invalid axis order \'{order}\'')
         reverse = (order == 'r')

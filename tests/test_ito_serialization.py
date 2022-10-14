@@ -32,8 +32,8 @@ class TestItoSerialization(_TestIto):
         js_data = json.dumps(word, cls=Ito.JsonEncoder)
         expected_prefix = '{"__type__": "typing.Tuple[str, Ito]", "string": "' + \
             word.string + \
-            '", "ito": {"__type__": "Ito", "_span": ' +
-            str(list(word.span)) +\
+            '", "ito": {"__type__": "Ito", "_span": ' + \
+            str(list(word.span)) + \
             ', "desc": "' + \
             word.desc + \
             '"'

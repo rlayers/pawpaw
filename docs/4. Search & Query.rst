@@ -46,17 +46,46 @@ An ``Ito`` is not an arbitray data collection.  Rather, it defines segments wiht
 * Non-overlapping siblings: An ``Ito`` does not overlap any other ``Ito`` objects that share the same ``.parent``
 * Ordered siblings: Siblings are ordered within their parent by their ``.span.start``; because they are non-overlapping, the ``.span.stop`` for an ``Ito`` will always be less than or equal to the ``.span.start`` of the subsequent sibling
 
-
-    ===================  ======  ==============================================================
-    Filter               Abbr    Meaning
-    ===================  ======  ==============================================================
-    ``string-casefold``  ``sc``  A ``str`` used to match against the ``.__str__()`` of the axis
-    ``string``           ``s``   A ``str`` used to match against the ``.__str__()`` of the axis
-    ``desc``             ``d``   A ``str`` used to match against the ``.desc`` of the axis
-    ``index``            ``i``   Blah blah blah
-    ``predicate``        ``p``   Blah blah blah
-    ===================  ======  ==============================================================
-
++---------------------+------------------+------------------------------------------------------------------------+------------------+
+| Key                 | Alt Keys(s)      | Meaning                                                                | Example(s)       |
++=====================+==================+========================================================================+==================+
+| ``desc``            | ``d``            | One or more ``str`` values used to match agains ``.desc`` of axis;     | ::               |
+|                     |                  | values must be separated with commas                                   |                  |
+|                     |                  |                                                                        |  [d:number]      |
+|                     |                  |                                                                        |  [d:word,char]   |
++---------------------+------------------+------------------------------------------------------------------------+------------------+
+| ``string``          | ``s``            | A ``str`` used to match against ``.__str__()`` of axis                 | ::               |
+|                     |                  |                                                                        |                  |
+|                     |                  |                                                                        |  [s:foo]         |
+|                     |                  |                                                                        |  [s:foo,goo]     |
++---------------------+------------------+------------------------------------------------------------------------+------------------+
+| ``string-casefold`` | ``scf``, ``lcs`` | Like ``s``, with ``.casefold()`` applied to supplied value *and*       | ::               |
+|                     |                  | value *and* ``.__str__()`` of axis prior to compare                    |                  |
+|                     |                  |                                                                        |  [scf:FoO,GoO]   |
++---------------------+------------------+------------------------------------------------------------------------+------------------+
+| ``index``           | ``v``            | One or more tuples consisting of a *start* and optional *stop* ``int`` | ::               |
+|                     |                  | values used to match against the enumeration index(ices) of the axis;  |                  |
+|                     |                  | *start* and *stop* must be separated with hyphens, tuples must be      |  [i:1]           |
+|                     |                  | separated with commas                                                  |  [i:2,3,4]       |
+|                     |                  |                                                                        |  [i:2-3]         |
+|                     |                  |                                                                        |  [i:2,5-7]       |
++---------------------+------------------+------------------------------------------------------------------------+------------------+
+| ``predicate``       | ``p``            | Key for filter function used to match against axis                     | ::               |
+|                     |                  | A ``str`` used as a key to entry in dictionary of type:                |                  |
+|                     |                  |                                                                        |   [p:key1]       |
+|                     |                  |   typing.Dict[str, typing.Callabe[[int, Ito], bool]                    |   [p:key1,key2]  |
+|                     |                  |                                                                        |                  |
+|                     |                  | The value retrieved from the ``dict`` use used as a filter against     |                  |
+|                     |                  | the axis                                                               |                  |
++---------------------+------------------+------------------------------------------------------------------------+------------------+
+| ``value``           | ``v``            | A ``str`` used as a key to entry in dictionary of type::               | ::               |
+|                     |                  |                                                                        |                  |
+|                     |                  |                                                                        |   [p:key]        |
+|                     |                  |   typing.Dict[str, typing.Any]                                         |   [p:key1, key2] |
+|                     |                  |                                                                        |                  |
+|                     |                  | The value retrieved from the ``dict`` is used to match against the     |                  |
+|                     |                  | ``.value()`` of the axis                                               |                  |
++---------------------+------------------+------------------------------------------------------------------------+------------------+
 
 
 .. [#] The name "In Test Object" is historical, and dates back to earlier projects I developed.  I've chosen to keep this name because "Ito" makes for a short, convenient type name.

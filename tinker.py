@@ -25,7 +25,8 @@ def dump_itos(*itos: Ito, indent='', __str__: bool = True):
         dump_itos(*ito.children, indent=indent+'  ', __str__=__str__)
 
 
-sample_xml = """<?xml version="1.0"?>
+# Sample taken from https://docs.python.org/3/library/xml.etree.elementtree.html
+sample_xml_no_ns = """<?xml version="1.0"?>
 <data>
     <country name="Liechtenstein">
         <rank>1</rank>
@@ -49,13 +50,26 @@ sample_xml = """<?xml version="1.0"?>
     </country>
 </data>"""
 
-sample_xml = """<?xml version="1.0"?>
-<data>
-    <country name="Liechtenstein">
-        <rank>1</rank>
-    </country>
-</data>"""
+# Taken from https://docs.python.org/3/library/xml.etree.elementtree.html
+sample_xml_with_ns = \
+"""<?xml version="1.0"?>
+<actors xmlns:fictional="http://characters.example.com"
+        xmlns="http://people.example.com">
+    <actor>
+        <name>John Cleese</name>
+        <fictional:character>Lancelot</fictional:character>
+        <fictional:character>Archie Leach</fictional:character>
+    </actor>
+    <actor>
+        <name>Eric Idle</name>
+        <fictional:character>Sir Robin</fictional:character>
+        <fictional:character>Gunther</fictional:character>
+        <fictional:character>Commander Clement</fictional:character>
+    </actor>
+</actors>"""
 
-root = ET.fromstring(sample_xml, parser=segments.xml.XmlParser())
-dump_itos(root._ito)
+segments.Ito.Filter.mro()
+
+root = ET.fromstring(sample_xml_with_ns, parser=segments.xml.XmlParser())
+dump_itos(root.ito)
 exit(0)

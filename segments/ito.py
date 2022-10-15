@@ -1,7 +1,6 @@
 from __future__ import annotations
 import bisect
 import collections.abc
-import inspect
 import itertools
 import json
 import operator
@@ -35,21 +34,6 @@ class Types:
     
     F_C_M_G_2_B = typing.Callable[[C, regex.Match, int | str], bool]
     F_C_M_G_2_DESC = typing.Callable[[C, regex.Match, int | str], str]
-
-    @classmethod
-    def is_callable(cls, val: typing.Any, *params: typing.Type) -> bool:
-        if not isinstance(val, typing.Callable):
-            return False
-
-        ips = inspect.signature(val).parameters
-        if len(params) != len(ips):
-            return False
-
-        for ipv, p in zip(ips.values(), params):
-            if ipv.annotation != inspect._empty and p != ipv.annotation:  # TODO : when p is singular type and annotation is Union
-                return False
-
-        return True
 
 
 class Ito:
@@ -827,7 +811,7 @@ class Ito:
 
     # region query
 
-    class Query:
+    class _Query:
         FILTER_KEYS = collections.OrderedDict()
         FILTER_KEYS['desc'] = 'desc', 'd'
         FILTER_KEYS['string'] = 'string', 's'
@@ -843,10 +827,44 @@ class Ito:
         QUERY_OPERATORS['|'] = operator.or_
         QUERY_OPERATORS['^'] = operator.xor
 
+    class Filter:
+        KEYS = collections.OrderedDict()
+        KEYS['desc'] = 'desc', 'd'
+        KEYS['string'] = 'string', 's'
+        KEYS['string-casefold'] = 'string-casefold', 'scf', 'lcs'
+        KEYS['index'] = 'index', 'i'
+        KEYS['predicate'] = 'predicate', 'p'
+        KEYS['value'] = 'value', 'v'
+
+        MUST_ESCAPE_CHARS = ('\\', '[', ']', '/', ',', '{', '}',)
+
+        @classmethod
+        def escape(cls, value: str) -> str:
+            rv = value.replace('\\', '\\\\')  # Must do backslash before other chars
+            for c in filter(lambda c: c != '\\', Ito._Query.MUST_ESCAPE_FILTER_VALUE_CHARS):
+                rv = rv.replace(c, f'\\{c}')
+            return rv
+
+        @classmethod
+        def descape(cls, value: str) -> str:
+            rv = ''
+            escape = False
+            for c in value:
+                if escape or c != '\\':
+                    rv += c
+                    escape = False
+                else:
+                    escape = True
+
+            if escape:
+                raise ValueError(f'found escape with no succeeding character in \'value\'')
+
+            return rv
+
     @classmethod
     def filter_value_escape(cls, value: str) -> str:
         rv = value.replace('\\', '\\\\')  # Must do backslash before other chars
-        for c in filter(lambda c: c != '\\', Ito.Query.MUST_ESCAPE_FILTER_VALUE_CHARS):
+        for c in filter(lambda c: c != '\\', Ito._Query.MUST_ESCAPE_FILTER_VALUE_CHARS):
             rv = rv.replace(c, f'\\{c}')
         return rv
 
@@ -892,23 +910,23 @@ class Ito:
             key: str,
             value: str,
             values: typing.Dict[str, typing.Any] | None = None,
-            predicates: typing.Dict[str, typing.Callable[[int, Ito], bool]] | None = None
+            predicates: typing.Dict[str, typing.Callable[[Types.Axis], bool]] | None = None
     ) -> Types.F_AXIS_2_B:
-        if key in Ito.Query.FILTER_KEYS['desc']:
+        if key in Ito._Query.FILTER_KEYS['desc']:
             return lambda kvp: kvp[1].desc in [
                 cls.filter_value_descape(s) for s in cls._query_value_split_on_comma(value)]
         
-        if key in Ito.Query.FILTER_KEYS['string']:
+        if key in Ito._Query.FILTER_KEYS['string']:
             return lambda kvp: kvp[1][:] in [
                 cls.filter_value_descape(s) for s in cls._query_value_split_on_comma(value)
             ]
 
-        if key in Ito.Query.FILTER_KEYS['string-casefold']:
+        if key in Ito._Query.FILTER_KEYS['string-casefold']:
             return lambda kvp: kvp[1][:].casefold() in [
                 cls.filter_value_descape(s).casefold() for s in cls._query_value_split_on_comma(value.casefold())
             ]
 
-        if key in Ito.Query.FILTER_KEYS['index']:
+        if key in Ito._Query.FILTER_KEYS['index']:
             ints: typing.Set[int] = set()
             for i_chunk in value.split(','):
                 try:
@@ -927,7 +945,7 @@ class Ito:
 
             return lambda kvp: kvp[0] in ints
 
-        if key in Ito.Query.FILTER_KEYS['predicate']:
+        if key in Ito._Query.FILTER_KEYS['predicate']:
             if predicates is None:
                 raise ValueError('predicate expression found, however, no predicates dictionary supplied')
 
@@ -935,7 +953,7 @@ class Ito:
             ps = [v for k, v in predicates.items() if k in keys]
             return lambda kvp: any(p(*kvp) for p in ps)
 
-        if key in Ito.Query.FILTER_KEYS['value']:
+        if key in Ito._Query.FILTER_KEYS['value']:
             if values is None:
                 raise ValueError('value expression found, however, no values dictionary supplied')
 
@@ -958,7 +976,7 @@ class Ito:
         def filter(self, axis: Types.Axis) -> bool:
             acum = self.filters[0](axis)
             for f, o in zip(self.filters[1:], self.operands):
-                op = Ito.Query.QUERY_OPERATORS.get(o)
+                op = Ito._Query.QUERY_OPERATORS.get(o)
                 if op is None:
                     raise ValueError('invalid operator \'{o}\'')
                 cur = f(axis)
@@ -978,7 +996,7 @@ class Ito:
         def filter(self, axis: Types.Axis) -> bool:
             acum = axis[1].find(self.subqueries[0]) is not None
             for s, o in zip(self.subqueries[1:], self.operands):
-                op = Ito.Query.QUERY_OPERATORS.get(o)
+                op = Ito._Query.QUERY_OPERATORS.get(o)
                 if op is None:
                     raise ValueError('invalid operator \'{o}\'')
                 cur = axis[1].find(s) is not None
@@ -1044,7 +1062,7 @@ class Ito:
                         op = s_q_g[start:stop].strip()
                         if len(op) == 0:
                             raise ValueError(f'missing operator between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
-                        elif op not in Ito.Query.QUERY_OPERATORS.keys():
+                        elif op not in Ito._Query.QUERY_OPERATORS.keys():
                             raise ValueError(
                                 f'invalid subquery operator \'{op}\' between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
                     self.subqueries.append(sq.group(0)[1:-1])
@@ -1069,7 +1087,7 @@ class Ito:
                         if len(op) == 0:
                             raise ValueError(
                                 f'missing operator between filters \'{last.group(0)}\' and \'{f.group(0)}\'')
-                        elif op not in Ito.Query.QUERY_OPERATORS.keys():
+                        elif op not in Ito._Query.QUERY_OPERATORS.keys():
                             raise ValueError(
                                 f'invalid filter operator \'{op}\' between filters \'{last.group(0)}\' and \'{f.group(0)}\'')
                         self.filter_operands.append(op)

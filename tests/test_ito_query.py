@@ -2,6 +2,7 @@ import typing
 
 import regex
 from segments import Ito
+import segments
 from tests.util import _TestIto
 
 
@@ -197,7 +198,7 @@ class TestItoQuery(_TestIto):
     def test_filter_string_scalar(self):
         for node_type, node in {'root': self.root}.items():
             for s in 'ten', 'eleven', 'twelve':
-                query = f'**[s:{Ito.filter_value_escape(s)}]'
+                query = f'**[s:{segments.query.escape(s)}]'
                 with self.subTest(node=node_type, query=query):
                     expected = [d for d in node.walk_descendants() if d[:] == s]
                     actual = [*node.find_all(query)]
@@ -206,7 +207,7 @@ class TestItoQuery(_TestIto):
     def test_filter_string_multiple(self):
         for node_type, node in {'root': self.root}.items():
             strings = 'ten', 'eleven', 'twelve'
-            query = f'**[s:{",".join(Ito.filter_value_escape(s) for s in strings)}]'
+            query = f'**[s:{",".join(segments.query.escape(s) for s in strings)}]'
             with self.subTest(node=node_type, query=query):
                 expected = [d for d in node.walk_descendants() if d[:] in strings]
                 actual = [*node.find_all(query)]
@@ -221,7 +222,7 @@ class TestItoQuery(_TestIto):
             for s in 'ten', 'ELEVEN', 'twelve':
                 for case_func in str.upper, str.casefold, str.lower:
                     s = case_func(s)
-                    query = f'**[scf:{Ito.filter_value_escape(s)}]'
+                    query = f'**[scf:{segments.query.escape(s)}]'
                     with self.subTest(node=node_type, query=query):
                         expected = [d for d in node.walk_descendants() if d[:].casefold() == s.casefold()]
                         actual = [*node.find_all(query)]
@@ -232,7 +233,7 @@ class TestItoQuery(_TestIto):
             basis = 'ten', 'ELEVEN', 'twelve'
             for case_func in str.upper, str.casefold, str.lower:
                 cfs = [case_func(s) for s in basis]
-                query = f'**[scf:{",".join(Ito.filter_value_escape(s) for s in cfs)}]'
+                query = f'**[scf:{",".join(segments.query.escape(s) for s in cfs)}]'
                 with self.subTest(node=node_type, query=query):
                         expected = [d for d in node.walk_descendants() if d[:].casefold() in [s.casefold() for s in cfs]]
                         actual = [*node.find_all(query)]

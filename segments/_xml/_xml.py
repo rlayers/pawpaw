@@ -7,7 +7,7 @@ import xml.parsers.expat as expat
 import regex
 from segments import Span, Ito
 from segments.itorator import Extract
-import segments.xml.ito_descriptors as ITO_DESCRIPTORS
+import segments._xml.ito_descriptors as ITO_DESCRIPTORS
 
         
 class XmlStrings:

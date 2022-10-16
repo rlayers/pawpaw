@@ -11,6 +11,7 @@ from segments.ito import Types, Ito, ChildItos
 del ito
 
 import segments.itorator
-import segments.xml
+import segments.query
+import segments._xml
 
 del segments

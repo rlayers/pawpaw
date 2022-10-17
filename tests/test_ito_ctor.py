@@ -17,7 +17,7 @@ class TestItoCtor(_TestIto):
             with self.subTest(src=src):
                 i = Ito(src)
                 self.assertEqual(src, i.string)
-                self.assertEqual(src, i[:])
+                self.assertEqual(src, i.__str__())
                 self.assertEqual((0, len(src)), i.span)
 
     def test_ctor_str_non_defaults(self):
@@ -29,9 +29,9 @@ class TestItoCtor(_TestIto):
                     i = Ito(s, start, stop)
                     self.assertLessEqual(0, i.start)
                     self.assertGreaterEqual(len(s), i.stop)
-                    self.assertEqual(s[start:stop], i[:])
+                    self.assertEqual(s[start:stop], i.__str__())
                     
-    def test_ctor_str_ito(self):
+    def test_ctor_ito(self):
         for s in '', ' ', 'a', 'abc', ' abc ':
             for i in None, 0, 1:
                 for j in -1, len(s), None:
@@ -40,7 +40,7 @@ class TestItoCtor(_TestIto):
                         with self.subTest(src=src, start=start, stop=stop):
                             ito = Ito(src, start, stop)
                             self.assertEqual(src.string, ito.string)
-                            self.assertEqual(src[start:stop], ito[:])
+                            self.assertEqual(src[start:stop], ito)
 
     def test_from_match_simple(self):
         first = 'John'
@@ -193,8 +193,8 @@ class TestItoCtor(_TestIto):
 
     def test_clone_with_value_func(self):
         string = ' abcdef '
-        f1 = lambda ito: ito[:].strip()
-        f2 = lambda ito: ito[:].upper()
+        f1 = lambda ito: ito.__str__().strip()
+        f2 = lambda ito: ito.__str__().upper()
 
         root = Ito(string)
         self.assertEqual(string, root.value())

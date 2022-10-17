@@ -42,16 +42,16 @@ class Ito:
             stop: int | None = None,
             desc: str | None = None
     ):
-        self._string = src.string if isinstance(src, Ito) else src
-
         if isinstance(src, str):
-            offset = 0
-        elif isinstance(src, Ito):
-            offset = src.start
+            self._string = src
+            self._span = Span.from_indices(src, start, stop)
+            
+        elif if isinstance(src, Ito)
+            self._string = src.string
+            self._span = Span.from_indices(src, start, stop).offset(src.start)
+        
         else:
             raise Errors.parameter_invalid_type('src', src, str, Ito)
-
-        self._span = Span.from_indices(src, start, stop, offset)
 
         if desc is not None and not isinstance(desc, str):
             raise Errors.parameter_invalid_type('desc', desc, str)
@@ -403,17 +403,19 @@ class Ito:
 
     def __getitem__(self, key: int | slice | None) -> str:
         if isinstance(key, int):
-            span = Span.from_indices(self, key, None, self.start)
-            return self.clone(*span)
+            if 0 <= key < len(self):
+                span = Span.from_indices(self, key, key + 1).offset(self.start)
+            else:
+                raise IndexError('Ito index out of range')
+        elif isinstance(key, slice)
+            span = span = Span.from_indices(self, key.start, key.stop).offset(self.start)
+        else:
+            raise Errors.parameter_invalid_type('key', key, int, slice)
 
-        if isinstance(key, slice):
-            span = Span.from_indices(self, key.start, key.stop, self.start)
-            return self.clone(*span)
-
-        if key is None:
-            return self  # Replicate Python's str[:], which returns the same ref
-
-        raise Errors.parameter_invalid_type('key', key, int, slice)
+        if self.span == span:
+            return self  # Replicate Pytho's str[:] behavior, which returns self ref
+                                            
+        return self.clone(*span)
 
     # endregion
 
@@ -478,7 +480,7 @@ class Ito:
     # region str equivalence methods
 
     def str_count(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.count(sub, *Span.from_indices(self, start, end, self.start))
+        return self._string.count(sub, *Span.from_indices(self, start, end).offset(self.start)
 
     # region endswtih, startswtih
         

@@ -15,7 +15,7 @@ class Span(typing.NamedTuple):
         cls,
         basis: int | collections.abc.Sized,
         start: int | None = None,
-        stop: int | None = None,
+        stop: int | None = None
     ) -> Span:
         if isinstance(basis, int):
             length = basis
@@ -51,6 +51,6 @@ class Span(typing.NamedTuple):
         
         rv = Span(self.start + i, self.stop + i)
         if rv.start < 0 or rv.stop < 0:
-            rase ValueError(f'offsetting by {i:,} results in negative indices')
+            raise ValueError(f'offsetting by {i:,} results in negative indices')
         
         return rv

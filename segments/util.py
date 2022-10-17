@@ -1,4 +1,4 @@
-from __future__annotations
+from __future__ import annotations
 import types
 import typing
 
@@ -15,7 +15,7 @@ def find_unescaped(
   if isinstance(src, str):
       s = src
       offset = 0
-  elif isinstance(src, segments.Ito)
+  elif isinstance(src, segments.Ito):
       s = src.string
       offset = src.start
   else:
@@ -34,7 +34,7 @@ def find_unescaped(
       raise ValueError('parameter \'escape\' must have length 1')
                        
   esc = False
-  for i in range(span.start, span.stop - 1):
+  for i in range(span.start, span.stop):
       c = s[i]
       if esc:
           esc = False

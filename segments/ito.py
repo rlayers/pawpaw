@@ -46,7 +46,7 @@ class Ito:
             self._string = src
             self._span = Span.from_indices(src, start, stop)
             
-        elif if isinstance(src, Ito)
+        elif isinstance(src, Ito):
             self._string = src.string
             self._span = Span.from_indices(src, start, stop).offset(src.start)
         
@@ -401,19 +401,19 @@ class Ito:
     def __len__(self) -> int:
         return self.stop - self.start
 
-    def __getitem__(self, key: int | slice | None) -> str:
+    def __getitem__(self, key: int | slice | None) -> Types.C:
         if isinstance(key, int):
             if 0 <= key < len(self):
                 span = Span.from_indices(self, key, key + 1).offset(self.start)
             else:
                 raise IndexError('Ito index out of range')
-        elif isinstance(key, slice)
-            span = span = Span.from_indices(self, key.start, key.stop).offset(self.start)
+        elif isinstance(key, slice):
+            span = Span.from_indices(self, key.start, key.stop).offset(self.start)
         else:
             raise Errors.parameter_invalid_type('key', key, int, slice)
 
         if self.span == span:
-            return self  # Replicate Pytho's str[:] behavior, which returns self ref
+            return self  # Replicate Python's str[:] behavior, which returns self ref
                                             
         return self.clone(*span)
 
@@ -480,7 +480,7 @@ class Ito:
     # region str equivalence methods
 
     def str_count(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.count(sub, *Span.from_indices(self, start, end).offset(self.start)
+        return self._string.count(sub, *Span.from_indices(self, start, end).offset(self.start))
 
     # region endswtih, startswtih
         

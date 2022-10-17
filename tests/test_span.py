@@ -4,7 +4,7 @@ from tests.util import _TestIto
 
 class TestSpan(_TestIto):
     def test_from_indices_valid(self):
-        for s in ['', ' ', ' abc ']:
+        for s in '', ' ', ' abc ':
             for start in (-100, -1, None, 0, 1, 100):
                 for stop in (-100, -1, None, 0, 1, 100):
                     if len(s) == 0:
@@ -37,8 +37,8 @@ class TestSpan(_TestIto):
                     
     def test_offset(self):
         s = 'abc'
-        for basis in s, Ito(s, 1, -1)
-            for i in (-100, -1, None, 0, 1, 100):
+        for basis in s, Ito(s, 1, -1):
+            for i in -100, -1, 0, 1, 100:
                 with self.subTest(basis=basis, i=i):
                     span = Span.from_indices(basis)
                     if (span.start + i < 0) or (span.stop + i < 0):
@@ -46,5 +46,5 @@ class TestSpan(_TestIto):
                             span.offset(i)
                     else:
                         rv = span.offset(i)
-                        self.assertEqual(span.start + i, rv.start)
-                        self.assertEqual(span.stop + 1, rv.stop)
+                        self.assertEquals(span.start + i, rv.start)
+                        self.assertEquals(span.stop + i, rv.stop)

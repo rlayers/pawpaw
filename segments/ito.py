@@ -401,14 +401,17 @@ class Ito:
     def __len__(self) -> int:
         return self.stop - self.start
 
-    def __getitem__(self, key: int | slice) -> str:
+    def __getitem__(self, key: int | slice | None) -> str:
         if isinstance(key, int):
             span = Span.from_indices(self, key, None, self.start)
-            return self._string[span.start]
+            return self.clone(*span)
 
         if isinstance(key, slice):
             span = Span.from_indices(self, key.start, key.stop, self.start)
-            return self._string[slice(*span)]
+            return self.clone(*span)
+
+        if key is None:
+            return self  # Replicate Python's str[:], which returns the same ref
 
         raise Errors.parameter_invalid_type('key', key, int, slice)
 

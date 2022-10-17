@@ -10,7 +10,7 @@ del span
 from segments.ito import Types, Ito, ChildItos
 del ito
 
-from segments.util import find_unescaped_chars
+from segments.util import find_unescaped, split_unescaped
 del util
 
 import segments.itorator

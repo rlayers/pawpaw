@@ -500,7 +500,7 @@ class Ito:
                 return False
 
         # Ok, just do what you would expect
-        norms = Span.from_indices(self, start, end, self.start)
+        norms = Span.from_indices(self, start, end).offset(self.start)
         return self._string.endswith(suffix, *norms)
 
     def str_startswith(
@@ -524,7 +524,7 @@ class Ito:
                 return False
 
         # Ok, just do what you would expect
-        norms = Span.from_indices(self, start, end, self.start)
+        norms = Span.from_indices(self, start, end).offset(self.start)
         return self._string.startswith(prefix, *norms)
 
     # endregion
@@ -532,16 +532,16 @@ class Ito:
     # region find, index, rfind, rindex
    
     def str_find(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.find(sub, *Span.from_indices(self, start, end, self.start))
+        return self._string.find(sub, *Span.from_indices(self, start, end).offset(self.start))
 
     def str_index(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.index(sub, *Span.from_indices(self, start, end, self.start))
+        return self._string.index(sub, *Span.from_indices(self, start, end).offset(self.start))
     
     def str_rfind(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.rfind(sub, *Span.from_indices(self, start, end, self.start))
+        return self._string.rfind(sub, *Span.from_indices(self, start, end).offset(self.start))
 
     def str_rindex(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.rindex(sub, *Span.from_indices(self, start, end, self.start))
+        return self._string.rindex(sub, *Span.from_indices(self, start, end).offset(self.start))
 
     # endregion
 
@@ -682,7 +682,7 @@ class Ito:
         non_ws_i: 0
         in_ws = True
         for i in range(start, stop, step):
-            c = self[i]
+            c = self[i].__str__()
             if in_ws:
                 if not c.isspace():
                     non_ws_i = i

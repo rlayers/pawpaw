@@ -172,19 +172,54 @@ class TestIto(_TestIto):
         i = Ito(s, 1, -1)
         self.assertEqual(3, len(i))
     
-    def test_getitem(self):
+    def test_getitem_valid_int(self):
         s = 'x123x'
         i = Ito(s, 1, -1)
-        self.assertEqual('1', i[0])
-        self.assertEqual('3', i[-1])
-        self.assertEqual('123', i[:])
-        self.assertEqual('23', i[1:])
-        self.assertEqual('2', i[1:-1])
-        self.assertEqual('12', i[:-1])
-
-        with self.assertRaises(TypeError):
-            self.assertEqual('2', i['1'])
+        for i in range(len(ito))
+        with self.subTest(ito=ito, i=i):
+            expected = ito.clone(i + 1, i + 2)
+            actual = ito[i]
+            self.assertEqual(expected, actual)
             
+        s = 'x1x'
+        ito = Ito(s, 1, -1)
+        i = 0
+        with self.subTest(ito=ito, i=i)
+            self.assertIs(ito, ito[i])
+            
+    def test_getitem_valid_slice(self):
+        s = 'x123x'
+        ito = Ito(s, 1, -1)
+        for start in None, -1, 0, 1:
+            with self.subTest(ito=ito, start=start):
+                span = Span.from_indices(ito, start).offset(ito.start)
+                expected = ito.clone(*span)
+                actual = ito[start:]
+                self.assertEqual(expected, actual)
+                if ito == expected:
+                    self.assertIs(ito, actual)
+                for stop in None, -1, 0, 1:
+                    with self.subTest(ito=ito, start=start, stop=stop):
+                        span = Span.from_indices(ito, start, stop).offset(ito.start)
+                        expected = ito.clone(*span)
+                        actual = ito[start:stop]
+                        self.assertEqual(expected, actual)
+                        if ito == expected:
+                            self.assertIs(ito, actual)
+                        
+    def test_getitem_invalid(self):
+        s = 'x123x'
+        ito = Ito(s, 1, -1)
+        for i in None, '0':
+            with self.subTest(ito=ito, i=i):
+                with self.assertRaises(TypeError):
+                    ito[i]
+
+        for i in -100, 100
+            with self.subTest(ito=ito, i=i):
+                with self.assertRaises(IndexError):
+                    ito[i]
+
     # endregion
 
     # region combinatorics

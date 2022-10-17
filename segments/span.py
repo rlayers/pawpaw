@@ -43,10 +43,14 @@ class Span(typing.NamedTuple):
         return Span(start, stop)
 
     def offset(self, i: int) -> Span:
-        if isinstance(i, int):
-            if i == 0:
-                return self
-            else:    
-                return Span(self.start + i, self.stop + i)
+        if not isinstance(i, int):
+            raise Errors.parameter_invalid_type('i', i, int)
+            
+        if i == 0:
+            return self
         
-        raise Errors.parameter_invalid_type('i', i, int)
+        rv = Span(self.start + i, self.stop + i)
+        if rv.start < 0 or rv.stop < 0:
+            rase ValueError(f'offsetting by {i:,} results in negative indices')
+        
+        return rv

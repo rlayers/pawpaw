@@ -9,11 +9,11 @@ class TestItoStrEquivalenceMethods(_TestIto):
         i = Ito(s, 2, -2)
         for sub in 'ab', 'ba':
             with self.subTest(sub=sub):
-                self.assertEqual(i[:].count(sub), i.str_count(sub))
-                self.assertEqual(i[:].count(sub, 2, -2), i.str_count(sub, 2, -2))
-                self.assertEqual(i[:].count(sub, 3, -3), i.str_count(sub, 3, -3))
-                self.assertEqual(i[:].count(sub, 4), i.str_count(sub, 4))
-                self.assertEqual(i[:].count(sub, None, -4), i.str_count(sub, end=-4))
+                self.assertEqual(i.__str__().count(sub), i.str_count(sub))
+                self.assertEqual(i.__str__().count(sub, 2, -2), i.str_count(sub, 2, -2))
+                self.assertEqual(i.__str__().count(sub, 3, -3), i.str_count(sub, 3, -3))
+                self.assertEqual(i.__str__().count(sub, 4), i.str_count(sub, 4))
+                self.assertEqual(i.__str__().count(sub, None, -4), i.str_count(sub, end=-4))
 
     def test_str_endswith(self):
         s = f' {"abc" * 2} '
@@ -133,21 +133,21 @@ class TestItoStrEquivalenceMethods(_TestIto):
             for chars in None, '', 'a', 'ba', 'c', 'cb', 'x', 'ac', '32ba', '123abc':
                 with self.subTest(string=s, chars=chars):
                     i = Ito(s)
-                    self.assertEqual(s.lstrip(chars), i.str_lstrip(chars)[:])
+                    self.assertEqual(s.lstrip(chars), i.str_lstrip(chars).__str__())
                     
     def test_str_rstrip(self):
         for s in '', 'abc', 'abc123', 'a1b2c3':
             for chars in None, '', 'a', 'ba', 'c', 'cb', 'x', 'ac', '32ba', '123abc':
                 with self.subTest(string=s, chars=chars):
                     i = Ito(s)
-                    self.assertEqual(s.rstrip(chars), i.str_rstrip(chars)[:])
+                    self.assertEqual(s.rstrip(chars), i.str_rstrip(chars).__str__())
 
     def test_str_strip(self):
         for s in '', 'abc', 'abc123', 'a1b2c3':
             for chars in None, '', 'a', 'ba', 'c', 'cb', 'x', 'ac', '32ba', '123abc':
                 with self.subTest(string=s, chars=chars):
                     i = Ito(s)
-                    self.assertEqual(s.strip(chars), i.str_strip(chars)[:])
+                    self.assertEqual(s.strip(chars), i.str_strip(chars).__str__())
 
     # endregion
 
@@ -242,21 +242,21 @@ class TestItoStrEquivalenceMethods(_TestIto):
         ito = Ito(basis)
         with self.subTest(string=basis, ito_span=ito.span, keepends=None):
             expected = basis.splitlines()
-            actual = [i[:] for i in ito.str_splitlines()]
+            actual = [i.__str__() for i in ito.str_splitlines()]
             self.assertListEqual(expected, actual)
 
         basis = '\n'
         ito = Ito(basis)
         with self.subTest(string=basis, ito_span=ito.span, keepends=None):
             expected = basis.splitlines()
-            actual = [i[:] for i in ito.str_splitlines()]
+            actual = [i.__str__() for i in ito.str_splitlines()]
             self.assertListEqual(expected, actual)
 
         basis = '__'
         ito = Ito(basis, 1, -1)
         with self.subTest(string=basis, ito_span=ito.span, keepends=None):
             expected = basis[slice(*ito.span)].splitlines()
-            actual = [i[:] for i in ito.str_splitlines()]
+            actual = [i.__str__() for i in ito.str_splitlines()]
             self.assertListEqual(expected, actual)
 
         basis = 'The\nquick\rbrown\r\nfox\vjumped\fover\xc1the\x1dlazy\u2028dogs.'
@@ -268,7 +268,7 @@ class TestItoStrEquivalenceMethods(_TestIto):
                 for keepends in True, False:
                     with self.subTest(string=s, ito_span=ito.span, keepends=keepends):
                         expected = s[1:-1].splitlines(keepends)
-                        actual = [i[:] for i in ito.str_splitlines(keepends)]
+                        actual = [i.__str__() for i in ito.str_splitlines(keepends)]
                         self.assertListEqual(expected, actual)
 
     # endregion
@@ -276,14 +276,14 @@ class TestItoStrEquivalenceMethods(_TestIto):
     def test_str_removeprefix(self):
         s = '_abc_'
         i = Ito(s, 1, -1)
-        self.assertEqual(s[1:-1].removeprefix('_'), i.str_removeprefix('_')[:])
-        self.assertEqual(s[1:-1].removeprefix('a'), i.str_removeprefix('a')[:])
+        self.assertEqual(s[1:-1].removeprefix('_'), i.str_removeprefix('_').__str__())
+        self.assertEqual(s[1:-1].removeprefix('a'), i.str_removeprefix('a').__str__())
 
     def test_str_removesuffix(self):
         s = '_abc_'
         i = Ito(s, 1, -1)
-        self.assertEqual(s[1:-1].removesuffix('_'), i.str_removesuffix('_')[:])
-        self.assertEqual(s[1:-1].removesuffix('c'), i.str_removesuffix('c')[:])
+        self.assertEqual(s[1:-1].removesuffix('_'), i.str_removesuffix('_').__str__())
+        self.assertEqual(s[1:-1].removesuffix('c'), i.str_removesuffix('c').__str__())
 
     def test_str_rfind(self):
         s = 'abcdefgh' * 2

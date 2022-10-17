@@ -3,18 +3,18 @@ import typing
 from tests.util import _TestIto
 
 
-class TestUtil(_TestIto):
+class TestFindUnescaped(_TestIto):
     def test_find_unescaped_invalid(self):
         s = ' abc '
         for src in s, segments.Ito(s, 1, -1):
-          for char in [None, '', 'ab']
+          for char in [None, '', 'ab']:
             with self.subTest(src=src, char=char):
                 with self.assertRaises((TypeError, ValueError)):
                     i = next(segments.find_unescaped(src, char))
 
         char = 'a'
         for src in s, segments.Ito(s, 1, -1):
-          for escape in [None, '', 'ab']
+          for escape in [None, '', '\\\\']:
             with self.subTest(src=src, char=char, escape=escape):
                 with self.assertRaises((TypeError, ValueError)):
                     i = next(segments.find_unescaped(src, char, escape))
@@ -24,7 +24,7 @@ class TestUtil(_TestIto):
         src = 'a\\'
         with self.subTest(src=src, char=char):
             with self.assertRaises(ValueError):
-                rv = [*segments.find_unescaped(src, char))
+                rv = [*segments.find_unescaped(src, char)]
                 
     def test_find_unescaped_empty_src(self):
         s = ''
@@ -37,7 +37,7 @@ class TestUtil(_TestIto):
     def test_find_unescaped_not_present(self):
         s = ' abc '
         char = 'z'
-        for src in s, segments.Ito(s, 1, -1):
+        for src in s, segments.Ito(s), segments.Ito(s, 1, -1):
             with self.subTest(src=src, char=char):
                 i = next(segments.find_unescaped(src, char), None)
                 self.assertIsNone(i)
@@ -60,13 +60,13 @@ class TestUtil(_TestIto):
         s = ' a&b&&c '
         escape = '&'
         for src in s, segments.Ito(s, 1, -1):
-            for char in 'a', 'b', 'c'
+            for char in 'a', 'b', 'c':
             with self.subTest(src=src, char=char, escape=escape):
                 if char == 'b':
                     expected = []
                 else:
                     expected = [src.__str__().find(char)]
-                actual = [*segments.find_unescaped(s, char, escape)]
+                actual = [*segments.find_unescaped(src, char, escape)]
                 self.assertListEqual(expected, actual)
 
 
@@ -75,7 +75,7 @@ class TestSplitUnescaped(_TestIto):
         s = ' a&b&&c '
         escape = '&'
         for src in s, segments.Ito(s, 1, -1):
-            for char in 'a', 'b', 'c'
+            for char in 'a', 'b', 'c':
                 with self.subTest(src=src, char=char, escape=escape):
                     if char == 'b':
                         expected = [src]
@@ -90,17 +90,13 @@ class TestSplitUnescaped(_TestIto):
             for src in s, segments.Ito(s):
                 for char in 'a', 'b', 'c':
                     with self.subTest(src=src, char=char):
-                        if isinstance(src=src, char=char):
+                        if isinstance(src=src, str):
                             expected = src.split(char)
-                        elif char ='a'
+                        elif char == 'a'
                             expected = [src[0:0], src[1:1+1], src[3:3]]
-                        elif char='b':
+                        elif char == 'b':
                             expected = [src[0:1], src[2:3]]
                         else:  # char == 'c'
                             expected = [src]
                         actual = [*segments.split_unescaped(src, char)]
-                        self.assertListEqual(expected, actual)
-
-                    
-                      
-                      
+                        self.assertListEqual(expected, actual)                  

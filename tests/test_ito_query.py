@@ -16,7 +16,7 @@ class TestItoQuery(_TestIto):
         self.root = Ito(self.src, self.src.index('ten'), self.src.index('thirteen') - 1, desc='root')
         self.root.children.add(*Ito.from_re(re, self.root))
         self.leaves = [d for d in self.root.walk_descendants() if len(d.children) == 0]
-        self.leaf = next(i for i in self.leaves if i.parent[:] == 'eleven' and i[:] == 'v')
+        self.leaf = next(i for i in self.leaves if i.parent.__str__() == 'eleven' and i.__str__() == 'v')
                                                                         
         self.descs = ['root', 'phrase', 'word', 'char']
 
@@ -200,7 +200,7 @@ class TestItoQuery(_TestIto):
             for s in 'ten', 'eleven', 'twelve':
                 query = f'**[s:{segments.query.escape(s)}]'
                 with self.subTest(node=node_type, query=query):
-                    expected = [d for d in node.walk_descendants() if d[:] == s]
+                    expected = [d for d in node.walk_descendants() if d.__str__() == s]
                     actual = [*node.find_all(query)]
                     self.assertSequenceEqual(expected, actual)
     
@@ -209,7 +209,7 @@ class TestItoQuery(_TestIto):
             strings = 'ten', 'eleven', 'twelve'
             query = f'**[s:{",".join(segments.query.escape(s) for s in strings)}]'
             with self.subTest(node=node_type, query=query):
-                expected = [d for d in node.walk_descendants() if d[:] in strings]
+                expected = [d for d in node.walk_descendants() if d.__str__() in strings]
                 actual = [*node.find_all(query)]
                 self.assertSequenceEqual(expected, actual)
     
@@ -224,7 +224,7 @@ class TestItoQuery(_TestIto):
                     s = case_func(s)
                     query = f'**[scf:{segments.query.escape(s)}]'
                     with self.subTest(node=node_type, query=query):
-                        expected = [d for d in node.walk_descendants() if d[:].casefold() == s.casefold()]
+                        expected = [d for d in node.walk_descendants() if d.__str__().casefold() == s.casefold()]
                         actual = [*node.find_all(query)]
                         self.assertSequenceEqual(expected, actual)
     
@@ -235,7 +235,7 @@ class TestItoQuery(_TestIto):
                 cfs = [case_func(s) for s in basis]
                 query = f'**[scf:{",".join(segments.query.escape(s) for s in cfs)}]'
                 with self.subTest(node=node_type, query=query):
-                        expected = [d for d in node.walk_descendants() if d[:].casefold() in [s.casefold() for s in cfs]]
+                        expected = [d for d in node.walk_descendants() if d.__str__().casefold() in [s.casefold() for s in cfs]]
                         actual = [*node.find_all(query)]
                         self.assertSequenceEqual(expected, actual)
     

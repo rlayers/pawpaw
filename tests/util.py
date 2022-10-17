@@ -10,7 +10,7 @@ from segments import Span, Ito, Types
 class _TestIto(TestCase):
     class IntIto(Ito):  # Used for derived class tests
         def value(self) -> typing.Any:
-            return int(self[:])
+            return int(self.__str__())
     
     @classmethod
     def add_chars_as_children(cls, ito: Types.C, desc: str | None) -> None:

@@ -16,7 +16,6 @@ class Span(typing.NamedTuple):
         basis: int | collections.abc.Sized,
         start: int | None = None,
         stop: int | None = None,
-        offset: int = 0
     ) -> Span:
         if isinstance(basis, int):
             length = basis
@@ -26,21 +25,28 @@ class Span(typing.NamedTuple):
             raise Errors.parameter_invalid_type('basis', basis, int, collections.abc.Sized)
 
         if start is None:
-            start = offset
+            start = 0
         elif not isinstance(start, int):
             raise Errors.parameter_invalid_type('start', start, int, types.NoneType)
         else:
             start = min(length, start) if start >= 0 else max(0, length + start)
-            start += offset
 
         if stop is None:
-            stop = length + offset
+            stop = length
         elif not isinstance(stop, int):
             raise Errors.parameter_invalid_type('stop', stop, int, types.NoneType)
         else:
             stop = min(length, stop) if stop >= 0 else max(0, length + stop)
-            stop += offset
             
         stop = max(start, stop)
 
         return Span(start, stop)
+
+    def offset(self, i: int) -> Span:
+        if isinstance(i, int):
+            if i == 0:
+                return self
+            else:    
+                return Span(self.start + i, self.stop + i)
+        
+        raise Errors.parameter_invalid_type('i', i, int)

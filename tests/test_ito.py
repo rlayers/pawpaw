@@ -107,8 +107,8 @@ class TestIto(_TestIto):
 
     def test_eq_value_func(self):
         s = 'abc'
-        f1 = lambda ito: ito[:].strip()
-        f2 = lambda ito: ito[:].upper()
+        f1 = lambda ito: ito.__str__().strip()
+        f2 = lambda ito: ito.__str__().upper()
         
         i1 = Ito(s, 1, -1, 'd')
         i2 = i1.clone()
@@ -149,23 +149,23 @@ class TestIto(_TestIto):
         s = 'x123x'
         i = Ito(s, 1, -1)
         self.assertEqual(s[1:-1], i.__str__())
-        self.assertEqual(s[1:-1], i[:])
+        self.assertEqual(s[1:-1], i.__str__())
         self.assertEqual(s[1:-1], f'{i}')
     
     def test_value(self):
-        f = lambda ito: int(ito[:])
+        f = lambda ito: int(ito.__str__())
         s = 'x123x'
         
         i = Ito(s, 1, -1)
-        self.assertEqual(i[:], i.value())
+        self.assertEqual(i.__str__(), i.value())
         
         i.value_func = f
         self.assertEqual(i.value_func, f)
-        self.assertEqual(f(i[:]), i.value())
+        self.assertEqual(f(i.__str__()), i.value())
         
         i.value_func = None
         self.assertIsNone(i.value_func)
-        self.assertEqual(i[:], i.value())
+        self.assertEqual(i.__str__(), i.value())
     
     def test_len(self):
         s = 'x123x'
@@ -174,8 +174,8 @@ class TestIto(_TestIto):
     
     def test_getitem_valid_int(self):
         s = 'x123x'
-        i = Ito(s, 1, -1)
-        for i in range(len(ito))
+        ito = Ito(s, 1, -1)
+        for i in range(len(ito)):
         with self.subTest(ito=ito, i=i):
             expected = ito.clone(i + 1, i + 2)
             actual = ito[i]
@@ -184,7 +184,7 @@ class TestIto(_TestIto):
         s = 'x1x'
         ito = Ito(s, 1, -1)
         i = 0
-        with self.subTest(ito=ito, i=i)
+        with self.subTest(ito=ito, i=i):
             self.assertIs(ito, ito[i])
             
     def test_getitem_valid_slice(self):
@@ -215,7 +215,7 @@ class TestIto(_TestIto):
                 with self.assertRaises(TypeError):
                     ito[i]
 
-        for i in -100, 100
+        for i in -100, 100:
             with self.subTest(ito=ito, i=i):
                 with self.assertRaises(IndexError):
                     ito[i]

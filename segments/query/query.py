@@ -258,7 +258,7 @@ class _Filter:
 
         if key in FILTER_KEYS['string-casefold']:
             return lambda ec, values, predicates: ec.ito.__str__().casefold() in [
-                descape(s).casefold() for s in segments.split_unescaped(value.casefold(), ','))
+                descape(s).casefold() for s in segments.split_unescaped(value.casefold(), ',')
             ]
 
         if key in FILTER_KEYS['index']:

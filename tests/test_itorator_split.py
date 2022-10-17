@@ -47,5 +47,5 @@ class TestSplit(_TestIto):
                     desc = 'split'
                     split = Split(re, boundary_retention=brt, desc=desc)
                     actual = split._iter(ito)
-                    self.assertSequenceEqual(expected, [i[:] for i in actual])
+                    self.assertSequenceEqual(expected, [i.__str__() for i in actual])
                     self.assertTrue(all(i.desc == desc for i in actual))

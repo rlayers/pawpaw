@@ -10,6 +10,9 @@ del span
 from segments.ito import Types, Ito, ChildItos
 del ito
 
+from segments.util import find_unescaped_chars
+del util
+
 import segments.itorator
 import segments.query
 import segments._xml

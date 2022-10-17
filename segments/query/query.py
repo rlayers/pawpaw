@@ -71,14 +71,14 @@ class _Axis:
         self.ito = next(phrase.from_match_ex(m))
 
         try:
-            self.key = next(i[:] for i in self.ito.children if i.desc == 'key')
+            self.key = next(i.__str__() for i in self.ito.children if i.desc == 'key')
         except StopIteration:
-            raise ValueError(f'phrase \'{phrase[:]}\' missing axis key')
+            raise ValueError(f'phrase \'{phrase.__str__()}\' missing axis key')
 
-        self.order = next((i[:] for i in self.ito.children if i.desc == 'order'), None)
+        self.order = next((i.__str__() for i in self.ito.children if i.desc == 'order'), None)
 
     def find_all(self, itos: typing.Iterable[segments.Types.C]) -> C_IT_EC:
-        reverse = (self.order is not None and self.order[:] == 'r')
+        reverse = (self.order is not None and self.order.__str__() == 'r')
 
         if self.key == '....':
             for i in itos:
@@ -163,11 +163,12 @@ class _Axis:
         else:
             raise ValueError(f'invalid axis key \'{self.key}\'')
 
+            
+_obs_pat_1 = r'(?<!\\)(?:(?:\\{2})*)'  # Odd number of backslashes ver 1
+_obs_pat_2 = r'\\(\\\\)*'  # Odd number of backslashes ver 2
+
 
 class _Subquery:
-    _obs_pat_1 = r'(?<!\\)(?:(?:\\{2})*)'  # Odd number of backslashes ver 1
-    _obs_pat_2 = r'\\(\\\\)*'  # Odd number of backslashes ver 2
-
     _open_bracket = regex.compile(_obs_pat_1 + r'\[', regex.DOTALL)
     _close_bracket = regex.compile(_obs_pat_1 + r'\]', regex.DOTALL)
 
@@ -180,17 +181,15 @@ class _Subquery:
         regex.DOTALL
     )
 
-    def __init__(self, phrase: segments.Types.C, axis: _Axis):
-        m = regex.search(self._subquery_re, phrase.string, pos=axis.ito.start, endpos=phrase.stop)
+    def __init__(self, ito: segments.Types.C):
+        self.ito = ito
+        
+        m = self.ito.regex_search(self._subquery_re)
         if m is None:
-            self.ito = None
             return
 
-        self.ito = segments.Ito(phrase, stop=-len(m))
         self.subquery_operands = []
         self.subqueries = []
-
-        m = regex.search(self._subquery_re, phrase.string, pos=axis.ito.start, endpos=phrase.stop)
         if m is not None:
             s_q_g = m.group('sq')
             if len([*self._open_cur.finditer(s_q_g)]) != len([*self._close_cur.finditer(s_q_g)]):
@@ -236,40 +235,14 @@ class _CombineAxisFilters:
 
 
 class _Filter:
-    _obs_pat_1 = r'(?<!\\)(?:(?:\\{2})*)'  # Odd number of backslashes ver 1
-    _obs_pat_2 = r'\\(\\\\)*'  # Odd number of backslashes ver 2
-
     _open_bracket = regex.compile(_obs_pat_1 + r'\[', regex.DOTALL)
     _close_bracket = regex.compile(_obs_pat_1 + r'\]', regex.DOTALL)
 
-    _open_cur = regex.compile(_obs_pat_1 + r'\{', regex.DOTALL)
-    _close_cur = regex.compile(_obs_pat_1 + r'\}', regex.DOTALL)
-
-    _filter_balanced_splitter = regex.compile(
+    _balanced_splitter = regex.compile(
         r'(?P<bra>(?<!' + _obs_pat_2 + r')\[(?:(?:' + _obs_pat_2 + r'[\[\]]|[^\[\]])++|(?&bra))*(?<!' + _obs_pat_2 + r')\])',
         regex.DOTALL
     )
     _filter_re = regex.compile(r'\[(?P<k>[a-z\-]+):\s*(?P<v>.+?)\]', regex.DOTALL)
-
-    @classmethod
-    def _split_on_comma(cls, value: str) -> typing.Iterable[str]:
-        cur = ''
-        escape = False
-        for c in value:
-            if escape:
-                cur = f'{cur}\\{c}'
-                escape = False
-            elif c == '\\':
-                escape = True
-            elif c == ',':
-                if len(cur) > 0:
-                    yield cur
-                cur = ''
-            else:
-                cur += c
-
-        if len(cur) > 0:
-            yield cur
 
     @classmethod
     def _filter_func_single(
@@ -278,14 +251,14 @@ class _Filter:
         value: str
     ) -> F_EC_2_EC:
         if key in FILTER_KEYS['desc']:
-            return lambda ec, values, predicates: ec.ito.desc in [descape(s) for s in cls._split_on_comma(value)]
+            return lambda ec, values, predicates: ec.ito.desc in [descape(s) for s in segments.split_unescaped(value, ',')]
 
         if key in FILTER_KEYS['string']:
-            return lambda ec, values, predicates: ec.ito[:] in [descape(s) for s in cls._split_on_comma(value)]
+            return lambda ec, values, predicates: ec.ito.__str__() in [descape(s) for s in segments.split_unescaped(value, ',')]
 
         if key in FILTER_KEYS['string-casefold']:
-            return lambda ec, values, predicates: ec.ito[:].casefold() in [
-                descape(s).casefold() for s in cls._split_on_comma(value.casefold())
+            return lambda ec, values, predicates: ec.ito.__str__().casefold() in [
+                descape(s).casefold() for s in segments.split_unescaped(value.casefold(), ','))
             ]
 
         if key in FILTER_KEYS['index']:
@@ -313,7 +286,7 @@ class _Filter:
             # if predicates is None:
             #     raise ValueError('predicate expression found, however, no predicates dictionary supplied')
 
-            keys = [descape(s) for s in cls._split_on_comma(value)]
+            keys = [descape(s) for s in segments.split_unescaped(value, ',')]
 
             return lambda ec, values, predicates: any(p(ec) for p in [v for k, v in predicates.items() if k in keys])
 
@@ -322,21 +295,13 @@ class _Filter:
             # if values is None:
             #     raise ValueError('value expression found, however, no values dictionary supplied')
 
-            keys = [descape(s) for s in cls._split_on_comma(value)]
+            keys = [descape(s) for s in segments.split_unescaped(value, ',')]
             return lambda ec, values, predicates: ec.ito.value() in [v for k, v in values.items() if k in keys]
 
         raise ValueError(f'unknown filter key \'{key}\'')
 
-    def __init__(
-            self,
-            phrase: segments.Types.C,
-            axis: _Axis,
-            subquery: _Subquery
-    ):
-        stop = None if subquery.ito is None else -len(subquery.ito)
-        self.ito = segments.Ito(phrase, len(axis.ito), stop)
-        self.ito = self.ito.str_strip()
-
+    def __init__(self, ito: segments.Types.C):
+        self.ito = ito
         filters: typing.List[F_EC_2_EC] = []
         operands: typing.List[str] = []
 
@@ -344,7 +309,7 @@ class _Filter:
             if len([*self.ito.regex_finditer(self._open_bracket)]) != len([*self.ito.regex_finditer(self._close_bracket)]):
                 raise ValueError(f'unbalanced brackets in filter(s) \'{self.ito}\'')
             last = None
-            for f in self.ito.regex_finditer(self._filter_balanced_splitter):
+            for f in self.ito.regex_finditer(self._balanced_splitter):
                 if last is not None:
                     start = last.span(0)[1]
                     stop = f.span(0)[0]
@@ -375,8 +340,14 @@ class _Phrase:
     def __init__(self, phrase: segments.Types.C):
         self.ito = phrase
         self.axis = _Axis(phrase)
-        self.subquery = _Subquery(phrase, self.axis)
-        self.filter = _Filter(phrase, self.axis, self.subquery)
+        
+        unesc_curl = next(segments.find_unescaped(phrase, '{', start=len(self.axis.ito)), None)
+        
+        filt_ito = segments.Ito(phrase, len(self.axis.ito), unesc_curl).str_strip()
+        self.filter = _Filter(filt_ito)
+        
+        sq_ito = segments.Ito(self.axis.ito, unesc_curl).str_strip()
+        self.subquery = _Subquery(sq_ito)
 
     def find_all(
             self,
@@ -433,213 +404,3 @@ class _Query:
         for phrase in self.phrases:
             cur = phrase.find_all(cur, values, predicates)
         yield from cur
-
-
-class _PhrasePart:
-    OBS_PAT_1 = r'(?<!\\)(?:(?:\\{2})*)'  # Odd number of backslashes ver 1
-    OBS_PAT_2 = r'\\(\\\\)*'              # Odd number of backslashes ver 2
-
-    @classmethod
-    def split_value_on_comma(cls, value: str) -> typing.Iterable[str]:
-        cur = ''
-        escape = False
-        for c in value:
-            if escape:
-                cur = f'{cur}\\{c}'
-                escape = False
-            elif c == '\\':
-                escape = True
-            elif c == ',':
-                if len(cur) > 0:
-                    yield cur
-                cur = ''
-            else:
-                cur += c
-
-        if len(cur) > 0:
-            yield cur
-
-
-# class Filter(_PhrasePart):
-#     KEYS = collections.OrderedDict()
-#     KEYS['desc'] = 'desc', 'd'
-#     KEYS['string'] = 'string', 's'
-#     KEYS['string-casefold'] = 'string-casefold', 'scf', 'lcs'
-#     KEYS['index'] = 'index', 'i'
-#     KEYS['predicate'] = 'predicate', 'p'
-#     KEYS['value'] = 'value', 'v'
-#
-#     MUST_ESCAPE_CHARS = ('\\', '[', ']', '/', ',', '{', '}',)
-#
-#     _OPEN_BRACKET_RE = regex.compile(_PhrasePart.OBS_PAT_1 + r'\[', regex.DOTALL)
-#     _CLOSE_BRACKET_RE = regex.compile(_PhrasePart.OBS_PAT_1 + r'\]', regex.DOTALL)
-#
-#     _BALANCED_SPLITTER_RE = regex.compile(
-#         r'(?P<bra>(?<!' + _PhrasePart.OBS_PAT_2 + r')\[(?:(?:' + _PhrasePart.OBS_PAT_2 + r'[\[\]]|[^\[\]])++|(?&bra))*(?<!' + _PhrasePart.OBS_PAT_2 + r')\])',
-#         regex.DOTALL
-#     )
-#
-#     _KEY_VALUE_RE = regex.compile(r'\[(?P<k>[a-z\-]+):\s*(?P<v>.+?)\]', regex.DOTALL)
-#
-#     @classmethod
-#     def escape(cls, value: str) -> str:
-#         rv = value.replace('\\', '\\\\')  # Must do backslash before other chars
-#         for c in filter(lambda c: c != '\\', MUST_ESCAPE_CHARS):
-#             rv = rv.replace(c, f'\\{c}')
-#         return rv
-#
-#     @classmethod
-#     def descape(cls, value: str) -> str:
-#         rv = ''
-#         escape = False
-#         for c in value:
-#             if escape or c != '\\':
-#                 rv += c
-#                 escape = False
-#             else:
-#                 escape = True
-#
-#         if escape:
-#             raise ValueError(f'found escape with no succeeding character in \'value\'')
-#
-#         return rv
-#
-#     @classmethod
-#     def _to_filter(
-#             cls,
-#             key: str,
-#             value: str,
-#             values: typing.Dict[str, typing.Any] | None = None,
-#             predicates: typing.Dict[str, typing.Callable[[segments.Types.Axis], bool]] | None = None
-#     ) -> segments.Types.F_AXIS_2_B:
-#         if key in cls.Keys['desc']:
-#             return lambda kvp: kvp[1].desc in [
-#                 cls.deescape(s) for s in cls._query_value_split_on_comma(value)]
-#
-#         if key in cls.Keys['string']:
-#             return lambda kvp: kvp[1][:] in [
-#                 cls.deescape(s) for s in cls._query_value_split_on_comma(value)
-#             ]
-#
-#         if key in cls.Keys['string-casefold']:
-#             return lambda kvp: kvp[1][:].casefold() in [
-#                 cls.deescape(s).casefold() for s in cls._query_value_split_on_comma(value.casefold())
-#             ]
-#
-#         if key in cls.Keys['index']:
-#             ints: typing.Set[int] = set()
-#             for i_chunk in value.split(','):
-#                 try:
-#                     _is = [int(i.strip()) for i in i_chunk.split('-')]
-#                 except:
-#                     raise ValueError(f'invalid integer in \'value\'')
-#
-#                 len_is = len(_is)
-#                 if len_is == 1:
-#                     ints.add(_is[0])
-#                 elif len_is == 2:
-#                     for i in range(*_is):
-#                         ints.add(i)
-#                 else:
-#                     raise ValueError('invalid index item \'value\'')
-#
-#             return lambda kvp: kvp[0] in ints
-#
-#         if key in cls.Keys['predicate']:
-#             if predicates is None:
-#                 raise ValueError('predicate expression found, however, no predicates dictionary supplied')
-#
-#             keys = [cls.deescape(s) for s in cls._query_value_split_on_comma(value)]
-#             ps = [v for k, v in predicates.items() if k in keys]
-#             return lambda kvp: any(p(*kvp) for p in ps)
-#
-#         if key in cls.Keys['value']:
-#             if values is None:
-#                 raise ValueError('value expression found, however, no values dictionary supplied')
-#
-#             keys = [cls.deescape(s) for s in cls._query_value_split_on_comma(value)]
-#             vs = [v for k, v in values.items() if k in keys]
-#             return lambda kvp: kvp[1].values() in vs
-#
-#         raise ValueError(f'unknown filter key \'{key}\'')
-#
-#     def parse(
-#             self,
-#             combined_filter: str,
-#             values: typing.Dict[str, typing.Any] | None = None,
-#             predicates: typing.Dict[str, typing.Callable[[segments.Types.Axis], bool]] | None = None
-#     ) -> segments.Types.F_AXIS_2_B:
-#         filter_operands = []
-#         filters_funcs = []
-#
-#         if len(combined_filter) > 0:
-#             if len([*self._OPEN_BRACKET_RE.finditer(combined_filter)]) != len([*self._CLOSE_BRACKET_RE.finditer(combined_filter)]):
-#                 raise ValueError(f'unbalanced brackets in filter(s) \'{combined_filter}\'')
-#             last = None
-#             for f in self._BALANCED_SPLITTER_RE.finditer(combined_filter):
-#                 if last is not None:
-#                     slice_ = slice(*last.span(0))
-#                     op = combined_filter[slice_].strip()
-#                     if len(op) == 0:
-#                         raise ValueError(
-#                             f'missing operator between filters \'{last.group(0)}\' and \'{f.group(0)}\'')
-#                     elif op not in _Query.QUERY_OPERATORS.keys():
-#                         raise ValueError(
-#                             f'invalid filter operator \'{op}\' between filters \'{last.group(0)}\' and \'{f.group(0)}\'')
-#                     self.operands.append(op)
-#                 m = self._KEY_VALUE_RE.fullmatch(f.group(0))
-#                 if m is None:
-#                     raise ValueError(f'invalid filter \'{f.group(0)}\'')
-#                 self.filters.append({'key': m.group('k'), 'val': m.group('v')})
-#                 last = f
-#
-#     def __init__(self, combined_filter: str):
-#         self.filters: typing.Sequence[segments.Types.F_AXIS_2_B]
-#         self.operands: typing.Sequence[str]
-#         self.parse(combined_filter)
-#         if len(self.filters) == 0:
-#             raise ValueError(f'empty filters list')
-#
-#         if len(self.operands) != len(self.filters) - 1:
-#             raise ValueError(f'count of operands ({len(self.operands):,}) must be one less than count of filters ({len(self.filters):,}')
-#
-#
-#     @classmethod
-#     def _from_phrase(
-#             cls,
-#             itos: typing.Iterable[segments.Types.C],
-#             query_step: str,
-#             values: typing.Dict[str, object] | None = None,
-#             predicates: typing.Dict[str, typing.Callable[[int, segments.Types.C], bool]] | None = None
-#     ) -> typing.Iterable[segments.Types.C]:
-#         qsp = cls._PhraseParse(query_step)
-#
-#         axis = cls._axis_order_iter(itos, qsp.axis, qsp.order)
-#
-#         if len(qsp.filters) == 0:
-#             filt = lambda a: True
-#         else:
-#             filt = cls._CombinedFilters(
-#                 [cls._query_step_filter(f['key'], f['val'], values, predicates) for f in qsp.filters],
-#                 qsp.filter_operands
-#             ).filter
-#
-#     def filter(self, axis: segments.Types.Axis) -> bool:
-#         acum = self.filters[0](axis)
-#         for f, o in zip(self.filters[1:], self.operands):
-#             op = _Query.QUERY_OPERATORS.get(o)
-#             if op is None:
-#                 raise ValueError('invalid operator \'{o}\'')
-#             cur = f(axis)
-#             acum = op(acum, cur)
-#         return acum
-#
-#     def filter(self, axis: segments.Types.Axis) -> bool:
-#         acum = self.filters[0](axis)
-#         for f, o in zip(self.filters[1:], self.operands):
-#             op = _Query.QUERY_OPERATORS.get(o)
-#             if op is None:
-#                 raise ValueError('invalid operator \'{o}\'')
-#             cur = f(axis)
-#             acum = op(acum, cur)
-#         return acum

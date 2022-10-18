@@ -4,7 +4,7 @@ sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 
 import segments
-from segments._xml import XmlParser, ITO_DESCRIPTORS
+from segments.xml import XmlParser, ITO_DESCRIPTORS
 from tests.util import _TestIto
 
 
@@ -12,9 +12,9 @@ class TestXml(_TestIto):
     def setUp(self) -> None:
         self.parser = XmlParser()        
         
-        # Sample _xml taken from https://docs.python.org/3/library/xml.etree.elementtree.html
+        # Sample xml taken from https://docs.python.org/3/library/xml.etree.elementtree.html
         self.xml_et = \
-"""<?_xml version="1.0"?>
+"""<?xml version="1.0"?>
 <data>
     <country name="Liechtenstein">
         <rank>1</rank>

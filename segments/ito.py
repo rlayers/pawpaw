@@ -3,7 +3,6 @@ import bisect
 import collections.abc
 import itertools
 import json
-import operator
 import pickle
 import types
 import typing
@@ -78,7 +77,6 @@ class Ito:
 
         return cls(match.string, *match.span(group), desc=desc)
 
-
     @classmethod
     def _group_filter(
             cls,
@@ -142,29 +140,9 @@ class Ito:
         else:
             raise Errors.parameter_invalid_type('src', src, str, Ito)
         for count, m in enumerate(re.finditer(s, *span), 1):
-            yield from cls.from_match_ex(m)
+            yield from cls.from_match_ex(m, desc_func, group_filter)
             if limit is not None and count >= limit:
                 break
-            #
-            # path_stack: typing.List[Types.C] = []
-            # match_itos: typing.List[Types.C] = []
-            # filtered_gns = (gn for gn in m.re.groupindex.keys() if cls._group_filter(group_filter)(m, gn))
-            # span_gns = ((span, gn) for gn in filtered_gns for span in m.spans(gn))
-            # for span, gn in sorted(span_gns, key=lambda val: (val[0][0], -val[0][1])):
-            #     ito = Ito(s, *span, desc_func(src if isinstance(src, Ito) else None, m, gn))
-            #     while len(path_stack) > 0 and (ito.start < path_stack[-1].start or ito.stop > path_stack[-1].stop):
-            #         path_stack.pop()
-            #     if len(path_stack) == 0:
-            #         match_itos.append(ito)
-            #     else:
-            #         path_stack[-1].children.add(ito)
-            #
-            #     path_stack.append(ito)
-            #
-            # yield from match_itos
-            #
-            # if limit is not None and count >= limit:
-            #     break
 
     @classmethod
     def from_spans(cls, string: str, *spans: Span, desc: str | None = None) -> typing.Iterable[Types.C]:
@@ -295,7 +273,7 @@ class Ito:
 
     @classmethod
     def pickle_loads(cls, pickle_str: str, ito_str: str) -> Ito:
-        rv = pickle.load(pickle_str)
+        rv = pickle.loads(pickle_str)
         rv._string = ito_str
         return rv
 
@@ -335,7 +313,7 @@ class Ito:
     def json_decoder_stringless(cls, obj: typing.Dict) -> Ito | typing.Dict:
         if (t := obj.get('__type__')) is not None and t == 'Ito':
             rv = Ito('', desc=obj['desc'])
-            rv._span = Span(obj['desc'])
+            rv._span = obj['span']
             rv.children.add(obj['children'])
             return rv
         else:
@@ -484,7 +462,12 @@ class Ito:
 
     # region endswtih, startswtih
         
-    def str_endswith(self, suffix: str | typing.Tuple[str, ...], start: int | None = None, end: int | None = None) -> bool:
+    def str_endswith(
+            self,
+            suffix: str | typing.Tuple[str, ...],
+            start: int | None = None,
+            end: int | None = None
+    ) -> bool:
         if suffix is None:
             raise Errors.parameter_invalid_type('suffix', suffix, str, typing.Tuple[str, ...])
 
@@ -856,7 +839,7 @@ class Ito:
             predicates: typing.Dict[str, typing.Callable[[int, Types.C], bool]] | None = None
     ) -> typing.Iterable[Types.C]:
         query = segments.query.compile(query)
-        yield from query.find_all(self)
+        yield from query.find_all(self, values, predicates)
 
     # endregion
 

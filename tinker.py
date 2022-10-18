@@ -2,23 +2,16 @@ import sys
 # Force Python XML parser, not faster C accelerators because we can't hook the C implementation (3.x hack)
 sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
-import xml.parsers.expat as expat
 
-import typing
+import segments
 
-import regex
-from segments import Span, Ito, __version__
-import segments._xml
-from segments.itorator import Extract
-
-
-# print(__version__)
-# print(__version__.major)
-# print(__version__.pre_release)
-# print(__version__.asdict())
+# print(segments.__version__)
+# print(segments.__version__.major)
+# print(segments.__version__.pre_release)
+# print(segments.__version__._asdict())
 # exit(0)
 
-ito = Ito('The quick brown fox', desc='root')
+ito = segments.Ito('The quick brown fox', desc='root')
 ito.children.add(*(ito.clone(i, i+1, 'char') for i, c in enumerate(ito)))
 query_str = '**[d:char]'  # '*/**[d:foo]{**}'
 
@@ -26,15 +19,14 @@ query_str = '**[d:char]'  # '*/**[d:foo]{**}'
 # for r in results:
 #     print(f'{r}')
 
-query = segments.query.compile(query_str)
-results = [*query.find_all(ito)]
-for r in results:
-    print(f'{r}')
+# query = segments.query.compile(query_str)
+# results = [*query.find_all(ito)]
+# for r in results:
+#     print(f'{r}')
+#
 
-exit(0)
 
-
-def dump_itos(*itos: Ito, indent='', __str__: bool = True):
+def dump_itos(*itos: segments.Ito, indent='', __str__: bool = True):
     for i, ito in enumerate(itos):
         s = f' .__str__():"{ito.__str__()}"' if __str__ else ''
         print(f'{indent}{i:,}: .span={ito.span} .desc="{ito.desc}"{s}"')
@@ -42,7 +34,7 @@ def dump_itos(*itos: Ito, indent='', __str__: bool = True):
 
 
 # Sample taken from https://docs.python.org/3/library/xml.etree.elementtree.html
-sample_xml_no_ns = """<?_xml version="1.0"?>
+sample_xml_no_ns = """<?xml version="1.0"?>
 <data>
     <country name="Liechtenstein">
         <rank>1</rank>
@@ -67,8 +59,7 @@ sample_xml_no_ns = """<?_xml version="1.0"?>
 </data>"""
 
 # Taken from https://docs.python.org/3/library/xml.etree.elementtree.html
-sample_xml_with_ns = \
-"""<?_xml version="1.0"?>
+sample_xml_with_ns = """"<?xml version="1.0"?>
 <actors xmlns:fictional="http://characters.example.com"
         xmlns="http://people.example.com">
     <actor>
@@ -86,4 +77,3 @@ sample_xml_with_ns = \
 
 root = ET.fromstring(sample_xml_with_ns, parser=segments.xml.XmlParser())
 dump_itos(root.ito)
-exit(0)

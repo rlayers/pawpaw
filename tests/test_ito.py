@@ -176,10 +176,10 @@ class TestIto(_TestIto):
         s = 'x123x'
         ito = Ito(s, 1, -1)
         for i in range(len(ito)):
-        with self.subTest(ito=ito, i=i):
-            expected = ito.clone(i + 1, i + 2)
-            actual = ito[i]
-            self.assertEqual(expected, actual)
+            with self.subTest(ito=ito, i=i):
+                expected = ito.clone(i + 1, i + 2)
+                actual = ito[i]
+                self.assertEqual(expected, actual)
             
         s = 'x1x'
         ito = Ito(s, 1, -1)

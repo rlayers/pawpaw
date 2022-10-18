@@ -168,50 +168,7 @@ _obs_pat_1 = r'(?<!\\)(?:(?:\\{2})*)'  # Odd number of backslashes ver 1
 _obs_pat_2 = r'\\(\\\\)*'  # Odd number of backslashes ver 2
 
 
-class _Subquery:
-    _open_bracket = regex.compile(_obs_pat_1 + r'\[', regex.DOTALL)
-    _close_bracket = regex.compile(_obs_pat_1 + r'\]', regex.DOTALL)
-
-    _open_cur = regex.compile(_obs_pat_1 + r'\{', regex.DOTALL)
-    _close_cur = regex.compile(_obs_pat_1 + r'\}', regex.DOTALL)
-
-    _subquery_re = regex.compile(_obs_pat_1 + r'(?P<sq>\{.*)\s*', regex.DOTALL)
-    _subquery_balanced_splitter = regex.compile(
-        r'(?P<cur>(?<!' + _obs_pat_2 + r')\{(?:(?:' + _obs_pat_2 + r'[{}]|[^{}])++|(?&cur))*(?<!' + _obs_pat_2 + r')\})',
-        regex.DOTALL
-    )
-
-    def __init__(self, ito: segments.Types.C):
-        self.ito = ito
-        
-        m = self.ito.regex_search(self._subquery_re)
-        if m is None:
-            return
-
-        self.subquery_operands = []
-        self.subqueries = []
-        if m is not None:
-            s_q_g = m.group('sq')
-            if len([*self._open_cur.finditer(s_q_g)]) != len([*self._close_cur.finditer(s_q_g)]):
-                raise ValueError(f'unbalanced curly braces in sub-query(ies) \'{s_q_g}\'')
-            sqs = [*self._subquery_balanced_splitter.finditer(s_q_g)]
-            last = None
-            for sq in sqs:
-                if last is not None:
-                    start = last.span(0)[1]
-                    stop = sq.span(0)[0]
-                    op = s_q_g[start:stop].strip()
-                    if len(op) == 0:
-                        raise ValueError(
-                            f'missing operator between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
-                    elif op not in OPERATORS.keys():
-                        raise ValueError(
-                            f'invalid subquery operator \'{op}\' between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
-                self.subqueries.append(sq.group(0)[1:-1])
-                last = sq
-
-
-class _CombineAxisFilters:
+class _Combine:
     def __init__(self, filters: typing.Sequence[F_EC_2_EC], operands: typing.Sequence[str]):
         if len(filters) == 0:
             raise ValueError(f'empty filters list')
@@ -245,7 +202,7 @@ class _Filter:
     _filter_re = regex.compile(r'\[(?P<k>[a-z\-]+):\s*(?P<v>.+?)\]', regex.DOTALL)
 
     @classmethod
-    def _filter_func_single(
+    def _func_single(
         cls,
         key: str,
         value: str
@@ -324,17 +281,64 @@ class _Filter:
                 m = self._filter_re.fullmatch(f.group(0))
                 if m is None:
                     raise ValueError(f'invalid filter \'{f.group(0)}\'')
-                filters.append(self._filter_func_single(m.group('k'), m.group('v')))
+                filters.append(self._func_single(m.group('k'), m.group('v')))
                 last = f
 
         if len(filters) == 0:
-            self.combined_filter = lambda a, v, p: a
+            self.combined = lambda e, v, p: e
         else:
-            self.combined_filter = _CombineAxisFilters(filters, operands).find_all
+            self.combined = _Combine(filters, operands).find_all
 
     def find_all(self, cur: C_IT_EC, values: C_VALUES, predicates: C_PREDICATES) -> C_IT_EC:
-        yield from self.combined_filter(cur, values, predicates)
+        yield from self.combined(cur, values, predicates)
 
+
+class _Subquery:
+    _open_cur = regex.compile(_obs_pat_1 + r'\{', regex.DOTALL)
+    _close_cur = regex.compile(_obs_pat_1 + r'\}', regex.DOTALL)
+
+    _subquery_re = regex.compile(_obs_pat_1 + r'(?P<sq>\{.*)', regex.DOTALL)
+    _balanced_splitter = regex.compile(
+        r'(?P<cur>(?<!' + _obs_pat_2 + r')\{(?:(?:' + _obs_pat_2 + r'[{}]|[^{}])++|(?&cur))*(?<!' + _obs_pat_2 + r')\})',
+        regex.DOTALL
+    )
+
+    def __init__(self, ito: segments.Types.C):
+        self.ito = ito
+        subqueries: typing.List[_Phrase] = []
+        operands: typing.List[str] = []
+
+        if len(self.ito) > 0:
+            m = self.ito.regex_search(self._subquery_re)
+            if m is None:
+                raise ValueError(f'Invalid parameter \'subquery\' value: {self.ito}')
+
+            s_q_g = m.group('sq')
+            if len([*self._open_cur.finditer(s_q_g)]) != len([*self._close_cur.finditer(s_q_g)]):
+                raise ValueError(f'unbalanced curly braces in sub-query(ies) \'{s_q_g}\'')
+            sqs = [*self._balanced_splitter.finditer(s_q_g)]
+            last = None
+            for sq in sqs:
+                if last is not None:
+                    start = last.span(0)[1]
+                    stop = sq.span(0)[0]
+                    op = s_q_g[start:stop].strip()
+                    if len(op) == 0:
+                        raise ValueError(
+                            f'missing operator between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
+                    elif op not in OPERATORS.keys():
+                        raise ValueError(
+                            f'invalid subquery operator \'{op}\' between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
+                subqueries.append(_Phrase(segments.Ito.from_match(sq, 0)[1:-1]))
+                last = sq
+
+        if len(subqueries) == 0:
+            self.combined = lambda e, v, p: e
+        else:
+            self.combined = _Combine(subqueries, operands).find_all
+
+    def find_all(self, cur: C_IT_EC, values: C_VALUES, predicates: C_PREDICATES) -> C_IT_EC:
+        yield from self.combined(cur, values, predicates)
 
 class _Phrase:
     def __init__(self, phrase: segments.Types.C):
@@ -343,19 +347,26 @@ class _Phrase:
         
         unesc_curl = next(segments.find_unescaped(phrase, '{', start=len(self.axis.ito)), None)
         
-        filt_ito = segments.Ito(phrase, len(self.axis.ito), unesc_curl).str_strip()
+        filt_ito = phrase[len(self.axis.ito):unesc_curl].str_strip()
         self.filter = _Filter(filt_ito)
-        
-        sq_ito = segments.Ito(self.axis.ito, unesc_curl).str_strip()
+
+        unesc_curl = phrase.stop if unesc_curl is None else unesc_curl
+        sq_ito = phrase[unesc_curl:].str_strip()
         self.subquery = _Subquery(sq_ito)
+
+    def find_all(self, cur: C_IT_EC, values: C_VALUES, predicates: C_PREDICATES) -> C_IT_EC:
+        yield from self.combined(cur, values, predicates)
 
     def find_all(
             self,
-            itos: typing.Iterable[segments.Types.C],
+            cur: C_IT_EC,
             values: C_VALUES = None,
             predicates: C_PREDICATES = None
     ) -> segments.Types.C_IT_ITOS:
-        yield from (ec.ito for ec in self.filter.find_all(self.axis.find_all(itos), values, predicates))  # TODO - chains these iterables?
+        axis_it = self.axis.find_all(e.ito for e in cur)
+        filter_it = self.filter.find_all(axis_it, values, predicates)
+        sq_it = self.subquery.find_all(filter_it, values, predicates)
+        yield from sq_it
 
 
 class _Query:
@@ -400,7 +411,7 @@ class _Query:
             values: typing.Dict[str, typing.Any] | None = None,
             predicates: typing.Dict[str, typing.Callable[[int, segments.Types.C], bool]] | None = None
     ) -> segments.Types.C_IT_ITOS:
-        cur = [ito]
+        cur = [EC(0, ito)]
         for phrase in self.phrases:
             cur = phrase.find_all(cur, values, predicates)
-        yield from cur
+        yield from (e.ito for e in cur)

@@ -1,7 +1,7 @@
 import random
 import string as py_string
 
-from segments import Ito
+from segments import Ito, Span
 from tests.util import _TestIto, RandSpans
 
 
@@ -57,7 +57,7 @@ class TestChildItos(_TestIto):
             next_parents = []
             for parent in parents:
                 j = max(1, len(parent) // 5)
-                rs = RandSpans((j, j + 2), (0, 2))
+                rs = RandSpans(Span(j, j + 2), Span(0, 2))
                 children = [parent.clone(*s) for s in rs.generate(s, *parent.span)]
                 parent.children.add(*children)
                 next_parents.extend(children)

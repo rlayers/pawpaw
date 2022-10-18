@@ -15,6 +15,6 @@ del util
 
 import segments.itorator
 import segments.query
-import segments._xml
+import segments.xml as xml
 
 del segments

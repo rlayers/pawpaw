@@ -48,7 +48,12 @@ class RandSpans:
             raise ValueError('invalid \'gap\'')
         self.gap = gap
 
-    def generate(self, basis: int | collections.abc.Sized, start: int | None = None, stop: int | None = None) -> typing.Iterable[Span]:
+    def generate(
+            self,
+            basis: int | collections.abc.Sized,
+            start: int | None = None,
+            stop: int | None = None
+    ) -> typing.Iterable[Span]:
         i, stop = Span.from_indices(basis, start, stop)
         while i < stop:
             k = i + random.randint(*self.size)

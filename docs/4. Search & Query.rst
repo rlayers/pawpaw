@@ -88,6 +88,16 @@ An ``Ito`` is not an arbitray data collection.  Rather, it defines segments wiht
 +---------------------+------------------+------------------------------------------------------------------------+------------------+
 
 
+TIPS & TRICKS
+=============
+
+Q: How can I 'OR' together a filter and subquery?
+
+A: Operators are not supported between the filter and subquery components of a query phrase.  However, you can achieve the same result by moving the filter to a subquery:
+
+[my_filter]{my_subquery}  ->  {./[my_filter]}OR{my_subquery}
+
+
 .. [#] The name "In Test Object" is historical, and dates back to earlier projects I developed.  I've chosen to keep this name because "Ito" makes for a short, convenient type name.
 
 .. [#] In Python, strings are also immutable.

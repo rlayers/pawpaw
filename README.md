@@ -35,12 +35,41 @@
 <h3 align="center">ito-segments</h3>
 
   <p align="center">
-    High Performance Text Segmentation
+    Python Segmentation Library
     <br />
     <ul>
-      <li>Rigorous hierarchical text segmentation</li>
-      <li>Rules pipelining engine to quickly and easily segment complex text</li>
-      <li>Structured query language for searching & querying segmented text</li>
+      <li>
+        High Performance Substring Library
+        <ul>
+          <li>Conserve memory</li>
+          <li>Automatic string index bookkeeping</li>
+          <li>Runtime & polymorphic value extraction</li>
+          <li>Hierarchical data structure for substrings</li>
+        </ul>
+      </li>
+      <li>
+        Rules Pipelining Engine
+        <ul>
+          <li>Develop complex text parsers with just a few lines of code</li>
+          <li>Quickly and easily convert unstructured text into structed, indexed, & searchable collections</li>
+          <li>Easily pre-process text for downstream NLP/AI/ML consumers</li>
+        </ul>
+      </li>
+      <li>
+        Search and Query
+        <ul>
+          <li>Search text using a structured query language</li>
+          <li>Pre-compile queries for improved performance</li>
+        </ul>
+      </li>
+      <li>
+        Includes an ElementTree.XmlParser
+        <ul>
+          <li>Drop-in replacement for ElementTree.XmlParser</li>
+          <li>Provides full text indexes for all Elements, Attributes, Tags, Text, etc.</li>
+          <li>Search the resulting XML using both XPATH and the included, more capable structured query language</li>
+        </ul>
+      </li>
     </ul>
     <listitem>
     <br />

@@ -289,10 +289,26 @@ class TestItoQuery(_TestIto):
     
     # region filter predicate
     
+    # TODO : Add filter predicates test(s)
+    
     # endregion
+    
+    # TODO : Add filter values test(s)
 
     # region filter value
     
     # endregion
 
+    # region subquery
     
+    def test_subquery_scalar(self):
+        for node_type, node in {'root': self.root}.items()
+            for order in '', 'r':
+                query = '**' + order + '[d:word]{*[d:char]&[s:e]}'  # words with 'e'
+                with self.subTest(node=node_type, order=order, query=query):
+                    step = -1 if order == 'r' else 1
+                    expected = [*dict.fromkeys(leaf.parent for leaf in self.leaves[::step] if leaf.__str__() == 'e').keys()]
+                    actual = [*node.find_all(query)]
+                    self.assertListEqual(expected, actual)
+    
+    # endregion

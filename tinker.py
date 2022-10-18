@@ -13,17 +13,13 @@ import segments
 
 ito = segments.Ito('The quick brown fox', desc='root')
 ito.children.add(*(ito.clone(i, i+1, 'char') for i, c in enumerate(ito)))
-query_str = '**[d:char]'  # '*/**[d:foo]{**}'
+query_str = '**[d:char]&[d:char]/..'  # '*/**[d:foo]{**}'
 
-# results = [*ito.find_all_ex(query_str)]
-# for r in results:
-#     print(f'{r}')
-
-# query = segments.query.compile(query_str)
-# results = [*query.find_all(ito)]
-# for r in results:
-#     print(f'{r}')
-#
+query = segments.query.compile(query_str)
+results = [*query.find_all(ito)]
+for r in results:
+    print(f'{r}')
+exit(0)
 
 
 def dump_itos(*itos: segments.Ito, indent='', __str__: bool = True):

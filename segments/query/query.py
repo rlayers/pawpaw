@@ -329,7 +329,7 @@ class _Subquery:
                     elif op not in OPERATORS.keys():
                         raise ValueError(
                             f'invalid subquery operator \'{op}\' between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
-                subqueries.append(_Phrase(segments.Ito.from_match(sq, 0)[1:-1]))
+                subqueries.append(_Query(segments.Ito.from_match(sq, 0)[1:-1]).find_all)
                 last = sq
 
         if len(subqueries) == 0:
@@ -371,7 +371,8 @@ class _Phrase:
 
 class _Query:
     @classmethod
-    def _split_phrases(cls, query: str) -> typing.Iterable[segments.Types.C]:
+    def _split_phrases(cls, query: segments.Types.C) -> typing.Iterable[segments.Types.C]:
+        query = query.__str__()  # TODO - get rid of this
         rv = ''
         escape = False
         subquery_cnt = 0
@@ -399,8 +400,8 @@ class _Query:
             i += 1
             yield segments.Ito(query, i - len(rv), i)
 
-    def __init__(self, query: str):
-        if query is None or len(query) == 0 or not query.isprintable():
+    def __init__(self, query: segments.Types.C):
+        if query is None or len(query) == 0 or not query.str_isprintable():
             raise segments.Errors.parameter_neither_none_nor_empty('query')
 
         self.phrases = [_Phrase(p) for p in self._split_phrases(query)]
@@ -415,3 +416,7 @@ class _Query:
         for phrase in self.phrases:
             cur = phrase.find_all(cur, values, predicates)
         yield from (e.ito for e in cur)
+
+
+def compile(query: str) -> _Query:
+    return _Query(segments.Ito(query))

@@ -383,10 +383,18 @@ class Ito:
         if isinstance(key, int):
             if 0 <= key < len(self):
                 span = Span.from_indices(self, key, key + 1).offset(self.start)
+            elif 0 <= abs(key) < len(self):
+                s = self.stop + key
+                span = Span.from_indices(self, s, s + 1).offset(self.start)
             else:
                 raise IndexError('Ito index out of range')
+                
         elif isinstance(key, slice):
-            span = Span.from_indices(self, key.start, key.stop).offset(self.start)
+            if key.step is None or key.step == 1:
+                span = Span.from_indices(self, key.start, key.stop).offset(self.start)
+            else:
+                raise ValueError('step values other than None or 1 are not supported')
+                
         else:
             raise Errors.parameter_invalid_type('key', key, int, slice)
 

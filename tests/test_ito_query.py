@@ -15,7 +15,17 @@ class TestItoQuery(_TestIto):
         
         self.root = Ito(self.src, self.src.index('ten'), self.src.index('thirteen') - 1, desc='root')
         self.root.children.add(*Ito.from_re(re, self.root))
+        
+        numbers = [i for i in self.root.walk_descendants() if i.desc == 'number']
+        for n in numbers:
+            repl = self.IntIto(n, desc=n.desc)
+            repl.children.add(*(self.IntIto(c, desc=c.desc) for c in n.children))
+            p = n.parent
+            i = p.children.index(n)
+            p.children[i] = repl
+        
         self.leaves = [d for d in self.root.walk_descendants() if len(d.children) == 0]
+        
         self.leaf = next(i for i in self.leaves if i.parent.__str__() == 'eleven' and i.__str__() == 'v')
                                                                         
         self.descs = ['root', 'phrase', 'word', 'char']
@@ -287,16 +297,29 @@ class TestItoQuery(_TestIto):
 
     # endregion
     
-    # region filter predicate
+    # region filter predicates
     
     # TODO : Add filter predicates test(s)
     
     # endregion
     
-    # TODO : Add filter values test(s)
+    # region filter values
 
-    # region filter value
-    
+    def test_filter_values(self):
+        values = {'a': 10, 'b': 11, 'c': 13}
+        for node_type, node in {'root': self.root}.items()
+            for order in '', 'r':
+                for keys in ('a',), ('a', 'b'), ('b',), ('b', 'c'), ('c',), ('a', 'c'), ('a', 'b', 'c'),
+                    query = f'**{order}[v:{",".join(keys)}]'
+                    with self.subTest(node=node_type, order=order, keys=keys, query=query):
+                        filt_vals = [v for k, v in values.items() if k in keys]
+                        tmp = [*node.walk_descendants()]
+                        if order = 'r':
+                            tmp.reverse()
+                        expected = [i for i in tmp if i.value in filt_vals]
+                        actual = [*node.find_all(query, values=values)]
+                        self.assertListEqual(expected, actual)
+
     # endregion
 
     # region subquery

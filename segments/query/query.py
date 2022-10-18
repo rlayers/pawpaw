@@ -168,6 +168,18 @@ class Axis:
 
 
 class Ecf(ABC):
+    @classmethod
+    def validate_values(cls, values: C_VALUES) -> C_VALUES:
+        if values is None:
+            raise ValueError('value expression found, however, no values dictionary supplied')
+        return values
+    
+    @classmethod
+    def validate_predicates(cls, predicates: C_PREDICATES) -> C_PREDICATES:
+        if predicates is None:
+            raise Miss ValueError('predicate expression found, however, no predicates dictionary supplied')
+        return predicates
+    
     @abstractmethod
     def func(self, ec: EC, values: C_VALUES, predicates: C_PREDICATES) -> bool:
         pass
@@ -247,20 +259,12 @@ class EcfFilter(EcfCombined):
             return lambda ec, values, predicates: ec.index in ints
 
         if key in FILTER_KEYS['predicate']:
-            # TODO : predicates is None check needs to somehow be done
-            # if predicates is None:
-            #     raise ValueError('predicate expression found, however, no predicates dictionary supplied')
-
             keys = [descape(s) for s in segments.split_unescaped(value, ',')]
-            return lambda ec, values, predicates: any(p(ec) for p in [v for k, v in predicates.items() if k in keys])
+            return lambda ec, values, predicates: any(p(ec) for p in [v for k, v in cls.validate_predicates(predicates).items() if k in keys])
 
         if key in FILTER_KEYS['value']:
-            # TODO : values is None check needs to somehow be done
-            # if values is None:
-            #     raise ValueError('value expression found, however, no values dictionary supplied')
-
             keys = [descape(s) for s in segments.split_unescaped(value, ',')]
-            return lambda ec, values, predicates: ec.ito.value() in [v for k, v in values.items() if k in keys]
+            return lambda ec, values, predicates: ec.ito.value() in [v for k, v in cls.validate_values(values).items() if k in keys]
 
         raise ValueError(f'unknown filter key \'{key}\'')
 

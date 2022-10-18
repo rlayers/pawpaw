@@ -1,1 +1,1 @@
-from .query import escape, descape, compile
+from .query import escape, descape, Query as compile

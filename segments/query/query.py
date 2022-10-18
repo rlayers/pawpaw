@@ -107,7 +107,7 @@ class Axis:
             yield from self.to_ecs(itos)  # Special case where each ito gets unique enumeration
 
         elif self.key == '-':
-            rv = list(collections.OrderedDict.fromkeys(itos))
+            rv = list(dict.fromkeys(itos))
             if reverse:
                 rv.reverse()
             yield from self.to_ecs(rv)

@@ -20,7 +20,7 @@ FILTER_KEYS = {
     'string-casefold': {'string-casefold', 'scf', 'lcs'},
     'index': {'index', 'i'},
     'predicate': {'predicate', 'p'},
-    'value': {'value', 'v'},
+    'value': {'value', 'v'}
 }
 
 MUST_ESCAPE_CHARS = ('\\', '[', ']', '/', ',', '{', '}',)
@@ -77,7 +77,7 @@ class Axis:
         self.order = next((i.__str__() for i in self.ito.children if i.desc == 'order'), None)
 
     @classmethod
-    def to_ecs(itos: segments.Types.C_IT_ITOS) -> C_IT_EC:
+    def to_ecs(cls, itos: segments.Types.C_IT_ITOS) -> C_IT_EC:
         yield from (EC(e, i) for e, i in enumerate(itos))
 
     def find_all(self, itos: typing.Iterable[segments.Types.C]) -> C_IT_EC:
@@ -200,17 +200,17 @@ class EcfCombined(Ecf):
             if op is None:
                 raise ValueError('invalid operator \'{o}\'')
             cur = f(ec, values, predicates)
-            acum = op(result, cur)
+            acum = op(acum, cur)
         return acum
 
 
 class EcfFilter(EcfCombined):
-    _open_bracket = regex.compile(_obs_pat_1 + r'\[', regex.DOTALL)
-    _close_bracket = regex.compile(_obs_pat_1 + r'\]', regex.DOTALL)
+    _open_bracket = regex.compile(EcfCombined._obs_pat_1 + r'\[', regex.DOTALL)
+    _close_bracket = regex.compile(EcfCombined._obs_pat_1 + r'\]', regex.DOTALL)
 
     _re = regex.compile(r'\[(?P<k>[a-z\-]+):\s*(?P<v>.+?)\]', regex.DOTALL)
     _balanced_splitter = regex.compile(
-        r'(?P<bra>(?<!' + _obs_pat_2 + r')\[(?:(?:' + _obs_pat_2 + r'[\[\]]|[^\[\]])++|(?&bra))*(?<!' + _obs_pat_2 + r')\])',
+        r'(?P<bra>(?<!' + EcfCombined._obs_pat_2 + r')\[(?:(?:' + EcfCombined._obs_pat_2 + r'[\[\]]|[^\[\]])++|(?&bra))*(?<!' + EcfCombined._obs_pat_2 + r')\])',
         regex.DOTALL
     )
 
@@ -286,29 +286,29 @@ class EcfFilter(EcfCombined):
             m = self._re.fullmatch(f.group(0))
             if m is None:
                 raise ValueError(f'invalid filter \'{f.group(0)}\'')
-            filters.append(self._func_single(m.group('k'), m.group('v')))
+            filters.append(self._func(m.group('k'), m.group('v')))
             last = f
 
         super().__init__(ito, filters, operands)
 
 
 class EcfSubquery(EcfCombined):
-    _open_cur = regex.compile(_obs_pat_1 + r'\{', regex.DOTALL)
-    _close_cur = regex.compile(_obs_pat_1 + r'\}', regex.DOTALL)
+    _open_cur = regex.compile(EcfCombined._obs_pat_1 + r'\{', regex.DOTALL)
+    _close_cur = regex.compile(EcfCombined._obs_pat_1 + r'\}', regex.DOTALL)
 
     _re = regex.compile(_obs_pat_1 + r'(?P<sq>\{.*)', regex.DOTALL)
     _balanced_splitter = regex.compile(
-        r'(?P<cur>(?<!' + _obs_pat_2 + r')\{(?:(?:' + _obs_pat_2 + r'[{}]|[^{}])++|(?&cur))*(?<!' + _obs_pat_2 + r')\})',
+        r'(?P<cur>(?<!' + EcfCombined._obs_pat_2 + r')\{(?:(?:' + EcfCombined._obs_pat_2 + r'[{}]|[^{}])++|(?&cur))*(?<!' + EcfCombined._obs_pat_2 + r')\})',
         regex.DOTALL
     )
     
     @classmethod
-    def _func(cls, sq:: segments.Types.C) -> F_EC_V_P_2_B:
+    def _func(cls, sq: segments.Types.C) -> F_EC_V_P_2_B:
         query = Query(sq)
-        return lambda e, v, p: next(query.findall(e.ito, v, p), None) is not None
+        return lambda e, v, p: next(query.find_all(e.ito, v, p), None) is not None
     
     def __init__(self, ito: segments.Types.C):
-        subqueries: typing.List[_Phrase] = []
+        subqueries: typing.List[F_EC_V_P_2_B] = []
         operands: typing.List[str] = []
 
         m = ito.regex_search(self._re)
@@ -331,7 +331,7 @@ class EcfSubquery(EcfCombined):
                 elif op not in OPERATORS.keys():
                     raise ValueError(
                         f'invalid subquery operator \'{op}\' between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
-            subqueries.append(_Query(segments.Ito.from_match(sq, 0)[1:-1]).find_all)
+            subqueries.append(self._func(segments.Ito.from_match(sq, 0)[1:-1]))
             last = sq
             
         super().__init__(ito, subqueries, operands)
@@ -352,9 +352,9 @@ class Phrase:
 
         sq_ito = phrase[unesc_curl:].str_strip()
         if len(sq_ito) == 0:
-            self.filter = EcfTautology()
+            self.subquery = EcfTautology()
         else:
-            self.filter = EcfSubquery(sq_ito)
+            self.subquery = EcfSubquery(sq_ito)
 
     def combined(self, ec: EC, values: C_VALUES, predicates: C_PREDICATES) -> bool:
         return self.filter.func(ec, values, predicates) and self.subquery.func(ec, values, predicates)
@@ -364,7 +364,7 @@ class Phrase:
         yield from (ec.ito for ec in filter(func, self.axis.find_all(itos)))
 
 
-class _Query:
+class Query:
     @classmethod
     def _split_phrases(cls, query: segments.Types.C) -> typing.Iterable[segments.Types.C]:
         query = query.__str__()  # TODO - get rid of this
@@ -405,10 +405,10 @@ class _Query:
         if query is None or len(query) == 0 or not query.str_isprintable():
             raise segments.Errors.parameter_neither_none_nor_empty('query')
 
-        self.phrases = [_Phrase(p) for p in self._split_phrases(query)]
+        self.phrases = [Phrase(p) for p in self._split_phrases(query)]
 
     def find_all(self, ito: segments.Types.C, values: C_VALUES, predicates: C_PREDICATES) -> segments.Types.C_IT_ITOS:
-        cur = [EC(0, ito)]
+        cur = [ito]
         for phrase in self.phrases:
             cur = phrase.find_all(cur, values, predicates)
-        yield from (e.ito for e in cur)
+        yield from cur

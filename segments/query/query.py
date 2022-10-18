@@ -411,7 +411,7 @@ class Query:
 
         self.phrases = [Phrase(p) for p in self._split_phrases(query)]
 
-    def find_all(self, ito: segments.Types.C, values: C_VALUES, predicates: C_PREDICATES) -> segments.Types.C_IT_ITOS:
+    def find_all(self, ito: segments.Types.C, values: C_VALUES = None, predicates: C_PREDICATES = None) -> segments.Types.C_IT_ITOS:
         cur = [ito]
         for phrase in self.phrases:
             cur = phrase.find_all(cur, values, predicates)

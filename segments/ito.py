@@ -54,7 +54,7 @@ class Ito:
             raise Errors.parameter_invalid_type('desc', desc, str)
         self.desc = desc
 
-        self._value_func: typing.Callable[[Types.C_ITO], typing.Any] | None = None
+        self._value_func: F_ITO_2_VAL | None = None
 
         self._parent = None
         self._children = ChildItos(self)
@@ -252,11 +252,11 @@ class Ito:
         return self.__str__()
 
     @property
-    def value_func(self) -> Types.F_ITO_2_VAL:
+    def value_func(self) -> Types.F_ITO_2_VAL | None:
         return self._value_func
 
     @value_func.setter
-    def value_func(self, f: Types.F_ITO_2_VAL) -> None:
+    def value_func(self, f: Types.F_ITO_2_VAL | None) -> None:
         if f is None:
             delattr(self, 'value')
         else:
@@ -335,8 +335,13 @@ class Ito:
 
     # region __x__ methods
     
-    def __key(self) -> typing.Tuple[str, Span, str | None, typing.Callable[[Types.C_ITO], typing.Any] | None]:
-        return self._string, self._span, self.desc, self.value_func
+    def __key(self) -> typing.Tuple[Span, F_ITO_2_VAL | None, str | None, str]:
+        """Inverse ordered by comparison cost, i.e., cheap-to-compare items at start of tuple
+        
+        Returns:
+            Hashable tuple
+        """
+        return self._span, self.value_func, self.desc, self._string
     
     def __hash__(self) -> int:
         return hash(self.__key())
@@ -630,7 +635,7 @@ class Ito:
         return self.__str_is_helper_all(str.isdigit)
 
     def str_isidentifier(self):
-        return self.__str__().isidentifier()
+        return str(self).isidentifier()
 
     def str_islower(self):
         alphas = False
@@ -652,7 +657,7 @@ class Ito:
         return self.__str_is_helper_all(str.isspace)
 
     def str_istitle(self):
-        return self.__str__().istitle()
+        return str(self).istitle()
 
     def str_isupper(self):
         alphas = False
@@ -737,7 +742,7 @@ class Ito:
         non_ws_i: 0
         in_ws = True
         for i in range(start, stop, step):
-            c = self[i].__str__()
+            c = str(self[i])
             if in_ws:
                 if not c.isspace():
                     non_ws_i = i

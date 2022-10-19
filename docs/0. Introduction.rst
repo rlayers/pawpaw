@@ -2,12 +2,12 @@
 Segments Introduction
 =====================
 
-Jumping Right In
-================
+Jumping Right In: Meet Ito
+==========================
 
 >>> from segments import Ito
 >>> i = Ito('Hello, world!')
->>> print(i)
+>>> str(i)
 'Hello, world!'
 
 The segments module offers the class ``Ito``, short for *In Text Object*.  ``Ito`` is a high performance, indexed substring.
@@ -17,18 +17,18 @@ original string, along with start and stop indexes:
 >>> i
 Ito('Hello, world!', 0, 13, None)
 
-``Ito`` Index Access
-====================
+Index Access
+============
 
 Like a regular Python ``str``, you access character data in an ``Ito`` via ``int`` or ``slice`` indexers\ [#]_:
 
- >>> print(i[0])    # int accessor
+ >>> str(i[0])    # int accessor
  H
- >>> print(i[-1])   # int accessor
+ >>> str(i[-1])   # int accessor
  !
- >>> print(i[:5])   # slice accessor
+ >>> str(i[:5])   # slice accessor
  Hello
- >>> print(i[-6:])  # slice accessor
+ >>> str(i[-6:])  # slice accessor
  world!
  
 The values returned from the indexer are themselves ``Ito`` instances:
@@ -38,10 +38,46 @@ The values returned from the indexer are themselves ``Ito`` instances:
 
 Furthermore, indexing an ``Ito`` is always relative to itself.  All index book keeping is handled internally, allowing code like this:
 
->>> j = i[-6:]     # last 6 characters of Ito 'i'
->>> print(j[0:3])  # print first three characters of Ito 'j'
-wor
+>>> j = i[-6:]   # last 6 characters of Ito 'i'
+>>> str(j[0:3])  # print first three characters of Ito 'j'
 
+The idiom of relative access is also extended to the ``Ito`` constructor, which can take either a ``str`` or an ``Ito`` as the first parameter, ``src``.  The subsequent ``start`` and ``stop`` parameters are always *relative to ``src``, with the original source string carried through and all indexing book-keeping handled automatically:
+
+>>> s = '_abc'
+>>> i1 = Ito(s, 1, -1)   # skip first an last chars o s
+>>> i2 = Ito(i1, 1, -1)  # skip first and last chars of i1
+>>> str(i1), str(i2)
+('abc', 'b')
+
+Descriptor
+==========
+``Ito`` features a ``.desc`` property that can be used to tag an ``Ito`` with an arbitrary string.  Values for ``.desc`` can be specified as the final constructor property, or post-instantition via a property of the same name::
+
+ >>> i = Ito('abc', desc='something useful')
+ >>> i.desc
+ 'something useful'
+ >>> i.desc = 'something different'
+ >>> i.desc
+ 'something different'
+ 
+ The ``.desc`` property can be used to search and filter ``Ito`` collections.
+ 
+Memory Usage
+============
+Because ``Ito`` only maintains a reference to its associated string, its memory requirements are low.  For example::
+
+ >>> import sys
+ >>> s1 = 'abc'  # a short str
+ >>> i1 = Ito(s1)
+ >>> sys.getsizeof(s1), sys.getsizeof(i1)
+ (52, 48)
+ >>> s2 = s1 * 1024  # a long str
+ >>> i2 = Ito(s2)
+ >>> sys.getsizeof(s2), sys.getsizeof(i2)
+ (3121, 48)
+ 
+ The low memory footprints offer a strong advantage for processing large strings because any substrings don't involve additional memory allocation.
+ 
 Hierarchical Data Store
 =======================
 
@@ -51,7 +87,8 @@ while the parent is available via the ``.parent`` property:
 >>> s = 'Hello, world!'
 >>> root = Ito(s)
 >>> root.children.add(root[:5], root[-6:])
->>> [f'{c}' for c in root.children]
+>>> [str(c) for c in root.children]
 ['Hello', 'world!']
+
 
 .. [#] Slices with step values other than 1 (or ``None``) are not supported because the resulting sequences of characters will typically *not* be valid substrings.  For example, ``'abc[::-1]`` results in the reversed string ``cba``, which doesn't align with the starting ``str``.

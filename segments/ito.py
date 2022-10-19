@@ -34,7 +34,7 @@ class Ito:
 
     def __init__(
             self,
-            src: str | Ito,  # Rename to 'val'?
+            src: str | Ito,
             start: int | None = None,
             stop: int | None = None,
             desc: str | None = None

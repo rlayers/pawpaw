@@ -158,11 +158,12 @@ Usage
 ``str`` usage
 ~~~~~~~~~~~~~
 
-There are many ways to substring referred to by an ``Ito``\ ::
+There are many ways to access the substring referred to by an ``Ito``\ ::
 
- i.__str__()  # direct call to __str__
- f'{i}'       # indirect call to __str__
- i[:]         # list comprehension of chars
+ i.__str__()  # direct call to .__str__
+ str(i)       # indirect call to .__str__
+ f'{i}'       # indirect call to .__str__
+ 
 
 The default behavior of the ``.value()`` is to make a subcall to ``.__str__()``.  However, the intent of ``.value()`` is to provide an alternative representation of the the underlying substring, and it will be frequently overriden.  Note ``.value()`` is type hinted to return ``typing.Any``, so there is not even a guarantee that it will return a ``str``.
 

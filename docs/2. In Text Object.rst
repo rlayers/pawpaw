@@ -80,6 +80,18 @@ Creating from substrings
 Creating and/or receiving substrings is a common Python task.  ``Ito`` provides a convenient ``classmethod`` named ``.from_substrings`` that, when supplied with a ``src`` of type ``str`` and a sequence of non-overlapping substrings, will generate a sequence of Ito objects:
 
 >>> s = 'A B C'
+>>> [*Ito.from_substrings(s, *s.split_iter())]  # Creates 3 strs: 'A', 'B', and 'C'
+[Ito('A B C', 0, 1, None), Ito('A B C', 2, 3, None), Ito('A B C', 4, 5, None)]
+
+Like the
+
+>>> s = 'A B C'
+>>> [*Ito.from_substrings(s, *s.split_iter())]  # Creates 3 strs: 'A', 'B', and 'C'
+[Ito('A B C', 0, 1, None), Ito('A B C', 2, 3, None), Ito('A B C', 4, 5, None)]
+
+Like the
+
+>>> s = 'A B C'
 >>> [*Ito.from_substrings(s, *s.split())]  # Creates 3 strs: 'A', 'B', and 'C'
 [Ito('A B C', 0, 1, None), Ito('A B C', 2, 3, None), Ito('A B C', 4, 5, None)]
 

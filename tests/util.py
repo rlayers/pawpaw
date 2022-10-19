@@ -13,7 +13,7 @@ class _TestIto(TestCase):
             return int(self.__str__())
     
     @classmethod
-    def add_chars_as_children(cls, ito: Types.C, desc: str | None) -> None:
+    def add_chars_as_children(cls, ito: Types.C_ITO, desc: str | None) -> None:
         ito.children.add(*(ito.clone(i, i + 1, desc) for i in range(*ito.span)))
 
     def matches_equal(self, first: regex.Match, second: regex.Match, msg: typing.Any = ...) -> None:

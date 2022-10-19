@@ -180,13 +180,13 @@ class Split(Itorator):
 
 
 class Extract(Itorator):
-    Types.F_C_M_G_2_B = typing.Callable[[Ito, regex.Match, str], bool]
+    Types.F_ITO_M_GK_2_B = typing.Callable[[Ito, regex.Match, str], bool]
 
     def __init__(self,
                  re: regex.Pattern,
                  limit: int | None = None,
-                 desc_func: Types.F_C_M_G_2_DESC = lambda ito, match, group: group,
-                 group_filter: collections.abc.Container[str] | Types.F_C_M_G_2_B | None = None):
+                 desc_func: Types.F_ITO_M_GK_2_DESC = lambda ito, match, group: group,
+                 group_filter: collections.abc.Container[str] | Types.F_ITO_M_GK_2_B | None = None):
         super().__init__()
         self.re = re
         self.limit = limit
@@ -198,7 +198,7 @@ class Extract(Itorator):
         return self._group_filter
     
     @group_filter.setter
-    def group_filter(self, group_filter: collections.abc.Container[str] | Types.F_C_M_G_2_B | None) -> None:
+    def group_filter(self, group_filter: collections.abc.Container[str] | Types.F_ITO_M_GK_2_B | None) -> None:
         if group_filter is None:
             self._group_filter = lambda i, m_, g: True
 
@@ -213,7 +213,7 @@ class Extract(Itorator):
                 'group_filter',
                 group_filter,
                 typing.Container[str],
-                Types.F_C_M_G_2_B,
+                Types.F_ITO_M_GK_2_B,
                 types.NoneType)
 
     def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:

@@ -307,16 +307,16 @@ class TestItoQuery(_TestIto):
 
     def test_filter_values(self):
         values = {'a': 10, 'b': 11, 'c': 13}
-        for node_type, node in {'root': self.root}.items()
+        for node_type, node in {'root': self.root}.items():
             for order in '', 'r':
-                for keys in ('a',), ('a', 'b'), ('b',), ('b', 'c'), ('c',), ('a', 'c'), ('a', 'b', 'c'),
+                for keys in ('a',), ('a', 'b'), ('b',), ('b', 'c'), ('c',), ('a', 'c'), ('a', 'b', 'c'):
                     query = f'**{order}[v:{",".join(keys)}]'
                     with self.subTest(node=node_type, order=order, keys=keys, query=query):
-                        filt_vals = [v for k, v in values.items() if k in keys]
+                        vals = [v for k, v in values.items() if k in keys]
                         tmp = [*node.walk_descendants()]
-                        if order = 'r':
+                        if order == 'r':
                             tmp.reverse()
-                        expected = [i for i in tmp if i.value in filt_vals]
+                        expected = [i for i in tmp if i.value() in vals]
                         actual = [*node.find_all(query, values=values)]
                         self.assertListEqual(expected, actual)
 
@@ -325,7 +325,7 @@ class TestItoQuery(_TestIto):
     # region subquery
     
     def test_subquery_scalar(self):
-        for node_type, node in {'root': self.root}.items()
+        for node_type, node in {'root': self.root}.items():
             for order in '', 'r':
                 query = '**' + order + '[d:word]{*[d:char]&[s:e]}'  # words with 'e'
                 with self.subTest(node=node_type, order=order, query=query):

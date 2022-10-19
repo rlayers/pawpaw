@@ -15,20 +15,18 @@ from segments.errors import Errors
 
 
 class Types:
-    C = typing.TypeVar('C', bound='Ito')
-    C_SQ_ITOS = typing.Sequence[C]
-    C_IT_ITOS = typing.Iterable[C]
+    C_ITO = typing.TypeVar('C_ITO', bound='Ito')
+    C_SQ_ITOS = typing.Sequence[C_ITO]
+    C_IT_ITOS = typing.Iterable[C_ITO]
 
-    F_ITO_2_VAL = typing.Callable[[C], typing.Any]
+    F_ITO_2_VAL = typing.Callable[[C_ITO], typing.Any]
+    F_ITO_2_ITOR = typing.Callable[[C_ITO], 'Itorator']
+    F_ITO_2_SQ_ITOS = typing.Callable[[C_ITO], C_SQ_ITOS]
+    F_ITO_2_IT_ITOS = typing.Callable[[C_ITO], C_IT_ITOS]
 
-    F_ITO_2_ITOR = typing.Callable[[C], 'Itorator']
-
-    F_ITO_2_SQ_ITOS = typing.Callable[[C], C_SQ_ITOS]
-
-    F_C_2_IT_ITOS = typing.Callable[[C], C_IT_ITOS]
-    
-    F_C_M_G_2_B = typing.Callable[[C, regex.Match, int | str], bool]
-    F_C_M_G_2_DESC = typing.Callable[[C | None, regex.Match, int | str], str]
+    C_GK = int | str
+    F_ITO_M_GK_2_B = typing.Callable[[C_ITO, regex.Match, int | str], bool]
+    F_ITO_M_GK_2_DESC = typing.Callable[[C_ITO | None, regex.Match, int | str], str]
 
 
 class Ito:
@@ -56,7 +54,7 @@ class Ito:
             raise Errors.parameter_invalid_type('desc', desc, str)
         self.desc = desc
 
-        self._value_func: typing.Callable[[Types.C], typing.Any] | None = None
+        self._value_func: typing.Callable[[Types.C_ITO], typing.Any] | None = None
 
         self._parent = None
         self._children = ChildItos(self)
@@ -66,7 +64,7 @@ class Ito:
                    match: regex.Match,
                    group: str | int = 0,
                    desc: str = None
-                   ) -> Types.C:
+                   ) -> Types.C_ITO:
         if match is None:
             raise Errors.parameter_not_none('match')
         elif not isinstance(match, regex.Match):
@@ -95,18 +93,18 @@ class Ito:
             'group_filter',
             group_filter,
             typing.Iterable[str],
-            typing.Callable[[Types.C, regex.Match, str], bool],
+            typing.Callable[[Types.C_ITO, regex.Match, str], bool],
             types.NoneType)
 
     @classmethod
     def from_match_ex(
             cls,
             match: regex.Match,
-            desc_func: Types.F_C_M_G_2_DESC = lambda ito, match, group: group,
+            desc_func: Types.F_ITO_M_GK_2_DESC = lambda ito, match, group: group,
             group_filter: typing.Iterable[str] | typing.Callable[[regex.Match, str], bool] | None = None
-    ) -> typing.Iterable[Types.C]:
-        path_stack: typing.List[Types.C] = []
-        match_itos: typing.List[Types.C] = []
+    ) -> typing.Iterable[Types.C_ITO]:
+        path_stack: typing.List[Types.C_ITO] = []
+        match_itos: typing.List[Types.C_ITO] = []
         filtered_gns = (gn for gn in match.re.groupindex.keys() if cls._group_filter(group_filter)(match, gn))
         span_gns = ((span, gn) for gn in filtered_gns for span in match.spans(gn))
         for span, gn in sorted(span_gns, key=lambda val: (val[0][0], -val[0][1])):
@@ -126,11 +124,11 @@ class Ito:
     def from_re(
             cls,
             re: regex.Pattern,
-            src: str | Types.C,
-            desc_func: Types.F_C_M_G_2_DESC = lambda ito, match, group: group,
+            src: str | Types.C_ITO,
+            desc_func: Types.F_ITO_M_GK_2_DESC = lambda ito, match, group: group,
             group_filter: typing.Iterable[str] | typing.Callable[[regex.Match, str], bool] | None = None,
             limit: int | None = None,
-    ) -> typing.Iterable[Types.C]:
+    ) -> typing.Iterable[Types.C_ITO]:
         if isinstance(src, str):
             s = src
             span = Span.from_indices(s)
@@ -145,7 +143,7 @@ class Ito:
                 break
 
     @classmethod
-    def from_spans(cls, string: str, *spans: Span, desc: str | None = None) -> typing.Iterable[Types.C]:
+    def from_spans(cls, string: str, *spans: Span, desc: str | None = None) -> typing.Iterable[Types.C_ITO]:
         return [cls(string, *s, desc=desc) for s in spans]
 
     @classmethod
@@ -154,7 +152,7 @@ class Ito:
             src: str | Ito,
             *substrings: str,
             desc: str | None = None
-    ) -> typing.Iterable[Types.C]:
+    ) -> typing.Iterable[Types.C_ITO]:
         """
         :param src:
         :param substrings: must be:
@@ -197,7 +195,7 @@ class Ito:
               stop: int | None = None,
               desc: str | None = None,
               clone_children: bool = True
-              ) -> Types.C:
+              ) -> Types.C_ITO:
         rv = self.__class__(
             self._string,
             self.start if start is None else start,
@@ -237,7 +235,7 @@ class Ito:
     def parent(self) -> Ito:
         return self._parent
 
-    def _set_parent(self, parent: Types.C) -> None:
+    def _set_parent(self, parent: Types.C_ITO) -> None:
         if self._string != parent._string:
             raise ValueError(f'parameter \'parent\' has a different value for .string')
         if self.start < parent.start or self.stop > parent.stop:
@@ -337,7 +335,7 @@ class Ito:
 
     # region __x__ methods
     
-    def __key(self) -> typing.Tuple[str, Span, str | None, typing.Callable[[Types.C], typing.Any] | None]:
+    def __key(self) -> typing.Tuple[str, Span, str | None, typing.Callable[[Types.C_ITO], typing.Any] | None]:
         return self._string, self._span, self.desc, self.value_func
     
     def __hash__(self) -> int:
@@ -379,12 +377,12 @@ class Ito:
     def __len__(self) -> int:
         return self.stop - self.start
 
-    def __getitem__(self, key: int | slice | None) -> Types.C:
+    def __getitem__(self, key: int | slice | None) -> Types.C_ITO:
         if isinstance(key, int):
             if 0 <= key < len(self):
                 span = Span.from_indices(self, key, key + 1).offset(self.start)
-            elif 0 <= abs(key) < len(self):
-                s = self.stop + key
+            elif -len(self) <= key < 0:
+                s = self.stop + key - 1
                 span = Span.from_indices(self, s, s + 1).offset(self.start)
             else:
                 raise IndexError('Ito index out of range')
@@ -393,7 +391,7 @@ class Ito:
             if key.step is None or key.step == 1:
                 span = Span.from_indices(self, key.start, key.stop).offset(self.start)
             else:
-                raise ValueError('step values other than None or 1 are not supported')
+                raise IndexError('step values other than None or 1 are not supported')
                 
         else:
             raise Errors.parameter_invalid_type('key', key, int, slice)
@@ -408,7 +406,7 @@ class Ito:
     # region combinatorics
 
     @classmethod
-    def join(cls, *itos: Types.C, desc: str | None = None) -> Types.C:
+    def join(cls, *itos: Types.C_ITO, desc: str | None = None) -> Types.C_ITO:
         it_str, it_start, it_stop, it_children = itertools.tee(itos, 4)
 
         strs = set(ito.string for ito in it_str)
@@ -419,34 +417,21 @@ class Ito:
         stop = max(ito.stop for ito in it_stop)
         rv = Ito(strs.pop(), start, stop, desc)
 
-        children: typing.Iterable[Types.C] = itertools.chain.from_iterable(ito.children for ito in itos)
+        children: typing.Iterable[Types.C_ITO] = itertools.chain.from_iterable(ito.children for ito in itos)
         rv.children.add(*(c.clone() for c in children))
 
         return rv
 
-    # endregion
-
-    # region regex equivalence methods
-
-    def regex_finditer(self, re: regex.Pattern) -> typing.Iterable[regex.Match]:
-        return re.finditer(self.string, *self.span)
-
-    def regex_match(self, re: regex.Pattern) -> regex.Match:
-        return re.match(self.string, *self.span)
-
-    def regex_search(self, re: regex.Pattern) -> regex.Match:
-        return re.search(self.string, *self.span)
-    
-    def _regex_split(
+    def split_iter(
             self,
             re: regex.Pattern,
-            maxsplit: int = 0,
+            max_split: int = 0,
             keep_seps: bool = False
-    ) -> typing.Iterable[Types.C]:
+    ) -> typing.Iterable[Types.C_ITO]:
         count = 0
         i = self.start
         for m in self.regex_finditer(re):
-            if maxsplit != 0 and maxsplit >= count:
+            if max_split != 0 and max_split >= count:
                 break
             span = Span(*m.span(0))
             stop = span.stop if keep_seps else span.start
@@ -458,8 +443,87 @@ class Ito:
         elif i == self.stop:
             yield self.clone(i, i)
 
-    def regex_split(self, re: regex.Pattern, maxsplit: int = 0) -> typing.List[Types.C]:
-        return [*self._regex_split(re, maxsplit, False)]
+    def split(
+            self,
+            re: regex.Pattern,
+            max_split: int = 0,
+            keep_seps: bool = False
+    ) -> typing.List[Types.C_ITO]:
+        return [*self.split_iter(re, max_split, keep_seps)]
+
+    # endregion
+
+    # region regex equivalence methods
+
+    def regex_search(
+            self,
+            re: regex.Pattern,
+            concurrent: bool | None = None,
+            timeout: float | None = None
+    ) -> regex.Match:
+        return re.search(
+            self.string,
+            *self.span,
+            concurrent=concurrent,
+            timeout=timeout)
+
+    def regex_match(
+            self,
+            re: regex.Pattern,
+            concurrent: bool | None = None,
+            timeout: float | None = None
+    ) -> regex.Match:
+        return re.match(
+            self.string,
+            *self.span,
+            concurrent=concurrent,
+            timeout=timeout)
+
+    def regex_fullmatch(
+            self,
+            re: regex.Pattern,
+            concurrent: bool | None = None,
+            timeout: float | None = None
+    ) -> regex.Match:
+        return re.fullmatch(
+            self.string,
+            *self.span,
+            concurrent=concurrent,
+            timeout=timeout)
+
+    def regex_split(self, re: regex.Pattern, maxsplit: int = 0) -> typing.List[Types.C_ITO]:
+        return [*self.regex_splititer(re, maxsplit)]
+
+    def regex_splititer(self, re: regex.Pattern, maxsplit: int = 0) -> typing.Iterable[Types.C_ITO]:
+        yield from self.split_iter(re, maxsplit, False)
+
+    def regex_findall(
+            self,
+            re: regex.Pattern,
+            overlapped: bool = False,
+            concurrent: bool | None = None,
+            timeout: float | None = None
+    ) -> typing.List[regex.Match]:
+        return re.findall(
+            self.string,
+            *self.span,
+            overlapped=overlapped,
+            concurrent=concurrent,
+            timeout=timeout)
+
+    def regex_finditer(
+            self,
+            re: regex.Pattern,
+            overlapped: bool = False,
+            concurrent: bool | None = None,
+            timeout: float | None = None
+    ) -> typing.Iterable[regex.Match]:
+        return re.finditer(
+            self.string,
+            *self.span,
+            overlapped=overlapped,
+            concurrent=concurrent,
+            timeout=timeout)
 
     # endregion
 
@@ -610,14 +674,14 @@ class Ito:
         else:
             return lambda i: self._string[i] in chars
 
-    def str_lstrip(self, chars: str | None = None) -> Types.C:
+    def str_lstrip(self, chars: str | None = None) -> Types.C_ITO:
         f_c_in = self.__f_c_in(chars)
         i = self.start
         while i < self.stop and f_c_in(i):
             i += 1
         return self.clone(i)
 
-    def str_rstrip(self, chars: str | None = None) -> Types.C:
+    def str_rstrip(self, chars: str | None = None) -> Types.C_ITO:
         f_c_in = self.__f_c_in(chars)
         i = self.stop - 1
         while i >= 0 and f_c_in(i):
@@ -625,14 +689,14 @@ class Ito:
 
         return self.clone(stop=i+1)
 
-    def str_strip(self, chars: str | None = None) -> Types.C:
+    def str_strip(self, chars: str | None = None) -> Types.C_ITO:
         return self.str_lstrip(chars).str_rstrip(chars)
 
     # endregion
 
     # region partition and split methods
 
-    def str_partition(self, sep) -> typing.Tuple[Types.C, Types.C, Types.C]:
+    def str_partition(self, sep) -> typing.Tuple[Types.C_ITO, Types.C_ITO, Types.C_ITO]:
         if sep is None:
             raise ValueError('must be str, not NoneType')
         elif sep == '':
@@ -644,7 +708,7 @@ class Ito:
             else:
                 return self.clone(stop=i), self.clone(i, i+len(sep)), self.clone(i+len(sep))
 
-    def str_rpartition(self, sep) -> typing.Tuple[Types.C, Types.C, Types.C]:
+    def str_rpartition(self, sep) -> typing.Tuple[Types.C_ITO, Types.C_ITO, Types.C_ITO]:
         if sep is None:
             raise ValueError('must be str, not NoneType')
         elif sep == '':
@@ -656,7 +720,7 @@ class Ito:
             else:
                 return self.clone(stop=i), self.clone(i, i + len(sep)), self.clone(i + len(sep))
 
-    def __nearest_non_ws_sub(self, start: int, reverse: bool = False) -> Types.C | None:
+    def __nearest_non_ws_sub(self, start: int, reverse: bool = False) -> Types.C_ITO | None:
         if reverse:
             stop = -1
             step = -1
@@ -686,14 +750,14 @@ class Ito:
             i += step
             return from_idxs()
 
-    def str_rsplit(self, sep: str = None, maxsplit: int = -1) -> typing.List[Types.C]:
+    def str_rsplit(self, sep: str = None, maxsplit: int = -1) -> typing.List[Types.C_ITO]:
         if sep is None:
-            rv: typing.List[Types.C] = []
+            rv: typing.List[Types.C_ITO] = []
             if self._string == '':
                 return rv
 
             i = self.stop - 1
-            rv: typing.List[Types.C] = []
+            rv: typing.List[Types.C_ITO] = []
             while (sub := self.__nearest_non_ws_sub(i, True)) is not None and maxsplit != 0:
                 rv.append(sub)
                 i = sub.start - 1
@@ -717,7 +781,7 @@ class Ito:
             if maxsplit == 0:
                 return [self.clone()]
 
-            rv: typing.List[Types.C] = []
+            rv: typing.List[Types.C_ITO] = []
             i = self.stop
             while (j := self._string.rfind(sep, self.start, i)) >= 0 and maxsplit != 0:
                 rv.insert(0, self.clone(j + len(sep), i))
@@ -735,9 +799,9 @@ class Ito:
                     rv.insert(0, head)
             return rv
 
-    def str_split(self, sep: str = None, maxsplit: int = -1) -> typing.List[Types.C]:
+    def str_split(self, sep: str = None, maxsplit: int = -1) -> typing.List[Types.C_ITO]:
         if sep is None:
-            rv: typing.List[Types.C] = []
+            rv: typing.List[Types.C_ITO] = []
             if self._string == '':
                 return rv
 
@@ -764,7 +828,7 @@ class Ito:
             if maxsplit == 0:
                 return [self.clone()]
 
-            rv: typing.List[Types.C] = []
+            rv: typing.List[Types.C_ITO] = []
             i = self.start
             while (j := self._string.find(sep, i, self.stop)) >= 0 and maxsplit != 0:
                 rv.append(self.clone(i, j))
@@ -783,8 +847,8 @@ class Ito:
     # Line separators taken from https://docs.python.org/3/library/stdtypes.html
     _splitlines_re = regex.compile(r'\r\n|\r|\n|\v|\x0b|\f|\x0c|\x1c|\x1d|\x1e|\x85|\u2028|\u2029', regex.DOTALL)
 
-    def str_splitlines(self, keepends: bool = False) -> typing.List[Types.C]:
-        rv = [*self._regex_split(self._splitlines_re, 0, keepends)]
+    def str_splitlines(self, keepends: bool = False) -> typing.List[Types.C_ITO]:
+        rv = [*self.split_iter(self._splitlines_re, 0, keepends)]
 
         if len(rv) == 0:
             return rv
@@ -796,13 +860,13 @@ class Ito:
 
     # region removeprefix, removesuffix
 
-    def str_removeprefix(self, prefix: str) -> Types.C:
+    def str_removeprefix(self, prefix: str) -> Types.C_ITO:
         if self.str_startswith(prefix):
             return Ito(self, len(prefix), desc=self.desc)
         else:
             return self.clone()
 
-    def str_removesuffix(self, suffix: str) -> Types.C:
+    def str_removesuffix(self, suffix: str) -> Types.C_ITO:
         if self.str_endswith(suffix):
             return Ito(self, stop=-len(suffix), desc=self.desc)
         else:
@@ -814,18 +878,18 @@ class Ito:
 
     # region traversal
 
-    def get_root(self) -> Types.C | None:
+    def get_root(self) -> Types.C_ITO | None:
         rv = self
         while (parent := rv.parent) is not None:
             rv = parent
         return rv
 
-    def walk_descendants_levels(self, start: int = 0) -> typing.Iterable[typing.Tuple[int, Types.C]]:
+    def walk_descendants_levels(self, start: int = 0) -> typing.Iterable[typing.Tuple[int, Types.C_ITO]]:
         for child in self.children:
             yield start, child
             yield from child.walk_descendants_levels(start+1)
 
-    def walk_descendants(self) -> typing.Iterable[Types.C]:
+    def walk_descendants(self) -> typing.Iterable[Types.C_ITO]:
         yield from (ito for lvl, ito in self.walk_descendants_levels())
 
     # endregion
@@ -836,16 +900,16 @@ class Ito:
             self,
             query: str,
             values: typing.Dict[str, typing.Any] | None = None,
-            predicates: typing.Dict[str, typing.Callable[[int, Types.C], bool]] | None = None
-    ) -> Types.C | None:
+            predicates: typing.Dict[str, typing.Callable[[int, Types.C_ITO], bool]] | None = None
+    ) -> Types.C_ITO | None:
         return next(self.find_all(query, values, predicates), None)
 
     def find_all(
             self,
             query: str,
             values: typing.Dict[str, typing.Any] | None = None,
-            predicates: typing.Dict[str, typing.Callable[[int, Types.C], bool]] | None = None
-    ) -> typing.Iterable[Types.C]:
+            predicates: typing.Dict[str, typing.Callable[[int, Types.C_ITO], bool]] | None = None
+    ) -> typing.Iterable[Types.C_ITO]:
         query = segments.query.compile(query)
         yield from query.find_all(self, values, predicates)
 
@@ -853,40 +917,40 @@ class Ito:
 
 
 class ChildItos(collections.abc.Sequence):
-    def __init__(self, parent: Types.C, *itos: Types.C):
+    def __init__(self, parent: Types.C_ITO, *itos: Types.C_ITO):
         self.__parent = parent
-        self.__store: typing.List[Types.C] = []
+        self.__store: typing.List[Types.C_ITO] = []
         self.add(*itos)
 
     # region search & index
 
-    def __bfind_start(self, ito: Types.C) -> int:
+    def __bfind_start(self, ito: Types.C_ITO) -> int:
         i = bisect.bisect_left(self.__store, ito.start, key=lambda j: j.start)
         if i == len(self.__store) or self.__store[i].start != ito.start:
             return ~i
 
         return i
 
-    def __bfind_stop(self, ito: Types.C) -> int:
+    def __bfind_stop(self, ito: Types.C_ITO) -> int:
         i = bisect.bisect_right(self.__store, ito.stop, key=lambda j: j.stop)
         if i == len(self.__store) or self.__store[i].stop != ito.stop:
             return ~i
 
         return i
 
-    def __is_start_lt_prior_stop(self, i: int, ito: Types.C) -> bool:
+    def __is_start_lt_prior_stop(self, i: int, ito: Types.C_ITO) -> bool:
         if i == 0 or len(self.__store) == 0:
             return False
 
         return ito.start < self.__store[i-1].stop
 
-    def __is_stop_gt_next_start(self, i: int, ito: Types.C) -> bool:
+    def __is_stop_gt_next_start(self, i: int, ito: Types.C_ITO) -> bool:
         if i == len(self.__store):
             return False
 
         return ito.stop > self.__store[i].start
 
-    def __ensure_between(self, ito: Types.C, i_start: int, i_end: int) -> None:
+    def __ensure_between(self, ito: Types.C_ITO, i_start: int, i_end: int) -> None:
         if self.__is_start_lt_prior_stop(i_start, ito):
             raise ValueError('parameter \'ito\' overlaps with prior')
 
@@ -900,7 +964,7 @@ class ChildItos(collections.abc.Sequence):
     def __contains__(self, ito) -> bool:
         return self.__bfind_start(ito) >= 0
 
-    def __iter__(self) -> typing.Iterable[Types.C]:
+    def __iter__(self) -> typing.Iterable[Types.C_ITO]:
         return self.__store.__iter__()
 
     def __len__(self) -> int:
@@ -910,7 +974,7 @@ class ChildItos(collections.abc.Sequence):
 
     # region Sequence
 
-    def __getitem__(self, key: int | slice) -> Types.C | typing.List[Types.C]:
+    def __getitem__(self, key: int | slice) -> Types.C_ITO | typing.List[Types.C_ITO]:
         if isinstance(key, int) or isinstance(key, slice):
             return self.__store[key]
         raise Errors.parameter_invalid_type('key', key, int, slice)
@@ -927,7 +991,7 @@ class ChildItos(collections.abc.Sequence):
             ito._parent = None
         del self.__store[key]
 
-    def remove(self, ito: Types.C):
+    def remove(self, ito: Types.C_ITO):
         i = self.__bfind_start(ito)
         if i >= 0 and self.__store[i] is ito:
             self.__delitem__(i)
@@ -946,7 +1010,7 @@ class ChildItos(collections.abc.Sequence):
 
     # region Add & Update
 
-    def __setitem__(self, key: int | slice, value: Types.C | typing.Iterable[Types.C]) -> None:
+    def __setitem__(self, key: int | slice, value: Types.C_ITO | typing.Iterable[Types.C_ITO]) -> None:
         if isinstance(key, int):
             if not isinstance(value, Ito):
                 raise Errors.parameter_invalid_type('value', value, Ito)
@@ -971,12 +1035,12 @@ class ChildItos(collections.abc.Sequence):
                     self.__store.insert(start, ito)
                     start += 1
             else:
-                raise Errors.parameter_invalid_type('value', value, Ito, typing.Iterable[Types.C])
+                raise Errors.parameter_invalid_type('value', value, Ito, typing.Iterable[Types.C_ITO])
 
         else:
             raise Errors.parameter_invalid_type('key', key, int, slice)
 
-    def add(self, *itos: Types.C) -> None:
+    def add(self, *itos: Types.C_ITO) -> None:
         for ito in itos:
             if ito.parent is not None:
                 raise ValueError('parameter \'itos\' has element contained elsewhere')
@@ -990,7 +1054,7 @@ class ChildItos(collections.abc.Sequence):
             ito._set_parent(self.__parent)
             self.__store.insert(i, ito)
 
-    def add_hierarchical(self, *itos: Types.C):
+    def add_hierarchical(self, *itos: Types.C_ITO):
         for ito in itos:
             if ito._parent is not None:
                 raise ValueError('contained elsewhere...')

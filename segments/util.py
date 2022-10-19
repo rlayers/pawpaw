@@ -5,7 +5,7 @@ import segments
 
 
 def find_unescaped(
-        src: str | segments.Types.C,
+        src: str | segments.Types.C_ITO,
         char: str,
         escape: str = '\\',
         start: int | None = None,
@@ -47,12 +47,12 @@ def find_unescaped(
 
 
 def split_unescaped(
-        src: str | segments.Types.C,
+        src: str | segments.Types.C_ITO,
         char: str,
         escape: str = '\\',
         start: int | None = None,
         stop: int | None = None
-) -> typing.Iterable[str] | typing.Iterable[segments.Types.C]:
+) -> typing.Iterable[str] | typing.Iterable[segments.Types.C_ITO]:
     cur = 0
     for i in find_unescaped(src, char, escape, start, stop):
         yield src[cur:i]

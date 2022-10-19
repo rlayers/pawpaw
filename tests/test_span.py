@@ -46,5 +46,5 @@ class TestSpan(_TestIto):
                             span.offset(i)
                     else:
                         rv = span.offset(i)
-                        self.assertEquals(span.start + i, rv.start)
-                        self.assertEquals(span.stop + i, rv.stop)
+                        self.assertEqual(span.start + i, rv.start)
+                        self.assertEqual(span.stop + i, rv.stop)

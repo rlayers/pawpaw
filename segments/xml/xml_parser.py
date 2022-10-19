@@ -10,7 +10,7 @@ from segments.itorator import Extract
 import segments.xml.ito_descriptors as ITO_DESCRIPTORS
 
         
-class XmlStrings:
+class XmlParser(ET.XMLParser):
     NAME = r'(?P<' + ITO_DESCRIPTORS.NAME + r'>[^ />=]+)'
     VALUE = r'="(?P<' + ITO_DESCRIPTORS.VALUE + r'>[^"]+)"'
     NAME_VALUE = NAME + VALUE
@@ -18,13 +18,9 @@ class XmlStrings:
     NS_NAME = r'(?:(?P<' + ITO_DESCRIPTORS.NAMESPACE + r'>[^: ]+):)?' + NAME
     NS_NAME_VALUE = NS_NAME + VALUE
 
+    _re_ns_tag = regex.compile(r'\<(?P<' + ITO_DESCRIPTORS.TAG + r'>' + NS_NAME + r')', regex.DOTALL)
+    _re_attribute = regex.compile(r'(?P<' + ITO_DESCRIPTORS.ATTRIBUTE + r'>' + NS_NAME_VALUE + r')', regex.DOTALL)
 
-class XmlRegexes:
-    ns_tag = regex.compile(r'\<(?P<' + ITO_DESCRIPTORS.TAG + r'>' + XmlStrings.NS_NAME + r')', regex.DOTALL)
-    attribute = regex.compile(r'(?P<' + ITO_DESCRIPTORS.ATTRIBUTE + r'>' + XmlStrings.NS_NAME_VALUE + r')', regex.DOTALL)
-
-
-class XmlParser(ET.XMLParser):
     class Spans:
         line: Span | None = None
         column: Span | None = None
@@ -74,8 +70,8 @@ class XmlParser(ET.XMLParser):
             rv = self.last_line_char_offset + parser.CurrentColumnNumber
             return rv
 
-    _tag_extractor = Extract(XmlRegexes.ns_tag)
-    _attributes_extractor = Extract(XmlRegexes.attribute)
+    _tag_extractor = Extract(_re_ns_tag)
+    _attributes_extractor = Extract(_re_attribute)
 
     def __init__(self, encoding: str = expat.native_encoding, ignore_empties: bool = True):
         super().__init__(encoding=encoding)

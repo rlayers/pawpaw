@@ -82,6 +82,21 @@ class TestIto(_TestIto):
 
     # endregion
 
+    def test_value(self):
+        f = lambda ito: int(ito.__str__())
+        s = 'x123x'
+
+        i = Ito(s, 1, -1)
+        self.assertEqual(i.__str__(), i.value())
+
+        i.value_func = f
+        self.assertEqual(i.value_func, f)
+        self.assertEqual(f(i.__str__()), i.value())
+
+        i.value_func = None
+        self.assertIsNone(i.value_func)
+        self.assertEqual(i.__str__(), i.value())
+
     # region __x__ methods
     
     def test_eq_simple(self):
@@ -151,22 +166,7 @@ class TestIto(_TestIto):
         self.assertEqual(s[1:-1], i.__str__())
         self.assertEqual(s[1:-1], i.__str__())
         self.assertEqual(s[1:-1], f'{i}')
-    
-    def test_value(self):
-        f = lambda ito: int(ito.__str__())
-        s = 'x123x'
-        
-        i = Ito(s, 1, -1)
-        self.assertEqual(i.__str__(), i.value())
-        
-        i.value_func = f
-        self.assertEqual(i.value_func, f)
-        self.assertEqual(f(i.__str__()), i.value())
-        
-        i.value_func = None
-        self.assertIsNone(i.value_func)
-        self.assertEqual(i.__str__(), i.value())
-    
+
     def test_len(self):
         s = 'x123x'
         i = Ito(s, 1, -1)
@@ -175,10 +175,10 @@ class TestIto(_TestIto):
     def test_getitem_valid_int(self):
         s = 'x123x'
         ito = Ito(s, 1, -1)
-        for i in range(len(ito)):
+        for i in range(-len(ito), len(ito)):
             with self.subTest(ito=ito, i=i):
-                expected = ito.clone(i + 1, i + 2)
-                actual = ito[i]
+                expected = ito.__str__()[i]
+                actual = ito[i].__str__()
                 self.assertEqual(expected, actual)
             
         s = 'x1x'
@@ -186,11 +186,24 @@ class TestIto(_TestIto):
         i = 0
         with self.subTest(ito=ito, i=i):
             self.assertIs(ito, ito[i])
-            
+
+    def test_getitem_invalid_int(self):
+        s = 'x123x'
+        ito = Ito(s, 1, -1)
+        for i in None, '0':
+            with self.subTest(ito=ito, i=i):
+                with self.assertRaises(TypeError):
+                    ito[i]
+
+        for i in -100, -len(ito) - 1, len(ito), 100:
+            with self.subTest(ito=ito, i=i):
+                with self.assertRaises(IndexError):
+                    ito[i]
+
     def test_getitem_valid_slice(self):
         s = 'x123x'
         ito = Ito(s, 1, -1)
-        for start in None, -1, 0, 1:
+        for start in None, *range(-len(ito), len(ito)):
             with self.subTest(ito=ito, start=start):
                 span = Span.from_indices(ito, start).offset(ito.start)
                 expected = ito.clone(*span)
@@ -198,7 +211,7 @@ class TestIto(_TestIto):
                 self.assertEqual(expected, actual)
                 if ito == expected:
                     self.assertIs(ito, actual)
-                for stop in None, -1, 0, 1:
+                for stop in None, *range(-len(ito), len(ito)):
                     with self.subTest(ito=ito, start=start, stop=stop):
                         span = Span.from_indices(ito, start, stop).offset(ito.start)
                         expected = ito.clone(*span)
@@ -207,18 +220,13 @@ class TestIto(_TestIto):
                         if ito == expected:
                             self.assertIs(ito, actual)
                         
-    def test_getitem_invalid(self):
+    def test_getitem_invalid_slice(self):
         s = 'x123x'
         ito = Ito(s, 1, -1)
-        for i in None, '0':
-            with self.subTest(ito=ito, i=i):
-                with self.assertRaises(TypeError):
-                    ito[i]
-
-        for i in -100, 100:
-            with self.subTest(ito=ito, i=i):
+        for _slice in (slice(None, None, -1),):
+            with self.subTest(ito=ito, slice=_slice):
                 with self.assertRaises(IndexError):
-                    ito[i]
+                    ito[_slice]
 
     # endregion
 

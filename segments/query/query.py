@@ -26,15 +26,15 @@ FILTER_KEYS = {
 MUST_ESCAPE_CHARS = ('\\', '[', ']', '/', ',', '{', '}',)
 
 
-class EC(typing.NamedTuple):
+class EITO(typing.NamedTuple):
     index: int
-    ito: segments.Types.C
+    ito: segments.Types.C_ITO
 
 
-C_IT_EC = typing.Iterable[EC]
+C_IT_EITOS = typing.Iterable[EITO]
 C_VALUES = typing.Dict[str, typing.Any] | None
-C_PREDICATES = typing.Dict[str, typing.Callable[[EC], bool]] | None
-F_EC_V_P_2_B = typing.Callable[[EC, C_VALUES, C_PREDICATES], bool]
+C_PREDICATES = typing.Dict[str, typing.Callable[[EITO], bool]] | None
+F_EITO_V_P_2_B = typing.Callable[[EITO, C_VALUES, C_PREDICATES], bool]
 
 
 def escape(value: str) -> str:
@@ -63,7 +63,7 @@ def descape(value: str) -> str:
 class Axis:
     _re = regex.compile(r'(?P<axis>(?P<key>\-|\.{1,4}|\*{1,3}|\<{1,2}|\>{1,2})\s*(?P<order>[nr]?))', regex.DOTALL)
 
-    def __init__(self, phrase: segments.Types.C):
+    def __init__(self, phrase: segments.Types.C_ITO):
         m = phrase.regex_match(self._re)
         if m is None:
             raise ValueError(f'invalid phrase \'{phrase}\'')
@@ -77,16 +77,16 @@ class Axis:
         self.order = next((i.__str__() for i in self.ito.children if i.desc == 'order'), None)
 
     @classmethod
-    def to_ecs(cls, itos: segments.Types.C_IT_ITOS) -> C_IT_EC:
-        yield from (EC(e, i) for e, i in enumerate(itos))
+    def to_ecs(cls, itos: segments.Types.C_IT_ITOS) -> C_IT_EITOS:
+        yield from (EITO(e, i) for e, i in enumerate(itos))
 
-    def find_all(self, itos: typing.Iterable[segments.Types.C]) -> C_IT_EC:
+    def find_all(self, itos: typing.Iterable[segments.Types.C_ITO]) -> C_IT_EITOS:
         reverse = (self.order is not None and self.order.__str__() == 'r')
 
         if self.key == '....':
             for i in itos:
                 if (r := i.get_root()) is not None:
-                    yield EC(0, r)
+                    yield EITO(0, r)
 
         elif self.key == '...':
             for ito in itos:
@@ -101,7 +101,7 @@ class Axis:
         elif self.key == '..':
             for i in itos:
                 if (p := i.parent) is not None:
-                    yield EC(0, p)
+                    yield EITO(0, p)
 
         elif self.key == '.':
             yield from self.to_ecs(itos)  # Special case where each ito gets unique enumeration
@@ -146,14 +146,14 @@ class Axis:
                 if (p := i.parent) is not None:
                     idx = p.children.index(i)
                     if idx > 0:
-                        yield EC(0, p.children[idx - 1])
+                        yield EITO(0, p.children[idx - 1])
 
         elif self.key == '>':
             for i in itos:
                 if (p := i.parent) is not None:
                     idx = p.children.index(i)
                     if idx < len(p.children) - 1:
-                        yield EC(0, p.children[idx + 1])
+                        yield EITO(0, p.children[idx + 1])
 
         elif self.key == '>>':
             for i in itos:
@@ -177,16 +177,16 @@ class Ecf(ABC):
     @classmethod
     def validate_predicates(cls, predicates: C_PREDICATES) -> C_PREDICATES:
         if predicates is None:
-            raise Miss ValueError('predicate expression found, however, no predicates dictionary supplied')
+            raise ValueError('predicate expression found, however, no predicates dictionary supplied')
         return predicates
     
     @abstractmethod
-    def func(self, ec: EC, values: C_VALUES, predicates: C_PREDICATES) -> bool:
+    def func(self, ec: EITO, values: C_VALUES, predicates: C_PREDICATES) -> bool:
         pass
     
     
 class EcfTautology(Ecf):
-    def func(self, ec: EC, values: C_VALUES, predicates: C_PREDICATES) -> bool:
+    def func(self, ec: EITO, values: C_VALUES, predicates: C_PREDICATES) -> bool:
         return True
     
 
@@ -194,7 +194,12 @@ class EcfCombined(Ecf):
     _obs_pat_1 = r'(?<!\\)(?:(?:\\{2})*)'  # Odd number of backslashes ver 1
     _obs_pat_2 = r'\\(\\\\)*'  # Odd number of backslashes ver 2
 
-    def __init__(self, ito: segments.Types.C, filters: typing.Sequence[F_EC_V_P_2_B], operands: typing.Sequence[str]):
+    def __init__(
+            self,
+            ito: segments.Types.C_ITO,
+            filters: typing.Sequence[F_EITO_V_P_2_B],
+            operands: typing.Sequence[str]
+    ):
         self.ito = ito
         
         if len(filters) == 0:
@@ -205,7 +210,7 @@ class EcfCombined(Ecf):
             raise ValueError(f'count of operands ({len(operands):,}) must be one less than count of filters ({len(filters):,}')
         self.operands = operands
 
-    def func(self, ec: EC, values: C_VALUES, predicates: C_PREDICATES) -> bool:
+    def func(self, ec: EITO, values: C_VALUES, predicates: C_PREDICATES) -> bool:
         acum = self.filters[0](ec, values, predicates)
         for f, o in zip(self.filters[1:], self.operands):
             op = OPERATORS.get(o)
@@ -217,17 +222,17 @@ class EcfCombined(Ecf):
 
 
 class EcfFilter(EcfCombined):
-    _open_bracket = regex.compile(EcfCombined._obs_pat_1 + r'\[', regex.DOTALL)
-    _close_bracket = regex.compile(EcfCombined._obs_pat_1 + r'\]', regex.DOTALL)
+    _re_open_bracket = regex.compile(EcfCombined._obs_pat_1 + r'\[', regex.DOTALL)
+    _re_close_bracket = regex.compile(EcfCombined._obs_pat_1 + r'\]', regex.DOTALL)
 
     _re = regex.compile(r'\[(?P<k>[a-z\-]+):\s*(?P<v>.+?)\]', regex.DOTALL)
-    _balanced_splitter = regex.compile(
+    _re_balanced_splitter = regex.compile(
         r'(?P<bra>(?<!' + EcfCombined._obs_pat_2 + r')\[(?:(?:' + EcfCombined._obs_pat_2 + r'[\[\]]|[^\[\]])++|(?&bra))*(?<!' + EcfCombined._obs_pat_2 + r')\])',
         regex.DOTALL
     )
 
     @classmethod
-    def _func(cls, key: str, value: str) -> F_EC_V_P_2_B:
+    def _func(cls, key: str, value: str) -> F_EITO_V_P_2_B:
         if key in FILTER_KEYS['desc']:
             return lambda ec, values, predicates: ec.ito.desc in [descape(s) for s in segments.split_unescaped(value, ',')]
 
@@ -268,14 +273,14 @@ class EcfFilter(EcfCombined):
 
         raise ValueError(f'unknown filter key \'{key}\'')
 
-    def __init__(self, ito: segments.Types.C):
-        filters: typing.List[F_EC_V_P_2_B] = []
+    def __init__(self, ito: segments.Types.C_ITO):
+        filters: typing.List[F_EITO_V_P_2_B] = []
         operands: typing.List[str] = []
 
-        if len([*ito.regex_finditer(self._open_bracket)]) != len([*ito.regex_finditer(self._close_bracket)]):
+        if len([*ito.regex_finditer(self._re_open_bracket)]) != len([*ito.regex_finditer(self._re_close_bracket)]):
             raise ValueError(f'unbalanced brackets in filter(s) \'{ito}\'')
         last = None
-        for f in ito.regex_finditer(self._balanced_splitter):
+        for f in ito.regex_finditer(self._re_balanced_splitter):
             if last is not None:
                 start = last.span(0)[1]
                 stop = f.span(0)[0]
@@ -297,22 +302,22 @@ class EcfFilter(EcfCombined):
 
 
 class EcfSubquery(EcfCombined):
-    _open_cur = regex.compile(EcfCombined._obs_pat_1 + r'\{', regex.DOTALL)
-    _close_cur = regex.compile(EcfCombined._obs_pat_1 + r'\}', regex.DOTALL)
+    _re_open_cur = regex.compile(EcfCombined._obs_pat_1 + r'\{', regex.DOTALL)
+    _re_close_cur = regex.compile(EcfCombined._obs_pat_1 + r'\}', regex.DOTALL)
 
-    _re = regex.compile(_obs_pat_1 + r'(?P<sq>\{.*)', regex.DOTALL)
-    _balanced_splitter = regex.compile(
+    _re = regex.compile(EcfFilter._obs_pat_1 + r'(?P<sq>\{.*)', regex.DOTALL)
+    _re_balanced_splitter = regex.compile(
         r'(?P<cur>(?<!' + EcfCombined._obs_pat_2 + r')\{(?:(?:' + EcfCombined._obs_pat_2 + r'[{}]|[^{}])++|(?&cur))*(?<!' + EcfCombined._obs_pat_2 + r')\})',
         regex.DOTALL
     )
     
     @classmethod
-    def _func(cls, sq: segments.Types.C) -> F_EC_V_P_2_B:
+    def _func(cls, sq: segments.Types.C_ITO) -> F_EITO_V_P_2_B:
         query = Query(sq)
         return lambda e, v, p: next(query.find_all(e.ito, v, p), None) is not None
     
-    def __init__(self, ito: segments.Types.C):
-        subqueries: typing.List[F_EC_V_P_2_B] = []
+    def __init__(self, ito: segments.Types.C_ITO):
+        subqueries: typing.List[F_EITO_V_P_2_B] = []
         operands: typing.List[str] = []
 
         m = ito.regex_search(self._re)
@@ -320,9 +325,9 @@ class EcfSubquery(EcfCombined):
             raise ValueError(f'Invalid parameter \'subquery\' value: {ito}')
 
         s_q_g = m.group('sq')
-        if len([*self._open_cur.finditer(s_q_g)]) != len([*self._close_cur.finditer(s_q_g)]):
+        if len([*self._re_open_cur.finditer(s_q_g)]) != len([*self._re_close_cur.finditer(s_q_g)]):
             raise ValueError(f'unbalanced curly braces in sub-query(ies) \'{s_q_g}\'')
-        sqs = [*self._balanced_splitter.finditer(s_q_g)]
+        sqs = [*self._re_balanced_splitter.finditer(s_q_g)]
         last = None
         for sq in sqs:
             if last is not None:
@@ -342,7 +347,7 @@ class EcfSubquery(EcfCombined):
 
         
 class Phrase:
-    def __init__(self, phrase: segments.Types.C):
+    def __init__(self, phrase: segments.Types.C_ITO):
         self.ito = phrase
         self.axis = Axis(phrase)
         
@@ -360,27 +365,32 @@ class Phrase:
         else:
             self.subquery = EcfSubquery(sq_ito)
 
-    def combined(self, ec: EC, values: C_VALUES, predicates: C_PREDICATES) -> bool:
+    def combined(self, ec: EITO, values: C_VALUES, predicates: C_PREDICATES) -> bool:
         return self.filter.func(ec, values, predicates) and self.subquery.func(ec, values, predicates)
 
-    def find_all(self, itos: segments.Types.C_IT_ITOS, values: C_VALUES, predicates: C_PREDICATES) -> segments.Types.C_IT_ITOS:
+    def find_all(
+            self,
+            itos: segments.Types.C_IT_ITOS,
+            values: C_VALUES,
+            predicates: C_PREDICATES
+    ) -> segments.Types.C_IT_ITOS:
         func = lambda ec: self.combined(ec, values, predicates)
         yield from (ec.ito for ec in filter(func, self.axis.find_all(itos)))
 
 
 class Query:
     @classmethod
-    def _split_phrases(cls, query: segments.Types.C) -> typing.Iterable[segments.Types.C]:
+    def _split_phrases(cls, query: segments.Types.C_ITO) -> typing.Iterable[segments.Types.C_ITO]:
         query = query.__str__()  # TODO - get rid of this
         rv = ''
-        escape = False
+        esc = False
         subquery_cnt = 0
         for i, c in enumerate(query):
-            if escape:
+            if esc:
                 rv += f'\\{c}'
-                escape = False
+                esc = False
             elif c == '\\':
-                escape = True
+                esc = True
             elif c == '{':
                 rv += c
                 subquery_cnt += 1
@@ -393,25 +403,30 @@ class Query:
             else:
                 rv += c
 
-        if escape:
+        if esc:
             raise ValueError('found escape with no succeeding character in \'{query}\'')
         else:
             i += 1
             yield segments.Ito(query, i - len(rv), i)
 
-    def __init__(self, query: str | segments.Types.C):
+    def __init__(self, query: str | segments.Types.C_ITO):
         if isinstance(query, str):
             query = segments.Ito(query)
             
         if not isinstance(query, segments.Ito):
-            raise segments.Errors.parameter_invalid_type('query', query, str, segments.Types.C)
+            raise segments.Errors.parameter_invalid_type('query', query, str, segments.Types.C_ITO)
             
         if query is None or len(query) == 0 or not query.str_isprintable():
             raise segments.Errors.parameter_neither_none_nor_empty('query')
 
         self.phrases = [Phrase(p) for p in self._split_phrases(query)]
 
-    def find_all(self, ito: segments.Types.C, values: C_VALUES = None, predicates: C_PREDICATES = None) -> segments.Types.C_IT_ITOS:
+    def find_all(
+            self,
+            ito: segments.Types.C_ITO,
+            values: C_VALUES = None,
+            predicates: C_PREDICATES = None
+    ) -> segments.Types.C_IT_ITOS:
         cur = [ito]
         for phrase in self.phrases:
             cur = phrase.find_all(cur, values, predicates)

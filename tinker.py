@@ -4,12 +4,22 @@ sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 
 import segments
+import regex
 
 # print(segments.__version__)
 # print(segments.__version__.major)
 # print(segments.__version__.pre_release)
 # print(segments.__version__._asdict())
 # exit(0)
+
+s = ' abc '
+i = segments.Ito(s)
+re = regex.compile('a')
+expected = [*re.finditer(s, pos=i.start, endpos=i.stop)]
+actual = [*i.regex_finditer(re)]
+print(expected)
+print(actual)
+exit(0)
 
 ito = segments.Ito('The quick brown fox', desc='root')
 ito.children.add(*(ito.clone(i, i+1, 'char') for i, c in enumerate(ito)))

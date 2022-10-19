@@ -1,6 +1,8 @@
 from segments._version import __version__
 del _version
 
+import segments.type_checking
+
 from segments.errors import Errors
 del errors
 

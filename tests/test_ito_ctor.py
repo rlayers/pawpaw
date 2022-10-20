@@ -17,7 +17,7 @@ class TestItoCtor(_TestIto):
             with self.subTest(src=src):
                 i = Ito(src)
                 self.assertEqual(src, i.string)
-                self.assertEqual(src, i.__str__())
+                self.assertEqual(src, str(i))
                 self.assertEqual((0, len(src)), i.span)
 
     def test_ctor_str_non_defaults(self):
@@ -29,7 +29,7 @@ class TestItoCtor(_TestIto):
                     i = Ito(s, start, stop)
                     self.assertLessEqual(0, i.start)
                     self.assertGreaterEqual(len(s), i.stop)
-                    self.assertEqual(s[start:stop], i.__str__())
+                    self.assertEqual(s[start:stop], str(i))
                     
     def test_ctor_ito(self):
         for s in '', ' ', 'a', 'abc', ' abc ':
@@ -52,13 +52,13 @@ class TestItoCtor(_TestIto):
         desc = 'x'
         with self.subTest(group='Absent'):
             ito = Ito.from_match(m, desc=desc)
-            self.assertEqual(m.group(), ito.__str__())
+            self.assertEqual(m.group(), str(ito))
             self.assertEqual(desc, ito.desc)
 
         for group in 0, 1, 'fn', 2, 'ln':
             with self.subTest(group=group):
                 ito = Ito.from_match(m, group, desc=desc)
-                self.assertEqual(m.group(group), ito.__str__())
+                self.assertEqual(m.group(group), str(ito))
                 self.assertEqual(desc, ito.desc)
 
     def test_from_re_str(self):
@@ -111,7 +111,7 @@ class TestItoCtor(_TestIto):
                     rs = RandSubstrings(size, Span(0, 0))
                     subs = [*rs.generate(string, 1, -1)]
                     itos = Ito.from_substrings(string, *subs)
-                    self.assertListEqual(subs, [i.__str__() for i in itos])
+                    self.assertListEqual(subs, [str(i) for i in itos])
 
         with self.subTest(spacing='Gaps'):
             for size in ((1, 1), (2, 2), (1, 3), (2, 3)):
@@ -119,7 +119,7 @@ class TestItoCtor(_TestIto):
                     rs = RandSubstrings(size, Span(1, 2))
                     subs = [*rs.generate(string, 1, -1)]
                     itos = Ito.from_substrings(string, *subs)
-                    self.assertListEqual(subs, [i.__str__() for i in itos])
+                    self.assertListEqual(subs, [str(i) for i in itos])
 
         with self.subTest(spacing='Overlaps'):
             for size in ((3, 3),):
@@ -193,8 +193,8 @@ class TestItoCtor(_TestIto):
 
     def test_clone_with_value_func(self):
         string = ' abcdef '
-        f1 = lambda ito: ito.__str__().strip()
-        f2 = lambda ito: ito.__str__().upper()
+        f1 = lambda ito: str(ito).strip()
+        f2 = lambda ito: str(ito).upper()
 
         root = Ito(string)
         self.assertEqual(string, root.value())

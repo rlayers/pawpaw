@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import inspect
 import typing
 import types
@@ -7,22 +7,22 @@ import types
 
 @dataclass(init=False)
 class TypeSig:
-    rv: type = types.NoneType
-    params: typing.List[type]
+    ret_val: type = field(default_factory=lambda: [types.NoneType])
+    params: typing.List[typing.Type] = field(default_factory=lambda: [])
   
     def __init__(self, rv: type, *params: type):
-        self.rv = rv
+        self.ret_val = rv
         self.params = [*params]
     
 
 def type_matches_annotation(_type: typing.Type, annotation: typing.Type) -> bool:
-    if annotation == inpsect._empty:
+    if annotation == inspect._empty:
         return True
         
     if _type == annotation:
         return True
         
-    origin == typing.get_origin(annotation)
+    origin = typing.get_origin(annotation)
     if origin is types.UnionType:
         return _type in typing.get_args(annotation)
     elif issubclass(_type, annotation):
@@ -36,7 +36,7 @@ def is_callable(func: typing.Any, ts: TypeSig) -> bool:
         return False
         
     func_sig = inspect.signature(func)
-    if not type_mattches_annotation(ts.rv, func_sig.return_annotation):
+    if not type_matches_annotation(ts.ret_val, func_sig.return_annotation):
         return False
         
     if len(ts.params) != len(func_sig.parameters):

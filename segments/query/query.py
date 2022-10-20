@@ -70,18 +70,18 @@ class Axis:
         self.ito = next(phrase.from_match_ex(m))
 
         try:
-            self.key = next(i.__str__() for i in self.ito.children if i.desc == 'key')
+            self.key = next(str(i) for i in self.ito.children if i.desc == 'key')
         except StopIteration:
-            raise ValueError(f'phrase \'{phrase.__str__()}\' missing axis key')
+            raise ValueError(f'phrase \'{phrase}\' missing axis key')
 
-        self.order = next((i.__str__() for i in self.ito.children if i.desc == 'order'), None)
+        self.order = next((str(i) for i in self.ito.children if i.desc == 'order'), None)
 
     @classmethod
     def to_ecs(cls, itos: segments.Types.C_IT_ITOS) -> C_IT_EITOS:
         yield from (EITO(e, i) for e, i in enumerate(itos))
 
     def find_all(self, itos: typing.Iterable[segments.Types.C_ITO]) -> C_IT_EITOS:
-        reverse = (self.order is not None and self.order.__str__() == 'r')
+        reverse = (self.order is not None and str(self.order) == 'r')
 
         if self.key == '....':
             for i in itos:
@@ -237,10 +237,10 @@ class EcfFilter(EcfCombined):
             return lambda ec, values, predicates: ec.ito.desc in [descape(s) for s in segments.split_unescaped(value, ',')]
 
         if key in FILTER_KEYS['string']:
-            return lambda ec, values, predicates: ec.ito.__str__() in [descape(s) for s in segments.split_unescaped(value, ',')]
+            return lambda ec, values, predicates: str(ec.ito) in [descape(s) for s in segments.split_unescaped(value, ',')]
 
         if key in FILTER_KEYS['string-casefold']:
-            return lambda ec, values, predicates: ec.ito.__str__().casefold() in [
+            return lambda ec, values, predicates: str(ec.ito).casefold() in [
                 descape(s).casefold() for s in segments.split_unescaped(value.casefold(), ',')
             ]
 
@@ -381,7 +381,7 @@ class Phrase:
 class Query:
     @classmethod
     def _split_phrases(cls, query: segments.Types.C_ITO) -> typing.Iterable[segments.Types.C_ITO]:
-        query = query.__str__()  # TODO - get rid of this
+        query = str(query)  # TODO - get rid of this
         rv = ''
         esc = False
         subquery_cnt = 0

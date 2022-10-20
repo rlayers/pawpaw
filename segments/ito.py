@@ -54,7 +54,7 @@ class Ito:
             raise Errors.parameter_invalid_type('desc', desc, str)
         self.desc = desc
 
-        self._value_func: F_ITO_2_VAL | None = None
+        self._value_func: Types.F_ITO_2_VAL | None = None
 
         self._parent = None
         self._children = ChildItos(self)
@@ -335,7 +335,7 @@ class Ito:
 
     # region __x__ methods
     
-    def __key(self) -> typing.Tuple[Span, F_ITO_2_VAL | None, str | None, str]:
+    def __key(self) -> typing.Tuple[Span, Types.F_ITO_2_VAL | None, str | None, str]:
         """Inverse ordered by comparison cost, i.e., cheap-to-compare items at start of tuple
         
         Returns:

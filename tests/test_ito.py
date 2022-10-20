@@ -67,7 +67,7 @@ class TestIto(_TestIto):
         self.assertIsNone(ito.value_func)
         self.assertEqual(s, ito.value())
 
-        f = lambda i: i.__str__() * 2
+        f = lambda i: str(i) * 2
         ito.value_func = f
         self.assertEqual(f, ito.value_func)
         self.assertEqual(s * 2, ito.value())
@@ -83,19 +83,19 @@ class TestIto(_TestIto):
     # endregion
 
     def test_value(self):
-        f = lambda ito: int(ito.__str__())
+        f = lambda ito: int(str(ito))
         s = 'x123x'
 
         i = Ito(s, 1, -1)
-        self.assertEqual(i.__str__(), i.value())
+        self.assertEqual(str(i), i.value())
 
         i.value_func = f
         self.assertEqual(i.value_func, f)
-        self.assertEqual(f(i.__str__()), i.value())
+        self.assertEqual(f(str(i)), i.value())
 
         i.value_func = None
         self.assertIsNone(i.value_func)
-        self.assertEqual(i.__str__(), i.value())
+        self.assertEqual(str(i), i.value())
 
     # region __x__ methods
     
@@ -122,8 +122,8 @@ class TestIto(_TestIto):
 
     def test_eq_value_func(self):
         s = 'abc'
-        f1 = lambda ito: ito.__str__().strip()
-        f2 = lambda ito: ito.__str__().upper()
+        f1 = lambda ito: str(ito).strip()
+        f2 = lambda ito: str(ito).upper()
         
         i1 = Ito(s, 1, -1, 'd')
         i2 = i1.clone()
@@ -163,8 +163,8 @@ class TestIto(_TestIto):
     def test_str(self):
         s = 'x123x'
         i = Ito(s, 1, -1)
-        self.assertEqual(s[1:-1], i.__str__())
-        self.assertEqual(s[1:-1], i.__str__())
+        self.assertEqual(s[1:-1], str(i))
+        self.assertEqual(s[1:-1], str(i))
         self.assertEqual(s[1:-1], f'{i}')
 
     def test_len(self):
@@ -177,8 +177,8 @@ class TestIto(_TestIto):
         ito = Ito(s, 1, -1)
         for i in range(-len(ito), len(ito)):
             with self.subTest(ito=ito, i=i):
-                expected = ito.__str__()[i]
-                actual = ito[i].__str__()
+                expected = str(ito)[i]
+                actual = str(ito[i])
                 self.assertEqual(expected, actual)
             
         s = 'x1x'
@@ -238,13 +238,13 @@ class TestIto(_TestIto):
 
         children = [*Ito.from_substrings(s, *s.split(), desc='children')]
         for child in children:
-            child.children.add(*Ito.from_substrings(s, *child.__str__(), desc='grandchild'))
+            child.children.add(*Ito.from_substrings(s, *str(child), desc='grandchild'))
         grandchildren = [*itertools.chain.from_iterable(ito.children for ito in children)]
 
         joined = Ito.join(*children, desc=joined_desc)
         self.assertIsNot(joined, children[0])
         self.assertIsNot(joined, children[1])
-        self.assertEqual(s, joined.__str__())
+        self.assertEqual(s, str(joined))
         self.assertEqual(joined_desc, joined.desc)
         self.assertListEqual(grandchildren, [*joined.children])
 

@@ -65,5 +65,5 @@ class TestItoRegexEquivalenceMethods(_TestIto):
                     re = regex.compile(regex.escape(sep), regex.DOTALL)
                     with self.subTest(string=s, ito=ito, pattern=re.pattern):
                         expected = re.split(s[pad_slice])
-                        actual = [i.__str__() for i in ito.regex_split(re)]
+                        actual = [str(i) for i in ito.regex_split(re)]
                         self.assertListEqual(expected, actual)

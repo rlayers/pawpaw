@@ -65,7 +65,7 @@ class TestFindUnescaped(_TestIto):
                     if char == 'b':
                         expected = []
                     else:
-                        expected = [src.__str__().find(char)]
+                        expected = [str(src).find(char)]
                     actual = [*segments.find_unescaped(src, char, escape)]
                     self.assertListEqual(expected, actual)
 
@@ -80,7 +80,7 @@ class TestSplitUnescaped(_TestIto):
                     if char == 'b':
                         expected = [src]
                     else:
-                        i = src.__str__().index(char)
+                        i = str(src).index(char)
                         expected = [src[:i], src[i + 1:]]
                 actual = [*segments.split_unescaped(src, char, escape)]
                 self.assertListEqual(expected, actual)

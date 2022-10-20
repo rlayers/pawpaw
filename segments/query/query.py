@@ -407,7 +407,7 @@ class Query:
             raise ValueError('found escape with no succeeding character in \'{query}\'')
         else:
             i += 1
-            query[i-ls:i]
+            yield query[i-ls:i]
 
     def __init__(self, query: str | segments.Types.C_ITO):
         if isinstance(query, str):

@@ -381,33 +381,33 @@ class Phrase:
 class Query:
     @classmethod
     def _split_phrases(cls, query: segments.Types.C_ITO) -> typing.Iterable[segments.Types.C_ITO]:
-        query = str(query)  # TODO - get rid of this
-        rv = ''
+        ls = 0
         esc = False
         subquery_cnt = 0
-        for i, c in enumerate(query):
+        for i, ito in enumerate(query):
+            c = str(ito)
             if esc:
-                rv += f'\\{c}'
+                ls += 2
                 esc = False
             elif c == '\\':
                 esc = True
             elif c == '{':
-                rv += c
+                ls += 1
                 subquery_cnt += 1
             elif c == '}':
-                rv += c
+                ls += 1
                 subquery_cnt -= 1
             elif c == '/' and subquery_cnt == 0:
-                yield segments.Ito(query, i - len(rv), i)
-                rv = ''
+                yield segments.Ito(query, i - ls, i)
+                ls = 0
             else:
-                rv += c
+                ls += 1
 
         if esc:
             raise ValueError('found escape with no succeeding character in \'{query}\'')
         else:
             i += 1
-            yield segments.Ito(query, i - len(rv), i)
+            yield segments.Ito(query, i - len(ls), i)
 
     def __init__(self, query: str | segments.Types.C_ITO):
         if isinstance(query, str):

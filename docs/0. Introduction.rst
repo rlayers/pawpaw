@@ -2,48 +2,69 @@
 Segments Introduction
 =====================
 
-Jumping Right In: Meet Ito
-==========================
+Jumping Right In: Introducing the ``Ito``
+=========================================
 
 >>> from segments import Ito
->>> i = Ito('Hello, world!')
->>> str(i)
-'Hello, world!'
+>>> s = 'x Hello, world! x'
+>>> i = Ito(s, 2, -2)
+>>> print(i)
+Hello, world!
 
-The segments module offers the class ``Ito``, short for *In Text Object*.  ``Ito`` is a high performance, indexed substring.
-Creating an ``Ito`` does not result in memory allocation for character data, rather, an ``Ito`` maintains a reference to the
-original string, along with start and stop indexes:
+The class ``Ito``, short for *In Text Object*, is a high performance, indexed substring. Creating
+an ``Ito`` does *not* create a new string.  Rather, an ``Ito`` maintains a reference to a basis
+string, along with start and stop indexes:
 
 >>> i
-Ito('Hello, world!', 0, 13, None)
+Ito('Hello, world!', 2, 15, None)
+
+Because ``Ito`` only maintains a reference to its basis string, its memory requirements are low:
+
+>>> import sys
+>>> sys.getsizeof(s), sys.getsizeof(i)
+(66, 48)
+>> s2 = s * 4096  # a big str
+>>> sys.getsizeof(s2), sys.getsizeof(Ito(s2))
+(69681, 48)
 
 Index Access
 ============
 
-Like a regular Python ``str``, you access character data in an ``Ito`` via ``int`` or ``slice`` indexers\ [#]_:
+Like a regular Python ``str``, you access the character data in an ``Ito`` via ``int`` or ``slice`` indexers\ [#]_\ .  Indexing an ``Ito`` is always *relative to itself*, not the basis string:
 
- >>> str(i[0])    # int accessor
- H
- >>> str(i[-1])   # int accessor
- !
- >>> str(i[:5])   # slice accessor
- Hello
- >>> str(i[-6:])  # slice accessor
- world!
- 
-The values returned from the indexer are themselves ``Ito`` instances:
+>>> str(i[0])    # int accessor
+H
+>>> str(i[-1])   # int accessor
+!
+>>> str(i[:5])   # slice accessor
+Hello
+>>> str(i[-6:])  # slice accessor
+world!
+  
+While index access to the character data in a ``str`` returns another ``str``, index access to the character data in an ``Ito`` returns another ``Ito``:
 
- >>> i[-6:]
- Ito(Hello, world!', 7, 13, None)
+>>> i[-6:]
+Ito(Hello, world!', 7, 13, None)
 
-Furthermore, indexing an ``Ito`` is always relative to itself.  All index book keeping is handled internally, allowing code like this:
+Note that index access allows you to enumerate an ``Ito``:
 
->>> j = i[-6:]   # last 6 characters of Ito 'i'
+>>> for idx, ito in enumerate(i[:5]):
+...     print(idx, ito):
+...
+0: H
+1: e
+2: l
+3: l
+4: o
+
+All index book keeping is handled internally, allowing code like this:
+
+>>> j = i[-6:]   # new Ito based on the last 6 characters of Ito 'i'
 >>> str(j[0:3])  # print first three characters of Ito 'j'
 
-The idiom of relative access is also extended to the ``Ito`` constructor, which can take either a ``str`` or an ``Ito`` as the first parameter, ``src``.  The subsequent ``start`` and ``stop`` parameters are always *relative to ``src``, with the original source string carried through and all indexing book-keeping handled automatically:
+The idiom of relative access extends to the ``Ito`` constructor, which can take either a ``str`` or an ``Ito`` as the first parameter, ``src``.  The subsequent ``start`` and ``stop`` parameters are always *relative to ``src``*, with the original source string carried through and all indexing book-keeping handled automatically:
 
->>> s = '_abc'
+>>> s = '_abc_'
 >>> i1 = Ito(s, 1, -1)   # skip first an last chars o s
 >>> i2 = Ito(i1, 1, -1)  # skip first and last chars of i1
 >>> str(i1), str(i2)
@@ -61,20 +82,7 @@ Descriptor
  'something different'
  
  The ``.desc`` property can be used to search and filter ``Ito`` collections.
- 
-Memory Usage
-============
-Because ``Ito`` only maintains a reference to its associated string, its memory requirements are low.  For example::
 
- >>> import sys
- >>> s1 = 'abc'  # a short str
- >>> i1 = Ito(s1)
- >>> sys.getsizeof(s1), sys.getsizeof(i1)
- (52, 48)
- >>> s2 = s1 * 1024  # a long str
- >>> i2 = Ito(s2)
- >>> sys.getsizeof(s2), sys.getsizeof(i2)
- (3121, 48)
  
  The low memory footprints offer a strong advantage for processing large strings because any substrings don't involve additional memory allocation.
  

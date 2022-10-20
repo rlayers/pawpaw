@@ -398,7 +398,7 @@ class Query:
                 ls += 1
                 subquery_cnt -= 1
             elif c == '/' and subquery_cnt == 0:
-                yield segments.Ito(query, i - ls, i)
+                yield query[i-ls:i]
                 ls = 0
             else:
                 ls += 1
@@ -407,7 +407,7 @@ class Query:
             raise ValueError('found escape with no succeeding character in \'{query}\'')
         else:
             i += 1
-            yield segments.Ito(query, i - len(ls), i)
+            query[i-ls:i]
 
     def __init__(self, query: str | segments.Types.C_ITO):
         if isinstance(query, str):

@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
 
-"""
-SGR (Select Graphic Rendition) - see https://en.wikipedia.org/wiki/ANSI_escape_code
-"""
 @dataclass
 class Sgr:
+    """
+    SGR (Select Graphic Rendition) - see https://en.wikipedia.org/wiki/ANSI_escape_code
+    """
     RESET_ALL = 0
     RESET     = -1
 
@@ -17,16 +17,19 @@ class Sgr:
             n = ';'.join(str(i) for i in n)
         return f'\033[{n}m'
 
+
 @dataclass
 class Intensity(Sgr):
     BOLD  = 1
     DIM   = 2
     RESET = 22
 
+
 @dataclass
 class Italic(Sgr):
     ON    = 3
     RESET = 23
+
 
 @dataclass
 class Underline(Sgr):
@@ -34,27 +37,32 @@ class Underline(Sgr):
     DOUBLE = 21
     RESET  = 24
 
+
 @dataclass
 class Blink(Sgr):
     SLOW  = 5
     RAPID = 6
     RESET = 25
-    
+
+
 @dataclass
 class Invert(Sgr):
     ON    = 7
     RESET = 27
+
 
 @dataclass
 class Conceal(Sgr):
     ON    = 8
     RESET = 28
 
+
 @dataclass
 class Strike(Sgr):
     SLOW  = 9
     RESET = 29
-      
+
+
 @dataclass
 class Font(Sgr):
     RESET = 10
@@ -67,6 +75,7 @@ class Font(Sgr):
     ALT_7 = 17
     ALT_8 = 18
     ALT_9 = 19
+
 
 @dataclass
 class Fore(Sgr):
@@ -99,11 +108,13 @@ class Fore(Sgr):
     @classmethod
     def rgb(cls, r: int = 0, g: int = 0, b: int = 0) -> str:
         return cls._to_str(cls._BY_IDX, 2, r, g, b)
-    
+
+
 @dataclass
 class Back(Fore):
     ...
-    
+
+
 for name in (n for n in dir(Fore) if n.isupper()):
     attr = getattr(Fore, name)
     setattr(Back, name, attr + 10)
@@ -113,24 +124,3 @@ for c in Sgr, Intensity, Italic, Underline, Blink, Invert, Conceal, Strike, Font
         attr = getattr(c, name)
         val = c._to_str(attr)
         setattr(c, name, val)
-
-for effect in Intensity, Italic, Underline, Blink, Invert, Conceal, Strike, Font, Fore, Back:
-    print(f'{effect.__name__.upper()}')
-    for name in filter(lambda n: n.isupper() and not n.startswith('_') and not n.startswith('RESET'), dir(effect)):
-        attr = getattr(effect, name)
-        print(f'\t{name}: Before Sgr... {attr}Sgr applied!{effect.RESET} Sgr turned off.')
-    # print()
-
-from random import randint
-for line in range(1, 50):
-    for col in range(1, 120):
-        print(Fore.rgb(randint(0, 255), randint(0, 255), randint(0, 255)), end='')
-        print(chr(ord('A') + randint(0, 25)) + Fore.RESET, end='')
-    print()
-exit()
-        
-s = 'Hello, world!'
-# print(Back.BLUE + s + Back.RESET)
-print(Back.rgb(255, 0, 255) + s + Back.RESET)
-print(Back.number(127) + s + Back.RESET)
-print()

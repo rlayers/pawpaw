@@ -34,36 +34,52 @@ class TestItoQuery(_TestIto):
 
     def test_axis_root(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
-            for order in '', 'n', 'r':
-                query = f'....{order}'
-                with self.subTest(node=node_type, query=query):
-                    i = node.find(query)
-                    self.assertIs(self.root, i)
+            for order in '', '+', '-':
+                for or_self in '', 'S':
+                    query = f'{order}....{or_self}'
+                    with self.subTest(node=node_type, query=query):
+                        i = node.find(query)
+                        if node is not self.root or or_self == 'S':
+                            self.assertIs(self.root, i)
+                        else:
+                            self.assertIsNone(i)
 
     def test_axis_ancestors(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
-            for order in '', 'n', 'r':
-                query = f'...{order}'
-                with self.subTest(node=node_type, query=query):
-                    expected = self.descs[:self.descs.index(node.desc)]
-                    if order != 'r':
-                        expected.reverse()
-                    actual = [*node.find_all(query)]
-                    self.assertSequenceEqual(expected, [a.desc for a in actual])
-                    for e, a in zip(expected, actual):
-                        self.assertEqual(e, a.desc)
+            for order in '', '+', '-':
+                for or_self in '', 'S':
+                    query = f'{order}...{or_self}'
+                    with self.subTest(node=node_type, query=query):
+                        expected = List[segments.Types.C_ITO] = []
+                        cur = node
+                        while (par := cur.parent) is not None:
+                            expected.append(par)
+                            cur = par
+                        if order == '-':
+                            expected.reverse()
+                        if len(expected) == 0 and or_self == 'S':
+                            expected.append(node)
+                        actual = [*node.find_all(query)]
+                        self.assertListEqual(expected, actual)
 
     def test_axis_parent(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
-            for order in '', 'n', 'r':
-                query = f'..{order}'
-                with self.subTest(node=node_type, query=query):
-                    i = node.find(query)
-                    self.assertIs(node.parent, i)
+            for order in '', '+', '-':
+                for or_self in '', 'S':
+                    query = f'{order}..{or_self}'
+                    with self.subTest(node=node_type, query=query):
+                        i = node.find(query)
+                        if node is self.root:
+                            if or_self == 'S':
+                                self.assertIs(node, i)
+                            else:
+                                self.assertIsNone(i)
+                        else:
+                            self.assertIs(node.parent, i)
 
     def test_axis_self(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
-            for order in '', 'n', 'r':
+            for order in '', '+', '-':
                 query = f'.{order}'
                 with self.subTest(node=node_type, query=query):
                     i = node.find(query)
@@ -77,7 +93,7 @@ class TestItoQuery(_TestIto):
         self.assertTrue(all(i is self.root for i in rv))
                                                                         
         # Now make sure they get removed
-        for order in '', 'n', 'r':
+        for order in '', '+', '-':
             query = f'*/../-{order}'
             with self.subTest(query=query):
                 rv = [*self.root.find_all(query)]
@@ -86,96 +102,130 @@ class TestItoQuery(_TestIto):
                                                                         
     def test_axis_children(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
-            for order in '', 'n', 'r':
-                query = f'*{order}'
-                with self.subTest(node=node_type, query=query):
-                    expected = [*node.children]
-                    if order == 'r':
-                        expected.reverse()
-                    actual = [*node.find_all(query)]
-                    self.assertListEqual(expected, actual)
+            for order in '', '+', '-':
+                for or_self in '', 'S':
+                    query = f'{order}*{or_self}'                
+                    with self.subTest(node=node_type, query=query):
+                        expected = [*node.children]
+                        if order == '-':
+                            expected.reverse()
+                        if len(expected) == 0 and or_self == 'S':
+                            expected.append(node)
+                        actual = [*node.find_all(query)]
+                        self.assertListEqual(expected, actual)
 
     def test_axis_descendants(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
-            for order in '', 'n', 'r':
-                query = f'**{order}'
-                with self.subTest(node=node_type, query=query):
-                    expected = [*node.walk_descendants()]
-                    if order == 'r':
-                        expected.reverse()
-                    actual = [*node.find_all(query)]
-                    self.assertListEqual(expected, actual)
+            for order in '', '+', '-':
+                for or_self in '', 'S':
+                    query = f'{order}**{or_self}'                
+                    with self.subTest(node=node_type, query=query):
+                        expected = [*node.walk_descendants()]
+                        if order == '-':
+                            expected.reverse()
+                        if len(expected) == 0 and or_self == 'S':
+                            expected.append(node)
+                        actual = [*node.find_all(query)]
+                        self.assertListEqual(expected, actual)
 
     def test_axis_leaves(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
-            for order in '', 'n', 'r':
-                query = f'***{order}'
-                with self.subTest(node=node_type, query=query):
-                    expected = self.leaves if node is self.root else []
-                    if order == 'r':
-                        expected.reverse()
-                    actual = [*node.find_all(query)]
-                    self.assertListEqual(expected, actual)
+            for order in '', '+', '-':
+                for or_self in '', 'S':
+                    query = f'{order}***{or_self}'                
+                    with self.subTest(node=node_type, query=query):
+                        if node in self.leaves:
+                            expected = [node] if or_self == 'S' else []
+                        else:
+                            step = -1 of order == '-' else 1
+                            expected = self.leaves[::step]
+                        actual = [*node.find_all(query)]
+                        self.assertListEqual(expected, actual)
 
     def test_prior_siblings(self):
-        for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
-            for order in '', 'n', 'r':
-                query = f'<<{order}'
-                with self.subTest(node=node_type, query=query):
-                    if node.parent is None:
-                        expected: typing.List[Ito] = []
-                    else:
-                        i = node.parent.children.index(node)
-                        expected = node.parent.children[:i]
-                    if order == 'r':
-                        expected.reverse()
-                    actual = [*node.find_all(query)]
-                    self.assertListEqual(expected, actual)
+        for node_type, node in {
+            'root': self.root,
+            'first-child': self.root.children[0],
+            'middle-child': self.root.children[1],
+            'last-child': self.root.children[2],
+        }.items():
+            for order in '', '+', '-':
+                for or_self in '', 'S':
+                    query = f'{order}<<{or_self}'                
+                    with self.subTest(node=node_type, query=query):
+                        expected: typing.List[segments.Types.C_ITO] = []
+                            if (p := node.parent) is not None:
+                                i = p.children.index(node)
+                                expected = p.children[:i]
+                                if order != '-':
+                                    expected.reverse()
+                            if len(expected) == 0 and or_self == 'S':
+                                expected.append(node)
+                        actual = [*node.find_all(query)]
+                        self.assertListEqual(expected, actual)
 
     def test_prior_sibling(self):
-        for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
-            for order in '', 'n', 'r':
-                query = f'<{order}'
-                with self.subTest(node=node_type, query=query):
-                    if node.parent is None:
-                        expected: typing.List[Ito] = []
-                    else:
-                        i = node.parent.children.index(node)
-                        expected = node.parent.children[i-1:i]
-                    if order == 'r':
-                        expected.reverse()
-                    actual = [*node.find_all(query)]
-                    self.assertListEqual(expected, actual)
+        for node_type, node in {
+            'root': self.root,
+            'first-child': self.root.children[0],
+            'middle-child': self.root.children[1],
+            'last-child': self.root.children[2],
+        }.items():
+            for order in '', '+', '-':
+                for or_self in '', 'S':
+                    query = f'{order}<{or_self}'                
+                    with self.subTest(node=node_type, query=query):
+                        expected: typing.List[segments.Types.C_ITO] = []
+                        if (p := node.parent) is not None:
+                            i = p.children.index(node)
+                            if i > 0:
+                                expected = p.children[i - 1:i]
+                        if len(expected) == 0 and or_self == 'S':
+                            expected.append(node)
+                        actual = [*node.find_all(query)]
+                        self.assertListEqual(expected, actual)
 
     def test_next_sibling(self):
-        for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
-            for order in '', 'n', 'r':
-                query = f'>{order}'
-                with self.subTest(node=node_type, query=query):
-                    if node.parent is None:
-                        expected: typing.List[Ito] = []
-                    else:
-                        i = node.parent.children.index(node)
-                        expected = node.parent.children[i + 1:i + 2]
-                    if order == 'r':
-                        expected.reverse()
-                    actual = [*node.find_all(query)]
-                    self.assertListEqual(expected, actual)
+        for node_type, node in {
+            'root': self.root,
+            'first-child': self.root.children[0],
+            'middle-child': self.root.children[1],
+            'last-child': self.root.children[2],
+        }.items():
+            for order in '', '+', '-':
+                for or_self in '', 'S':
+                    query = f'{order}>{or_self}'                
+                    with self.subTest(node=node_type, query=query):
+                        expected: typing.List[segments.Types.C_ITO] = []
+                        if (p := node.parent) is not None:
+                            i = p.children.index(node)
+                            if i < len(p.children) - 1:
+                                expected = p.children[i + 1:i + 2]
+                        if len(expected) == 0 and or_self == 'S':
+                            expected.append(node)
+                        actual = [*node.find_all(query)]
+                        self.assertListEqual(expected, actual)                        
 
-    def test_next_siblings(self):
-        for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
-            for order in '', 'n', 'r':
-                query = f'>>{order}'
-                with self.subTest(node=node_type, query=query):
-                    if node.parent is None:
+    def test_next_sibling(self):
+        for node_type, node in {
+            'root': self.root,
+            'first-child': self.root.children[0],
+            'middle-child': self.root.children[1],
+            'last-child': self.root.children[2],
+        }.items():
+            for order in '', '+', '-':
+                for or_self in '', 'S':
+                    query = f'{order}>>{or_self}'                
+                    with self.subTest(node=node_type, query=query):
                         expected: typing.List[Ito] = []
-                    else:
-                        i = node.parent.children.index(node)
-                        expected = node.parent.children[i + 1:]
-                    if order == 'r':
-                        expected.reverse()
-                    actual = [*node.find_all(query)]
-                    self.assertListEqual(expected, actual)
+                            if node.parent is not None:
+                                i = node.parent.children.index(node)
+                                if i < len(node.parent.children) - 1:
+                                    expected = node.parent.children[i + 1:]
+                            if len(expected) == 0 and or_self == 'S':
+                                expected.append(node)
+                        actual = [*node.find_all(query)]
+                        self.assertListEqual(expected, actual)
 
     # endregion
     

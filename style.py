@@ -69,7 +69,7 @@ class Font(Sgr):
     ALT_9 = 19
 
 @dataclass
-class Fore:
+class Fore(Sgr):
     BLACK   = 30
     RED     = 31
     GREEN   = 32
@@ -115,19 +115,18 @@ for c in Sgr, Intensity, Italic, Underline, Blink, Invert, Conceal, Strike, Font
         setattr(c, name, val)
 
 for effect in Intensity, Italic, Underline, Blink, Invert, Conceal, Strike, Font, Fore, Back:
-  print(f'{effect.__name__.upper()}')
+    print(f'{effect.__name__.upper()}')
     for name in filter(lambda n: n.isupper() and not n.startswith('_') and not n.startswith('RESET'), dir(effect)):
-    attr = getattr(effect, name)
-    print(f'\t{name}: Before Sgr... {attr}Sgr applied!{effect.RESET} Sgr turned off.')
-  print()
-
+        attr = getattr(effect, name)
+        print(f'\t{name}: Before Sgr... {attr}Sgr applied!{effect.RESET} Sgr turned off.')
+    # print()
 
 from random import randint
-for line in range(1, 5):
-    for col in range(1, 80):
+for line in range(1, 50):
+    for col in range(1, 120):
         print(Fore.rgb(randint(0, 255), randint(0, 255), randint(0, 255)), end='')
         print(chr(ord('A') + randint(0, 25)) + Fore.RESET, end='')
-     print()
+    print()
 exit()
         
 s = 'Hello, world!'

@@ -61,7 +61,7 @@ def descape(value: str) -> str:
 
 
 class Axis:
-    _re = regex.compile(r'(?P<axis>(?P<key>\-|\.{1,4}|\*{1,3}|\<{1,2}|\>{1,2})\s*(?P<order>[nr]?))', regex.DOTALL)
+    _re = regex.compile(r'(?P<axis>(?P<order>[\+\-]?)(?P<key>\-|\.{1,4}|\*{1,3}|\<{1,2}|\>{1,2})(?P<or_self>[S]?))', regex.DOTALL)
 
     def __init__(self, phrase: segments.Types.C_ITO):
         m = phrase.regex_match(self._re)
@@ -75,18 +75,31 @@ class Axis:
             raise ValueError(f'phrase \'{phrase}\' missing axis key')
 
         self.order = next((str(i) for i in self.ito.children if i.desc == 'order'), None)
+        
+        self.or_self = next((str(i) for i in self.ito.children if i.desc == 'or_self'), None)
 
-    @classmethod
-    def to_ecs(cls, itos: segments.Types.C_IT_ITOS) -> C_IT_EITOS:
-        yield from (EITO(e, i) for e, i in enumerate(itos))
+    def to_ecs(self, itos: segments.Types.C_IT_ITOS, final: segments.Types.C_ITO | None = None) -> C_IT_EITOS:
+        e = 0
+        for e, i in enumerate(itos):
+            yield EITO(e, i)
+        
+        if e == 0 and self.or_self and final is not None:
+            yield EITO(0, final)
 
     def find_all(self, itos: typing.Iterable[segments.Types.C_ITO]) -> C_IT_EITOS:
-        reverse = (self.order is not None and str(self.order) == 'r')
+        reverse = (self.order is not None and str(self.order) == '-')
 
         if self.key == '....':
             for i in itos:
-                if (r := i.get_root()) is not None:
-                    yield EITO(0, r)
+                root = i.parent
+                if (root is not None):
+                    while (next_par := root.parent) is not None:
+                        root = next_par
+                        
+                if root is not None:
+                    yield EITO(0, root)
+                elif self.or_self:
+                    EITO(0, i)
 
         elif self.key == '...':
             for ito in itos:
@@ -94,74 +107,101 @@ class Axis:
                 cur = ito
                 while (cur := cur.parent) is not None:
                     ancestors.append(cur)
-                if reverse:
-                    ancestors.reverse()
-                yield from self.to_ecs(ancestors)
-
+                if len(ancestors) > 0:
+                    if reverse:
+                        ancestors.reverse()
+                yiled from self.to_ecs(ancestors, i)
+                
         elif self.key == '..':
             for i in itos:
                 if (p := i.parent) is not None:
                     yield EITO(0, p)
+                elif self.or_self:
+                    yield EITO(0, i)
 
         elif self.key == '.':
             yield from self.to_ecs(itos)  # Special case where each ito gets unique enumeration
+            
+            # TODO : raise exception if self.or_self?
 
         elif self.key == '-':
             rv = list(dict.fromkeys(itos))
             if reverse:
                 rv.reverse()
             yield from self.to_ecs(rv)
+            
+            # TODO : raise exception if self.or_self?
 
         elif self.key == '*':
             for i in itos:
-                if reverse:
-                    yield from self.to_ecs(i.children[::-1])
-                else:
-                    yield from self.to_ecs(i.children)
+                step = -1 if rverse else 1:
+                yield from self.to_ecs(i.children[::step], i)
 
         elif self.key == '**':
             for i in itos:
+                descendants = *i.walk_descendants()]
                 if reverse:
-                    yield from self.to_ecs([*i.walk_descendants()][::-1])
-                else:
-                    yield from self.to_ecs([*i.walk_descendants()])
+                    descendants.reverse()
+                yield from self.to_ecs(descendants, i)
 
         elif self.key == '***':
             for i in itos:
+                leaves = [*(d for d in i.walk_descendants() if len(d.children) == 0)]
                 if reverse:
-                    yield from self.to_ecs([*(d for d in i.walk_descendants() if len(d.children) == 0)][::-1])
-                else:
-                    yield from self.to_ecs([*(d for d in i.walk_descendants() if len(d.children) == 0)])
+                    leaves.reverse()
+                yield from self.to_ecs(leaves, i)
+                
+        elif self.key == '<<<':
+            raise NotImplemented('Not yet...!')
 
         elif self.key == '<<':
             for i in itos:
                 if (p := i.parent) is not None:
+                    sliced = List[segments.Types.C_ITO] = []
+                else:
                     sliced = p.children[0:p.children.index(i)]
                     if reverse:
                         sliced.reverse()
-                    yield from self.to_ecs(sliced)
+                    
+                yield from self.to_ecs(sliced, i)
 
         elif self.key == '<':
             for i in itos:
-                if (p := i.parent) is not None:
+                if (p := i.parent) is None:
+                    idx = -1
+                else
                     idx = p.children.index(i)
-                    if idx > 0:
-                        yield EITO(0, p.children[idx - 1])
+                    
+                if idx > 0:
+                    yield EITO(0, p.children[idx - 1])
+                elif self.or_self:
+                    yield EITO(0, i)
 
         elif self.key == '>':
             for i in itos:
-                if (p := i.parent) is not None:
+                if (p := i.parent) is None:
+                    idx = -1
+                else
                     idx = p.children.index(i)
-                    if idx < len(p.children) - 1:
-                        yield EITO(0, p.children[idx + 1])
+                    
+                if idx > -1 and idx < len(p.children) - 1:
+                    yield EITO(0, p.children[idx + 1])
+                elif self.or_self:
+                    yield EITO(0, i)                        
 
         elif self.key == '>>':
             for i in itos:
-                if (p := i.parent) is not None:
+                if (p := i.parent) is None:
+                    sliced = List[segments.Types.C_ITO] = []
+                else:
                     sliced = p.children[p.children.index(i) + 1:]
                     if reverse:
                         sliced.reverse()
-                    yield from self.to_ecs(sliced)
+                
+                yield from self.to_ecs(sliced)
+
+        elif self.key == '>>>':
+            raise NotImplemented('Not yet...!')
 
         else:
             raise ValueError(f'invalid axis key \'{self.key}\'')

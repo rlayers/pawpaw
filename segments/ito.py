@@ -12,6 +12,7 @@ import typing
 import regex
 
 import segments.query
+from segments import Infix
 from segments.span import Span
 from segments.errors import Errors
 
@@ -73,6 +74,10 @@ class Types:
             return False
 
         return True
+
+
+#class Operators
+nuco = Infix(lambda x, y: y if x is None else x)
 
 
 class Ito:

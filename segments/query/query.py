@@ -410,6 +410,40 @@ class Query:
             yield query[i-ls:i]
 
     def __init__(self, query: str | segments.Types.C_ITO):
+        """Creates a compiled query that can be used to search an Ito hierarchy
+
+        Args:
+            query: one or more phrases, separated by foreslashes:
+
+                query := {phrase}[/phrase][/phrase]...
+
+                Each phrase consists of an axis, and optional order, filter, and subquery:
+
+                phrase := {axis}[order][filter][subquery]
+
+                An axis consists of one of the following operators:
+
+                    AxisName ::= 'ancestor'
+                                | 'ancestor-or-self'
+                                | 'attribute'
+                                | 'child'
+                                | 'descendant'
+                                | 'descendant-or-self'
+                                | 'following'
+                                | 'following-sibling'
+                                | 'namespace'
+                                | 'parent'
+                                | 'preceding'
+                                | 'preceding-sibling'
+                                | 'self'
+
+                See: https://www.w3.org/TR/1999/REC-xpath-19991116/
+
+                https://docstore.mik.ua/orelly/xml/xslt/appb_03.htm
+
+                https://www.tutorialspoint.com/xpath/xpath_axes.htm
+
+        """
         if isinstance(query, str):
             query = segments.Ito(query)
             

@@ -6,7 +6,7 @@ import collections.abc
 import typing
 
 import regex
-from segments import Errors, Ito, Types, Span
+from segments import Types, Errors, Ito, Span
 
 
 class Itorator(ABC):

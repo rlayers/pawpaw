@@ -1,6 +1,8 @@
 from __future__ import annotations
 import bisect
 import collections.abc
+import dataclasses
+import inspect
 import itertools
 import json
 import pickle
@@ -15,6 +17,7 @@ from segments.errors import Errors
 
 
 class Types:
+
     C_ITO = typing.TypeVar('C_ITO', bound='Ito')
     C_SQ_ITOS = typing.Sequence[C_ITO]
     C_IT_ITOS = typing.Iterable[C_ITO]
@@ -27,6 +30,49 @@ class Types:
     C_GK = int | str
     F_ITO_M_GK_2_B = typing.Callable[[C_ITO, regex.Match, int | str], bool]
     F_ITO_M_GK_2_DESC = typing.Callable[[C_ITO | None, regex.Match, int | str], str]
+
+    @dataclasses.dataclass(init=False)
+    class TypeSig:
+        ret_val: type = dataclasses.field(default_factory=lambda: [types.NoneType])
+        params: typing.List[typing.Type] = dataclasses.field(default_factory=lambda: [])
+
+        def __init__(self, rv: type, *params: type):
+            self.ret_val = rv
+            self.params = [*params]
+
+    @classmethod
+    def type_matches_annotation(cls, _type: typing.Type, annotation: typing.Type) -> bool:
+        if annotation == inspect._empty:
+            return True
+
+        if _type == annotation:
+            return True
+
+        origin = typing.get_origin(annotation)
+        if origin is types.UnionType:
+            return _type in typing.get_args(annotation)
+        elif issubclass(_type, annotation):
+            return True
+
+        return False
+
+    @classmethod
+    def is_callable(cls, func: typing.Any, ts: TypeSig) -> bool:
+        if not isinstance(func, typing.Callable):
+            return False
+
+        func_sig = inspect.signature(func)
+        if not cls.type_matches_annotation(ts.ret_val, func_sig.return_annotation):
+            return False
+
+        if len(ts.params) != len(func_sig.parameters):
+            return False
+
+        if not all(
+                cls.type_matches_annotation(tsp, fsp.annotation) for tsp, fsp in zip(ts.params, func_sig.parameters.values())):
+            return False
+
+        return True
 
 
 class Ito:
@@ -411,7 +457,21 @@ class Ito:
     # region combinatorics
 
     @classmethod
-    def join(cls, *itos: Types.C_ITO, desc: str | None = None) -> Types.C_ITO:
+    def adopt(cls, *itos: Types.C_ITO, desc: str | None = None) -> Types.C_ITO:
+        """Creates a parent for a sequence of Itos
+
+        Args:
+            *itos: a sequence of itos that have
+                a) identical values for .string
+                b) non-overlapping edges
+            desc: a descriptor for the parent ito
+
+        Returns:
+            An Ito whose .span matches the min .start and max .stop of the
+            input sequence, and to whose .children clones of the input sequence
+            have been hierarchically added
+
+        """
         it_str, it_start, it_stop, it_children = itertools.tee(itos, 4)
 
         strs = set(ito.string for ito in it_str)
@@ -423,7 +483,7 @@ class Ito:
         rv = Ito(strs.pop(), start, stop, desc)
 
         children: typing.Iterable[Types.C_ITO] = itertools.chain.from_iterable(ito.children for ito in itos)
-        rv.children.add(*(c.clone() for c in children))
+        rv.children.add_hierarchical(*(c.clone() for c in children))
 
         return rv
 

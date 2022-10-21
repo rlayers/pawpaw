@@ -11,23 +11,25 @@ import segments.xml.ito_descriptors as ITO_DESCRIPTORS
 
         
 class XmlParser(ET.XMLParser):
-    NAME = r'(?P<' + ITO_DESCRIPTORS.NAME + r'>[^ />=]+)'
-    VALUE = r'="(?P<' + ITO_DESCRIPTORS.VALUE + r'>[^"]+)"'
-    NAME_VALUE = NAME + VALUE
+    _NAME = r'(?P<' + ITO_DESCRIPTORS.NAME + r'>[^ />=]+)'
+    _VALUE = r'="(?P<' + ITO_DESCRIPTORS.VALUE + r'>[^"]+)"'
+    _NAME_VALUE = _NAME + _VALUE
 
-    NS_NAME = r'(?:(?P<' + ITO_DESCRIPTORS.NAMESPACE + r'>[^: ]+):)?' + NAME
-    NS_NAME_VALUE = NS_NAME + VALUE
+    _NS_NAME = r'(?:(?P<' + ITO_DESCRIPTORS.NAMESPACE + r'>[^: ]+):)?' + _NAME
+    _NS_NAME_VALUE = _NS_NAME + _VALUE
 
-    _re_ns_tag = regex.compile(r'\<(?P<' + ITO_DESCRIPTORS.TAG + r'>' + NS_NAME + r')', regex.DOTALL)
-    _re_attribute = regex.compile(r'(?P<' + ITO_DESCRIPTORS.ATTRIBUTE + r'>' + NS_NAME_VALUE + r')', regex.DOTALL)
+    _re_ns_tag = regex.compile(r'\<(?P<' + ITO_DESCRIPTORS.TAG + r'>' + _NS_NAME + r')', regex.DOTALL)
+    _re_attribute = regex.compile(r'(?P<' + ITO_DESCRIPTORS.ATTRIBUTE + r'>' + _NS_NAME_VALUE + r')', regex.DOTALL)
 
-    class Spans:
+    _itor_extract_tag = Extract(_re_ns_tag)
+    _itor_extract_attributes = Extract(_re_attribute)
+
+    class _Spans:
         line: Span | None = None
         column: Span | None = None
         byte: Span | None = None
         char: Span | None = None
-            
-    
+
     class _InternalIndexingParser:
         def __init__(self, text: str, encoding: str):
             self.text = text
@@ -70,9 +72,6 @@ class XmlParser(ET.XMLParser):
             rv = self.last_line_char_offset + parser.CurrentColumnNumber
             return rv
 
-    _tag_extractor = Extract(_re_ns_tag)
-    _attributes_extractor = Extract(_re_attribute)
-
     def __init__(self, encoding: str = expat.native_encoding, ignore_empties: bool = True):
         super().__init__(encoding=encoding)
         self.encoding = encoding
@@ -82,7 +81,7 @@ class XmlParser(ET.XMLParser):
     def _start(self, *args, **kwargs) -> ET.Element:
         # Assume default XML parser (expat)
         rv = super()._start(*args, **kwargs)
-        rv._spans = self.Spans()
+        rv._spans = self._Spans()
         rv._spans.line = Span(self.parser.CurrentLineNumber, -1)
         rv._spans.column = Span(self.parser.CurrentColumnNumber, -1)
         rv._spans.byte = Span(self.parser.CurrentByteIndex, -1)
@@ -103,14 +102,14 @@ class XmlParser(ET.XMLParser):
         self._indexing_parser = self._InternalIndexingParser(data, self.encoding)
         super().feed(data)
 
-    def _extract_itos(self, element: ET.Element):
+    def _extract_itos(self, element: ET.Element) -> None:
         start_tag = Ito(
             self._text,
             element._spans.char.start,
             self._text.index('>', element._spans.char.start + 1) + 1,
             ITO_DESCRIPTORS.START_TAG)
-        start_tag.children.add(*self._tag_extractor.traverse(start_tag))
-        start_tag.children.add(*self._attributes_extractor.traverse(start_tag))
+        start_tag.children.add(*self._itor_extract_tag.traverse(start_tag))
+        start_tag.children.add(*self._itor_extract_attributes.traverse(start_tag))
 
         if (element._spans.char.stop + 2) < len(self._text) and self._text[element._spans.char.stop:element._spans.char.stop + 2] == '</':
             end_tag = Ito(

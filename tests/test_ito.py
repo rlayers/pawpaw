@@ -232,7 +232,7 @@ class TestIto(_TestIto):
 
     # region combinatorics
 
-    def test_join(self):
+    def test_adopt(self):
         s = 'abc 123'
         joined_desc = 'joined'
 
@@ -241,7 +241,7 @@ class TestIto(_TestIto):
             child.children.add(*Ito.from_substrings(s, *str(child), desc='grandchild'))
         grandchildren = [*itertools.chain.from_iterable(ito.children for ito in children)]
 
-        joined = Ito.join(*children, desc=joined_desc)
+        joined = Ito.adopt(*children, desc=joined_desc)
         self.assertIsNot(joined, children[0])
         self.assertIsNot(joined, children[1])
         self.assertEqual(s, str(joined))

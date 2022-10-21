@@ -50,7 +50,7 @@ class TestItoQuery(_TestIto):
                 for or_self in '', 'S':
                     query = f'{order}...{or_self}'
                     with self.subTest(node=node_type, query=query):
-                        expected = List[segments.Types.C_ITO] = []
+                        expected: List[segments.Types.C_ITO] = []
                         cur = node
                         while (par := cur.parent) is not None:
                             expected.append(par)
@@ -80,7 +80,7 @@ class TestItoQuery(_TestIto):
     def test_axis_self(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for order in '', '+', '-':
-                query = f'.{order}'
+                query = f'{order}.'
                 with self.subTest(node=node_type, query=query):
                     i = node.find(query)
                     self.assertIs(node, i)
@@ -94,7 +94,7 @@ class TestItoQuery(_TestIto):
                                                                         
         # Now make sure they get removed
         for order in '', '+', '-':
-            query = f'*/../-{order}'
+            query = f'*/../{order}-'
             with self.subTest(query=query):
                 rv = [*self.root.find_all(query)]
                 self.assertEqual(1, len(rv))
@@ -137,7 +137,7 @@ class TestItoQuery(_TestIto):
                         if node in self.leaves:
                             expected = [node] if or_self == 'S' else []
                         else:
-                            step = -1 of order == '-' else 1
+                            step = -1 if order == '-' else 1
                             expected = self.leaves[::step]
                         actual = [*node.find_all(query)]
                         self.assertListEqual(expected, actual)
@@ -147,7 +147,7 @@ class TestItoQuery(_TestIto):
             'root': self.root,
             'first-child': self.root.children[0],
             'middle-child': self.root.children[1],
-            'last-child': self.root.children[2],
+            'last-child': self.root.children[-1]
         }.items():
             for order in '', '+', '-':
                 for or_self in '', 'S':
@@ -169,7 +169,7 @@ class TestItoQuery(_TestIto):
             'root': self.root,
             'first-child': self.root.children[0],
             'middle-child': self.root.children[1],
-            'last-child': self.root.children[2],
+            'last-child': self.root.children[-1]
         }.items():
             for order in '', '+', '-':
                 for or_self in '', 'S':
@@ -190,7 +190,7 @@ class TestItoQuery(_TestIto):
             'root': self.root,
             'first-child': self.root.children[0],
             'middle-child': self.root.children[1],
-            'last-child': self.root.children[2],
+            'last-child': self.root.children[-1]
         }.items():
             for order in '', '+', '-':
                 for or_self in '', 'S':
@@ -206,12 +206,12 @@ class TestItoQuery(_TestIto):
                         actual = [*node.find_all(query)]
                         self.assertListEqual(expected, actual)                        
 
-    def test_next_sibling(self):
+    def test_next_siblings(self):
         for node_type, node in {
             'root': self.root,
             'first-child': self.root.children[0],
             'middle-child': self.root.children[1],
-            'last-child': self.root.children[2],
+            'last-child': self.root.children[-1]
         }.items():
             for order in '', '+', '-':
                 for or_self in '', 'S':
@@ -222,6 +222,8 @@ class TestItoQuery(_TestIto):
                                 i = node.parent.children.index(node)
                                 if i < len(node.parent.children) - 1:
                                     expected = node.parent.children[i + 1:]
+                                    if order == '-':
+                                        expected.reverse()
                             if len(expected) == 0 and or_self == 'S':
                                 expected.append(node)
                         actual = [*node.find_all(query)]

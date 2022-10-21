@@ -61,7 +61,7 @@ def descape(value: str) -> str:
 
 
 class Axis:
-    _re = regex.compile(r'(?P<axis>(?P<order>[\+\-]?)(?P<key>\-|\.{1,4}|\*{1,3}|\<{1,2}|\>{1,2})(?P<or_self>[S]?))', regex.DOTALL)
+    _re = regex.compile(r'(?P<axis>(?P<order>[\+\-]?)(?P<key>\-|\.{1,4}|\*{1,3}|\<{1,3}|\>{1,3})(?P<or_self>[S]?))', regex.DOTALL)
 
     def __init__(self, phrase: segments.Types.C_ITO):
         m = phrase.regex_match(self._re)
@@ -99,18 +99,18 @@ class Axis:
                 if root is not None:
                     yield EITO(0, root)
                 elif self.or_self:
-                    EITO(0, i)
+                    yield EITO(0, i)
 
         elif self.key == '...':
-            for ito in itos:
+            for i in itos:
                 ancestors = []
-                cur = ito
+                cur = i
                 while (cur := cur.parent) is not None:
                     ancestors.append(cur)
                 if len(ancestors) > 0:
                     if reverse:
                         ancestors.reverse()
-                yiled from self.to_ecs(ancestors, i)
+                yield from self.to_ecs(ancestors, i)
                 
         elif self.key == '..':
             for i in itos:
@@ -134,12 +134,12 @@ class Axis:
 
         elif self.key == '*':
             for i in itos:
-                step = -1 if rverse else 1:
+                step = -1 if reverse else 1
                 yield from self.to_ecs(i.children[::step], i)
 
         elif self.key == '**':
             for i in itos:
-                descendants = *i.walk_descendants()]
+                descendants = [*i.walk_descendants()]
                 if reverse:
                     descendants.reverse()
                 yield from self.to_ecs(descendants, i)
@@ -157,7 +157,7 @@ class Axis:
         elif self.key == '<<':
             for i in itos:
                 if (p := i.parent) is None:
-                    sliced = List[segments.Types.C_ITO] = []
+                    sliced: List[segments.Types.C_ITO] = []
                 else:
                     idx = p.children.index(i)
                     sliced = p.children[:idx]
@@ -170,7 +170,7 @@ class Axis:
             for i in itos:
                 if (p := i.parent) is None:
                     idx = -1
-                else
+                else:
                     idx = p.children.index(i)
                     
                 if idx > 0:
@@ -182,7 +182,7 @@ class Axis:
             for i in itos:
                 if (p := i.parent) is None:
                     idx = -1
-                else
+                else:
                     idx = p.children.index(i)
                     
                 if idx > -1 and idx < len(p.children) - 1:
@@ -193,14 +193,14 @@ class Axis:
         elif self.key == '>>':
             for i in itos:
                 if (p := i.parent) is None:
-                    sliced = List[segments.Types.C_ITO] = []
+                    sliced: List[segments.Types.C_ITO] = []
                 else:
                     idx = p.children.index(i)
                     sliced = p.children[idx + 1:]
                     if reverse:
                         sliced.reverse()
                 
-                yield from self.to_ecs(sliced)
+                yield from self.to_ecs(sliced, i)
 
         elif self.key == '>>>':
             raise NotImplemented('Not yet...!')

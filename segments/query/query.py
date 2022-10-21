@@ -79,11 +79,11 @@ class Axis:
         self.or_self = next((str(i) for i in self.ito.children if i.desc == 'or_self'), None)
 
     def to_ecs(self, itos: segments.Types.C_IT_ITOS, final: segments.Types.C_ITO | None = None) -> C_IT_EITOS:
-        e = 0
+        e = -1
         for e, i in enumerate(itos):
             yield EITO(e, i)
         
-        if e == 0 and self.or_self and final is not None:
+        if e == -1 and self.or_self and final is not None:
             yield EITO(0, final)
 
     def find_all(self, itos: typing.Iterable[segments.Types.C_ITO]) -> C_IT_EITOS:
@@ -156,11 +156,12 @@ class Axis:
 
         elif self.key == '<<':
             for i in itos:
-                if (p := i.parent) is not None:
+                if (p := i.parent) is None:
                     sliced = List[segments.Types.C_ITO] = []
                 else:
-                    sliced = p.children[0:p.children.index(i)]
-                    if reverse:
+                    idx = p.children.index(i)
+                    sliced = p.children[:idx]
+                    if not reverse:
                         sliced.reverse()
                     
                 yield from self.to_ecs(sliced, i)
@@ -194,7 +195,8 @@ class Axis:
                 if (p := i.parent) is None:
                     sliced = List[segments.Types.C_ITO] = []
                 else:
-                    sliced = p.children[p.children.index(i) + 1:]
+                    idx = p.children.index(i)
+                    sliced = p.children[idx + 1:]
                     if reverse:
                         sliced.reverse()
                 

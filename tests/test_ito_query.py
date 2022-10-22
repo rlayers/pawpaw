@@ -154,13 +154,13 @@ class TestItoQuery(_TestIto):
                     query = f'{order}<<{or_self}'                
                     with self.subTest(node=node_type, query=query):
                         expected: typing.List[segments.Types.C_ITO] = []
-                            if (p := node.parent) is not None:
-                                i = p.children.index(node)
-                                expected = p.children[:i]
-                                if order != '-':
-                                    expected.reverse()
-                            if len(expected) == 0 and or_self == 'S':
-                                expected.append(node)
+                        if (p := node.parent) is not None:
+                            i = p.children.index(node)
+                            expected = p.children[:i]
+                            if order != '-':
+                                expected.reverse()
+                        if len(expected) == 0 and or_self == 'S':
+                            expected.append(node)
                         actual = [*node.find_all(query)]
                         self.assertListEqual(expected, actual)
 
@@ -218,14 +218,14 @@ class TestItoQuery(_TestIto):
                     query = f'{order}>>{or_self}'                
                     with self.subTest(node=node_type, query=query):
                         expected: typing.List[Ito] = []
-                            if node.parent is not None:
-                                i = node.parent.children.index(node)
-                                if i < len(node.parent.children) - 1:
-                                    expected = node.parent.children[i + 1:]
-                                    if order == '-':
-                                        expected.reverse()
-                            if len(expected) == 0 and or_self == 'S':
-                                expected.append(node)
+                        if node.parent is not None:
+                            i = node.parent.children.index(node)
+                            if i < len(node.parent.children) - 1:
+                                expected = node.parent.children[i + 1:]
+                                if order == '-':
+                                    expected.reverse()
+                        if len(expected) == 0 and or_self == 'S':
+                            expected.append(node)
                         actual = [*node.find_all(query)]
                         self.assertListEqual(expected, actual)
 
@@ -307,7 +307,7 @@ class TestItoQuery(_TestIto):
                 
     def test_filter_index_scalar(self):
         for node_type, node in {'root': self.root}.items():
-            for order in '', 'r':
+            for order in '', '+', '-':
                 for index in 0, 1, 2:
                     query = f'*{order}[i:{index}]'
                     with self.subTest(node=node_type, order=order, index=index, query=query):
@@ -320,7 +320,7 @@ class TestItoQuery(_TestIto):
                 
     def test_filter_index_range(self):
         for node_type, node in {'root': self.root}.items():
-            for order in '', 'r':
+            for order in '', '+', '-':
                 for index in (0, 1), (1, 2), (0, 2):
                     istr = '-'.join(str(i) for i in index)
                     query = f'*{order}[i:{istr}]'
@@ -334,7 +334,7 @@ class TestItoQuery(_TestIto):
 
     def test_filter_index_mix(self):
         for node_type, node in {'root': self.root}.items():
-            for order in '', 'r':
+            for order in '', '+', '-':
                 for istr, _slices in (('0,2-4,6', (slice(0, 1), slice(2, 4), slice(6, 7))), ):
                     query = f'**{order}[i:{istr}]'
                     with self.subTest(node=node_type, order=order, index=istr, query=query):
@@ -360,7 +360,7 @@ class TestItoQuery(_TestIto):
     def test_filter_values(self):
         values = {'a': 10, 'b': 11, 'c': 13}
         for node_type, node in {'root': self.root}.items():
-            for order in '', 'r':
+            for order in '', '+', '-':
                 for keys in ('a',), ('a', 'b'), ('b',), ('b', 'c'), ('c',), ('a', 'c'), ('a', 'b', 'c'):
                     query = f'**{order}[v:{",".join(keys)}]'
                     with self.subTest(node=node_type, order=order, keys=keys, query=query):
@@ -378,7 +378,7 @@ class TestItoQuery(_TestIto):
     
     def test_subquery_scalar(self):
         for node_type, node in {'root': self.root}.items():
-            for order in '', 'r':
+            for order in '', '+', '-':
                 query = '**' + order + '[d:word]{*[d:char]&[s:e]}'  # words with 'e'
                 with self.subTest(node=node_type, order=order, query=query):
                     step = -1 if order == 'r' else 1

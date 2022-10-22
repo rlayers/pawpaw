@@ -289,7 +289,7 @@ class EcfFilter(EcfCombined):
 
         if key in FILTER_KEYS['predicate']:
             keys = [descape(s) for s in segments.split_unescaped(value, ',')]
-            return lambda ec, values, predicates: any(p(ec) for p in [v for k, v in cls.validate_predicates(predicates).items() if k in keys])
+            return lambda ec, values, predicates: all(p(ec) for p in [v for k, v in cls.validate_predicates(predicates).items() if k in keys])
 
         if key in FILTER_KEYS['value']:
             keys = [descape(s) for s in segments.split_unescaped(value, ',')]

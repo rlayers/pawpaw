@@ -387,7 +387,18 @@ class TestItoQuery(_TestIto):
     
     # region filter predicates
     
-    # TODO : Add filter predicates test(s)
+    def test_filter_predicates(self):
+        predicates = {'a': lambda ei: ei.ito.desc == 'digit', 'b': lambda ei: ei.ito.desc == 'char'}
+        for node_type, node in {'root': self.root}.items():
+            for order in '', '+', '-':
+                for keys in ('a',), ('a', 'b'), ('b',):
+                    query = f'**{order}[p:{",".join(keys)}]'
+                    with self.subTest(node=node_type, order=order, keys=keys, query=query):
+                        selected = [v for k, v in predicates.items() if k in keys]
+                        combined = lambda ei: all(p(ei) for p in selected)
+                        expected = [ei.ito for ei in filter(combined, node.walk_descendants_levels(order == 'r'))]
+                        actual = [*node.find_all(query, predicates=predicates)]
+                        self.assertListEqual(expected, actual)
     
     # endregion
     

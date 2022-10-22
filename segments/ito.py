@@ -32,6 +32,15 @@ class Types:
     F_ITO_M_GK_2_B = typing.Callable[[C_ITO, regex.Match, int | str], bool]
     F_ITO_M_GK_2_DESC = typing.Callable[[C_ITO | None, regex.Match, int | str], str]
 
+    class C_EITO(typing.NamedTuple):
+        index: int
+        ito: segments.Types.C_ITO
+
+    C_IT_EITOS = typing.Iterable[C_EITO]
+    C_VALUES = typing.Dict[str, typing.Any] | None
+    C_PREDICATES = typing.Dict[str, typing.Callable[[C_EITO], bool]] | None
+    F_EITO_V_P_2_B = typing.Callable[[C_EITO, C_VALUES, C_PREDICATES], bool]
+
     @dataclasses.dataclass(init=False)
     class TypeSig:
         ret_val: type = dataclasses.field(default_factory=lambda: [types.NoneType])
@@ -954,13 +963,16 @@ class Ito:
             rv = parent
         return rv
 
-    def walk_descendants_levels(self, start: int = 0) -> typing.Iterable[typing.Tuple[int, Types.C_ITO]]:
-        for child in self.children:
-            yield start, child
-            yield from child.walk_descendants_levels(start+1)
+    def walk_descendants_levels(self, start: int = 0, reverse: bool = False) -> Types.C_IT_EITOS:
+        for child in reversed(self.children) if reverse else self.children:
+            if not reversed:
+                yield Types.C_EITO(start, child)
+            yield from child.walk_descendants_levels(start + 1, reverse)
+            if reversed:
+                yield Types.C_EITO(start, child)
 
-    def walk_descendants(self) -> typing.Iterable[Types.C_ITO]:
-        yield from (ito for lvl, ito in self.walk_descendants_levels())
+    def walk_descendants(self, reverse: bool = False) -> Types.C_IT_EITOS:
+        yield from (ito for lvl, ito in self.walk_descendants_levels(reverse=reverse))
 
     # endregion
 

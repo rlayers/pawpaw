@@ -26,17 +26,6 @@ FILTER_KEYS = {
 MUST_ESCAPE_CHARS = ('\\', '[', ']', '/', ',', '{', '}',)
 
 
-class EITO(typing.NamedTuple):
-    index: int
-    ito: segments.Types.C_ITO
-
-
-C_IT_EITOS = typing.Iterable[EITO]
-C_VALUES = typing.Dict[str, typing.Any] | None
-C_PREDICATES = typing.Dict[str, typing.Callable[[EITO], bool]] | None
-F_EITO_V_P_2_B = typing.Callable[[EITO, C_VALUES, C_PREDICATES], bool]
-
-
 def escape(value: str) -> str:
     rv = value.replace('\\', '\\\\')  # Must do backslash before other chars
     for c in filter(lambda e: e != '\\',  MUST_ESCAPE_CHARS):
@@ -77,16 +66,16 @@ class Axis:
         self.order = next((str(i) for i in self.ito.children if i.desc == 'order'), None)
         
         self.or_self = next((str(i) for i in self.ito.children if i.desc == 'or_self'), None)
-
-    def to_ecs(self, itos: segments.Types.C_IT_ITOS, final: segments.Types.C_ITO | None = None) -> C_IT_EITOS:
+        
+    def to_ecs(self, itos: segments.Types.C_IT_ITOS, final: segments.Types.C_ITO | None = None) -> segments.Types.C_IT_EITOS:
         e = -1
         for e, i in enumerate(itos):
-            yield EITO(e, i)
+            yield segments.Types.C_EITO(e, i)
         
         if e == -1 and self.or_self and final is not None:
-            yield EITO(0, final)
+            yield segments.Types.C_EITO(0, final)
 
-    def find_all(self, itos: typing.Iterable[segments.Types.C_ITO]) -> C_IT_EITOS:
+    def find_all(self, itos: typing.Iterable[segments.Types.C_ITO]) -> segments.Types.C_IT_EITOS:
         reverse = (self.order is not None and str(self.order) == '-')
 
         if self.key == '....':
@@ -97,9 +86,9 @@ class Axis:
                         root = next_par
                         
                 if root is not None:
-                    yield EITO(0, root)
+                    yield segments.Types.C_EITO(0, root)
                 elif self.or_self:
-                    yield EITO(0, i)
+                    yield segments.Types.C_EITO(0, i)
 
         elif self.key == '...':
             for i in itos:
@@ -115,9 +104,9 @@ class Axis:
         elif self.key == '..':
             for i in itos:
                 if (p := i.parent) is not None:
-                    yield EITO(0, p)
+                    yield segments.Types.C_EITO(0, p)
                 elif self.or_self:
-                    yield EITO(0, i)
+                    yield segments.Types.C_EITO(0, i)
 
         elif self.key == '.':
             yield from self.to_ecs(itos)  # Special case where each ito gets unique enumeration
@@ -174,9 +163,9 @@ class Axis:
                     idx = p.children.index(i)
                     
                 if idx > 0:
-                    yield EITO(0, p.children[idx - 1])
+                    yield segments.Types.C_EITO(0, p.children[idx - 1])
                 elif self.or_self:
-                    yield EITO(0, i)
+                    yield segments.Types.C_EITO(0, i)
 
         elif self.key == '>':
             for i in itos:
@@ -186,9 +175,9 @@ class Axis:
                     idx = p.children.index(i)
                     
                 if idx > -1 and idx < len(p.children) - 1:
-                    yield EITO(0, p.children[idx + 1])
+                    yield segments.Types.C_EITO(0, p.children[idx + 1])
                 elif self.or_self:
-                    yield EITO(0, i)                        
+                    yield segments.Types.C_EITO(0, i)
 
         elif self.key == '>>':
             for i in itos:
@@ -211,24 +200,24 @@ class Axis:
 
 class Ecf(ABC):
     @classmethod
-    def validate_values(cls, values: C_VALUES) -> C_VALUES:
+    def validate_values(cls, values: segments.Types.C_VALUES) -> segments.Types.C_VALUES:
         if values is None:
             raise ValueError('value expression found, however, no values dictionary supplied')
         return values
     
     @classmethod
-    def validate_predicates(cls, predicates: C_PREDICATES) -> C_PREDICATES:
+    def validate_predicates(cls, predicates: segments.Types.C_PREDICATES) -> segments.Types.C_PREDICATES:
         if predicates is None:
             raise ValueError('predicate expression found, however, no predicates dictionary supplied')
         return predicates
     
     @abstractmethod
-    def func(self, ec: EITO, values: C_VALUES, predicates: C_PREDICATES) -> bool:
+    def func(self, ec: segments.Types.C_EITO, values: segments.Types.C_VALUES, predicates: segments.Types.C_PREDICATES) -> bool:
         pass
     
     
 class EcfTautology(Ecf):
-    def func(self, ec: EITO, values: C_VALUES, predicates: C_PREDICATES) -> bool:
+    def func(self, ec: segments.Types.C_EITO, values: segments.Types.C_VALUES, predicates: segments.Types.C_PREDICATES) -> bool:
         return True
     
 
@@ -252,7 +241,7 @@ class EcfCombined(Ecf):
             raise ValueError(f'count of operands ({len(operands):,}) must be one less than count of filters ({len(filters):,}')
         self.operands = operands
 
-    def func(self, ec: EITO, values: C_VALUES, predicates: C_PREDICATES) -> bool:
+    def func(self, ec: segments.Types.C_EITO, values: segments.Types.C_VALUES, predicates: segments.Types.C_PREDICATES) -> bool:
         acum = self.filters[0](ec, values, predicates)
         for f, o in zip(self.filters[1:], self.operands):
             op = OPERATORS.get(o)
@@ -393,28 +382,28 @@ class Phrase:
         self.ito = phrase
         self.axis = Axis(phrase)
         
-        unesc_curl = next(segments.find_unescaped(phrase, '{', start=len(self.axis.ito)), phrase.stop)
+        segments.Types.C_curl = next(segments.find_unescaped(phrase, '{', start=len(self.axis.ito)), phrase.stop)
         
-        filt_ito = phrase[len(self.axis.ito):unesc_curl].str_strip()
+        filt_ito = phrase[len(self.axis.ito):segments.Types.C_curl].str_strip()
         if len(filt_ito) == 0:
             self.filter = EcfTautology()
         else:
             self.filter = EcfFilter(filt_ito)
 
-        sq_ito = phrase[unesc_curl:].str_strip()
+        sq_ito = phrase[segments.Types.C_curl:].str_strip()
         if len(sq_ito) == 0:
             self.subquery = EcfTautology()
         else:
             self.subquery = EcfSubquery(sq_ito)
 
-    def combined(self, ec: EITO, values: C_VALUES, predicates: C_PREDICATES) -> bool:
+    def combined(self, ec: segments.Types.C_EITO, values: segments.Types.C_VALUES, predicates: segments.Types.C_PREDICATES) -> bool:
         return self.filter.func(ec, values, predicates) and self.subquery.func(ec, values, predicates)
 
     def find_all(
             self,
             itos: segments.Types.C_IT_ITOS,
-            values: C_VALUES,
-            predicates: C_PREDICATES
+            values: segments.Types.C_VALUES,
+            predicates: segments.Types.C_PREDICATES
     ) -> segments.Types.C_IT_ITOS:
         func = lambda ec: self.combined(ec, values, predicates)
         yield from (ec.ito for ec in filter(func, self.axis.find_all(itos)))
@@ -500,8 +489,8 @@ class Query:
     def find_all(
             self,
             ito: segments.Types.C_ITO,
-            values: C_VALUES = None,
-            predicates: C_PREDICATES = None
+            values: segments.Types.C_VALUES = None,
+            predicates: segments.Types.C_PREDICATES = None
     ) -> segments.Types.C_IT_ITOS:
         cur = [ito]
         for phrase in self.phrases:

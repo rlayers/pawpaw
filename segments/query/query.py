@@ -1,6 +1,5 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-import collections.abc
 import operator
 import typing
 
@@ -96,10 +95,10 @@ class Axis:
                 cur = i
                 while (cur := cur.parent) is not None:
                     ancestors.append(cur)
-                if len(ancestors) > 0:
-                    if reverse:
-                        ancestors.reverse()
-                yield from self.to_ecs(ancestors, i)
+                if reverse:
+                    yield from self.to_ecs(reversed(ancestors), i)
+                else:
+                    yield from self.to_ecs(ancestors, i)
                 
         elif self.key == '..':
             for i in itos:
@@ -123,21 +122,15 @@ class Axis:
 
         elif self.key == '*':
             for i in itos:
-                step = -1 if reverse else 1
-                yield from self.to_ecs(i.children[::step], i)
+                yield from self.to_ecs(reversed(i.children) if reverse else i.children, i)
 
         elif self.key == '**':
             for i in itos:
-                descendants = [*i.walk_descendants()]
-                if reverse:
-                    descendants.reverse()
-                yield from self.to_ecs(descendants, i)
+                yield from self.to_ecs(i.walk_descendants(reverse), i)
 
         elif self.key == '***':
             for i in itos:
-                leaves = [*(d for d in i.walk_descendants() if len(d.children) == 0)]
-                if reverse:
-                    leaves.reverse()
+                leaves = filter(lambda ito: len(ito.children) == 0, i.walk_descendants(reverse))
                 yield from self.to_ecs(leaves, i)
                 
         elif self.key == '<<<':
@@ -146,7 +139,7 @@ class Axis:
         elif self.key == '<<':
             for i in itos:
                 if (p := i.parent) is None:
-                    sliced: List[segments.Types.C_ITO] = []
+                    sliced: typing.List[segments.Types.C_ITO] = []
                 else:
                     idx = p.children.index(i)
                     sliced = p.children[:idx]
@@ -174,7 +167,7 @@ class Axis:
                 else:
                     idx = p.children.index(i)
                     
-                if idx > -1 and idx < len(p.children) - 1:
+                if -1 < idx < len(p.children) - 1:
                     yield segments.Types.C_EITO(0, p.children[idx + 1])
                 elif self.or_self:
                     yield segments.Types.C_EITO(0, i)
@@ -182,7 +175,7 @@ class Axis:
         elif self.key == '>>':
             for i in itos:
                 if (p := i.parent) is None:
-                    sliced: List[segments.Types.C_ITO] = []
+                    sliced: typing.List[segments.Types.C_ITO] = []
                 else:
                     idx = p.children.index(i)
                     sliced = p.children[idx + 1:]
@@ -228,7 +221,7 @@ class EcfCombined(Ecf):
     def __init__(
             self,
             ito: segments.Types.C_ITO,
-            filters: typing.Sequence[F_EITO_V_P_2_B],
+            filters: typing.Sequence[segments.Types.F_EITO_V_P_2_B],
             operands: typing.Sequence[str]
     ):
         self.ito = ito
@@ -263,7 +256,7 @@ class EcfFilter(EcfCombined):
     )
 
     @classmethod
-    def _func(cls, key: str, value: str) -> F_EITO_V_P_2_B:
+    def _func(cls, key: str, value: str) -> segments.Types.F_EITO_V_P_2_B:
         if key in FILTER_KEYS['desc']:
             return lambda ec, values, predicates: ec.ito.desc in [descape(s) for s in segments.split_unescaped(value, ',')]
 
@@ -305,7 +298,7 @@ class EcfFilter(EcfCombined):
         raise ValueError(f'unknown filter key \'{key}\'')
 
     def __init__(self, ito: segments.Types.C_ITO):
-        filters: typing.List[F_EITO_V_P_2_B] = []
+        filters: typing.List[segments.Types.F_EITO_V_P_2_B] = []
         operands: typing.List[str] = []
 
         if len([*ito.regex_finditer(self._re_open_bracket)]) != len([*ito.regex_finditer(self._re_close_bracket)]):
@@ -343,12 +336,12 @@ class EcfSubquery(EcfCombined):
     )
     
     @classmethod
-    def _func(cls, sq: segments.Types.C_ITO) -> F_EITO_V_P_2_B:
+    def _func(cls, sq: segments.Types.C_ITO) -> segments.Types.F_EITO_V_P_2_B:
         query = Query(sq)
         return lambda e, v, p: next(query.find_all(e.ito, v, p), None) is not None
     
     def __init__(self, ito: segments.Types.C_ITO):
-        subqueries: typing.List[F_EITO_V_P_2_B] = []
+        subqueries: typing.List[segments.Types.F_EITO_V_P_2_B] = []
         operands: typing.List[str] = []
 
         m = ito.regex_search(self._re)

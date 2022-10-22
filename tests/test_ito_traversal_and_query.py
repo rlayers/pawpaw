@@ -7,6 +7,12 @@ from tests.util import _TestIto
 
 
 class TestItoQuery(_TestIto):
+    def count_descdendants(cls, node: segments.Types.C_ITO) -> int:
+        rv = len(node.children)
+        for child in node.children:
+            rv += cls.count_descdendants(child)
+        return rv
+
     def setUp(self) -> None:
         super().setUp()
 
@@ -15,7 +21,9 @@ class TestItoQuery(_TestIto):
         
         self.root = Ito(self.src, self.src.index('ten'), self.src.index('thirteen') - 1, desc='root')
         self.root.children.add(*Ito.from_re(re, self.root))
-        
+
+        self.descendants_count = self.count_descdendants(self.root)
+
         numbers = [i for i in self.root.walk_descendants() if i.desc == 'number']
         for n in numbers:
             repl = self.IntIto(n, desc=n.desc)
@@ -29,6 +37,34 @@ class TestItoQuery(_TestIto):
         self.leaf = next(i for i in self.leaves if str(i.parent) == 'eleven' and str(i) == 'v')
                                                                         
         self.descs = ['root', 'phrase', 'word', 'char']
+
+    # region TRAVERSAL
+
+    def test_walk_descendants(self):
+
+        for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
+            for start in 0, 5:
+                with self.subTest(node=node_type, start=start):
+                    forward = [*node.walk_descendants_levels(start)]
+                    _reversed = [*node.walk_descendants_levels(start, True)]
+
+                    if node is self.root:
+                        self.assertEqual(self.descendants_count, len(forward))
+                        self.assertEqual(self.descendants_count, len(_reversed))
+                    elif node is self.leaf:
+                        self.assertEqual(0, len(forward))
+                        self.assertEqual(0, len(_reversed))
+                    if 0 < len(forward) == len(_reversed):
+                        self.assertEqual(start, forward[0].index)
+                        max_level = max(ei.index for ei in forward)
+                        self.assertEqual(max_level, _reversed[0].index)
+
+                    _reversed.reverse()
+                    self.assertListEqual(forward, _reversed)
+
+    # endregion
+
+    # region QUERY
 
     # region axis
 
@@ -50,7 +86,7 @@ class TestItoQuery(_TestIto):
                 for or_self in '', 'S':
                     query = f'{order}...{or_self}'
                     with self.subTest(node=node_type, query=query):
-                        expected: List[segments.Types.C_ITO] = []
+                        expected: typing.List[segments.Types.C_ITO] = []
                         cur = node
                         while (par := cur.parent) is not None:
                             expected.append(par)
@@ -374,6 +410,8 @@ class TestItoQuery(_TestIto):
 
     # endregion
 
+    # endregion
+
     # region subquery
     
     def test_subquery_scalar(self):
@@ -386,4 +424,6 @@ class TestItoQuery(_TestIto):
                     actual = [*node.find_all(query)]
                     self.assertListEqual(expected, actual)
     
+    # endregion
+
     # endregion

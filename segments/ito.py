@@ -965,10 +965,10 @@ class Ito:
 
     def walk_descendants_levels(self, start: int = 0, reverse: bool = False) -> Types.C_IT_EITOS:
         for child in reversed(self.children) if reverse else self.children:
-            if not reversed:
+            if not reverse:
                 yield Types.C_EITO(start, child)
             yield from child.walk_descendants_levels(start + 1, reverse)
-            if reversed:
+            if reverse:
                 yield Types.C_EITO(start, child)
 
     def walk_descendants(self, reverse: bool = False) -> Types.C_IT_EITOS:

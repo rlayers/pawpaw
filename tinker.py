@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 
 import segments
-import sgr
+from segments.visualization import sgr
 import regex
 
 # print(segments.__version__)
@@ -14,6 +14,13 @@ import regex
 # print(segments.__version__._asdict())
 # exit(0)
 
+
+s = 'The quick brown fox.'
+i = segments.Ito(s)
+i.children.add(*i.split(regex.compile(r'\s+')))
+dumper = segments.visualization.ItoDump()
+dumper.dump(i)
+exit(0)
 
 def dump_itos(*itos: segments.Ito, indent='', __str__: bool = True):
     for i, ito in enumerate(itos):

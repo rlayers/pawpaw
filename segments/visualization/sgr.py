@@ -10,7 +10,7 @@ class Sgr:
     RESET     = -1
 
     @classmethod
-    def _to_str(cls, *n: int) -> str:
+    def encode(cls, *n: int) -> str:
         if len(n) == 0:
             n = '0'
         else:
@@ -103,11 +103,11 @@ class Fore(Sgr):
 
     @classmethod
     def number(cls, n: int) -> str:
-        return cls._to_str(cls._BY_IDX, 5, n)
+        return cls.encode(cls._BY_IDX, 5, n)
 
     @classmethod
     def rgb(cls, r: int = 0, g: int = 0, b: int = 0) -> str:
-        return cls._to_str(cls._BY_IDX, 2, r, g, b)
+        return cls.encode(cls._BY_IDX, 2, r, g, b)
 
 
 @dataclass
@@ -122,5 +122,5 @@ for name in (n for n in dir(Fore) if n.isupper()):
 for c in Sgr, Intensity, Italic, Underline, Blink, Invert, Conceal, Strike, Font, Fore, Back:
     for name in (n for n in dir(c) if n.isupper() and not n.startswith('_')):
         attr = getattr(c, name)
-        val = c._to_str(attr)
+        val = c.encode(attr)
         setattr(c, name, val)

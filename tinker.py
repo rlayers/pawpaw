@@ -4,8 +4,9 @@ sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 
+import json
 import segments
-from segments.visualization import sgr
+from segments.visualization import sgr, Highlighter
 import regex
 
 # print(segments.__version__)
@@ -15,18 +16,20 @@ import regex
 # exit(0)
 
 
-s = 'The quick brown fox.'
-i = segments.Ito(s)
-i.children.add(*i.split(regex.compile(r'\s+')))
-dumper = segments.visualization.ItoDump()
-dumper.dump(i)
-exit(0)
-
 def dump_itos(*itos: segments.Ito, indent='', __str__: bool = True):
     for i, ito in enumerate(itos):
         s = f' .__str__(): "{ito}"' if __str__ else ''
         print(f'{indent}{i:,}: .span={ito.span} .desc="{ito.desc}"{s}"')
         dump_itos(*ito.children, indent=indent+'  ', __str__=__str__)
+
+
+s = 'Hello, world!'
+i = Ito(s)
+i.children.add(*i.split(regex.compile(r'\s')))
+print(json.dumps(i, cls=Ito.JsonEncoder, indent='  '))
+exit(0)
+dump_itos(i)
+exit(0)
 
 
 # TESTING
@@ -53,3 +56,19 @@ s = 'Hello, world!'
 print(sgr.Back.rgb(255, 0, 255) + s + sgr.Back.RESET)
 print(sgr.Back.number(127) + s + sgr.Back.RESET)
 print()
+
+
+
+
+s = 'The quick brown fox'
+ito = segments.Ito(s)
+ito.children.add(*ito.split(regex.compile('\s+')))
+
+highlighter = Highlighter(
+    sgr.NamedColors.BRIGHT_CYAN,
+    sgr.NamedColors.CYAN,
+    sgr.NamedColors.BRIGHT_BLUE,
+    sgr.NamedColors.BLUE,
+    sgr.NamedColors.MAGENTA,
+)
+highlighter.print(ito)

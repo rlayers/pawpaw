@@ -3,7 +3,7 @@ import typing
 
 import regex
 import segments
-from segments.visualization.sgr import Back, Fore
+from segments.visualization.sgr import Back, Fore, NamedColors
 
 
 class Highlighter:
@@ -27,4 +27,4 @@ class Highlighter:
             print(f'{next(it_col)}{leaf}{Back.RESET}', end='')
             stop = leaf.stop
         if leaf.stop < len(ito.string):
-            print(ito.string[stop:]
+            print(ito.string[stop:])

@@ -40,8 +40,8 @@ class TestItoSerialization(_TestIto):
         self.assertTrue(js_data.startswith(expected_prefix))      
 
     def test_json_deserialize(self):
-        word = self.h_ito.find('**[d:Word]')
-        js_data = json.dumps(word, cls=Ito.JsonEncoder)
+        w_orig = self.h_ito.find('**[d:Word]')
+        js_data = json.dumps(w_orig, cls=Ito.JsonEncoder)
         w_deser = json.loads(js_data, object_hook=Ito.json_decoder)
         self.assertEqual(w_orig, w_deser)
         
@@ -56,8 +56,8 @@ class TestItoSerialization(_TestIto):
         self.assertTrue(js_data.startswith(expected_prefix))      
 
     def test_json_stringless_deserialize(self):
-        word = self.h_ito.find('**[d:Word]')
-        js_data = json.dumps(word, cls=Ito.JsonEncoderStringless)
+        w_orig = self.h_ito.find('**[d:Word]')
+        js_data = json.dumps(w_orig, cls=Ito.JsonEncoderStringless)
         w_deser = json.loads(js_data, object_hook=Ito.json_decoder_stringless)
         self.assertNotEqual(w_orig, w_deser)
         w_deser._set_string(w_orig.string)

@@ -150,11 +150,11 @@ class TestItoCtor(_TestIto):
     def test_from_gaps_ito(self):
         s = ' abc '
         src = Ito(s, 1, -1)
-        gaps = [Span(1, 3), Span(0, 2)]  # Overlapping and unordered
+        gaps = [Span(1, 2), Span(0, 1)]  # Overlapping and unordered
         desc = 'x'
         for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', self.IntIto)):
             with self.subTest(_class=cls_name):
-                expected = [_class(src, 1, 2, desc)]
+                expected = [_class(src, 2, desc=desc)]
                 actual = [*_class.from_gaps(src, *gaps, desc=desc)]
                 self.assertListEqual(expected, actual)
                     

@@ -7,14 +7,12 @@ Introduction
 
 Optimized json serialization is available... ``JsonEncoder``... (substrings share same string...):
 
+
 >>> import json
 >>> import regex
 >>> from segments import Ito
->>>
->>> s = 'Hello, World!'
+>>> s = 'Hello, world!'
 >>> i = Ito(s)
 >>> i.children.add(*i.split(regex.compile(r'\s')))
->>> print(json.dumps(i, cls-Ito.JsonEncoder, indent='  ')
-{
-  ...
-}
+>>> json.dumps(i, cls=Ito.JsonEncoder)
+'{"__type__": "typing.Tuple[str, Ito]", "string": "Hello, world!", "ito": {"__type__": "Ito", "span": [0, 13], "desc": null, "children": [{"__type__": "Ito", "span": [0, 6], "desc": null, "children": []}, {"__type__": "Ito", "span": [7, 13], "desc": null, "children": []}]}}'

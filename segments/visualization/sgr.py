@@ -148,7 +148,8 @@ class Back(Fore):
     _BY_IDX = Fore._BY_IDX + 10
     RESET = Fore.RESET + 10
 
-for nc in NamedCOlors:
+
+for nc in NamedColors:
     for _class in Fore, Back:
         setattr(_class, nc.name, _class.from_name(nc.name))
     

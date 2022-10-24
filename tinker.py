@@ -23,10 +23,13 @@ def dump_itos(*itos: segments.Ito, indent='', __str__: bool = True):
         dump_itos(*ito.children, indent=indent+'  ', __str__=__str__)
 
 
+import json
+import regex
+from segments import Ito
 s = 'Hello, world!'
 i = Ito(s)
 i.children.add(*i.split(regex.compile(r'\s')))
-print(json.dumps(i, cls=Ito.JsonEncoder, indent='  '))
+json.dumps(i, cls=Ito.JsonEncoder)
 exit(0)
 dump_itos(i)
 exit(0)

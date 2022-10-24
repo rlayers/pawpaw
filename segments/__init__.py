@@ -18,6 +18,7 @@ del util
 
 import segments.itorator
 import segments.query
-import segments.xml as xml
+import segments.xml
+import segments.visualization
 
 del segments

@@ -384,7 +384,7 @@ class Ito:
         def default(self, o: typing.Any) -> typing.Dict:
             return {
                 '__type__': 'Ito',
-                '_span': o.span,
+                'span': o._span,
                 'desc': o.desc,
                 'children': [self.default(c) for c in o.children]
             }
@@ -401,8 +401,8 @@ class Ito:
     def json_decoder_stringless(cls, obj: typing.Dict) -> Ito | typing.Dict:
         if (t := obj.get('__type__')) is not None and t == 'Ito':
             rv = Ito('', desc=obj['desc'])
-            rv._span = obj['span']
-            rv.children.add(obj['children'])
+            rv._span = Span(*obj['span'])
+            rv.children.add(*obj['children'])
             return rv
         else:
             return obj
@@ -414,8 +414,8 @@ class Ito:
                 rv = obj['ito']
                 rv._string = obj['string']
                 return rv
-        elif t == 'Ito':
-            return cls.json_decoder_stringless(obj)
+            elif t == 'Ito':
+                return cls.json_decoder_stringless(obj)
         else:
             return obj
 

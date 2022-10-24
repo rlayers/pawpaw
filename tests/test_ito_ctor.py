@@ -89,7 +89,7 @@ class TestItoCtor(_TestIto):
         self.assertEqual(3, len(grouped['number']))
         self.assertEqual(6, len(grouped['digit']))
         
-    def test_from_spans(self):
+    def test_from_spans_simple(self):
         s = 'abcd' * 100
         spans = [*RandSpans(Span(1, 10), Span(0, 3)).generate(s)]
         desc = 'x'
@@ -100,7 +100,64 @@ class TestItoCtor(_TestIto):
                     self.assertIs(s, i.string)
                     self.assertIn(i.span, spans)
                     self.assertEqual(desc, i.desc)
+                    
+    def test_from_spans_complex(self):
+        s = 'abcd' * 100
+        spans = [Span(20, 50), Span(0, 25), Span(50, 75)]  # Overlapping and unordered
+        desc = 'x'
+        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', self.IntIto)):
+            with self.subTest(_class=cls_name):
+                expected = [_class(s, *span, desc) for span in spans]
+                actual = [*_class.from_spans(s, *spans, desc=desc)]
+                self.assertListEqual(expected, actual)
+                    
+    def test_from_spans_ito(self):
+        s = ' abc '
+        src = Ito(s, 1, -1)
+        spans = [Span(1, 3), Span(0, 2)]  # Overlapping and unordered
+        desc = 'x'
+        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', self.IntIto)):
+            with self.subTest(_class=cls_name):
+                expected = [_class(src, *span, desc) for span in spans]
+                actual = [*_class.from_spans(src, *spans, desc=desc)]
+                self.assertListEqual(expected, actual)
 
+    def test_from_gaps_simple(self):
+        s = 'abcd' * 10
+        gaps = [*RandSpans(Span(1, 8), Span(0, 3)).generate(s)]
+        desc = 'x'
+        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', self.IntIto)):
+            with self.subTest(_class=cls_name):
+                for i in _class.from_gaps(s, *gaps, desc=desc):
+                    self.assertIsInstance(i, _class)
+                    self.assertIs(s, i.string)
+                    self.assertFalse(any(gap.start <= i.start <= i.stop <= gap.stop for gap in gaps))
+                    self.assertEqual(desc, i.desc)
+                    
+    def test_from_gaps_complex(self):
+        s = 'abcd' * 10
+        gaps = [Span(10, 20), Span(5, 10), Span(20, 25)]  # Overlapping and unordered
+        desc = 'x'
+        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', self.IntIto)):
+            with self.subTest(_class=cls_name):
+                expected = [
+                    _class(s, 0, min(gap.start for gap in gaps), desc),
+                    _class(s, max(gap.stop for gap in gaps), desc=desc)
+                ]
+                actual = [*_class.from_gaps(s, *gaps, desc=desc)]
+                self.assertListEqual(expected, actual)
+                    
+    def test_from_gaps_ito(self):
+        s = ' abc '
+        src = Ito(s, 1, -1)
+        gaps = [Span(1, 3), Span(0, 2)]  # Overlapping and unordered
+        desc = 'x'
+        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', self.IntIto)):
+            with self.subTest(_class=cls_name):
+                expected = [_class(src, 1, 2, desc)]
+                actual = [*_class.from_gaps(src, *gaps, desc=desc)]
+                self.assertListEqual(expected, actual)
+                    
     def test_from_substrings(self):
         string = 'abcd' * 10
         string = f' {string} '

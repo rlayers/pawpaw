@@ -58,7 +58,7 @@ class RandSpans:
         while i < stop:
             k = i + random.randint(*self.size)
             k = min(k, stop)
-            yield i, k
+            yield Span(i, k)
             if k == stop:
                 break
             i = k + random.randint(*self.gap)

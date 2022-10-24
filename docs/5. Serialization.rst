@@ -1,0 +1,20 @@
+=============
+SERIALIZATION
+=============
+
+Introduction
+============
+
+Optimized json serialization is available... ``JsonEncoder``... (substrings share same string...):
+
+>>> import json
+>>> import regex
+>>> from segments import Ito
+>>>
+>>> s = 'Hello, World!'
+>>> i = Ito(s)
+>>> i.children.add(*i.split(regex.compile(r'\s')))
+>>> print(json.dumps(i, cls-Ito.JsonEncoder, indent='  ')
+{
+  ...
+}

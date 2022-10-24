@@ -23,18 +23,6 @@ def dump_itos(*itos: segments.Ito, indent='', __str__: bool = True):
         dump_itos(*ito.children, indent=indent+'  ', __str__=__str__)
 
 
-import json
-import regex
-from segments import Ito
-s = 'Hello, world!'
-i = Ito(s)
-i.children.add(*i.split(regex.compile(r'\s')))
-json.dumps(i, cls=Ito.JsonEncoder)
-exit(0)
-dump_itos(i)
-exit(0)
-
-
 # TESTING
 
 for effect in sgr.Intensity, sgr.Italic, sgr.Underline, sgr.Blink, sgr.Invert, sgr.Conceal, sgr.Strike, sgr.Font, sgr.Fore, sgr.Back:
@@ -49,14 +37,15 @@ from random import randint
 for line in range(1, 50):
     for color in sgr.Fore, sgr.Back:
         for col in range(1, 120):
-            print(color.rgb(randint(0, 255), randint(0, 255), randint(0, 255)), end='')
+            rgb = sgr.Colors.Rgb(randint(0, 255), randint(0, 255), randint(0, 255))
+            print(color.from_color(rgb), end='')
             print(chr(ord('A') + randint(0, 25)) + color.RESET, end='')
         print()
 exit()
 
 s = 'Hello, world!'
 # print(Back.BLUE + s + Back.RESET)
-print(sgr.Back.rgb(255, 0, 255) + s + sgr.Back.RESET)
+print(sgr.Back.from_color(sgr.Colors.Rgb(255, 0, 255)) + s + sgr.Back.RESET)
 print(sgr.Back.number(127) + s + sgr.Back.RESET)
 print()
 

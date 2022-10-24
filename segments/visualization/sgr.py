@@ -79,26 +79,50 @@ class Font(Sgr):
     ALT_9 = 19
 
 
-class NamedColors(enum.IntEnum):
-    BLACK  : int = 0
-    RED    : int = 1
-    GREEN  : int = 2
-    YELLOW : int = 3
-    BLUE   : int = 4
-    MAGENTA: int = 5
-    CYAN   : int = 6
-    WHITE  : int = 7
-    
-    BRIGHT_BLACK  : int  = 60
-    BRIGHT_GRAY   : int  = BRIGHT_BLACK
-    BRIGHT_RED    : int  = 61
-    BRIGHT_GREEN  : int  = 62
-    BRIGHT_YELLOW : int  = 63
-    BRIGHT_BLUE   : int  = 64
-    BRIGHT_MAGENTA: int  = 65
-    BRIGHT_CYAN   : int  = 66
-    BRIGHT_WHITE  : int  = 67
-    
+for c in Sgr, Intensity, Italic, Underline, Blink, Invert, Conceal, Strike, Font:
+    for name in (n for n in dir(c) if n.isupper() and not n.startswith('_')):
+        attr = getattr(c, name)
+        val = c.encode(attr)
+        setattr(c, name, val)
+
+
+class Colors:
+    class Named(enum.IntEnum):
+        BLACK  : int = 0
+        RED    : int = 1
+        GREEN  : int = 2
+        YELLOW : int = 3
+        BLUE   : int = 4
+        MAGENTA: int = 5
+        CYAN   : int = 6
+        WHITE  : int = 7
+
+        BRIGHT_BLACK  : int  = 60
+        BRIGHT_GRAY   : int  = BRIGHT_BLACK
+        BRIGHT_RED    : int  = 61
+        BRIGHT_GREEN  : int  = 62
+        BRIGHT_YELLOW : int  = 63
+        BRIGHT_BLUE   : int  = 64
+        BRIGHT_MAGENTA: int  = 65
+        BRIGHT_CYAN   : int  = 66
+        BRIGHT_WHITE  : int  = 67
+
+    class Rgb(typing.NamedTuple):
+        red: int
+        green: int
+        blue: int
+
+    class EightBit:
+        """
+            0-  7:  standard colors (as in ESC [ 30–37 m)
+            8- 15:  high intensity colors (as in ESC [ 90–97 m)
+            16-231:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
+            232-255:  grayscale from dark to light in 24 steps
+        """
+
+
+C_COLOR = Colors.Named | Colors.Rgb | Colors.EightBit
+
 
 @dataclass
 class Fore(Sgr):
@@ -125,36 +149,30 @@ class Fore(Sgr):
     BRIGHT_CYAN   : str  = ''
     BRIGHT_WHITE  : str  = ''
         
-    RESET = 39
-    
-    @classmethod
-    def from_name(cls, name: str) -> str:
-        code = getattr(NamedColors, name)
-        code += cls._OFFSET
-        return cls.encode(code)
+    _RESET = 39
 
     @classmethod
-    def number(cls, n: int) -> str:
-        return cls.encode(cls._BY_IDX, 5, n)
-
-    @classmethod
-    def rgb(cls, r: int = 0, g: int = 0, b: int = 0) -> str:
-        return cls.encode(cls._BY_IDX, 2, r, g, b)
+    def from_color(cls, src: C_COLOR) -> str:
+        if isinstance(src, Colors.Named):
+            nc = getattr(Colors.Named, src.name)
+            return cls.encode(nc.value + cls._OFFSET)
+        elif isinstance(src, Colors.Rgb):
+            return cls.encode(cls._BY_IDX, 2, *src)
+        elif isinstance(src, Colors.EightBit):
+            return cls.encode(cls._BY_IDX, 5, src)
 
 
 @dataclass
 class Back(Fore):
     _OFFSET = Fore._OFFSET + 10
     _BY_IDX = Fore._BY_IDX + 10
-    RESET = Fore.RESET + 10
+    _RESET = Fore._RESET + 10
 
 
-for nc in NamedColors:
-    for _class in Fore, Back:
-        setattr(_class, nc.name, _class.from_name(nc.name))
+for _class in Fore, Back:
+    setattr(_class, 'RESET', _class.encode(_class._RESET))
+    for nc in Colors.Named:
+        setattr(_class, nc.name, _class.from_color(nc))
+
+print('foo')
     
-for c in Sgr, Intensity, Italic, Underline, Blink, Invert, Conceal, Strike, Font, Fore, Back:
-    for name in (n for n in dir(c) if n.isupper() and not n.startswith('_')):
-        attr = getattr(c, name)
-        val = c.encode(attr)
-        setattr(c, name, val)

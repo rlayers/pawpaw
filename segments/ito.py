@@ -309,6 +309,13 @@ class Ito:
     def string(self) -> str:
         return self._string
 
+    def _set_string(self, string: str) -> None:
+        if len(string) < self.start <= self.stop:
+            raise ValueError(f'parameter \'string\' does not contain .span {self.span}')
+        self._string = string
+        for c in self.walk_descendants():
+            c._string = string
+    
     @property
     def span(self) -> Span:
         return self._span
@@ -398,7 +405,7 @@ class Ito:
             }
 
     @classmethod
-    def json_decoder_stringless(cls, obj: typing.Dict) -> Ito | typing.Dict:
+    def json_decoder_stringless(cls, obj: typing.Dict) -> Types.C_ITO | typing.Dict:
         if (t := obj.get('__type__')) is not None and t == 'Ito':
             rv = Ito('', desc=obj['desc'])
             rv._span = Span(*obj['span'])
@@ -408,7 +415,7 @@ class Ito:
             return obj
 
     @classmethod
-    def json_decoder(cls, obj: typing.Dict) -> Ito | typing.Dict:
+    def json_decoder(cls, obj: typing.Dict) -> Types.C_ITO | typing.Dict:
         if (t := obj.get('__type__')) is not None:
             if t == 'typing.Tuple[str, Ito]':
                 rv = obj['ito']

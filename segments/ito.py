@@ -203,8 +203,38 @@ class Ito:
                 break
 
     @classmethod
-    def from_spans(cls, string: str, *spans: Span, desc: str | None = None) -> typing.Iterable[Types.C_ITO]:
-        return [cls(string, *s, desc=desc) for s in spans]
+    def from_spans(cls, src: str | Types.C_ITO, *spans: Span, desc: str | None = None) -> typing.Iterable[Types.C_ITO]:
+        """Generate Itos from spans
+        
+        Args:
+            src: a str or Ito to use as the basis
+            spans: one or more spans within the basis
+            desc: a descriptor for the generated Itos
+            
+        Yields:
+            Itos; stream ordering will match that of spans; if spans overlap, so will the resulting Itos
+        """
+        yield from (cls(src, *s, desc=desc) for s in spans)
+        
+    @classmethod
+    def from_gaps(cls, src: str | Types.C_ITO, *gaps: Span, desc: str | None = None) -> typing.Iterable[Types.C_ITO]:
+        """Generate Itos from gaps (negative space)
+        
+        Args:
+            src: a str or Ito to use as the basis
+            gaps: one or more Spans that resulting Itos will exclude
+            desc: a descriptor for the generated Itos
+            
+        Yields:
+            Itos; stream ordering will be left to right; overlapping spans are allowed
+        """
+        stop = 0
+        for gap in sorted(gaps):
+            if gap.start > stop:
+                yield cls(src, stop, gap.start, desc=desc)
+            stop = gap.stop
+        if stop < len(src):
+            yield cls(src, stop, desc=desc)
 
     @classmethod
     def from_substrings(

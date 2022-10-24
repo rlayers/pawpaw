@@ -41,17 +41,20 @@
       <li>
         High Performance Substring Library
         <ul>
-          <li>Conserve memory</li>
+          <li>Fast processing with efficient memory utilization</li>
           <li>Automatic string index bookkeeping</li>
+          <li>Pythonic relative indexing and slicing of segments</li>
           <li>Runtime & polymorphic value extraction</li>
           <li>Hierarchical data structure for substrings</li>
+          <li>Extensive use of Python generators</li>
+          <li>Efficient pickling and JSON persistance</li>
         </ul>
       </li>
       <li>
         Rules Pipelining Engine
         <ul>
-          <li>Develop complex text parsers with just a few lines of code</li>
           <li>Quickly and easily convert unstructured text into structed, indexed, & searchable collections</li>
+          <li>Develop complex text parsers with just a few lines of code</li>
           <li>Easily pre-process text for downstream NLP/AI/ML consumers</li>
         </ul>
       </li>
@@ -68,6 +71,12 @@
           <li>Drop-in replacement for ElementTree.XmlParser</li>
           <li>Provides full text indexes for all Elements, Attributes, Tags, Text, etc.</li>
           <li>Search the resulting XML using both XPATH and the included, more capable structured query language</li>
+        </ul>
+      </li>
+      <li>
+        Stable
+        <ul>
+          <li>Over 1600 unit tests and counting!</li>
         </ul>
       </li>
     </ul>

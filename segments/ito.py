@@ -410,7 +410,7 @@ class Ito:
     @classmethod
     def json_decoder(cls, obj: typing.Dict) -> Ito | typing.Dict:
         if (t := obj.get('__type__')) is not None:
-            if t == 'Tuple[str, Ito]':
+            if t == 'typing.Tuple[str, Ito]':
                 rv = obj['ito']
                 rv._string = obj['string']
                 return rv

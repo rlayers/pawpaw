@@ -1,5 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
+import itertools
 import operator
 import typing
 
@@ -134,7 +135,21 @@ class Axis:
                 yield from self.to_ecs(leaves, i)
                 
         elif self.key == '<<<':
-            raise NotImplemented('Not yet...!')
+            for i in itos:
+                if i.parent is None:
+                    yield from self.to_ecs([], i)
+                    return
+                
+            root = i.find('....')
+            ancestors = [*i.find_all('...')]
+            if reverse:
+                _iter = itertools.takewhile(lambda j: j is not i, root.walk_descendants(False))
+                _filter = lambda j: j not in ancestors
+            else:  # forward
+                _iter = itertools.takewhile(lambda j: j is not i, root.walk_descendants(True))
+                _filter = lambda j: not (i.start < j.start < j.stop <= i.stop)  # not in descendants
+
+            yield from self.to_ecs(filter(_filter, _iter), i)
 
         elif self.key == '<<':
             for i in itos:

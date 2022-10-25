@@ -8,8 +8,10 @@ class Sgr:
     """
     SGR (Select Graphic Rendition) - see https://en.wikipedia.org/wiki/ANSI_escape_code
     """
-    RESET_ALL = 0
-    RESET     = -1
+    _RESET_ALL: int = 0
+    RESET_ALL : str = ''
+    _RESET    : int = -1
+    RESET     :  str = ''
 
     @classmethod
     def encode(cls, *n: int) -> str:
@@ -22,68 +24,91 @@ class Sgr:
 
 @dataclass
 class Intensity(Sgr):
-    BOLD  = 1
-    DIM   = 2
-    RESET = 22
+    _BOLD: int = 1
+    BOLD: str = ''
+
+    _DIM: int = 2
+    DIM: str = ''
+
+    _RESET = 22
 
 
 @dataclass
 class Italic(Sgr):
-    ON    = 3
-    RESET = 23
+    _ON   : int = 3
+    ON    : str = ''
+    _RESET: int = 23
 
 
 @dataclass
 class Underline(Sgr):
-    SINGLE = 4
-    DOUBLE = 21
-    RESET  = 24
+    _SINGLE: int  = 4
+    SINGLE : str = ''
+    _DOUBLE: int = 21
+    DOUBLE : str = ''
+    _RESET : int = 24
 
 
 @dataclass
 class Blink(Sgr):
-    SLOW  = 5
-    RAPID = 6
-    RESET = 25
+    _SLOW: int = 5
+    SLOW : str = ''
+    _RAPID: int = 6
+    RAPID: str = ''
+    _RESET: int = 25
 
 
 @dataclass
 class Invert(Sgr):
-    ON    = 7
-    RESET = 27
+    _ON   : int = 7
+    ON    : str = ''
+    _RESET: int = 27
 
 
 @dataclass
 class Conceal(Sgr):
-    ON    = 8
-    RESET = 28
+    _ON   : int = 8
+    ON    : str = ''
+    _RESET: int = 28
 
 
 @dataclass
 class Strike(Sgr):
-    SLOW  = 9
-    RESET = 29
+    _SLOW: int  = 9
+    SLOW : str = ''
+    _RESET = 29
 
 
 @dataclass
 class Font(Sgr):
-    RESET = 10
-    ALT_1 = 11
-    ALT_2 = 12
-    ALT_3 = 13
-    ALT_4 = 14
-    ALT_5 = 15
-    ALT_6 = 16
-    ALT_7 = 17
-    ALT_8 = 18
-    ALT_9 = 19
+    _RESET = 10
+    _ALT_1: int = 11
+    ALT_1 : str = ''
+    _ALT_2: int = 12
+    ALT_2 : str = ''
+    _ALT_3: int = 13
+    ALT_3 : str = ''
+    _ALT_4: int = 14
+    ALT_4 : str = ''
+    _ALT_5: int = 15
+    ALT_5 : str = ''
+    _ALT_6: int = 16
+    ALT_6 : str = ''
+    _ALT_7: int = 17
+    ALT_7 : str = ''
+    _ALT_8: int = 18
+    ALT_8 : str = ''
+    _ALT_9: int = 19
+    ALT_9 : str = ''
 
 
 for c in Sgr, Intensity, Italic, Underline, Blink, Invert, Conceal, Strike, Font:
-    for name in (n for n in dir(c) if n.isupper() and not n.startswith('_')):
-        attr = getattr(c, name)
-        val = c.encode(attr)
-        setattr(c, name, val)
+    for name in (n for n in dir(c)):
+        target = name[1:]
+        if name.isupper() and name.startswith('_') and hasattr(c, target):
+            attr = getattr(c, name)
+            val = c.encode(attr)
+            setattr(c, target, val)
 
 
 class Colors:

@@ -178,6 +178,38 @@ class TestItoQuery(_TestIto):
                         actual = [*node.find_all(query)]
                         self.assertListEqual(expected, actual)
 
+    def test_preceding(self):
+        for node_type, node in {
+            'root': self.root,
+            'first-child': self.root.children[0],
+            'middle-child': self.root.children[1],
+            'last-child': self.root.children[-1]
+        }.items():
+            for order in '', '+', '-':
+                for or_self in '', 'S':
+                    query = f'{order}<<<{or_self}'                
+                    with self.subTest(node=node_type, query=query):
+                        if node is self.root:
+                            expected: segments.Types.C_ITO = []
+                            if or_self:
+                                expected.append(node)
+                        else:
+                            ancestors: segments.Types.C_ITO = [node]
+                            while (parent := ancestors[-1].parent) is not None:
+                                ancestors.append(parent)
+                            expected: [*self.root.walk_descendants(order != '-')]
+                            for i in range(0, len(expected)):
+                                cur = expected[i]
+                                if cur in ancestors:
+                                    del expected[i]
+                                elif cur is node and or_self != 'S':
+                                    del expected[i]
+                                elif node.start <= cur.start <= cur.stop <= node.stop:
+                                    del expected[i]
+                                    
+                        actual = [*node.find_all(query)]
+                        self.assertListEqual(expected, actual)
+                        
     def test_prior_siblings(self):
         for node_type, node in {
             'root': self.root,

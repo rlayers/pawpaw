@@ -12,7 +12,7 @@ import segments
 
 
 class DumpBase(abc.ABC):
-    def __init__(self, indent: str = '  ', substring: bool = True, value: bool = False):
+    def __init__(self, indent: str = '    ', substring: bool = True, value: bool = False):
         self.indent = indent
         self.substring = substring
         self.value = value
@@ -34,7 +34,7 @@ class DumpBase(abc.ABC):
         
 
 class Compact(DumpBase):
-    def __init__(self, indent: str = '  ', substring: bool = True, value: bool = False):
+    def __init__(self, indent: str = '    ', substring: bool = True, value: bool = False):
         super().__init__(indent, substring, value)
         
     def _dump(self, fs: typing.IO, ei: segments.Types.C_EITO, level: int = 0) -> None:
@@ -54,13 +54,13 @@ class Compact(DumpBase):
 
                 
 class Xml(DumpBase):
-    def __init__(self, indent: str = '  ', substring: bool = True, value: bool = False):
+    def __init__(self, indent: str = '    ', substring: bool = True, value: bool = False):
         super().__init__(indent, substring, value)
                 
     def _dump(self, fs: typing.IO, ei: segments.Types.C_EITO, level: int = 0) -> None:
         fs.write(f'{level * self.indent}<ito')
         fs.write(f' start="{ei.ito.start}"')
-        fs.write(f' start="{ei.ito.stop}"')
+        fs.write(f' stop="{ei.ito.stop}"')
         fs.write(f' desc="{escape(ei.ito.desc or "")}')
         fs.write(self.linesep)
         
@@ -68,7 +68,7 @@ class Xml(DumpBase):
         if self.substring:
             fs.write(f'{level * self.indent}<substring>{escape(str(ei.ito))}</substring>{self.linesep}')
         if self.value:
-            fs.write(f'{level * self.indent}<value>{escape(str(ei.ito))}</value>{self.linesep}')
+            fs.write(f'{level * self.indent}<value>{escape(str(ei.ito.value()))}</value>{self.linesep}')
         if len(ei.ito.children) > 0:
             fs.write(f'{level * self.indent}<children>{self.linesep}')
             
@@ -87,12 +87,12 @@ class Xml(DumpBase):
         fs.write(f'<?xml version="1.0" encoding="UTF-8" ?>{self.linesep}')
         fs.write(f'<itos>{self.linesep}')
         for ito in itos:
-            self._dumps(fs, segments.Types.C_EITO)
+            self._dump(fs, segments.Types.C_EITO(0, ito), 1)
         fs.write(f'<itos>{self.linesep}')
 
                         
 class Json(DumpBase):
-    def __init__(self, indent: str = '  ', substring: bool = True, value: bool = False):
+    def __init__(self, indent: str = '    ', substring: bool = True, value: bool = False):
         super().__init__(indent, substring, value)
                 
     def _dump(self, fs: typing.IO, ei: segments.Types.C_EITO, level: int = 0) -> None:
@@ -105,7 +105,7 @@ class Json(DumpBase):
         if self.substring:
             fs.write(f'{level * self.indent}"substring": {json.encoder.encode_basestring(str(ei.ito))},{self.linesep}')
         if self.value:
-            fs.write(f'{level * self.indent}"substring": {json.encoder.encode_basestring(str(ei.ito.value()))}",{self.linesep}')
+            fs.write(f'{level * self.indent}"value": {json.encoder.encode_basestring(str(ei.ito.value()))}",{self.linesep}')
             
         fs.write(f'{level * self.indent}"children": [')
         if len(ei.ito.children) == 0:

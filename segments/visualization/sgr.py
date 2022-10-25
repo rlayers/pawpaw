@@ -3,114 +3,84 @@ import enum
 import typing
 
 
+"""
+SGR (Select Graphic Rendition) - see https://en.wikipedia.org/wiki/ANSI_escape_code
+"""
+def encode(*n: int) -> str:
+    if len(n) == 0:
+        n = '0'
+    else:
+        n = ';'.join(str(i) for i in n)
+    return f'\033[{n}m'
+
+RESET_ALL: str = encode(0)
+
+    
 @dataclass
-class Sgr:
-    """
-    SGR (Select Graphic Rendition) - see https://en.wikipedia.org/wiki/ANSI_escape_code
-    """
-    _RESET_ALL: int = 0
-    RESET_ALL : str = ''
-    _RESET    : int = -1
-    RESET     :  str = ''
-
-    @classmethod
-    def encode(cls, *n: int) -> str:
-        if len(n) == 0:
-            n = '0'
-        else:
-            n = ';'.join(str(i) for i in n)
-        return f'\033[{n}m'
-
-
-@dataclass
-class Intensity(Sgr):
-    _BOLD: int = 1
-    BOLD: str = ''
-
-    _DIM: int = 2
-    DIM: str = ''
-
-    _RESET = 22
+class _Sgr:
+    RESET : str
 
 
 @dataclass
-class Italic(Sgr):
-    _ON   : int = 3
-    ON    : str = ''
-    _RESET: int = 23
+class Intensity(_Sgr):
+    BOLD : str = encode(1)
+    DIM  : str = encode(2)
+    RESET: str = encode(22)
 
 
 @dataclass
-class Underline(Sgr):
-    _SINGLE: int  = 4
-    SINGLE : str = ''
-    _DOUBLE: int = 21
-    DOUBLE : str = ''
-    _RESET : int = 24
+class Italic(_Sgr):
+    ON   : str = encode(3)
+    RESET: str = encode(23)
 
 
 @dataclass
-class Blink(Sgr):
-    _SLOW: int = 5
-    SLOW : str = ''
-    _RAPID: int = 6
-    RAPID: str = ''
-    _RESET: int = 25
+class Underline(_Sgr):
+    SINGLE: str = encode(4)
+    DOUBLE: str = encode(21)
+    RESET : str = encode(24)
 
 
 @dataclass
-class Invert(Sgr):
-    _ON   : int = 7
-    ON    : str = ''
-    _RESET: int = 27
+class Blink(_Sgr):
+    SLOW : str = encode(5)
+    RAPID: str = encode(6)
+    RESET: int = encode(25)
 
 
 @dataclass
-class Conceal(Sgr):
-    _ON   : int = 8
-    ON    : str = ''
-    _RESET: int = 28
+class Invert(_Sgr):
+    ON   : str = encode(7)
+    RESET: str = encode(27)
 
 
 @dataclass
-class Strike(Sgr):
-    _SLOW: int  = 9
-    SLOW : str = ''
-    _RESET = 29
+class Conceal(_Sgr):
+    ON   : str = encode(8)
+    RESET: str = encode(28)
 
 
 @dataclass
-class Font(Sgr):
-    _RESET = 10
-    _ALT_1: int = 11
-    ALT_1 : str = ''
-    _ALT_2: int = 12
-    ALT_2 : str = ''
-    _ALT_3: int = 13
-    ALT_3 : str = ''
-    _ALT_4: int = 14
-    ALT_4 : str = ''
-    _ALT_5: int = 15
-    ALT_5 : str = ''
-    _ALT_6: int = 16
-    ALT_6 : str = ''
-    _ALT_7: int = 17
-    ALT_7 : str = ''
-    _ALT_8: int = 18
-    ALT_8 : str = ''
-    _ALT_9: int = 19
-    ALT_9 : str = ''
+class Strike(_Sgr):
+    SLOW : str = encode(9)
+    RESET: str = encode(29)
 
 
-for c in Sgr, Intensity, Italic, Underline, Blink, Invert, Conceal, Strike, Font:
-    for name in (n for n in dir(c)):
-        target = name[1:]
-        if name.isupper() and name.startswith('_') and hasattr(c, target):
-            attr = getattr(c, name)
-            val = c.encode(attr)
-            setattr(c, target, val)
+@dataclass
+class Font(_Sgr):
+    ALT_1: str = encode(11)
+    ALT_2: str = encode(12)
+    ALT_3: str = encode(13)
+    ALT_4: str = encode(14)
+    ALT_5: str = encode(15)
+    ALT_6: str = encode(16)
+    ALT_7: str = encode(17)
+    ALT_8: str = encode(18)
+    ALT_9: str = encode(18)
+    RESET: str = encode(10)
 
 
+@dataclass
 class Colors:
     class Named(enum.IntEnum):
         BLACK  : int = 0
@@ -123,7 +93,6 @@ class Colors:
         WHITE  : int = 7
 
         BRIGHT_BLACK  : int  = 60
-        BRIGHT_GRAY   : int  = BRIGHT_BLACK
         BRIGHT_RED    : int  = 61
         BRIGHT_GREEN  : int  = 62
         BRIGHT_YELLOW : int  = 63
@@ -150,54 +119,33 @@ C_COLOR = Colors.Named | Colors.Rgb | Colors.EightBit
 
 
 @dataclass
-class Fore(Sgr):
-    _OFFSET = 30
-    
-    BLACK  : str = ''
-    RED    : str = ''
-    GREEN  : str = ''
-    YELLOW : str = ''
-    BLUE   : str = ''
-    MAGENTA: str = ''
-    CYAN   : str = ''
-    WHITE  : str = ''
-        
-    _BY_IDX: int = 38
-    
-    BRIGHT_BLACK  : str  = ''
-    BRIGHT_GRAY   : str  = ''
-    BRIGHT_RED    : str  = ''
-    BRIGHT_GREEN  : str  = ''
-    BRIGHT_YELLOW : str  = ''
-    BRIGHT_BLUE   : str  = ''
-    BRIGHT_MAGENTA: str  = ''
-    BRIGHT_CYAN   : str  = ''
-    BRIGHT_WHITE  : str  = ''
-        
-    _RESET = 39
+class Fore(_Sgr):
+    _NAMED_OFFSET: int = 30
+    _BY_IDX      : int = 38
+    RESET        : str = encode(39)
 
     @classmethod
     def from_color(cls, src: C_COLOR) -> str:
         if isinstance(src, Colors.Named):
             nc = getattr(Colors.Named, src.name)
-            return cls.encode(nc.value + cls._OFFSET)
+            return cls.encode(nc.value + cls._NAMED_OFFSET)
         elif isinstance(src, Colors.Rgb):
             return cls.encode(cls._BY_IDX, 2, *src)
         elif isinstance(src, Colors.EightBit):
             return cls.encode(cls._BY_IDX, 5, src)
+        
+    def __init__(self, src: C_COLOR):
+        self.value == self.from_color(src)
+        
+    def __str__(self) -> str:
+        return self.value
 
 
 @dataclass
 class Back(Fore):
-    _OFFSET = Fore._OFFSET + 10
-    _BY_IDX = Fore._BY_IDX + 10
-    _RESET = Fore._RESET + 10
+    _NAMED_OFFSET: int = Fore._NAMED_OFFSET + 10
+    _BY_IDX      : int = Fore._BY_IDX + 10
+    RESET        : str = encode(49)
 
-
-for _class in Fore, Back:
-    setattr(_class, 'RESET', _class.encode(_class._RESET))
-    for nc in Colors.Named:
-        setattr(_class, nc.name, _class.from_color(nc))
-
-print('foo')
-    
+    def __init__(self, src: C_COLOR):
+        super().__init__(src)

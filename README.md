@@ -76,7 +76,7 @@
       <li>
         Stable
         <ul>
-          <li>Over 1600 unit tests and counting!</li>
+          <li>Over 1,750 unit tests and counting!</li>
         </ul>
       </li>
     </ul>

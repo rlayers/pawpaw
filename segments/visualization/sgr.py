@@ -45,7 +45,7 @@ class Underline(_Sgr):
 class Blink(_Sgr):
     SLOW : str = encode(5)
     RAPID: str = encode(6)
-    RESET: int = encode(25)
+    RESET: str = encode(25)
 
 
 @dataclass
@@ -76,7 +76,7 @@ class Font(_Sgr):
     ALT_6: str = encode(16)
     ALT_7: str = encode(17)
     ALT_8: str = encode(18)
-    ALT_9: str = encode(18)
+    ALT_9: str = encode(19)
     RESET: str = encode(10)
 
 
@@ -128,14 +128,14 @@ class Fore(_Sgr):
     def from_color(cls, src: C_COLOR) -> str:
         if isinstance(src, Colors.Named):
             nc = getattr(Colors.Named, src.name)
-            return cls.encode(nc.value + cls._NAMED_OFFSET)
+            return encode(nc.value + cls._NAMED_OFFSET)
         elif isinstance(src, Colors.Rgb):
-            return cls.encode(cls._BY_IDX, 2, *src)
+            return encode(cls._BY_IDX, 2, *src)
         elif isinstance(src, Colors.EightBit):
-            return cls.encode(cls._BY_IDX, 5, src)
+            return encode(cls._BY_IDX, 5, src)
         
     def __init__(self, src: C_COLOR):
-        self.value == self.from_color(src)
+        self.value = self.from_color(src)
         
     def __str__(self) -> str:
         return self.value

@@ -466,6 +466,10 @@ class Ito:
             return False
         
         return self.__key() == o.__key()
+    
+    def __iter__(self) -> typing.Iterable[str]:
+        for i in range(self.start, self.stop):
+            yield self._string[i]
 
     def __ne__(self, o: typing.Any) -> bool:
         return not self.__eq__(o)

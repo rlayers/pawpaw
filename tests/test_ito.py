@@ -148,6 +148,17 @@ class TestIto(_TestIto):
         i1.value_func = None
         self.assertEqual(i1, i2)        
 
+    def test_iter(self):
+        s = ' abc '
+        for span in Span.from_indices(s), Span.from_indices(s, 1, -1), Span.from_indices(s, 2, -2), Span(3, 3):
+            with self.subTest(string=s, span=span):
+                ito = Ito(s, *span)
+                expected = [c for c in str(ito)]
+                actual = [c for c in ito]
+                self.assertEqual(len(ito), len(actual))
+                self.assertListEqual(expected, actual)
+                self.assertEqual(str(ito), ''.join(actual))
+
     def test_repr(self):
         s = 'x123x'
         span = 1, -1

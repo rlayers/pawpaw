@@ -468,7 +468,7 @@ class Ito:
         return self.__key() == o.__key()
     
     def __iter__(self) -> typing.Iterable[str]:
-        for i in range(self.start, self.stop):
+        for i in range(*self.span):
             yield self._string[i]
 
     def __ne__(self, o: typing.Any) -> bool:

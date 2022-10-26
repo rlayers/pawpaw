@@ -36,7 +36,7 @@ class TestSplit(_TestIto):
 
         return rv
     
-    def test_iter(self):
+    def test_iter_simple(self):
         for sep in ' ', '-':  # '', ' ', '-':
             s = self.str_from(sep)
             ito = Ito(s, desc='root')
@@ -46,6 +46,30 @@ class TestSplit(_TestIto):
                     expected = self.expected_from(s, sep, brt)
                     desc = 'split'
                     split = Split(re, boundary_retention=brt, desc=desc)
-                    actual = split._iter(ito)
-                    self.assertSequenceEqual(expected, [str(i) for i in actual])
+                    actual = [*split._iter(ito)]
+                    self.assertListEqual(expected, [str(i) for i in actual])
+                    self.assertTrue(all(i.desc == desc for i in actual))
+
+    
+    def zero_width_patterns(self, sep: str) -> typing.Iterable[regex.Pattern]:
+        esc_sep = regex.escape(sep)
+        yield r'(?<=' + esc_sep + r')'  # look behind
+        yield r'(?=' + esc_sep + r')'  # look ahead
+    
+    def test_iter_zero_width_matches(self):
+        sep = '.'
+        s = self.str_from(sep)
+        ito = Ito(s, desc='root')
+        for pat in self.zero_width_patterns(sep):
+            for brt in Split.BoundaryRetention:
+                with self.subTest(string=s, pattern=pat, boundary_retention=brt):
+                    expected = re.split(s)
+                    if brt == Split.BoundaryRetention.LEADING:
+                        del expected[0]
+                    elif brt == Split.BoundaryRetention.TRAILING:
+                        del expected[-1]
+                    desc = 'split'
+                    split = Split(re, boundary_retention=brt, desc=desc)
+                    actual = [*split._iter(ito)]
+                    self.assertListEqual(expected, [str(i) for i in actual])
                     self.assertTrue(all(i.desc == desc for i in actual))

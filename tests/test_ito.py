@@ -118,7 +118,7 @@ class TestIto(_TestIto):
     def test_eq_derived(self):
         s = 'abc'
         i1 = Ito(s, 1, -1, 'd')
-        i2 = self.IntIto(s, *i1.span, i1.desc)
+        i2 = IntIto(s, *i1.span, i1.desc)
         self.assertNotEqual(i1, i2)
 
     def test_eq_value_func(self):
@@ -170,7 +170,7 @@ class TestIto(_TestIto):
         s = 'x123x'
         span = Span.from_indices(s, 1, -1)
         desc = 'd'
-        for ito in Ito(s, *span, desc), self.IntIto(s, *span, desc):
+        for ito in Ito(s, *span, desc), IntIto(s, *span, desc):
             with self.subTest(string=s, ito=ito):
                 expected = f'{type(ito).__name__}({s.__repr__()}, {span.start}, {span.stop}, {desc.__repr__()})'
                 actual = ito.__repr__()

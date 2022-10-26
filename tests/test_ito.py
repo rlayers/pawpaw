@@ -2,7 +2,7 @@ import itertools
 
 import regex
 from segments import Span, Ito
-from tests.util import _TestIto
+from tests.util import _TestIto, IntIto
 
 
 class TestIto(_TestIto):
@@ -126,25 +126,32 @@ class TestIto(_TestIto):
         f1 = lambda ito: str(ito).strip()
         f2 = lambda ito: str(ito).upper()
         
+        # clone and ensure equal
         i1 = Ito(s, 1, -1, 'd')
         i2 = i1.clone()
         self.assertEqual(i1, i2)        
 
+        # set second to something else and ensure nonequal
         i2.value_func = f1
         self.assertNotEqual(i1, i2)        
 
+        # set first to same thing and ensure equal
         i1.value_func = f1
         self.assertEqual(i1, i2)        
 
+        # set second to something else and ensure nonequal
         i2.value_func = f2
         self.assertNotEqual(i1, i2)        
 
+        # set first to same thing and ensure equal
         i1.value_func = f2
         self.assertEqual(i1, i2)        
 
+        # set second to None and ensure nonequal
         i2.value_func = None
         self.assertNotEqual(i1, i2)        
-
+    
+        # set first to None and ensure equal
         i1.value_func = None
         self.assertEqual(i1, i2)        
 
@@ -161,28 +168,31 @@ class TestIto(_TestIto):
 
     def test_repr(self):
         s = 'x123x'
-        span = 1, -1
-        start, stop = Span.from_indices(s, *span)
+        span = Span.from_indices(s, 1, -1)
         desc = 'd'
-        ito = Ito(s, *span, desc)
-        
-        expected = f'Ito({s.__repr__()}, {start}, {stop}, {desc.__repr__()})'
-        actual = ito.__repr__()
-        self.assertEqual(expected, actual)
-        
-        self.assertEqual(ito, eval(actual))
+        for ito in Ito(s, *span, desc), self.IntIto(s, *span, desc):
+            with self.subTest(string=s, ito=ito):
+                expected = f'{type(ito).__name__}({s.__repr__()}, {span.start}, {span.stop}, {desc.__repr__()})'
+                actual = ito.__repr__()
+                self.assertEqual(expected, actual)
+                self.assertEqual(ito, eval(actual))
     
     def test_str(self):
         s = 'x123x'
-        i = Ito(s, 1, -1)
-        self.assertEqual(s[1:-1], str(i))
-        self.assertEqual(s[1:-1], str(i))
-        self.assertEqual(s[1:-1], f'{i}')
+        for span in Span(0, len(s)), Span(1, len(s) - 1):
+            for ito in Ito(s, *span), IntIto(s, *span):
+                expected = s[slice(*span)]
+                for expression in 'ito.__str__()', 'str(ito)', "f'{ito}'":
+                    with self.subTest(string=s, ito=ito, expression=expression):
+                        self.assertEqual(expected, eval(expression))
 
     def test_len(self):
         s = 'x123x'
-        i = Ito(s, 1, -1)
-        self.assertEqual(3, len(i))
+        for span in Span(0, len(s)), Span(1, len(s) - 1):
+            ito = Ito(s, *span)
+            with self.subTest(string=s, ito=ito):
+                expected = len(s[slice(*span)])
+                self.assertEqual(expected, len(ito))
     
     def test_getitem_valid_int(self):
         s = 'x123x'

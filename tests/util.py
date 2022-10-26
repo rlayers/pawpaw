@@ -7,11 +7,12 @@ import regex
 from segments import Span, Ito, Types
 
 
-class _TestIto(TestCase):
-    class IntIto(Ito):  # Used for derived class tests
-        def value(self) -> typing.Any:
-            return int(str(self))
+class IntIto(Ito):  # Used for derived class tests
+    def value(self) -> typing.Any:
+        return int(str(self))
     
+
+class _TestIto(TestCase):
     @classmethod
     def add_chars_as_children(cls, ito: Types.C_ITO, desc: str | None) -> None:
         ito.children.add(*(ito.clone(i, i + 1, desc) for i in range(*ito.span)))

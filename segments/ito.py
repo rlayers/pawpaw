@@ -611,7 +611,7 @@ class Ito:
         return [*self.regex_splititer(re, maxsplit)]
 
     def regex_splititer(self, re: regex.Pattern, maxsplit: int = 0) -> typing.Iterable[str]:
-        yield from self.split_iter(re, maxsplit, False)
+        yield from (str(i) for i in self.split_iter(re, maxsplit, False))
 
     def regex_findall(
             self,

@@ -34,11 +34,12 @@ class TestItoStrEquivalenceMethods(_TestIto):
 
     def test_str_find(self):
         s = 'abcdefgh' * 2
-        i = Ito(s, 2, -2)
-        self.assertEqual(s.find('ab', 2, -2), i.str_find('ab'))
-        self.assertEqual(s.find('cd', 2, -2), i.str_find('cd'))
-        self.assertEqual(s.find('cd', 3, -3), i.str_find('cd', 1, -1))
-        self.assertEqual(s.find('de', 3, -3), i.str_find('de', 1, -1))
+        for ito in Ito(s), Ito(s, 2, -2):
+            for find_indices in (None, None), (1, -1):
+                for pat in 'ab', 'cd', 'de':
+                    with self.subTest(string=s, ito=ito, pattern=pat, start=find_indices[0], stop=find_indices[1]):
+                        expected = str(ito).find(pat, *find_indices))
+                        self.assertEqual(expected, ito.str_find(pat, *find_indices))
 
     def test_str_index(self):
         s = '12' + 'abcd' * 2 + '34'

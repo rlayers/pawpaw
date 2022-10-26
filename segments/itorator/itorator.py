@@ -175,6 +175,9 @@ class Split(Itorator):
             stop = ito.stop
             if start != stop:
                 rv.append(ito.clone(start, stop, self.desc))
+                
+        if len(rv) == 0:
+            rv.append(ito)
 
         return rv
 

@@ -545,6 +545,7 @@ class Ito:
     def split_iter(
             self,
             re: regex.Pattern,
+            desc: str | None = None,
             max_split: int = 0,
             keep_seps: bool = False
     ) -> typing.Iterable[Types.C_ITO]:
@@ -555,13 +556,13 @@ class Ito:
                 break
             span = Span(*m.span(0))
             stop = span.stop if keep_seps else span.start
-            yield self.clone(i, stop)
+            yield self.clone(i, stop, desc)
             i = span.stop
 
         if i < self.stop:
-            yield self.clone(i)
+            yield self.clone(i, desc=desc)
         elif i == self.stop:
-            yield self.clone(i, i)
+            yield self.clone(i, i, desc)
 
     def split(
             self,
@@ -967,8 +968,8 @@ class Ito:
     # Line separators taken from https://docs.python.org/3/library/stdtypes.html
     _splitlines_re = regex.compile(r'\r\n|\r|\n|\v|\x0b|\f|\x0c|\x1c|\x1d|\x1e|\x85|\u2028|\u2029', regex.DOTALL)
 
-    def str_splitlines(self, keepends: bool = False) -> typing.List[Types.C_ITO]:
-        rv = [*self.split_iter(self._splitlines_re, 0, keepends)]
+    def str_splitlines(self, desc: str, keepends: bool = False) -> typing.List[Types.C_ITO]:
+        rv = [*self.split_iter(self._splitlines_re, desc, 0, keepends)]
 
         if len(rv) == 0:
             return rv

@@ -22,7 +22,7 @@ from segments.visualization import sgr, Highlighter, dump
 # DUMPER
 
 s = 'Hello, world!'
-root = segment.Ito(s, desc='root')
+root = segments.Ito(s, desc='root')
 for c in root.split(regex.compile(r'\s')):
     c.desc = 'child'
     root.children.add(c)
@@ -31,7 +31,7 @@ for dumper in dump.Compact(), dump.Json(), dump.Xml():
     print(name)
     print('=' * len(name))
     print()
-    print(dump.dumps(root))
+    print(dumper.dumps(root))
     print()
 
 exit(0)
@@ -45,7 +45,7 @@ for effect in sgr.Intensity, sgr.Italic, sgr.Underline, sgr.Blink, sgr.Invert, s
     if effect in (sgr.Fore, sgr.Back):
         attrs = {nc.name: effect(nc) for nc in sgr.Colors.Named}
     else:
-        names in filter(lambda n: n.isupper() and not n.startswith('_') and not n.startswith('RESET'), dir(effect)):
+        names = filter(lambda n: n.isupper() and not n.startswith('_') and not n.startswith('RESET'), dir(effect))
         attrs = {name: getattr(effect, name) for name in names}
         
     for name, attr in attrs.items():

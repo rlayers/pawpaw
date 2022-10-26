@@ -3,5 +3,5 @@ import segments.visualization.sgr
 from .highlighter import Highlighter
 del highlighter
 
-from .dump import ItoDump
+from .dump import *
 del dump

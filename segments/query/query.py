@@ -141,15 +141,16 @@ class Axis:
                     return
                 
             root = i.find('....')
-            ancestors = [*i.find_all('...')]
             if reverse:
                 _iter = itertools.takewhile(lambda j: j is not i, root.walk_descendants(False))
-                _filter = lambda j: j not in ancestors
             else:  # forward
-                _iter = itertools.takewhile(lambda j: j is not i, root.walk_descendants(True))
-                _filter = lambda j: not (i.start < j.start < j.stop <= i.stop)  # not in descendants
+                _iter = itertools.dropwhile(lambda j: j is not i, root.walk_descendants(True))
+                next(_iter)  # advance to node after i
 
-            yield from self.to_ecs(filter(_filter, _iter), i)
+            ancestors = [*i.find_all('...')]
+            _iter = filter(lambda j: j not in ancestors, _iter)
+
+            yield from self.to_ecs(_iter, i)
 
         elif self.key == '<<':
             for i in itos:
@@ -200,7 +201,18 @@ class Axis:
                 yield from self.to_ecs(sliced, i)
 
         elif self.key == '>>>':
-            raise NotImplemented('Not yet...!')
+            for i in itos:
+                if i.parent is None:
+                    yield from self.to_ecs([], i)
+                    return
+
+            root = i.find('....')
+            if reverse:
+                _iter = itertools.takewhile(lambda j: j.start >= i.stop, root.walk_descendants(True))
+            else:  # forward
+                _iter = itertools.dropwhile(lambda j: j.start < i.stop, root.walk_descendants(False))
+
+            yield from self.to_ecs(_iter, i)
 
         else:
             raise ValueError(f'invalid axis key \'{self.key}\'')

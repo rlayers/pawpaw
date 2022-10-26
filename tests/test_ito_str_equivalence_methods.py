@@ -38,18 +38,25 @@ class TestItoStrEquivalenceMethods(_TestIto):
             for find_indices in (None, None), (1, -1):
                 for pat in 'ab', 'cd', 'de':
                     with self.subTest(string=s, ito=ito, pattern=pat, start=find_indices[0], stop=find_indices[1]):
-                        expected = str(ito).find(pat, *find_indices))
+                        expected = str(ito).find(pat, *find_indices)
                         self.assertEqual(expected, ito.str_find(pat, *find_indices))
 
     def test_str_index(self):
-        s = '12' + 'abcd' * 2 + '34'
-        i = Ito(s, 2, -2)
-        with self.assertRaises(ValueError):
-            i.str_index('12')
-        self.assertEqual(s.index('cd', 2, -2), i.str_index('cd'))
-        with self.assertRaises(ValueError):
-            i.str_index('ab', 1, 3)
-        self.assertEqual(s.index('ab', 4), i.str_index('ab', 1))
+        s = ' 12' + 'abcd' * 2 + '34 '
+        for ito in Ito(s), Ito(s, 1, -1):
+            for find_indices in (None, None), (1, -1), (2, -2), (1, 3):
+                for pat in '12', 'ab', 'cd', 'de':
+                    with self.subTest(string=s, ito=ito, pattern=pat, start=find_indices[0], stop=find_indices[1]):
+                        try:
+                            expected = str(ito).index(pat, *find_indices)
+                            actual = None
+                        except ValueError:
+                            with self.assertRaises(ValueError):
+                                actual = ito.str_index(pat, *find_indices)
+
+                        if actual is None:
+                            actual = ito.str_index(pat, *find_indices)
+                            self.assertEqual(expected, actual)
 
     # region 'is' methods
 
@@ -165,7 +172,7 @@ class TestItoStrEquivalenceMethods(_TestIto):
 
         for sep in ['a', 'b', 'ab', 'bc', 'abc', 'z']:
             with self.subTest(sep=sep):
-                expected = string.strip().partition(sep)
+                expected = str(ito).partition(sep)
                 actual = ito.str_partition(sep)
                 self.assertEqual(type(expected), type(actual))
                 expected = list(expected)
@@ -268,8 +275,8 @@ class TestItoStrEquivalenceMethods(_TestIto):
                 ito = Ito(s, 1, -1)
                 for keepends in True, False:
                     with self.subTest(string=s, ito_span=ito.span, keepends=keepends):
-                        expected = s[1:-1].splitlines(keepends)
-                        actual = [str(i) for i in ito.str_splitlines(keepends)]
+                        expected = s[1:-1].splitlines(keepends=keepends)
+                        actual = [str(i) for i in ito.str_splitlines(keepends=keepends)]
                         self.assertListEqual(expected, actual)
 
     # endregion
@@ -288,21 +295,29 @@ class TestItoStrEquivalenceMethods(_TestIto):
 
     def test_str_rfind(self):
         s = 'abcdefgh' * 2
-        i = Ito(s, 2, -2)
-        self.assertEqual(s.rfind('ab', 2, -2), i.str_rfind('ab'))
-        self.assertEqual(s.rfind('cd', 2, -2), i.str_rfind('cd'))
-        self.assertEqual(s.rfind('cd', 3, -3), i.str_rfind('cd', 1, -1))
-        self.assertEqual(s.rfind('de', 3, -3), i.str_rfind('de', 1, -1))
+        for ito in Ito(s), Ito(s, 2, -2):
+            for find_indices in (None, None), (1, -1):
+                for pat in 'ab', 'cd', 'de':
+                    with self.subTest(string=s, ito=ito, pattern=pat, start=find_indices[0], stop=find_indices[1]):
+                        expected = str(ito).rfind(pat, *find_indices)
+                        self.assertEqual(expected, ito.str_rfind(pat, *find_indices))
 
     def test_str_rindex(self):
-        s = '12' + 'abcd' * 2 + '34'
-        i = Ito(s, 2, -2)
-        with self.assertRaises(ValueError):
-            i.str_rindex('34')
-        self.assertEqual(s.rindex('cd', 2, -2), i.str_rindex('cd'))
-        with self.assertRaises(ValueError):
-            i.str_rindex('cd', -5, -3)
-        self.assertEqual(s.rindex('ab', 4), i.str_rindex('ab', 1))
+        s = ' 12' + 'abcd' * 2 + '34 '
+        for ito in Ito(s), Ito(s, 1, -1):
+            for find_indices in (None, None), (1, -1), (2, -2), (1, 3):
+                for pat in '12', 'ab', 'cd', 'de':
+                    with self.subTest(string=s, ito=ito, pattern=pat, start=find_indices[0], stop=find_indices[1]):
+                        try:
+                            expected = str(ito).rindex(pat, *find_indices)
+                            actual = None
+                        except ValueError:
+                            with self.assertRaises(ValueError):
+                                actual = ito.str_rindex(pat, *find_indices)
+
+                        if actual is None:
+                            actual = ito.str_rindex(pat, *find_indices)
+                            self.assertEqual(expected, actual)
 
     def test_str_startswith(self):
         string = f' {"abc" * 2} '

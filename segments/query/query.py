@@ -50,7 +50,7 @@ def descape(value: str) -> str:
 
 
 class Axis:
-    _re = regex.compile(r'(?P<axis>(?P<order>[\+\-]?)(?P<key>\-|\.{1,4}|\*{1,3}|\<{1,3}|\>{1,3})(?P<or_self>[S]?))', regex.DOTALL)
+    _re = regex.compile(r'(?P<axis>(?P<order>[\+\-]?)(?P<key>\-|\.{1,4}|\*{1,3}|\<{1,3}|\>{1,3})(?P<or_self>[\!]?))', regex.DOTALL)
 
     def __init__(self, phrase: segments.Types.C_ITO):
         m = phrase.regex_match(self._re)
@@ -402,15 +402,15 @@ class Phrase:
         self.ito = phrase
         self.axis = Axis(phrase)
         
-        segments.Types.C_curl = next(segments.find_unescaped(phrase, '{', start=len(self.axis.ito)), phrase.stop)
+        unesc_curl = next(segments.find_unescaped(phrase, '{', start=len(self.axis.ito)), phrase.stop)
         
-        filt_ito = phrase[len(self.axis.ito):segments.Types.C_curl].str_strip()
+        filt_ito = phrase[len(self.axis.ito):unesc_curl].str_strip()
         if len(filt_ito) == 0:
             self.filter = EcfTautology()
         else:
             self.filter = EcfFilter(filt_ito)
 
-        sq_ito = phrase[segments.Types.C_curl:].str_strip()
+        sq_ito = phrase[unesc_curl:].str_strip()
         if len(sq_ito) == 0:
             self.subquery = EcfTautology()
         else:

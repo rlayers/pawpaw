@@ -709,16 +709,16 @@ class Ito:
     # region find, index, rfind, rindex
    
     def str_find(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.find(sub, *Span.from_indices(self, start, end).offset(self.start))
+        return self._string.find(sub, *Span.from_indices(self, start, end).offset(self.start)) - self.start
 
     def str_index(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.index(sub, *Span.from_indices(self, start, end).offset(self.start))
+        return self._string.index(sub, *Span.from_indices(self, start, end).offset(self.start)) - self.start
     
     def str_rfind(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.rfind(sub, *Span.from_indices(self, start, end).offset(self.start))
+        return self._string.rfind(sub, *Span.from_indices(self, start, end).offset(self.start)) - self.start
 
     def str_rindex(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.rindex(sub, *Span.from_indices(self, start, end).offset(self.start))
+        return self._string.rindex(sub, *Span.from_indices(self, start, end).offset(self.start)) - self.start
 
     # endregion
 
@@ -825,10 +825,12 @@ class Ito:
             raise ValueError('empty separator')
         else:
             i = self.str_find(sep)
-            if i == -1:
+            if i < 0:
                 return self.clone(), self.clone(self.stop), self.clone(self.stop)
             else:
-                return self.clone(stop=i), self.clone(i, i+len(sep)), self.clone(i+len(sep))
+                j = i + self.start
+                k = j + len(sep)
+                return self.clone(stop=j), self.clone(j, k), self.clone(k)
 
     def str_rpartition(self, sep) -> typing.Tuple[Types.C_ITO, Types.C_ITO, Types.C_ITO]:
         if sep is None:
@@ -837,10 +839,12 @@ class Ito:
             raise ValueError('empty separator')
         else:
             i = self.str_rfind(sep)
-            if i == -1:
+            if i < 0:
                 return self.clone(self.stop), self.clone(self.stop), self.clone()
             else:
-                return self.clone(stop=i), self.clone(i, i + len(sep)), self.clone(i + len(sep))
+                j = i + self.start
+                k = j + len(sep)
+                return self.clone(stop=j), self.clone(j, k), self.clone(k)
 
     def __nearest_non_ws_sub(self, start: int, reverse: bool = False) -> Types.C_ITO | None:
         if reverse:

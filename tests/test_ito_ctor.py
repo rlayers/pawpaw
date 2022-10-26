@@ -2,7 +2,7 @@ import itertools
 
 import regex
 from segments import Ito, Span
-from tests.util import _TestIto, RandSpans, RandSubstrings
+from tests.util import _TestIto, IntIto, RandSpans, RandSubstrings
 
 
 class TestItoCtor(_TestIto):
@@ -93,7 +93,7 @@ class TestItoCtor(_TestIto):
         s = 'abcd' * 100
         spans = [*RandSpans(Span(1, 10), Span(0, 3)).generate(s)]
         desc = 'x'
-        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', self.IntIto)):
+        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', IntIto)):
             with self.subTest(_class=cls_name):
                 for i in _class.from_spans(s, *spans, desc=desc):
                     self.assertIsInstance(i, _class)
@@ -105,7 +105,7 @@ class TestItoCtor(_TestIto):
         s = 'abcd' * 100
         spans = [Span(20, 50), Span(0, 25), Span(50, 75)]  # Overlapping and unordered
         desc = 'x'
-        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', self.IntIto)):
+        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', IntIto)):
             with self.subTest(_class=cls_name):
                 expected = [_class(s, *span, desc) for span in spans]
                 actual = [*_class.from_spans(s, *spans, desc=desc)]
@@ -116,7 +116,7 @@ class TestItoCtor(_TestIto):
         src = Ito(s, 1, -1)
         spans = [Span(1, 3), Span(0, 2)]  # Overlapping and unordered
         desc = 'x'
-        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', self.IntIto)):
+        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', IntIto)):
             with self.subTest(_class=cls_name):
                 expected = [_class(src, *span, desc) for span in spans]
                 actual = [*_class.from_spans(src, *spans, desc=desc)]
@@ -126,7 +126,7 @@ class TestItoCtor(_TestIto):
         s = 'abcd' * 10
         gaps = [*RandSpans(Span(1, 8), Span(0, 3)).generate(s)]
         desc = 'x'
-        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', self.IntIto)):
+        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', IntIto)):
             with self.subTest(_class=cls_name):
                 for i in _class.from_gaps(s, *gaps, desc=desc):
                     self.assertIsInstance(i, _class)
@@ -138,7 +138,7 @@ class TestItoCtor(_TestIto):
         s = 'abcd' * 10
         gaps = [Span(10, 20), Span(5, 10), Span(20, 25)]  # Overlapping and unordered
         desc = 'x'
-        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', self.IntIto)):
+        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', IntIto)):
             with self.subTest(_class=cls_name):
                 expected = [
                     _class(s, 0, min(gap.start for gap in gaps), desc),
@@ -152,7 +152,7 @@ class TestItoCtor(_TestIto):
         src = Ito(s, 1, -1)
         gaps = [Span(1, 2), Span(0, 1)]  # Overlapping and unordered
         desc = 'x'
-        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', self.IntIto)):
+        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', IntIto)):
             with self.subTest(_class=cls_name):
                 expected = [_class(src, 2, desc=desc)]
                 actual = [*_class.from_gaps(src, *gaps, desc=desc)]
@@ -224,7 +224,7 @@ class TestItoCtor(_TestIto):
 
     def test_clone_typing(self):
         s = '123'
-        parent = self.IntIto(s, desc='parent')
+        parent = IntIto(s, desc='parent')
         self.assertEqual('IntIto', type(parent).__name__)
         self.add_chars_as_children(parent, 'child')
         self.assertTrue(all(type(c).__name__ == 'IntIto' for c in parent.children))

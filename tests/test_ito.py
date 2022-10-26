@@ -1,5 +1,6 @@
 import itertools
 
+import regex
 from segments import Span, Ito
 from tests.util import _TestIto
 
@@ -247,5 +248,20 @@ class TestIto(_TestIto):
         self.assertEqual(s, str(joined))
         self.assertEqual(joined_desc, joined.desc)
         self.assertListEqual(grandchildren, [*joined.children])
+        
+    def test_split_iter_simple(self):
+        basis = 'A B C D E'
+        for sep in ' ', '-':
+            s = sep.join(basis.split())
+            for padding in '', '=':
+                s = f'{padding}{s}{padding}'
+                ito = Ito(s, len(padding), len(s) - len(padding))
+                for padding in f'(?<={regex.escape(sep)})', regex.escape(sep), f'(?={regex.escape(sep)})':
+                    re = regex.compile(pattern)
+                    with self.subTest(string=s, separator=sep, pattern=pattern):
+                        gaps = [Span(*m.span(0)).offset(-ito.start) for m in re.finditer(s, ito.start, ito.stop)]
+                        expected = [*Ito.from_gaps(ito, *gaps)]
+                        actual = [*ito.split_iter(re)]
+                        self.assertListEqual(expected, actual)
 
     # endregion

@@ -51,7 +51,7 @@ class TestItoRegexEquivalenceMethods(_TestIto):
                         actual = ito.regex_search(re)
                         self.assertEqual(expected, actual)
 
-    def test_regex_split(self):
+    def test_regex_split_simnple(self):
         strings = '', 'A', 'Here are some words.'
         separators = ' ', '\n', '\r\n'
         paddings = '', ' ', '_'
@@ -65,5 +65,20 @@ class TestItoRegexEquivalenceMethods(_TestIto):
                     re = regex.compile(regex.escape(sep), regex.DOTALL)
                     with self.subTest(string=s, ito=ito, pattern=re.pattern):
                         expected = re.split(s[pad_slice])
-                        actual = [str(i) for i in ito.regex_split(re)]
+                        actual = ito.regex_split(re)
                         self.assertListEqual(expected, actual)
+
+    def test_regex_split_sep_not_present(self):
+        strings = '', 'A', 'Here are some words.'
+        separator = 'XXX'
+        paddings = '', ' ', '_'
+        for string in strings:
+            for padding in paddings:
+                s = f'{padding}{string}{padding}'
+                pad_slice = slice(len(padding), -len(padding))
+                ito = Ito(s, pad_slice.start, pad_slice.stop)
+                re = regex.compile(regex.escape(seperator), regex.DOTALL)
+                with self.subTest(string=s, ito=ito, pattern=re.pattern):
+                    expected = re.split(s[pad_slice])
+                    actual = ito.regex_split(re)
+                    self.assertListEqual(expected, actual)

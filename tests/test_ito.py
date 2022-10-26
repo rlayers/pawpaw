@@ -256,12 +256,26 @@ class TestIto(_TestIto):
             for padding in '', '=':
                 s = f'{padding}{s}{padding}'
                 ito = Ito(s, len(padding), len(s) - len(padding))
-                for padding in f'(?<={regex.escape(sep)})', regex.escape(sep), f'(?={regex.escape(sep)})':
+                for pattern in f'(?<={regex.escape(sep)})', regex.escape(sep), f'(?={regex.escape(sep)})':
                     re = regex.compile(pattern)
                     with self.subTest(string=s, separator=sep, pattern=pattern):
                         gaps = [Span(*m.span(0)).offset(-ito.start) for m in re.finditer(s, ito.start, ito.stop)]
                         expected = [*Ito.from_gaps(ito, *gaps)]
                         actual = [*ito.split_iter(re)]
                         self.assertListEqual(expected, actual)
-
+                                
+    def test_split_iter_sep_not_present(self):
+        basis = 'A B C D E'
+        for sep in ' ', '-':
+            s = sep.join(basis.split())
+            for padding in '', '=':
+                s = f'{padding}{s}{padding}'
+                ito = Ito(s, len(padding), len(s) - len(padding))
+                pattern = r'XXX'
+                re = regex.compile(pattern)
+                with self.subTest(string=s, separator=sep, pattern=pattern):
+                    expected = [ito]
+                    actual = [*ito.split_iter(re)]
+                    self.assertListEqual(expected, actual)
+                    
     # endregion

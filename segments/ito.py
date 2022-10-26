@@ -567,10 +567,11 @@ class Ito:
     def split(
             self,
             re: regex.Pattern,
+            desc: str | None = None,
             max_split: int = 0,
             keep_seps: bool = False
     ) -> typing.List[Types.C_ITO]:
-        return [*self.split_iter(re, max_split, keep_seps)]
+        return [*self.split_iter(re, desc, max_split, keep_seps)]
 
     # endregion
 
@@ -616,7 +617,7 @@ class Ito:
         return [*self.regex_splititer(re, maxsplit)]
 
     def regex_splititer(self, re: regex.Pattern, maxsplit: int = 0) -> typing.Iterable[str]:
-        yield from (str(i) for i in self.split_iter(re, maxsplit, False))
+        yield from (str(i) for i in self.split_iter(re, max_split=maxsplit, keep_seps=False))
 
     def regex_findall(
             self,
@@ -968,7 +969,7 @@ class Ito:
     # Line separators taken from https://docs.python.org/3/library/stdtypes.html
     _splitlines_re = regex.compile(r'\r\n|\r|\n|\v|\x0b|\f|\x0c|\x1c|\x1d|\x1e|\x85|\u2028|\u2029', regex.DOTALL)
 
-    def str_splitlines(self, desc: str, keepends: bool = False) -> typing.List[Types.C_ITO]:
+    def str_splitlines(self, desc: str | None = None, keepends: bool = False) -> typing.List[Types.C_ITO]:
         rv = [*self.split_iter(self._splitlines_re, desc, 0, keepends)]
 
         if len(rv) == 0:

@@ -3,7 +3,7 @@ import typing
 import regex
 from segments import Ito
 import segments
-from tests.util import _TestIto
+from tests.util import _TestIto, IntIto
 
 
 class TestItoQuery(_TestIto):
@@ -26,8 +26,8 @@ class TestItoQuery(_TestIto):
 
         numbers = [i for i in self.root.walk_descendants() if i.desc == 'number']
         for n in numbers:
-            repl = self.IntIto(n, desc=n.desc)
-            repl.children.add(*(self.IntIto(c, desc=c.desc) for c in n.children))
+            repl = IntIto(n, desc=n.desc)
+            repl.children.add(*(IntIto(c, desc=c.desc) for c in n.children))
             p = n.parent
             i = p.children.index(n)
             p.children[i] = repl

@@ -2,6 +2,8 @@ from segments import Ito
 from segments.itorator import Reflect, Wrap
 from tests.util import _TestIto
 
+import regex
+
 
 class TestItorator(_TestIto):
     """Uses Reflect and Wrap classes, which have trivial implementation, to test base class functionality"""
@@ -25,14 +27,14 @@ class TestItorator(_TestIto):
         self.add_chars_as_children(root, 'Child')
 
         reflect = Reflect()
-        apply_desc = 'x'
-        reflect.itor_next = Wrap(lambda ito: (ito.clone(desc=apply_desc),))
+        desc = 'x'
+        reflect.itor_next = Wrap(lambda ito: (ito.clone(desc=desc),))
         rv = [*reflect.traverse(root)]
             
         self.assertEqual(1, len(rv))
         ito = rv[0]
         self.assertIsNot(root, ito)
-        self.assertEqual(apply_desc, ito.desc)
+        self.assertEqual(desc, ito.desc)
         self.assertEqual([*root.children], [*ito.children])
 
     def test_traverse_with_children(self):
@@ -40,15 +42,15 @@ class TestItorator(_TestIto):
         root = Ito(s)
 
         reflect = Reflect()
-        apply_desc = 'x'
-        reflect.itor_children = Wrap(lambda ito: tuple(ito.clone(i, i+1, apply_desc) for i, c in enumerate(s)))
+        desc = 'x'
+        reflect.itor_children = Wrap(lambda ito: tuple(ito.clone(i, i+1, desc) for i, c in enumerate(s)))
         rv = [*reflect.traverse(root)]
             
         self.assertEqual(1, len(rv))
         ito = rv[0]
         self.assertIsNot(root, ito)
         self.assertSequenceEqual(s, [str(i) for i in ito.children])
-        self.assertTrue(all(c.desc == apply_desc for c in ito.children))
+        self.assertTrue(all(c.desc == desc for c in ito.children))
         
     def test_traverse_with_carry_through(self):
         s = 'abc'
@@ -67,3 +69,54 @@ class TestItorator(_TestIto):
         self.assertIsNot(root, ito)
         self.assertSequenceEqual(s, [str(i) for i in ito.children])
         self.assertTrue(all(c.desc == d_changed for c in ito.children))
+
+    def test_traverse_complex(self):
+        basis = 'ABcd123'
+        s = f' {basis} - {basis} '
+        root = Ito(s, desc='root')
+        
+        func = lambda ito: [*ito.split(regex.compile(r'\-'), desc='phrase')]
+        splt_space = Wrap(func)
+        
+        func = lambda ito: [ito.str_strip()]
+        stripper = Wrap(func)
+        splt_space.itor_children = stripper
+        
+        func = lambda ito: [*ito.split(regex.compile(r'(?<=[A-Za-z])(?=\d)'))]
+        splt_alpha_num = Wrap(func)
+        stripper.itor_children = splt_alpha_num
+        
+        func = lambda ito: [ito.clone(desc='numeric' if str(ito).isnumeric() else 'alpha')]
+        namer = Wrap(func)
+        splt_alpha_num.itor_next = namer
+        
+        func = lambda ito: [*ito.split(regex.compile(r'(?<=\d)(?=\d)'), desc='digit')]
+        splt_digits = Wrap(func)
+        
+        func = lambda ito: [*ito.split(regex.compile(r'(?<=[A-Z])(?=[a-z])'), desc='upper or lower')]
+        splt_case = Wrap(func)
+        
+        namer.itor_children = lambda ito: splt_digits if ito.desc == 'numeric' else splt_case
+        
+        func = lambda ito: [ito.clone(i, i + 1, desc='char') for i in range(ito.start, ito.stop)]
+        splt_chars = Wrap(func)
+        splt_case.itor_children = splt_chars
+        
+        root.children.add(*splt_space.traverse(root))
+        
+        expected_child_count = s.count('-') + 1
+        self.assertEqual(expected_child_count, len(root.children))
+        
+        expected_alpha_count = expected_child_count
+        self.assertEqual(expected_alpha_count, sum(1 for i in root.find_all('**[d:alpha]')))
+        
+        expected_leaves_count = len(basis) * 2
+        self.assertEqual(expected_leaves_count, sum(1 for i in root.find_all('***')))
+            
+        depth = 1
+        cur = root
+        while len(cur.children) > 0:
+            cur = cur.children[0]
+            depth += 1
+        self.assertEqual(6, depth)
+                                                     

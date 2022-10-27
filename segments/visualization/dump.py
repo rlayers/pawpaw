@@ -42,15 +42,14 @@ class Compact(DumpBase):
         if self.substring:
             fs.write(f' .__str__(): "{ei.ito}"')
         fs.write(self.linesep)
+        
+        level += 1
+        for eic in (segments.Types.C_EITO(i, ito) for i, ito in enumerate(ei.ito.children, start=1)):
+            self._dump(fs, eic, level)
 
     def dump(self, fs: typing.IO, *itos: segments.Types.C_ITO) -> None:
-        counter = 0
-        for ei in (segments.Types.C_EITO(i, ito) for i, ito in enumerate(itos)):
-            self._dump(fs, ei, counter)
-            counter += 1
-            for d_count, d_ei in enumerate(ei.ito.walk_descendants_levels(start=1), start=counter):
-                descendant = segments.Types.C_EITO(d_count, d_ei.ito)
-                self._dump(fs, descendant, level=d_ei.index)
+        for ei in (segments.Types.C_EITO(i, ito) for i, ito in enumerate(itos, start=1)):
+            self._dump(fs, ei)
 
                 
 class Xml(DumpBase):

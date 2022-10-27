@@ -168,7 +168,7 @@ class Ito:
         filtered_gns = (gn for gn in match.re.groupindex.keys() if cls._group_filter(group_filter)(match, gn))
         span_gns = ((span, gn) for gn in filtered_gns for span in match.spans(gn))
         for span, gn in sorted(span_gns, key=lambda val: (val[0][0], -val[0][1])):
-            ito = Ito(match.string, *span, desc_func(None, match, gn))
+            ito = cls(match.string, *span, desc_func(None, match, gn))
             while len(path_stack) > 0 and (ito.start < path_stack[-1].start or ito.stop > path_stack[-1].stop):
                 path_stack.pop()
             if len(path_stack) == 0:
@@ -407,7 +407,7 @@ class Ito:
     @classmethod
     def json_decoder_stringless(cls, obj: typing.Dict) -> Types.C_ITO | typing.Dict:
         if (t := obj.get('__type__')) is not None and t == 'Ito':
-            rv = Ito('', desc=obj['desc'])
+            rv = cls('', desc=obj['desc'])
             rv._span = Span(*obj['span'])
             rv.children.add(*obj['children'])
             return rv
@@ -535,7 +535,7 @@ class Ito:
 
         start = min(ito.start for ito in it_start)
         stop = max(ito.stop for ito in it_stop)
-        rv = Ito(strs.pop(), start, stop, desc)
+        rv = cls(strs.pop(), start, stop, desc)
 
         children: typing.Iterable[Types.C_ITO] = itertools.chain.from_iterable(ito.children for ito in itos)
         rv.children.add_hierarchical(*(c.clone() for c in children))
@@ -988,13 +988,13 @@ class Ito:
 
     def str_removeprefix(self, prefix: str) -> Types.C_ITO:
         if self.str_startswith(prefix):
-            return Ito(self, len(prefix), desc=self.desc)
+            return self.__class__(self, len(prefix), desc=self.desc)
         else:
             return self.clone()
 
     def str_removesuffix(self, suffix: str) -> Types.C_ITO:
         if self.str_endswith(suffix):
-            return Ito(self, stop=-len(suffix), desc=self.desc)
+            return self.__class__(self, stop=-len(suffix), desc=self.desc)
         else:
             return self.clone()
         

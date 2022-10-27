@@ -7,38 +7,41 @@ Introduction
 
 A segment requires a reference string in order to fully describe a substring.  Likewise, a ``Span`` requires a reference ``str`` for context.  The segments module pairs a ``Span`` and ``str`` together as an *In Text Object*\ [#]_, which is implemented in the class ``Ito``.
 
-
-Try 1:
-    ==========  ===============
-    Identifier  Meaning
-    ==========  ===============
-    ``....``    root
-    ``...``     ancestors
-    ``..``      parent
-    ``.``       identify (self)
-    ``*``       children
-    ``**``      descendants
-    ``***``     leaves
-    ``<<``      prior siblings
-    ``<``       prior sibling
-    ``>``       next sibling
-    ``>>``      next siblings
-    ==========  ===============
-
 Axis Identifiers
 
-    +------------+-------------------------------------------------------+
-    | Identifier | Meaning                                               |
-    +============+=======================================================+
-    | ``....``   | root(s) of the current Ito(s)                         |
-    +------------+-------------------------------------------------------+
-    | ``...``    | ancestors (nearest to furthest) of the current Ito(s) |
-    +------------+-------------------------------------------------------+
-    | ``..``     | parent                                                |
-    +------------+-------------------------------------------------------+
-    | ``.``      | self                                                  |
-    +------------+-------------------------------------------------------+
-
++------------+----------------+------------------------------------------------------------------------+
+| Identifier | Meaning        | Description                                                            |
++============+================+========================================================================+
+| ``....``   | root           | Furthest ancestor of the current node that has no ancestors itself     |
++------------+----------------+------------------------------------------------------------------------+
+| ``...``    | ancestors      | All ancestors of the current node beginning with the parent            |
+|            |                | and ending with the root                                               |
++------------+----------------+------------------------------------------------------------------------+
+| ``..``     | parent         | Nearest ancestor of the current node                                   |
++------------+----------------+------------------------------------------------------------------------+
+| ``.``      | self           | Reflection of the current node                                         |
++------------+----------------+------------------------------------------------------------------------+
+| ``*``      | children       | Children of the current node                                           |
++------------+----------------+------------------------------------------------------------------------+
+| ``**``     | descendants    | All descendants of the current node, starting with the children and    |
+|            |                | ending with leaves                                                     |
++------------+----------------+------------------------------------------------------------------------+
+| ``***``    | leaves         | Descendants of the current node that have no descendants themselves    |
++------------+----------------+------------------------------------------------------------------------+
+| ``<<<``    | preceeding     | Nodes that are *before* the current node, *includes* piror siblings    |
+|            |                | and *excludes* ancestors & descendants                                 |
++------------+----------------+------------------------------------------------------------------------+
+| ``<<``     | prior siblings | Nodes *before* the current node that have the same parent              |
++------------+----------------+------------------------------------------------------------------------+
+| ``<``      | prior sibling  | The nearest node *before* the current node that has the same parent    |
++------------+----------------+------------------------------------------------------------------------+
+| ``>``      | next sibling   |  The nearest node *after* the current node that has the same parent    |
++------------+----------------+------------------------------------------------------------------------+
+| ``>>``     | next siblings  |  Nodes *after* the current node that have the same parent              |
++------------+----------------+------------------------------------------------------------------------+
+| ``>>>``    | following      | Nodes that are *after* the current node, *includes* piror siblings     |
+|            |                | and *excludes* ancestors & descendants                                 |
++------------+----------------+------------------------------------------------------------------------+
 
 An ``Ito`` is not an arbitray data collection.  Rather, it defines segments wihtin text and can have ancestors, siblings, and decendants.  This results in several implicit assumptions:
 

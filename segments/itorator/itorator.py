@@ -48,28 +48,27 @@ class Itorator(ABC):
     def _do_children(self, ito: Ito) -> None:
         if self.__itor_children is not None:
             itor_c = self.__itor_children(ito)
-            for c in itor_c._iter(ito):
-                ito.children.add(c)
-                for i in itor_c._do_next(c):
+            if itor_c is not None:
+                for c in itor_c._traverse(ito, True):
                     pass  # force iter walk
 
     def _do_next(self, ito: Ito) -> Types.C_IT_ITOS:
         if self.__itor_next is None:
             yield ito
-        else:
-            itor_n = self.__itor_next(ito)
+        elif (itor_n := self.__itor_next(ito)) is not None:
             yield from itor_n._traverse(ito)
 
-    def _traverse(self, ito: Ito) -> Types.C_IT_ITOS:
-        # Process ._iter with parent in place:
+    def _traverse(self, ito: Ito, as_children: bool = False) -> Types.C_IT_ITOS:
+        # Process ._iter with parent in place
         curs = self._iter(ito)
         
-        # ...now remove from parent (if any)
-        if (parent := ito.parent) is not None:
-            parent.children.remove(ito)
-
+        if as_children:
+            parent = ito
+        elif (parent := ito.parent) is not None:
+            parent.children.remove(ito)  
+  
         for cur in curs:
-            if parent is not None:
+            if parent is not None and cur.parent is not parent:
                 parent.children.add(cur)
 
             self._do_children(cur)

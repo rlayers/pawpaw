@@ -59,10 +59,10 @@ class TestSplit(_TestIto):
         for brt in Split.BoundaryRetention:
             for return_zero_split in True, False:
                 with self.subTest(string=s, separator=sep, boundary_retention=brt, return_zero_split=return_zero_split, desc=desc):
-                expected = [ito.clone(desc=desc)] if return_zero_split else []
-                split = Split(re, boundary_retention=brt, return_zero_split=return_zero_split, desc=desc)
-                actual = [*split._iter(ito)]
-                self.assertListEqual(expected, actual)
+                    expected = [ito.clone(desc=desc)] if return_zero_split else []
+                    split = Split(re, boundary_retention=brt, return_zero_split=return_zero_split, desc=desc)
+                    actual = [*split._iter(ito)]
+                    self.assertListEqual(expected, actual)
     
     def zero_width_patterns(self, sep: str) -> typing.Iterable[regex.Pattern]:
         esc_sep = regex.escape(sep)

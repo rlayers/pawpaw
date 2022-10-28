@@ -108,32 +108,36 @@ class Split(Itorator):
         re: regex.Pattern,
         group: int | str = 0,
         boundary_retention: BoundaryRetention = BoundaryRetention.NONE,
+        return_zero_split: bool = True,
         desc: str | None = None
     ):
         """Given P-O-O-S where P is prefix, - is boundary, O is/are middle part(s), and S is suffix, the
-           behavior is as follows:
+        behavior is as follows:
 
-            * BoundaryRetention.NONE -> P O O S : boundaries are discarded (this is an 'ordinary' split operation)
+          * BoundaryRetention.NONE -> P O O S : boundaries are discarded (this is an 'ordinary' split operation)
 
-            * BoundaryRetention.LEADING -> -O -O -S : boundaries kept as prefixes, leading P is discarded
+          * BoundaryRetention.LEADING -> -O -O -S : boundaries kept as prefixes, leading P is discarded
 
-            * BoundaryRetention.TRAILING -> P- O- O- : boundaries kept as suffixes, trailing S is discarded
+          * BoundaryRetention.TRAILING -> P- O- O- : boundaries kept as suffixes, trailing S is discarded
 
-           Zero-length boundaries are allowable, and any resulting empty Ito's are discarded
+        Zero-length boundaries are allowable, and any resulting empty Ito's are discarded
 
        Args:
         re: A regex pattern used to find matches
-        group: A key used to identify a group from the matches; the resulting group will be used as the boundary;
-               defaults to 0 (the entire match)
+        group: A key used to identify a group from the matches; the resulting group will be used as the
+          boundary; defaults to 0 (the entire match)
         boundary_retention: A rule used to determine if boundaries are discarded, or else how they are kept
-        desc: Value used to pass to the .clone method of a given Ito that is being split; note that because
-              the returned Itos can be surrounded by 0, 1, or 2 boundaries, there is no clear desc_func that
-              can be used to generate dynamic .desc values
+        return_zero_split: Indicates how to handle the zero-split condition; when True and splits occur,
+          returns a list containing a clone of the input Ito; when False and no splits occur, returns an
+          empty list
+        desc: Value used for the .desc of any returned Itos; note that a returned Ito can be surrounded by
+          0, 1, or 2 boundaries, i.e., there is no clear mapping from a result to a boundary
         """
         super().__init__()
         self.re = re
         self.group = group
         self.boundary_retention = boundary_retention
+        self.return_zero_split = return_zero_split
         self.desc = desc
         
     def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:
@@ -175,7 +179,7 @@ class Split(Itorator):
             if start != stop:
                 rv.append(ito.clone(start, stop, self.desc))
                 
-        if len(rv) == 0:
+        if len(rv) == 0 and self.return_zero_split:
             rv.append(ito.clone(desc=self.desc))
 
         return rv

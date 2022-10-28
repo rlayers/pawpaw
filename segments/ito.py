@@ -613,11 +613,11 @@ class Ito:
             concurrent=concurrent,
             timeout=timeout)
 
-    def regex_split(self, re: regex.Pattern, maxsplit: int = 0) -> typing.List[str]:
+    def regex_split(self, re: regex.Pattern, maxsplit: int = 0) -> typing.List[Types.C_ITO]:
         return [*self.regex_splititer(re, maxsplit)]
 
-    def regex_splititer(self, re: regex.Pattern, maxsplit: int = 0) -> typing.Iterable[str]:
-        yield from (str(i) for i in self.split_iter(re, max_split=maxsplit, keep_seps=False))
+    def regex_splititer(self, re: regex.Pattern, maxsplit: int = 0) -> typing.Iterable[Types.C_ITO]:
+        yield from self.split_iter(re, max_split=maxsplit, keep_seps=False)
 
     def regex_findall(
             self,

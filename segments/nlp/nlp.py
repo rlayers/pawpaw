@@ -17,6 +17,8 @@ class SimpleNlp:
     _num_sci_exp_pat = r'(?<exponent>' + '|'.join([_num_sci_exp_e_notation_pat, _num_sci_exp_x10_notation_pat]) + r')'
     _num_pat = f'{_num_sign_pat}?(?:{_num_integer_pat}{_num_decimal_pat}?|{_num_decimal_pat}){_num_sci_exp_pat}?'
     _num_re = regex.compile(_num_pat)
+    
+    _word_num_re = regex.compile(r'(?P<Number>' + _num_pat + r')|(?P<Word>' + _word_pat + r')', regex.DOTALL)
 
     def __init__(self, chars: bool = False):
         super().__init__()
@@ -29,7 +31,7 @@ class SimpleNlp:
         sentence = segments.itorator.Split(self._sentence_re, desc='Sentence')
         paragraph.itor_children = sentence
 
-        word_number = segments.itorator.Extract(regex.compile(r'(?P<Number>' + self._num_pat + r')|(?P<Word>' + self._word_pat + r')', regex.DOTALL))
+        word_number = segments.itorator.Extract(self._word_num_re)
         sentence.itor_children = word_number
 
         if chars:

@@ -89,14 +89,25 @@ Descriptor
 Hierarchical Data Store
 =======================
 
-An ``Ito`` is also a hierarchical data store, whose nodes are also ``Ito`` instances.  Child nodes are accessed via the ``.children`` collection,
-while the parent is available via the ``.parent`` property:
+``Ito`` supports nested storage of child ``Ito`` instances via the ``.children`` property.  Nodes can be added in via the ``.add`` method in arbitrary order, and are stored in sorted order:
 
->>> s = 'Hello, world!'
+>>> s = 'ABC 123'
 >>> root = Ito(s)
->>> root.children.add(root[:5], root[-6:])
+>>> root.children.add(root[-3:], root[:3])
 >>> [str(c) for c in root.children]
-['Hello', 'world!']
+['ABC', '123']
 
+The ``.children`` collection is not an arbitrary data store.  Nodes added to it must meet the following criteria:
+
+* An instance (or sublass) of ``Ito``
+* Have the same reference ``str`` as the parent
+* Not overlap any existing child nodes
+* Be non-empty
+
+As ``Ito`` objects, child nodes have their own ``.children` collections.  In other words, ``Ito`` is a hiearchical data store.  This quality  is used for many key features of ``ito-segments``"
+
+* Storage and organization of substring data
+* Traversal of substring collections
+* Structured search and query
 
 .. [#] Slices with step values other than 1 (or ``None``) are not supported because the resulting sequences of characters will typically *not* be valid substrings.  For example, ``'abc[::-1]`` results in the reversed string ``cba``, which doesn't align with the starting ``str``.

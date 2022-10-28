@@ -66,7 +66,7 @@ class TestItoRegexEquivalenceMethods(_TestIto):
                     with self.subTest(string=s, ito=ito, pattern=re.pattern):
                         expected = re.split(s[pad_slice])
                         actual = ito.regex_split(re)
-                        self.assertListEqual(expected, actual)
+                        self.assertListEqual(expected, [str(i) for i in actual])
 
     def test_regex_split_sep_not_present(self):
         strings = '', 'A', 'Here are some words.'
@@ -81,4 +81,4 @@ class TestItoRegexEquivalenceMethods(_TestIto):
                 with self.subTest(string=s, ito=ito, pattern=re.pattern):
                     expected = re.split(s[pad_slice])
                     actual = ito.regex_split(re)
-                    self.assertListEqual(expected, actual)
+                    self.assertListEqual(expected, [str(i) for i in actual])

@@ -35,6 +35,16 @@ class TestSimpleNlp(_TestIto):
                     {'Document': 1, 'Paragraph': 1, 'Sentence': 1, 'Word': 3, 'Number': 0}
             },
 
+            'Sentence with numbers': {
+                'This sentence has 4 words, not 10.':
+                    {'Document': 1, 'Paragraph': 1, 'Sentence': 1, 'Word': 5, 'Number': 2}
+            },
+
+            'Two short paragraphs': {
+                '\tI am.  I was.\r\n\r\n\tI will be.\r\n\r\n':
+                    {'Document': 1, 'Paragraph': 2, 'Sentence': 3, 'Word': 7, 'Number': 0}
+            },
+
             'Moby Dick': {
                 """Call me Ishmael. Some years ago — never mind how long precisely — having
                 little or no money in my purse, and nothing particular to interest me on shore,

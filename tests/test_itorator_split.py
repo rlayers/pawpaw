@@ -55,11 +55,12 @@ class TestSplit(_TestIto):
         s = self.str_from(' ')
         ito = Ito(s)
         re = regex.compile(regex.escape(sep))
+        desc='post-split'
         for brt in Split.BoundaryRetention:
-            with self.subTest(string=s, separator=sep, boundary_retention=brt):
-                expected = [ito]
-                desc = 'split'
-                split = Split(re, boundary_retention=brt)
+            for return_zero_split in True, False:
+                with self.subTest(string=s, separator=sep, boundary_retention=brt, return_zero_split=return_zero_split, desc=desc):
+                expected = [ito.clone(desc=desc)] if return_zero_split else []
+                split = Split(re, boundary_retention=brt, return_zero_split=return_zero_split, desc=desc)
                 actual = [*split._iter(ito)]
                 self.assertListEqual(expected, actual)
     

@@ -182,13 +182,23 @@ __x__ support
 ** TODO **
 
 
+equivalence methods
+~~~~~~~~~~~~~~~~~~~
+
+Guidelines
+
+* Non-modifying: don't affect the ``Ito`` used to call them
+* No str creation, e.g., ``str.join`` results in a new string, whereas ``str.split`` results in substrings only
+* Returns: same type of non-str return values, ``Ito`` for str return values
+
+
 str equivalence methods
-~~~~~~~~~~~~~~~~~~~~~~~
+""""""""""
 ** TODO **
 
 
 regex equivalence methods
-~~~~~~~~~~~~~~~~~~~~~~~~~
+""""""""""
 ** TODO **
 
 

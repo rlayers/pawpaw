@@ -63,8 +63,9 @@ class TestSplit(_TestIto):
                     split = Split(re, boundary_retention=brt, return_zero_split=return_zero_split, desc=desc)
                     actual = [*split._iter(ito)]
                     self.assertListEqual(expected, actual)
-    
-    def zero_width_patterns(self, sep: str) -> typing.Iterable[regex.Pattern]:
+
+    @classmethod
+    def zero_width_patterns(cls, sep: str) -> typing.Iterable[regex.Pattern]:
         esc_sep = regex.escape(sep)
         yield r'(?<=' + esc_sep + r')'  # look behind
         yield r'(?=' + esc_sep + r')'  # look ahead

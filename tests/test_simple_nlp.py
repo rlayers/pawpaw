@@ -5,6 +5,8 @@ from tests.util import _TestIto, IntIto
 class TestSimpleNlp(_TestIto):
     _valid_numbers = {
         'identity': '1',
+        'with thousands sep': '1,234,567',
+        'without thousands sep': '1234567',
         'abs zero': '-273.15',
         '\u2715': '3.1415926539',
         'Euler\'s': '2.7182818284',
@@ -16,13 +18,13 @@ class TestSimpleNlp(_TestIto):
     }
 
     def test_num_re_valid(self):
-        re = segments.nlp.SimpleNlp._num_re
+        re = segments.nlp.Number(thousands_seps={'', ','}).re
         for name, val in self._valid_numbers.items():
             with self.subTest(name=name, string=val):
                 self.assertTrue(re.fullmatch(val) is not None)
 
     def test_num_re_invalid(self):
-        re = segments.nlp.SimpleNlp._num_re
+        re = segments.nlp.Number(thousands_seps={'', ','}).re
         for s in '', ' ', 'abc', '1x2', 'two':
             with self.subTest(string=s):
                 self.assertTrue(re.fullmatch(s) is None)

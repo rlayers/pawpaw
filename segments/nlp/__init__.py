@@ -1,1 +1,1 @@
-from .nlp import SimpleNlp
+from .nlp import Number, SimpleNlp

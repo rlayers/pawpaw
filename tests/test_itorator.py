@@ -1,8 +1,7 @@
+import regex
 from segments import Ito
 from segments.itorator import Reflect, Wrap
 from tests.util import _TestIto
-
-import regex
 
 
 class TestItorator(_TestIto):

@@ -263,7 +263,7 @@ class TestIto(_TestIto):
             child.children.add(*Ito.from_substrings(s, *str(child), desc='grandchild'))
         grandchildren = [*itertools.chain.from_iterable(ito.children for ito in children)]
 
-        adopted = Ito.adopt(*children, desc=adopted_desc)
+        adopted = Ito.adopt(children, desc=adopted_desc)
         self.assertTrue(all(adopted is not child for child in children))
         self.assertEqual(s, str(adopted))
         self.assertEqual(adopted_desc, adopted.desc)
@@ -272,12 +272,9 @@ class TestIto(_TestIto):
     def test_join(self):
         s = 'the quick brown fox'
         joined_desc = 'joined'
-
         children = [*Ito.from_substrings(s, *s.split(), desc='children')]
-        for child in children:
-            child.children.add(*Ito.from_substrings(s, *str(child), desc='grandchild'))
 
-        joined = Ito.join(*children, desc=joined_desc)
+        joined = Ito.join(children, desc=joined_desc)
         self.assertTrue(all(joined is not child for child in children))
         self.assertEqual(s, str(joined))
         self.assertEqual(joined_desc, joined.desc)

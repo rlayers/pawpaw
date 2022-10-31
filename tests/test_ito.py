@@ -256,19 +256,31 @@ class TestIto(_TestIto):
 
     def test_adopt(self):
         s = 'abc 123'
-        joined_desc = 'joined'
+        adopted_desc = 'adopted'
 
         children = [*Ito.from_substrings(s, *s.split(), desc='children')]
         for child in children:
             child.children.add(*Ito.from_substrings(s, *str(child), desc='grandchild'))
         grandchildren = [*itertools.chain.from_iterable(ito.children for ito in children)]
 
-        joined = Ito.adopt(*children, desc=joined_desc)
-        self.assertIsNot(joined, children[0])
-        self.assertIsNot(joined, children[1])
+        adopted = Ito.adopt(*children, desc=adopted_desc)
+        self.assertTrue(all(adopted is not child for child in children))
+        self.assertEqual(s, str(adopted))
+        self.assertEqual(adopted_desc, adopted.desc)
+        self.assertListEqual(grandchildren, [*adopted.children])
+        
+    def test_join(self):
+        s = 'the quick brown fox'
+        joined_desc = 'joined'
+
+        children = [*Ito.from_substrings(s, *s.split(), desc='children')]
+        for child in children:
+            child.children.add(*Ito.from_substrings(s, *str(child), desc='grandchild'))
+
+        joined = Ito.join(*children, desc=joined_desc)
+        self.assertTrue(all(joined is not child for child in children))
         self.assertEqual(s, str(joined))
         self.assertEqual(joined_desc, joined.desc)
-        self.assertListEqual(grandchildren, [*joined.children])
         
     def test_split_iter_simple(self):
         basis = 'A B C D E'

@@ -5,8 +5,8 @@ from tests.util import _TestIto, IntIto
 class TestSimpleNlp(_TestIto):
     _valid_numbers = {
         'identity': '1',
-        'with thousands sep': '1,234,567',
-        'without thousands sep': '1234567',
+        'with thousands sep': '1,234,567.89',
+        'without thousands sep': '1234567.89',
         'abs zero': '-273.15',
         '\u2715': '3.1415926539',
         'Euler\'s': '2.7182818284',
@@ -17,17 +17,32 @@ class TestSimpleNlp(_TestIto):
         'Plank\'s': '6.62607015E-34',
     }
 
-    def test_num_re_valid(self):
+    def test_num_valid(self):
         re = segments.nlp.Number(thousands_seps={'', ','}).re
-        for name, val in self._valid_numbers.items():
-            with self.subTest(name=name, string=val):
-                self.assertTrue(re.fullmatch(val) is not None)
+        for name, s in self._valid_numbers.items():
+            with self.subTest(name=name, string=s):
+                self.assertTrue(re.fullmatch(s) is not None)
 
-    def test_num_re_invalid(self):
+    def test_num_valid(self):
         re = segments.nlp.Number(thousands_seps={'', ','}).re
         for s in '', ' ', 'abc', '1x2', 'two':
             with self.subTest(string=s):
                 self.assertTrue(re.fullmatch(s) is None)
+
+    def test_num_thousands_seps(self):
+        for seps in None, ('',), ('', ','), (',',), ('', '.'):
+            if seps is None:
+                number = segments.nlp.Number()
+                seps = (',',)
+            else:
+                number = segments.nlp.Number(thousands_seps=seps)
+
+            vals = ['123', '456']
+            for sep in seps:
+                val = (',' if sep is None else sep).join(vals)
+                val += '.789' if ',' in seps else ',789'
+                with self.subTest(thousands_seps=seps, val=val):
+                    self.assertTrue(number.re.fullmatch(val) is not None)
 
     def test_from_text(self):
         nlp = segments.nlp.SimpleNlp()

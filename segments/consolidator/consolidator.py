@@ -17,7 +17,7 @@ from segments.errors import Errors
 class Consolidator(ABC):
     @abstractmethod
     def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
-        pass
+        ...
 
 
 class WindowedJoin(Consolidator):

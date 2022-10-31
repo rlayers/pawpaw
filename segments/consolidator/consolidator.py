@@ -5,28 +5,35 @@ from segments import Ito, Types
 from segments.errors import Errors
 
 
+# TODO : output streams could be identities, clones, or something new compared to incoming itos.  So for each chunk,
+# do something like:
+#
+#   for i in incoming:
+#       parent = i.parent  # First parent of chunk should be same as subsequents...
+#       parent.children.remove(i)
+#
+#   parent.children.add(*outgoing)
+
 class Consolidator(ABC):
     @abstractmethod
     def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         pass
 
 
-class Merge(Consolidator):
-    def __init__(
-            self,
-            window_size: int,
-            predicate: typing.Callable[[typing.List[Types.C_ITO]], bool],
-            desc: str | None = None
-    ):
+class WindowedJoin(Consolidator):
+    F_SQ_ITOS_2_B = typing.Callable[[Types.C_SQ_ITOS], bool]
+    
+    def __init__(self, window_size: int, predicate: F_SQ_ITOS_2_B, desc: str | None = None):
         super().__init__()
+        
         if not isinstance(window_size, int):
             raise Errors.parameter_invalid_type('window_size', window_size, int)
         if window_size < 2:
             raise ValueError(f'parameter \'window_size\' has value {window_size:,}, but must be greater than or equal to 2')
         self.window_size = window_size
 
-        if not isinstance(predicate, typing.Callable):
-            raise Errors.parameter_invalid_type('predicate', predicate, typing.Callable[[typing.List[Types.C_ITO]], bool])
+        if not Types.is_callable(predicate, self.F_SQ_ITOS_2_B):
+            raise Errors.parameter_invalid_type('predicate', predicate, self.F_SQ_ITOS_2_B)
         self.predicate = predicate
 
         self.desc = desc
@@ -46,25 +53,28 @@ class Merge(Consolidator):
 
 
 class Reduce(Consolidator):
+    F_SQ_ITOS_2_ITO = typing.Callable[[Types.C_SQ_ITOS], Types.C_ITO]
+    F_SQ_ITOS_ITO_2_B = typing.Callable[[Types.C_SQ_ITOS, Types.C_ITO], bool]
+    
     def __init__(
             self,
-            reduce_func: typing.Callable[[typing.List[Ito]], Ito],
-            push_predicate: typing.Callable[[Ito], bool],
-            pop_predicate: typing.Callable[[typing.List[Ito], Ito], bool] | None = None
+            reduce_func: F_SQ_ITOS_2_ITO,
+            push_predicate: Types.F_ITO_2_B,
+            pop_predicate: F_SQ_ITOS_ITO_2_B | None = None
     ):
         super().__init__()
-        if not isinstance(reduce_func, typing.Callable):
-            raise Errors.parameter_invalid_type('reduce_func', reduce_func, typing.Callable)
+        if not Types.is_callable(reduce_func, F_SQ_ITOS_2_ITO):
+            raise Errors.parameter_invalid_type('reduce_func', reduce_func, self.F_SQ_ITOS_2_ITO)
         self.reduce_func = reduce_func
 
-        if not isinstance(push_predicate, typing.Callable):
-            raise Errors.parameter_invalid_type('push_predicate', push_predicate, typing.Callable)
+        if not Types.is_callable(push_predicate, Types.F_ITO_2_B):
+            raise Errors.parameter_invalid_type('push_predicate', push_predicate, Types.F_ITO_2_B)
         self.push_predicate = push_predicate
 
-        if pop_predicate is None or isinstance(pop_predicate, typing.Callable):
+        if pop_predicate is None or Types.is_callable(pop_predicate, self.F_SQ_ITOS_ITO_2_B):
             self.pop_predicate = pop_predicate
         else:
-            raise Errors.parameter_invalid_type('pop_predicate', pop_predicate, typing.Callable)
+            raise Errors.parameter_invalid_type('pop_predicate', pop_predicate, self.F_SQ_ITOS_ITO_2_B, None)
 
     def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         stack: typing.List[Ito] = []
@@ -86,58 +96,11 @@ class Reduce(Consolidator):
             yield self.reduce_func(stack)
 
 
-class Reclaim(Consolidator):
-    """
-    Allocate span regions not assigned to children
-    """
-    def __init__(
-            self,
-            desc_func: typing.Callable[[int, int], str] = lambda span: None,
-            trim_and_filter_ws: bool = False
-    ):
-        super().__init__()
-        if not isinstance(desc_func, typing.Callable):
-            raise Errors.parameter_invalid_type('desc_func', desc_func, typing.Callable)
-        self.desc_func = desc_func
-
-        if not isinstance(trim_and_filter_ws, bool):
-            raise Errors.parameter_invalid_type('trim_and_filter_ws', trim_and_filter_ws, bool)
-        self.trim_and_filter_ws = trim_and_filter_ws
-
-    # TODO : Check for relative indices and use alt Ito ctor if needed
-    # TODO : Change params start & stop to Swap type
-    def _append_if(self, parent: Ito, start: int, stop: int) -> None:
-        child = parent.clone(start, stop, desc=self.desc_func(start, stop))
-        if self.trim_and_filter_ws:
-            child = child.str_strip()
-            if child.start == child.stop:
-                return
-
-    def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
-        for ito in itos:
-            clone = ito.clone()
-            if ito.parent is not None:
-                ito.parent.children[ito.parent.children.index(ito)] = clone
-
-            last = ito.start
-            while len(ito.children) > 0:
-                c = ito.children.pop(0)
-                if c.start > last:
-                    self._append_if(clone, last, c.start)
-                clone.children.add(c)
-                last = c.stop
-
-            if last < ito.stop:
-                self._append_if(clone, last, ito.stop)
-
-            yield clone
-
-
 class PromoteChildren(Consolidator):
-    def __init__(self, predicate: typing.Callable[[Ito], bool]):
+    def __init__(self, predicate: Types.F_ITO_2_B):
         super().__init__()
-        if not isinstance(predicate, typing.Callable):
-            raise Errors.parameter_invalid_type('predicate', predicate, typing.Callable)
+        if not Types.is_callable(predicate, Types.F_ITO_2_B):
+            raise Errors.parameter_invalid_type('predicate', predicate, Types.F_ITO_2_B)
         self.predicate = predicate
 
     def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:

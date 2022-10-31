@@ -18,7 +18,6 @@ from segments.errors import Errors
 
 
 class Types:
-
     C_ITO = typing.TypeVar('C_ITO', bound='Ito')
     C_SQ_ITOS = typing.Sequence[C_ITO]
     C_IT_ITOS = typing.Iterable[C_ITO]
@@ -29,8 +28,9 @@ class Types:
     F_ITO_2_IT_ITOS = typing.Callable[[C_ITO], C_IT_ITOS]
 
     C_GK = int | str
-    F_ITO_M_GK_2_B = typing.Callable[[C_ITO, regex.Match, int | str], bool]
-    F_ITO_M_GK_2_DESC = typing.Callable[[C_ITO | None, regex.Match, int | str], str]
+    F_ITO_M_GK_2_B = typing.Callable[[C_ITO | None, regex.Match, C_GK], bool]
+    F_ITO_M_GK_2_DESC = typing.Callable[[C_ITO | None, regex.Match, C_GK], str]
+    F_M_GK_2_B = typing.Callable[[regex.Match, int | C_GK], bool]
 
     class C_EITO(typing.NamedTuple):
         index: int
@@ -40,15 +40,6 @@ class Types:
     C_VALUES = typing.Dict[str, typing.Any] | None
     C_PREDICATES = typing.Dict[str, typing.Callable[[C_EITO], bool]] | None
     F_EITO_V_P_2_B = typing.Callable[[C_EITO, C_VALUES, C_PREDICATES], bool]
-
-    @dataclasses.dataclass(init=False)
-    class TypeSig:
-        ret_val: type = dataclasses.field(default_factory=lambda: [types.NoneType])
-        params: typing.List[typing.Type] = dataclasses.field(default_factory=lambda: [])
-
-        def __init__(self, rv: type, *params: type):
-            self.ret_val = rv
-            self.params = [*params]
 
     @classmethod
     def type_matches_annotation(cls, _type: typing.Type, annotation: typing.Type) -> bool:
@@ -67,19 +58,21 @@ class Types:
         return False
 
     @classmethod
-    def is_callable(cls, func: typing.Any, ts: TypeSig) -> bool:
+    def is_callable(cls, func: typing.Any, type_sig: typing.Callable) -> bool:
         if not isinstance(func, typing.Callable):
             return False
 
+        ts_params, ts_rv = typing.get_args(type_sig)
+        
         func_sig = inspect.signature(func)
-        if not cls.type_matches_annotation(ts.ret_val, func_sig.return_annotation):
+        if not cls.type_matches_annotation(ts_rv, func_sig.return_annotation):
             return False
 
-        if len(ts.params) != len(func_sig.parameters):
+        if len(ts_params) != len(func_sig.parameters):
             return False
 
         if not all(
-                cls.type_matches_annotation(tsp, fsp.annotation) for tsp, fsp in zip(ts.params, func_sig.parameters.values())):
+                cls.type_matches_annotation(tsp, fsp.annotation) for tsp, fsp in zip(ts_params, func_sig.parameters.values())):
             return False
 
         return True
@@ -138,12 +131,12 @@ class Ito:
     @classmethod
     def _group_filter(
             cls,
-            group_filter: typing.Iterable[str] | typing.Callable[[regex.Match, str], bool] | None
+            group_filter: typing.Iterable[str] | Types.F_M_GK_2_B | None
     ) -> typing.Callable[[regex.Match, str], bool]:
         if group_filter is None:
             return lambda m_, g: True
 
-        if isinstance(group_filter, typing.Callable):  # TODO : Better type check
+        if types.is_callable(group_filter, Types.F_M_GK_2_B):
             return group_filter
 
         if hasattr(group_filter, '__contains__'):
@@ -153,7 +146,7 @@ class Ito:
             'group_filter',
             group_filter,
             typing.Iterable[str],
-            typing.Callable[[Types.C_ITO, regex.Match, str], bool],
+            Types.F_M_GK_2_B,
             types.NoneType)
 
     @classmethod

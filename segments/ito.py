@@ -516,7 +516,7 @@ class Ito:
         """Creates a parent for a sequence of Itos
 
         Args:
-            *itos: a sequence of itos that have
+            *itos: an arbitrarily ordered sequence of itos that have
                 a) identical values for .string
                 b) non-overlapping edges
             desc: a descriptor for the parent ito
@@ -525,22 +525,73 @@ class Ito:
             An Ito whose .span matches the min .start and max .stop of the
             input sequence, and to whose .children clones of the input sequence
             have been hierarchically added
-
         """
-        it_str, it_start, it_stop, it_children = itertools.tee(itos, 4)
+        _iter = iter(itos)
+        try:
+            ito = next(_iter)
+        except StopIteration:
+            raise ValueError(f'parameter \'{itos}\' is empty')
+            
+        string = ito._string
+        start = ito.start
+        stop = ito.stop
+        children_lists: typing.List[ChildItos] = [ito.children]
 
-        strs = set(ito.string for ito in it_str)
-        if len(strs) > 1:
-            raise ValueError(f'parameter \'{itos}\' have differing values for .string')
-
-        start = min(ito.start for ito in it_start)
-        stop = max(ito.stop for ito in it_stop)
-        rv = cls(strs.pop(), start, stop, desc)
-
-        children: typing.Iterable[Types.C_ITO] = itertools.chain.from_iterable(ito.children for ito in itos)
-        rv.children.add_hierarchical(*(c.clone() for c in children))
+        while True:
+            try:
+                ito = next(_iter)
+            except StopIteration:
+                break
+                
+            if string != ito.string:
+                raise ValueError(f'parameter \'{itos}\' have differing values for .string')
+            start = min(start, ito.start)
+            stop = max(stop, ito.stop)
+            children_lists.append(ito.children)
+            
+        rv = cls(string, start, stop, desc)
+        
+        for children in children_lists:
+            rv.children.add_hierarchical(*(c.clone() for c in children))
 
         return rv
+
+    @classmethod
+    def join(cls, *itos: Types.C_ITO, desc: str | None = None) -> Types.C_ITO:
+        """Combines Itos
+
+        Args:
+            *itos: an arbitrarily ordered sequence of Itos that have identical values
+              for .string; overlaps are fine
+            desc: a descriptor for the resulting Ito
+
+        Returns:
+            An Ito whose .span matches the min .start and max .stop of the
+            input sequence
+        """
+        _iter = iter(itos)
+        try:
+            ito = next(_iter)
+        except StopIteration:
+            raise ValueError(f'parameter \'{itos}\' is empty')
+            
+        string = ito._string
+        start = ito.start
+        stop = ito.stop
+
+        while True:
+            try:
+                ito = next(_iter)
+            except StopIteration:
+                break
+                
+            if string != ito.string:
+                raise ValueError(f'parameter \'{itos}\' have differing values for .string')
+            start = min(start, ito.start)
+            stop = max(stop, ito.stop)
+            children_lists.append(ito.children)
+            
+        return cls(string, start, stop, desc)
 
     def split_iter(
             self,

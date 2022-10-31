@@ -512,7 +512,7 @@ class Ito:
     # region combinatorics
 
     @classmethod
-    def adopt(cls, *itos: Types.C_ITO, desc: str | None = None) -> Types.C_ITO:
+    def adopt(cls, itos: Types.C_IT_ITOS, desc: str | None = None) -> Types.C_ITO:
         """Creates a parent for a sequence of Itos
 
         Args:
@@ -557,7 +557,7 @@ class Ito:
         return rv
 
     @classmethod
-    def join(cls, *itos: Types.C_ITO, desc: str | None = None) -> Types.C_ITO:
+    def join(cls, itos: Types.C_IT_ITOS, desc: str | None = None) -> Types.C_ITO:
         """Combines Itos
 
         Args:

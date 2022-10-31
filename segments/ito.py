@@ -22,6 +22,7 @@ class Types:
     C_SQ_ITOS = typing.Sequence[C_ITO]
     C_IT_ITOS = typing.Iterable[C_ITO]
 
+    F_ITO_2_B = typing.Callable[[C_ITO], bool]
     F_ITO_2_VAL = typing.Callable[[C_ITO], typing.Any]
     F_ITO_2_ITOR = typing.Callable[[C_ITO], 'Itorator']
     F_ITO_2_SQ_ITOS = typing.Callable[[C_ITO], C_SQ_ITOS]
@@ -30,7 +31,7 @@ class Types:
     C_GK = int | str
     F_ITO_M_GK_2_B = typing.Callable[[C_ITO | None, regex.Match, C_GK], bool]
     F_ITO_M_GK_2_DESC = typing.Callable[[C_ITO | None, regex.Match, C_GK], str]
-    F_M_GK_2_B = typing.Callable[[regex.Match, int | C_GK], bool]
+    F_M_GK_2_B = typing.Callable[[regex.Match, C_GK], bool]
 
     class C_EITO(typing.NamedTuple):
         index: int
@@ -136,7 +137,7 @@ class Ito:
         if group_filter is None:
             return lambda m_, g: True
 
-        if types.is_callable(group_filter, Types.F_M_GK_2_B):
+        if Types.is_callable(group_filter, Types.F_M_GK_2_B):
             return group_filter
 
         if hasattr(group_filter, '__contains__'):
@@ -566,7 +567,7 @@ class Ito:
         try:
             ito = next(_iter)
         except StopIteration:
-            raise ValueError(f'parameter \'{itos}\' is empty')
+            raise ValueError(f'parameter \'itos\' is empty')
             
         string = ito._string
         start = ito.start
@@ -579,10 +580,9 @@ class Ito:
                 break
                 
             if string != ito.string:
-                raise ValueError(f'parameter \'{itos}\' have differing values for .string')
+                raise ValueError(f'parameter \'itos\' have differing values for .string')
             start = min(start, ito.start)
             stop = max(stop, ito.stop)
-            children_lists.append(ito.children)
             
         return cls(string, start, stop, desc)
 

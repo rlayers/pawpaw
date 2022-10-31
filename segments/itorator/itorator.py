@@ -186,8 +186,6 @@ class Split(Itorator):
 
 
 class Extract(Itorator):
-    Types.F_ITO_M_GK_2_B = typing.Callable[[Ito, regex.Match, str], bool]
-
     def __init__(self,
                  re: regex.Pattern,
                  limit: int | None = None,
@@ -208,7 +206,7 @@ class Extract(Itorator):
         if group_filter is None:
             self._group_filter = lambda i, m_, g: True
 
-        elif isinstance(group_filter, typing.Callable):  # TODO : Better type check
+        elif Types.is_callable(group_filter, Types.F_ITO_M_GK_2_B):
             self._group_filter = group_filter
 
         elif isinstance(group_filter, collections.abc.Container):

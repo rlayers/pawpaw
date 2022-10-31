@@ -586,6 +586,18 @@ class Ito:
             
         return cls(string, start, stop, desc)
 
+    def reclaim(self) -> None:
+        """Strips span to match extent of any children; non-modifying if .children is empty
+        
+        Returns:
+            None
+        """
+        if len(rv.children) > 0:
+            start = rv.children[0].start
+            stop = rv.children[-1].stop
+            if (start > ito.start) or (stop < ito.stop):
+                self._span = Span(start, stop)
+        
     def split_iter(
             self,
             re: regex.Pattern,

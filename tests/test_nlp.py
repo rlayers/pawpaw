@@ -2,7 +2,7 @@ import segments
 from tests.util import _TestIto, IntIto
 
 
-class TestSimpleNlp(_TestIto):
+class TestNumber(_TestIto):
     _valid_numbers = {
         'identity': '1',
         'with thousands sep': '1,234,567.89',
@@ -33,17 +33,19 @@ class TestSimpleNlp(_TestIto):
         for seps in None, ('',), ('', ','), (',',), ('', '.'):
             if seps is None:
                 number = segments.nlp.Number()
-                seps = (',',)
+            elif '.' in seps:
+                number = segments.nlp.Number(',', seps)
             else:
                 number = segments.nlp.Number(thousands_seps=seps)
 
             vals = ['123', '456']
-            for sep in seps:
+            for sep in number.thousands_seps:
                 val = (',' if sep is None else sep).join(vals)
-                val += '.789' if ',' in seps else ',789'
+                val += number.decimal_point + '789'
                 with self.subTest(thousands_seps=seps, val=val):
                     self.assertTrue(number.re.fullmatch(val) is not None)
-
+                    
+class TestSimpleNlp(_TestIto):
     def test_from_text(self):
         nlp = segments.nlp.SimpleNlp()
         for name, data in {

@@ -48,17 +48,23 @@ class TestSimpleNlp(_TestIto):
     def test_from_text(self):
         nlp = segments.nlp.SimpleNlp()
         for name, data in {
-            'Simple sentence': {
-                'See Jack run.':
-                    {'Document': 1, 'Paragraph': 1, 'Sentence': 1, 'Word': 3, 'Number': 0}
+            'One sentence': {
+                'Dick said, "Look, look up!"':
+                    {'Document': 1, 'Paragraph': 1, 'Sentence': 1, 'Word': 5, 'Number': 0}
             },
 
-            'Sentence with numbers': {
-                'This sentence has 4 words, not 10.':
-                    {'Document': 1, 'Paragraph': 1, 'Sentence': 1, 'Word': 5, 'Number': 2}
+            'One sentence with numbers': {
+                'Does this sentence have 6 words, or 8?':
+                    {'Document': 1, 'Paragraph': 1, 'Sentence': 1, 'Word': 6, 'Number': 2}
+
             },
 
-            'Two short paragraphs': {
+            'Two sentences': {
+                'Father said, "I want something."  "Oh, Father," said Sally.':
+                    {'Document': 1, 'Paragraph': 1, 'Sentence': 2, 'Word': 9, 'Number': 2}
+            },
+
+            'Two paragraphs': {
                 '\tI am.  I was.\r\n\r\n\tI will be.\r\n\r\n':
                     {'Document': 1, 'Paragraph': 2, 'Sentence': 3, 'Word': 7, 'Number': 0}
             },
@@ -84,5 +90,8 @@ class TestSimpleNlp(_TestIto):
                 for desc, count in counts.items():
                     result = nlp.from_text(text)
                     with self.subTest(name=name, desc=desc):
-                        actual = sum(1 for i in result.find_all(f'**![d:{desc}]'))
+                        if result.desc == desc:
+                            actual = 0 if result is None else 1
+                        else:
+                            actual = sum(1 for i in result.find_all(f'**[d:{desc}]'))
                         self.assertEqual(count, actual)

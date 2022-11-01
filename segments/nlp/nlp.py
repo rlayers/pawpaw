@@ -108,19 +108,31 @@ class Number:
 
 
 class SimpleNlp:
-    _paragraph_re = regex.compile(r'(?:\r?\n){2,}', regex.DOTALL)
-    _sentence_re = regex.compile(r'(?<=\s*(?:[\.\?\!][\'"]?|\.{3}))(?:\s+)', regex.DOTALL)
+    _eol_pat = '\r?\n'
 
-    _apostrophe_pat = r'[' + '|'.join(("'", '‛', '‵', '′', '’', '\u2018', '\u2018\u2019')) + r']'
+    _paragraph_pat = r'(?:' + _eol_pat + r'){2,}\s*'
+    _paragraph_re = regex.compile(_paragraph_pat, regex.DOTALL)
+
+    _sentence_terminator_pats = r'\.', r'\.{3}', r'\!+', r'\?'
+    _sentence_suffix_chars = '\'"[]()'
+    _sentence_suffix_pat = r'[' + ''.join(regex.escape(c) for c in _sentence_suffix_chars) + r']'
+    _sentence_re = regex.compile(r'(?<=\s*(?:' + '|'.join(_sentence_terminator_pats) + r')' + _sentence_suffix_pat + r'*)(?:\s+)', regex.DOTALL)
+
+    _apostrophes = r'\'‛‵′’\u2018\u2018\u2019'
+    _apostrophe_pat = r'[' + '|'.join(regex.escape(c) for c in _apostrophes) + r']'
+
     _word_pat = r'\w(?:(?:' + _apostrophe_pat + r'|-\s*)?\w)*'
 
     def __init__(self, number: Number | None = None, chars: bool = False):
         super().__init__()
 
-        trimmer = segments.itorator.Wrap(lambda ito: [ito.str_strip()])
+        doc_trimmer = segments.itorator.Wrap(lambda ito: [ito.str_strip()])
 
         paragraph = segments.itorator.Split(self._paragraph_re, desc='Paragraph')
-        trimmer.itor_children = paragraph
+        doc_trimmer.itor_next = paragraph
+
+        para_trimmer = segments.itorator.Wrap(lambda ito: [ito.str_strip()])
+        paragraph.itor_next = para_trimmer
 
         sentence = segments.itorator.Split(self._sentence_re, desc='Sentence')
         paragraph.itor_children = sentence
@@ -135,7 +147,7 @@ class SimpleNlp:
             char = segments.itorator.Extract(regex.compile(r'(?P<Character>\w)', regex.DOTALL))
             word_number.itor_children = lambda ito: char if ito.desc == 'Word' else None
 
-        self.itor = trimmer
+        self.itor = doc_trimmer
 
     @property
     def number(self) -> Number:

@@ -50,7 +50,7 @@ def descape(value: str) -> str:
 
 
 class Axis:
-    _re = regex.compile(r'(?P<axis>(?P<order>[\+\-]?)(?P<key>\-|\.{1,4}|\*{1,3}|\<{1,3}|\>{1,3})(?P<or_self>[\!]?))', regex.DOTALL)
+    _re = regex.compile(r'(?P<axis>(?P<order>[\+\-]?)(?P<key>\-|\.{1,4}|\*{1,3}|\<{1,3}|\>{1,3})(?P<or_self>(?:\!{1,2})?))', regex.DOTALL)
 
     def __init__(self, phrase: segments.Types.C_ITO):
         m = phrase.regex_match(self._re)
@@ -67,13 +67,45 @@ class Axis:
         
         self.or_self = next((str(i) for i in self.ito.children if i.desc == 'or_self'), None)
         
-    def to_ecs(self, itos: segments.Types.C_IT_ITOS, final: segments.Types.C_ITO | None = None) -> segments.Types.C_IT_EITOS:
-        e = -1
-        for e, i in enumerate(itos):
-            yield segments.Types.C_EITO(e, i)
-        
-        if e == -1 and self.or_self and final is not None:
-            yield segments.Types.C_EITO(0, final)
+    @property
+    def reverse(self) -> bool:
+        return self.order is not None and str(self.order) == '-'
+
+    def to_ecs(
+        self,
+        itos: segments.Types.C_IT_ITOS,
+        or_self_ito: segments.Types.C_ITO | None = None
+    ) -> segments.Types.C_IT_EITOS:
+        _iter = iter(itos)
+        stopped = False
+        e = 0
+
+        if self.or_self == '!!' and or_self_ito is not None and not self.reverse:
+            try:
+                first = next(_iter)
+            except StopIteration:
+                stopped = True
+
+            if not stopped:
+                yield segments.Types.C_EITO(e, or_self_ito)
+                e += 1
+                
+                if first is not or_self_ito:
+                    yield segments.Types.C_EITO(e, first)
+                    e += 1
+                
+        last = None
+        if not stopped:
+            for i in _iter:
+                yield segments.Types.C_EITO(e, i)
+                e += 1
+
+        if e == 0:
+            if self.or_self and or_self_ito is not None:
+                yield segments.Types.C_EITO(e, or_self_ito)
+
+        elif self.or_self == '!!' and or_self_ito is not None and self.reverse:
+            yield segments.Types.C_EITO(e, or_self_ito)
 
     def find_all(self, itos: typing.Iterable[segments.Types.C_ITO]) -> segments.Types.C_IT_EITOS:
         reverse = (self.order is not None and str(self.order) == '-')
@@ -85,10 +117,7 @@ class Axis:
                     while (next_par := root.parent) is not None:
                         root = next_par
                         
-                if root is not None:
-                    yield segments.Types.C_EITO(0, root)
-                elif self.or_self:
-                    yield segments.Types.C_EITO(0, i)
+                yield from self.to_ecs([] if root is None else [root], i)
 
         elif self.key == '...':
             for i in itos:
@@ -103,10 +132,8 @@ class Axis:
                 
         elif self.key == '..':
             for i in itos:
-                if (p := i.parent) is not None:
-                    yield segments.Types.C_EITO(0, p)
-                elif self.or_self:
-                    yield segments.Types.C_EITO(0, i)
+                parent = i.parent
+                yield from self.to_ecs([] if parent is None else [parent], i)
 
         elif self.key == '.':
             yield from self.to_ecs(itos)  # Special case where each ito gets unique enumeration
@@ -166,27 +193,23 @@ class Axis:
 
         elif self.key == '<':
             for i in itos:
-                if (p := i.parent) is None:
-                    idx = -1
-                else:
+                sibling = []
+                if (p := i.parent) is not None:
                     idx = p.children.index(i)
-                    
-                if idx > 0:
-                    yield segments.Types.C_EITO(0, p.children[idx - 1])
-                elif self.or_self:
-                    yield segments.Types.C_EITO(0, i)
+                    if idx > 0:
+                        sibling = [p.children[idx - 1]]
+                
+                yield from self.to_ecs(sibling, i)
 
         elif self.key == '>':
             for i in itos:
-                if (p := i.parent) is None:
-                    idx = -1
-                else:
+                sibling = []
+                if (p := i.parent) is not None:
                     idx = p.children.index(i)
-                    
-                if -1 < idx < len(p.children) - 1:
-                    yield segments.Types.C_EITO(0, p.children[idx + 1])
-                elif self.or_self:
-                    yield segments.Types.C_EITO(0, i)
+                    if idx < len(p.children) - 1:
+                        sibling = [p.children[idx + 1]]
+
+                yield from self.to_ecs(sibling, i)                        
 
         elif self.key == '>>':
             for i in itos:

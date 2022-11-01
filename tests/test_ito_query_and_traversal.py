@@ -71,19 +71,25 @@ class TestItoQuery(_TestIto):
     def test_axis_root(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for order in '', '+', '-':
-                for or_self in '', '!':
+                for or_self in '', '!', '!!':
                     query = f'{order}....{or_self}'
                     with self.subTest(node=node_type, query=query):
-                        i = node.find(query)
-                        if node is not self.root or or_self == '!':
-                            self.assertIs(self.root, i)
+                        if node is self.root:
+                            expected = [self.root] if or_self in ('!', '!!') else []
                         else:
-                            self.assertIsNone(i)
+                            expected = [self.root]
+                            if or_self == '!!':
+                                if order == '-':
+                                    expected.append(node)
+                                else:
+                                    expected.insert(0, node)
+                        actual = [*node.find_all(query)]
+                        self.assertListEqual(expected, actual)
 
     def test_axis_ancestors(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for order in '', '+', '-':
-                for or_self in '', '!':
+                for or_self in '', '!', '!!':
                     query = f'{order}...{or_self}'
                     with self.subTest(node=node_type, query=query):
                         expected: typing.List[segments.Types.C_ITO] = []
@@ -93,25 +99,36 @@ class TestItoQuery(_TestIto):
                             cur = par
                         if order == '-':
                             expected.reverse()
-                        if len(expected) == 0 and or_self == '!':
-                            expected.append(node)
+                        if len(expected) == 0:
+                            if or_self in ('!', '!!'):
+                                expected.append(node)
+                        elif or_self == '!!':
+                            if order == '-':
+                                expected.append(node)
+                            else:
+                                expected.insert(0, node)
                         actual = [*node.find_all(query)]
                         self.assertListEqual(expected, actual)
 
     def test_axis_parent(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for order in '', '+', '-':
-                for or_self in '', '!':
+                for or_self in '', '!', '!!':
                     query = f'{order}..{or_self}'
                     with self.subTest(node=node_type, query=query):
-                        i = node.find(query)
+                        expected: typing.List[segments.Types.C_ITO] = []
                         if node is self.root:
-                            if or_self == '!':
-                                self.assertIs(node, i)
-                            else:
-                                self.assertIsNone(i)
+                            if or_self in ('!', '!!'):
+                                expected.append(node)
                         else:
-                            self.assertIs(node.parent, i)
+                            expected.append(node.parent)
+                            if or_self == '!!':
+                                if order == '-':
+                                    expected.append(node)
+                                else:
+                                    expected.insert(0, node)
+                        actual = [*node.find_all(query)]
+                        self.assertListEqual(expected, actual)
 
     def test_axis_self(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():

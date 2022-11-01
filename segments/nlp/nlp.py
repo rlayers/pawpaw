@@ -9,39 +9,92 @@ from segments import nuco
 
 
 class Number:
-    _sign_pat = r'(?<sign>[-+])'
-    _integer_pat = r'(?<integer>\d{1,3}(?:[,\.]\d{3})*)'
-    _decimal_pat = r'(?<decimal>[,\.]\d+)'
+    _sign_pat = r'(?P<sign>[-+])'
     _sci_exp_e_notation_pat = r'[Ee]' + _sign_pat + r'?\d+'
     _sci_exp_x10_notation_pat = r' ?[Xx\u2715] ?10\^ ?' + _sign_pat + r'?\d+'
-    _sci_exp_pat = r'(?<exponent>' + '|'.join([_sci_exp_e_notation_pat, _sci_exp_x10_notation_pat]) + r')'
+    _sci_exp_pat = r'(?P<exponent>' + '|'.join([_sci_exp_e_notation_pat, _sci_exp_x10_notation_pat]) + r')'
+
+    def build_integer_pat(self) -> None:
+        self._int_pat = r'(?P<integer>\d{1,3}(?:' + regex.escape(self.thousands_sep) + r'\d{3})*'
+        if self.thousands_sep_optional:
+            self._int_pat += r'|\d+'
+        self._int_pat += r')'
+
+    def build_decimal_pat(self) -> None:
+        self._decimal_pat = r'(?P<decimal>' + regex.escape(self.decimal_point) + r'\d+)'
+
+    def build_num_pat_re(self) -> None:
+        self.build_integer_pat()
+        self.build_decimal_pat()
+        self._num_pat = f'(?P<number>{self._sign_pat}?' \
+            f'(?:{self._int_pat}{self._decimal_pat}?' \
+            f'|{self._decimal_pat})' \
+            f'{self._sci_exp_pat}?)'
+
+        self._re = regex.compile(self._num_pat, regex.DOTALL)
+
+    def __init__(self, **kwargs):
+        # defaults
+        loc = locale.localeconv()
+        self._decimal_point = loc['decimal_point']
+        self._thousands_sep = loc['thousands_sep'] if loc['thousands_sep'] != '' else ','
+        self._thousands_sep_optional = True
+
+        # kwargs
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+        # build patterns & re
+        self._int_pat: str
+        self._decimal_pat: str
+        self._num_pat: str
+        self._re: regex.Pattern
+        self.build_num_pat_re()
+
+    # region properties
+
+    @property
+    def decimal_point(self) -> str:
+        return self._decimal_point
+
+    @decimal_point.setter
+    def decimal_point(self, decimal_point: str) -> None:
+        self._decimal_point = decimal_point
+        self.build_num_pat_re()
+
+    @property
+    def thousands_sep(self) -> str:
+        return self._thousands_sep
+
+    @thousands_sep.setter
+    def thousands_sep(self) -> str:
+        if not isinstance(thousands_sep, str):
+            raise segments.Errors.parameter_invalid_type('thousands_sep', thousands_sep, str)
+        if thousands_sep == '' or thousands_sep.isspace():
+            raise ValueError('parameter \'thousands_sep\' must contain a non-whitespace character')
+        self._thousands_sep = thousands_sep
+        self.build_decimal_pat()
+
+    @property
+    def thousands_sep_optional(self) -> bool:
+        return self._thousands_sep_optional
+
+    @thousands_sep_optional.setter
+    def thousands_sep_optional(self, thousands_sep_optional: bool) -> None:
+        self._thousands_sep_optional = thousands_sep_optional
+        self.build_num_pat_re()        
 
     @property
     def integer_pat(self) -> str:
-        seps = list(filter(lambda ts: ts != '', regex.escape(self.thousands_seps)))
-        if len(seps) > 0:
-            ts = f'[{"|".join(seps)}]'
-            if '' in self.thousands_seps:
-                ts += '?'
-        else:
-            ts = ''
-        return r'(?<integer>\d{1,3}(?:' + ts + r'\d{3})*)'
+        return self._int_pat
 
     @property
     def decimal_pat(self) -> str:
-        return r'(?<decimal>' + regex.escape(self.decimal_point) + r'\d+)'
+        return self._decimal_pat
 
-    def __init__(self, decimal_point: str | None = None, thousands_seps: typing.Set[str] = {''}):
-        lc_dict = locale.localeconv()
-        self.decimal_point = decimal_point |nuco| lc_dict['decimal_point']
-        self.thousands_seps = thousands_seps
-
-        self._num_pat = f'{self._sign_pat}?' \
-            f'(?:{self.integer_pat}{self.decimal_pat}?' \
-            f'|{self.decimal_pat})' \
-            f'{self._sci_exp_pat}?'
-
-        self._re = regex.compile(self._num_pat, regex.DOTALL)
+    @property
+    def sci_exp_pat(self) -> str:
+        return self._sci_exp_pat
 
     @property
     def num_pat(self) -> str:
@@ -50,6 +103,8 @@ class Number:
     @property
     def re(self) -> regex.Pattern:
         return self._re
+
+    # endregion
 
 
 class SimpleNlp:

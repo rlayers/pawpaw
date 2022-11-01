@@ -18,33 +18,32 @@ class TestNumber(_TestIto):
     }
 
     def test_num_valid(self):
-        re = segments.nlp.Number(thousands_seps={'', ','}).re
+        re = segments.nlp.Number().re
         for name, s in self._valid_numbers.items():
             with self.subTest(name=name, string=s):
                 self.assertTrue(re.fullmatch(s) is not None)
 
-    def test_num_valid(self):
-        re = segments.nlp.Number(thousands_seps={'', ','}).re
+    def test_num_invalid(self):
+        re = segments.nlp.Number().re
         for s in '', ' ', 'abc', '1x2', 'two':
             with self.subTest(string=s):
                 self.assertTrue(re.fullmatch(s) is None)
 
-    def test_num_thousands_seps(self):
-        for seps in None, ('',), ('', ','), (',',), ('', '.'):
-            if seps is None:
-                number = segments.nlp.Number()
-            elif '.' in seps:
-                number = segments.nlp.Number(',', seps)
-            else:
-                number = segments.nlp.Number(thousands_seps=seps)
-
+    def test_num_thousands_sep_valid(self):
+        for sep in 'x', '#', '@':
+            num = segments.nlp.Number(thousands_sep=sep)
             vals = ['123', '456']
-            for sep in number.thousands_seps:
-                val = (',' if sep is None else sep).join(vals)
-                val += number.decimal_point + '789'
-                with self.subTest(thousands_seps=seps, val=val):
-                    self.assertTrue(number.re.fullmatch(val) is not None)
+            val = sep.join(vals) + num.decimal_point + '789'
+            with self.subTest(thousands_sep=sep, val=val):
+                self.assertTrue(number.re.fullmatch(val) is not None)
                     
+    def test_num_thousands_sep_invalid(self):
+        for sep in None, '', ' ':
+            with self.subTest(thousands_seps=seps, val=val):
+                with self.assertRaises((ValueError, TypeError)):
+                    segments.nlp.Number(thousands_sep=sep)
+
+          
 class TestSimpleNlp(_TestIto):
     def test_from_text(self):
         nlp = segments.nlp.SimpleNlp()

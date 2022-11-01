@@ -7,6 +7,15 @@ Introduction
 
 A segment requires a reference string in order to fully describe a substring.  Likewise, a ``Span`` requires a reference ``str`` for context.  The segments module pairs a ``Span`` and ``str`` together as an *In Text Object*\ [#]_, which is implemented in the class ``Ito``.
 
+Query = Phrase [/ Phrase] [/ Phrase] ...
+
+Phrase = Axis [Filter] [Subquery]
+
+Introduction
+============
+
+Axis = [Order: '+' or '-'] Identifier [Self Option: '!' or '!!']
+
 Axis Identifiers
 
 +------------+----------------+------------------------------------------------------------------------+

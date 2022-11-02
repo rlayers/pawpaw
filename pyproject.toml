@@ -1,10 +1,14 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "ito-segments"
-version = "0.0.1"
+version = "2.0.0"
 authors = [
   { name="Robert L. Ayers", email="rlayers@yahoo.com" },
 ]
-description = "A small example package"
+description = "Text Processing & Segmentation Framework"
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [

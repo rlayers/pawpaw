@@ -35,11 +35,11 @@ class TestNumber(_TestIto):
             vals = ['123', '456']
             val = sep.join(vals) + num.decimal_point + '789'
             with self.subTest(thousands_sep=sep, val=val):
-                self.assertTrue(number.re.fullmatch(val) is not None)
+                self.assertTrue(num.re.fullmatch(val) is not None)
                     
     def test_num_thousands_sep_invalid(self):
         for sep in None, '', ' ':
-            with self.subTest(thousands_seps=seps, val=val):
+            with self.subTest(thousands_seps=sep):
                 with self.assertRaises((ValueError, TypeError)):
                     segments.nlp.Number(thousands_sep=sep)
 
@@ -54,14 +54,14 @@ class TestSimpleNlp(_TestIto):
             },
 
             'One sentence with numbers': {
-                'Does this sentence have 6 words, or 8?':
+                'Does this sentence have 6 or 8 words?':
                     {'Document': 1, 'Paragraph': 1, 'Sentence': 1, 'Word': 6, 'Number': 2}
 
             },
 
             'Two sentences': {
                 'Father said, "I want something."  "Oh, Father," said Sally.':
-                    {'Document': 1, 'Paragraph': 1, 'Sentence': 2, 'Word': 9, 'Number': 2}
+                    {'Document': 1, 'Paragraph': 1, 'Sentence': 2, 'Word': 9, 'Number': 0}
             },
 
             'Two paragraphs': {

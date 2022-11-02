@@ -67,7 +67,7 @@ class Number:
         return self._thousands_sep
 
     @thousands_sep.setter
-    def thousands_sep(self) -> str:
+    def thousands_sep(self, thousands_sep: str) -> None:
         if not isinstance(thousands_sep, str):
             raise segments.Errors.parameter_invalid_type('thousands_sep', thousands_sep, str)
         if thousands_sep == '' or thousands_sep.isspace():

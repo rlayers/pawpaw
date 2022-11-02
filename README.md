@@ -34,63 +34,38 @@
 
 <h3 align="center">ito-segments</h3>
 
-  <p align="center">
-    Python Segmentation Library
-    <br />
-    <ul>
-      <li>
-        High Performance Substring Library
-        <ul>
-          <li>Fast processing with efficient memory utilization</li>
-          <li>Automatic string index bookkeeping</li>
-          <li>Pythonic relative indexing and slicing of segments</li>
-          <li>Runtime & polymorphic value extraction</li>
-          <li>Hierarchical data structure for substrings</li>
-          <li>Extensive use of Python generators</li>
-          <li>Efficient pickling and JSON persistance</li>
-        </ul>
-      </li>
-      <li>
-        Rules Pipelining Engine
-        <ul>
-          <li>Quickly and easily convert unstructured text into structed, indexed, & searchable collections</li>
-          <li>Develop complex text parsers with just a few lines of code</li>
-          <li>Easily pre-process text for downstream NLP/AI/ML consumers</li>
-        </ul>
-      </li>
-      <li>
-        Search and Query
-        <ul>
-          <li>Search text using a structured query language</li>
-          <li>Pre-compile queries for improved performance</li>
-        </ul>
-      </li>
-      <li>
-        Includes an ElementTree.XmlParser
-        <ul>
-          <li>Drop-in replacement for ElementTree.XmlParser</li>
-          <li>Provides full text indexes for all Elements, Attributes, Tags, Text, etc.</li>
-          <li>Search the resulting XML using both XPATH and the included, more capable structured query language</li>
-        </ul>
-      </li>
-      <li>
-        Stable
-        <ul>
-          <li>Over 2,000 unit tests and counting!</li>
-        </ul>
-      </li>
-    </ul>
-    <listitem>
-    <br />
-    <a href="https://github.com/rlayers/ito-segments/tree/master/docs"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    ·
-    <a href="https://github.com/rlayers/ito-segments/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/rlayers/ito-segments/issues">Request Feature</a>
-  </p>
-</div>
+<h4 align="center">Text Processing & Segmentation Framework</h4>
+
+- High Performance Substring Library
+  - Fast processing with efficient memory utilization
+  - Automatic string index bookkeeping
+  - Pythonic relative indexing and slicing of segments
+  - Runtime & polymorphic value extraction
+  - Hierarchical data structure for substrings
+  - Extensive use of Python generators
+  - Efficient pickling and JSON persistance
+- Rules Pipelining Engine
+  - Quickly and easily convert unstructured text into structed, indexed, & searchable collections
+  - Develop complex text parsers with just a few lines of code
+  - Easily pre-process text for downstream NLP/AI/ML consumers
+- Search and Query
+  - Search text using a structured query language
+  - Pre-compile queries for improved performance
+- Includes an ElementTree.XmlParser
+  - Drop-in replacement for ElementTree.XmlParser
+  - Provides full text indexes for all Elements, Attributes, Tags, Text, etc.
+  - Search the resulting XML using both XPATH and the included, more capable structured query language
+- Stable
+  - Over 2,000 unit tests and counting!
+
+<a href="https://github.com/rlayers/ito-segments/tree/master/docs"><strong>Explore the docs »</strong></a>
+<br />
+<br />
+·
+<a href="https://github.com/rlayers/ito-segments/issues">Report Bug</a>
+·
+<a href="https://github.com/rlayers/ito-segments/issues">Request Feature</a>
+</p>
 
 
 

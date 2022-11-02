@@ -1,22 +1,88 @@
-==============
-Search & Query
-==============
+==========================
+Traversal, Search, & Query
+==========================
 
 Introduction
 ============
+The ``Ito`` class features recursive storage of descendants to arbitrary depth, which allows it to
+be used as a hierarchical data store.  You can traverse down to child nodes via the ``.children``
+property, and up to the parent node via the ``.parent`` property:
 
-A segment requires a reference string in order to fully describe a substring.  Likewise, a ``Span`` requires a reference ``str`` for context.  The segments module pairs a ``Span`` and ``str`` together as an *In Text Object*\ [#]_, which is implemented in the class ``Ito``.
+>>> import regex
+>>> import segments
+>>> s = 'ten 10 eleven 11 twelve 12 '
+>>> root = segments.Ito(s)
+>>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
+>>> itor = segments.itorator.Extract(re)
+>>> root.children.add(*itor.traverse(segments.Ito(s)))
+>>> last_child = root.children[-1]
+>>> str(last_child)
+'twelve 12 '
+>>> parent = last_child.parent
+>>> str(parent)
+'ten 10 eleven 11 twelve 12 '
 
-Query = Phrase [/ Phrase] [/ Phrase] ...
+Manually traversing up and down an ``Ito`` hierarchy is practical for small collections or over small
+numbers of nodes.  For large collections or more complex traversals, ``ito-segments`` offers a fully
+functional, robust query language, which can also be used for search.  For example:
 
-Phrase = Axis [Filter] [Subquery]
+>>> query_str = '**[d:number]{*[s:2]}'  # descendant with .desc == 'number' having a child whose str == '2'
+>>> result = root.find(query_str)
+>>> str(result)
+'12'
 
-Introduction
+Query Syntax
 ============
 
-Axis = [Order: '+' or '-'] Identifier [Self Option: '!' or '!!']
+Phrases
+-------
+A query consists of one or more *phrases* separated by fore-slash characters::
 
-Axis Identifiers
+ query := phrase [/ phrase] [/ phrase] ...
+
+A phrase, in turn, consists of an *axis* along with an optional *filter* and/or *subquery*::
+
+ phrase := axis [filter] [subquery]
+
+Axis
+----
+
+An axis consists of an optional *order operator*, an *axis identifier*, and an optional *self option*::
+
+axis := [order_operator] axis_identifier [self_option]
+
+An axis defines a traversal step.  For example, the axis identifier ``*`` indicates that traversal
+should proceed to the children of the current node(s).  For a given node, an axis may yield zero,
+one, or more nodes, the order of which will always be from nearest to farthest from the current node.
+
+.. admonition:: Key Concept
+
+   An axis always returns nodes *nearest* to *farthest* from the current node(s), unless reversed.
+
+The order of nodes can be reversed by using a minus character (-) for the order operator.  A plus
+character (+) indicates nearest-to-furthest ordering, and is the assumed default when the
+order operator is not supplied.
+
+In some cases, it may be useful to return the current node as part traversal step.  For example,
+the axis operator ``..`` indicates traversal to the parent node, however, if the current node is
+a root, then there is no parent to traverse to.  The self option can be used to ensure that a
+traversal step will always return something.  Two possible values are allows:
+
+Self Option Values:
+
+======  ====================================================
+Value   Description
+------  ----------------------------------------------------
+  !     Returns current node only if traversal step is empty
+------  ----------------------------------------------------
+  !!    Returns current node plus any traversal step nodes
+======  ====================================================
+
+If a self option is supplied, the current node will always be returned first, unless
+the axis is reversed with the '-' operator.
+
+
+Axis Identifiers:
 
 +------------+----------------+------------------------------------------------------------------------+
 | Identifier | Meaning        | Description                                                            |

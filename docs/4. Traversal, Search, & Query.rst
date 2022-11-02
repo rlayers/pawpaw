@@ -5,8 +5,8 @@ Traversal, Search, & Query
 Introduction
 ============
 The ``Ito`` class features recursive storage of descendants to arbitrary depth, which allows it to
-be used as a hierarchical data store.  You can traverse down to child nodes via the ``.children``
-property, and up to the parent node via the ``.parent`` property:
+be used as a hierarchical data store.  Traversal down to child nodes is possible through the the
+``.children`` property, while traversal upwards can be accomplished through the ``.parent`` property:
 
 >>> import regex
 >>> import segments
@@ -40,16 +40,16 @@ A query consists of one or more *phrases* separated by fore-slash characters::
 
  query := phrase [/ phrase] [/ phrase] ...
 
-A phrase, in turn, consists of an *axis* along with an optional *filter* and/or *subquery*::
+A phrase, in turn, consists of an *axis* along with an optional *filter* and *subquery* parts::
 
- phrase := axis [filter] [subquery]
+phrase := axis [filter] [subquery]
 
 Axis
 ----
 
-An axis consists of an optional *order operator*, an *axis identifier*, and an optional *self option*::
+An axis consists of an optional *order operator*, an *axis identifier*, and an optional *self option*: ::
 
-axis := [order_operator] axis_identifier [self_option]
+ axis := [order_operator] axis_identifier [self_option]
 
 An axis defines a traversal step.  For example, the axis identifier ``*`` indicates that traversal
 should proceed to the children of the current node(s).  For a given node, an axis may yield zero,
@@ -57,7 +57,7 @@ one, or more nodes, the order of which will always be from nearest to farthest f
 
 .. admonition:: Key Concept
 
-   An axis always returns nodes *nearest* to *farthest* from the current node(s), unless reversed.
+   An axis always returns nodes ordered *nearest* to *farthest* from the current node(s), unless reversed.
 
 The order of nodes can be reversed by using a minus character (-) for the order operator.  A plus
 character (+) indicates nearest-to-furthest ordering, and is the assumed default when the
@@ -72,10 +72,10 @@ Self Option Values:
 
 ======  ====================================================
 Value   Description
+======  ====================================================
+``!``   Returns current node only if traversal step is empty
 ------  ----------------------------------------------------
-  !     Returns current node only if traversal step is empty
-------  ----------------------------------------------------
-  !!    Returns current node plus any traversal step nodes
+``!!``  Returns current node plus any traversal step nodes
 ======  ====================================================
 
 If a self option is supplied, the current node will always be returned first, unless
@@ -118,11 +118,6 @@ Axis Identifiers:
 |            |                | and *excludes* ancestors & descendants                                 |
 +------------+----------------+------------------------------------------------------------------------+
 
-An ``Ito`` is not an arbitray data collection.  Rather, it defines segments wihtin text and can have ancestors, siblings, and decendants.  This results in several implicit assumptions:
-
-* Children are contained in their parent: The ``.span`` for a child ``Ito`` is contained within the ``.span`` of its ``.parent``
-* Non-overlapping siblings: An ``Ito`` does not overlap any other ``Ito`` objects that share the same ``.parent``
-* Ordered siblings: Siblings are ordered within their parent by their ``.span.start``; because they are non-overlapping, the ``.span.stop`` for an ``Ito`` will always be less than or equal to the ``.span.start`` of the subsequent sibling
 
 +---------------------+------------------+------------------------------------------------------------------------+------------------+
 | Key                 | Alt Keys(s)      | Meaning                                                                | Example(s)       |

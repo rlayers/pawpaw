@@ -2,7 +2,6 @@
 <a name="readme-top"></a>
 
 
-
 <!-- PROJECT SHIELDS -->
 [![Python][Python.org]][Python-url]
 [![Contributors][contributors-shield]][contributors-url]
@@ -13,7 +12,6 @@
 [![Forks][forks-shield]][forks-url]
 [![Issues][issues-shield]][issues-url]
 -->
-
 
 
 <!-- PROJECT LOGO -->

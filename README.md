@@ -27,28 +27,29 @@
 -->
 
 <h3 align="center">ito-segments</h3>
-<h4 align="center">Text Processing & Segmentation Framework</h4>
+<h4 align="center">High Perforamnce Text Processing & Segmentation Framework</h4>
 
-- High Performance Text Processing
-  - Indexed substrings
-    - Fast processing with efficient memory utilization
-    - Automatic string index bookkeeping
-    - Pythonic relative indexing and slicing of segments
-    - Runtime & polymorphic value extraction
+- Indexed str and substr representation
+  - Efficient memory utilization
+  - Fast processing
+  - Pythonic relative indexing and slicing of segments
+  - Runtime & polymorphic value extraction
+  - All non-modifying str and regex methods duplicated within framework    
   - Extensive use of Python generators
-  - Efficient pickling and JSON persistance
+- Efficient pickling and JSON persistance
+  - Security option enables persistance of index-only data, with refrence strings re-injected during de-serialziation 
 - Rules Pipelining Engine
   - Quickly and easily convert unstructured text into structed, indexed, & searchable collections
   - Develop complex text parsers with just a few lines of code
   - Easily pre-process text for downstream NLP/AI/ML consumers
 - Search and Query
-  - Hierarchical data structure for text
-    - Search using extensive structured query language
-    - Pre-compile queries for improved performance
-- Includes an ElementTree.XmlParser
-  - Drop-in replacement for ElementTree.XmlParser
-  - Provides full text indexes for all Elements, Attributes, Tags, Text, etc.
-  - Search the resulting XML using both XPATH and the included, more capable structured query language
+  - Hierarchical data structure for all indexed text
+  - Search using extensive structured query language
+  - Optionally pre-compile queries for reuse to improvement performance
+- XML Processing
+  - Features a drop-in replacement for ElementTree.XmlParser
+  - Full text indexes for all Elements, Attributes, Tags, Text, etc. within a document
+  - Search the resulting XML using both XPATH and the included, structured query language
 - Stable
   - Over 2,000 unit tests and counting!
 

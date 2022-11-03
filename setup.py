@@ -26,7 +26,7 @@ setup(
     name='ito-segments',
     version='2.0.0a3',
     license='MIT License',
-    description='A high performance text segmentation framework.',
+    description='High Performance Text Processing & Segmentation Framework',
     long_description='%s\n%s' % (
         re.compile('^.. start-badges.*^.. end-badges', re.M | re.S).sub('', read('README.md')),
         re.sub(':[a-z]+:`~?(.*?)`', r'``\1``', read('CHANGELOG.rst'))

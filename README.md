@@ -24,7 +24,7 @@
 -->
 
 <h1 align="center">ito-segments</h1>
-<div align="center"><strong>High Perforamnce Text Processing & Segmentation Framework</strong></div>
+<div align="center"><strong>High Performance Text Processing & Segmentation Framework</strong></div>
 
 
 <!-- Overivew -->
@@ -53,34 +53,29 @@
 - Stable
   - Over 2,000 unit tests and counting!
 
-<p align="center">
+<div align="center">
   <a href="https://github.com/rlayers/ito-segments/tree/master/docs">Explore the docs</a>
   &nbsp;&nbsp;•&nbsp;&nbsp;
   <a href="https://github.com/rlayers/ito-segments/issues">Report Bug</a>
   &nbsp;&nbsp;•&nbsp;&nbsp;
   <a href="https://github.com/rlayers/ito-segments/issues">Request Feature</a>
-</p>
+</div>
 
 
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
-    <li>
-      <a href="#getting-started">Getting Started</a>
+    <li><a href="#usage">Overivew</a></li>
+    <li><a href="#usage">About</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#roadmap"Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -89,12 +84,12 @@
 </details>
 
 
-<!-- ABOUT -->
-## About
+<!-- USAGE EXAMPLES -->
+## Usage
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
+Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
-In Text Objects is a text segmentation framework that enables the extraction if searchable data structures from unstructured text.
+_For more examples, please refer to the [Documentation](docs)_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -105,7 +100,6 @@ In Text Objects is a text segmentation framework that enables the extraction if 
 This is an example of how you may give instructions on setting up your project locally.
 To get a local copy up and running follow these simple example steps.
 
-<!-- GETTING STARTED -->
 ### Prerequisites
 
 This is an example of how to list things you need to use the software and how to install them.
@@ -116,10 +110,12 @@ This is an example of how to list things you need to use the software and how to
 
 ### Installation
 
+_Below is an example of how you can instruct your audience on installing and setting up your app. This template doesn't rely on any external dependencies or services._
+
 1. Get a free API Key at [https://example.com](https://example.com)
 2. Clone the repo
    ```sh
-   git clone https://github.com/rlayers/ito-segments.git
+   git clone https://github.com/your_username_/Project-Name.git
    ```
 3. Install NPM packages
    ```sh
@@ -133,18 +129,6 @@ This is an example of how to list things you need to use the software and how to
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-
-<!-- USAGE EXAMPLES -->
-## Usage
-
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://github.com/rlayers/ito-segments/tree/master/docs)_
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-
-
 <!-- ROADMAP -->
 ## Roadmap
 
@@ -153,7 +137,7 @@ _For more examples, please refer to the [Documentation](https://github.com/rlaye
 - [ ] Feature 3
     - [ ] Nested Feature
 
-See the [open issues](https://github.com/rlayers/ito-segments/issues) for a full list of proposed features (and known issues).
+See the [open issues](issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -180,7 +164,7 @@ Don't forget to give the project a star! Thanks again!
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See [LICENSE](https://github.com/rlayers/ito-segments/blob/master/LICENSE) for more information.
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -189,7 +173,7 @@ Distributed under the MIT License. See [LICENSE](https://github.com/rlayers/ito-
 <!-- CONTACT -->
 ## Contact
 
-Robert L. Ayers - [a.nov.guy@gmail.com](email@a.nov.guy@gmail.com)
+Robert L. Ayers: <a alt="e-mail" href="email@a.nov.guy@gmail.com">a.nov.guy@gmail.com</a>
 
 Project Link: [https://github.com/rlayers/ito-segments](https://github.com/rlayers/ito-segments)
 

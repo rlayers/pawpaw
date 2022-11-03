@@ -33,11 +33,16 @@ class Types:
     F_ITO_M_GK_2_DESC = typing.Callable[[C_ITO | None, regex.Match, C_GK], str]
     F_M_GK_2_B = typing.Callable[[regex.Match, C_GK], bool]
 
+    class C_BITO(typing.NamedTuple):
+        tf: bool
+        ito: segments.Types.C_ITO
+    C_IT_BITOS = typing.Iterable[C_BITO]
+
     class C_EITO(typing.NamedTuple):
         index: int
         ito: segments.Types.C_ITO
-
     C_IT_EITOS = typing.Iterable[C_EITO]
+
     C_VALUES = typing.Dict[str, typing.Any] | None
     C_PREDICATES = typing.Dict[str, typing.Callable[[C_EITO], bool]] | None
     F_EITO_V_P_2_B = typing.Callable[[C_EITO, C_VALUES, C_PREDICATES], bool]

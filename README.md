@@ -24,9 +24,12 @@
 </div>
 -->
 
-<h3 align="center">ito-segments</h3>
-<h4 align="center">High Perforamnce Text Processing & Segmentation Framework</h4>
+<h1 align="center">ito-segments</h1>
 
+<div align="center"><strong>High Perforamnce Text Processing & Segmentation Framework</strong></div>
+
+<!-- Overivew -->
+## Overview
 - Indexed str and substr representation
   - Efficient memory utilization
   - Fast processing
@@ -52,11 +55,11 @@
   - Over 2,000 unit tests and counting!
 
 <p align="center">
-<a href="https://github.com/rlayers/ito-segments/tree/master/docs">Explore the docs</a>
-·
-<a href="https://github.com/rlayers/ito-segments/issues">Report Bug</a>
-·
-<a href="https://github.com/rlayers/ito-segments/issues">Request Feature</a>
+  <a href="https://github.com/rlayers/ito-segments/tree/master/docs">Explore the docs</a>
+  &nbsp;&nbsp;•&nbsp;&nbsp;
+  <a href="https://github.com/rlayers/ito-segments/issues">Report Bug</a>
+  &nbsp;&nbsp;•&nbsp;&nbsp;
+  <a href="https://github.com/rlayers/ito-segments/issues">Request Feature</a>
 </p>
 
 

@@ -29,12 +29,12 @@
 <h3 align="center">ito-segments</h3>
 <h4 align="center">Text Processing & Segmentation Framework</h4>
 
-- High Performance Substring Library
-  - Fast processing with efficient memory utilization
-  - Automatic string index bookkeeping
-  - Pythonic relative indexing and slicing of segments
-  - Runtime & polymorphic value extraction
-  - Hierarchical data structure for substrings
+- High Performance Text Processing
+  - Indexed substrings
+    - Fast processing with efficient memory utilization
+    - Automatic string index bookkeeping
+    - Pythonic relative indexing and slicing of segments
+    - Runtime & polymorphic value extraction
   - Extensive use of Python generators
   - Efficient pickling and JSON persistance
 - Rules Pipelining Engine
@@ -42,8 +42,9 @@
   - Develop complex text parsers with just a few lines of code
   - Easily pre-process text for downstream NLP/AI/ML consumers
 - Search and Query
-  - Search text using a structured query language
-  - Pre-compile queries for improved performance
+  - Hierarchical data structure for text
+    - Search using extensive structured query language
+    - Pre-compile queries for improved performance
 - Includes an ElementTree.XmlParser
   - Drop-in replacement for ElementTree.XmlParser
   - Provides full text indexes for all Elements, Attributes, Tags, Text, etc.

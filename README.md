@@ -1,4 +1,4 @@
-<!-- Improved compatibility of back to top link: See: https://github.com/rlayers/ito-segments -->
+<!-- Back to top link -->
 <a name="readme-top"></a>
 
 
@@ -13,7 +13,6 @@
 [![Issues][issues-shield]][issues-url]
 -->
 
-
 <!-- PROJECT LOGO -->
 <!--
 <br />
@@ -25,8 +24,8 @@
 -->
 
 <h1 align="center">ito-segments</h1>
-
 <div align="center"><strong>High Perforamnce Text Processing & Segmentation Framework</strong></div>
+
 
 <!-- Overivew -->
 ## Overview
@@ -63,7 +62,6 @@
 </p>
 
 
-
 <!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
@@ -91,7 +89,6 @@
 </details>
 
 
-
 <!-- ABOUT -->
 ## About
 
@@ -102,13 +99,13 @@ In Text Objects is a text segmentation framework that enables the extraction if 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-
 <!-- GETTING STARTED -->
 ## Getting Started
 
 This is an example of how you may give instructions on setting up your project locally.
 To get a local copy up and running follow these simple example steps.
 
+<!-- GETTING STARTED -->
 ### Prerequisites
 
 This is an example of how to list things you need to use the software and how to install them.
@@ -142,7 +139,7 @@ This is an example of how to list things you need to use the software and how to
 
 Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+_For more examples, please refer to the [Documentation](https://github.com/rlayers/ito-segments/tree/master/docs)_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -183,7 +180,7 @@ Don't forget to give the project a star! Thanks again!
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the MIT License. See [LICENSE](https://github.com/rlayers/ito-segments/blob/master/LICENSE) for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -192,7 +189,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Robert L. Ayers - email@a.nov.guy@gmail.com.com
+Robert L. Ayers - [a.nov.guy@gmail.com](email@a.nov.guy@gmail.com)
 
 Project Link: [https://github.com/rlayers/ito-segments](https://github.com/rlayers/ito-segments)
 
@@ -211,21 +208,24 @@ Project Link: [https://github.com/rlayers/ito-segments](https://github.com/rlaye
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[Python.org]: https://img.shields.io/badge/python-3.10-blue.svg?style=for-the-badge&logo=angular&logoColor=white
+[Python-url]: https://www.python.org
 [contributors-shield]: https://img.shields.io/github/contributors/rlayers/ito-segments.svg?style=for-the-badge
 [contributors-url]: https://github.com/rlayers/ito-segments/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/rlayers/ito-segments.svg?style=for-the-badge
-[forks-url]: https://github.com/rlayers/ito-segments/network/members
 [stars-shield]: https://img.shields.io/github/stars/rlayers/ito-segments.svg?style=for-the-badge
 [stars-url]: https://github.com/rlayers/ito-segments/stargazers
 [issues-shield]: https://img.shields.io/github/issues/rlayers/segments.svg?style=for-the-badge
-[issues-url]: https://github.com/rlayers/ito-segments/issues
-[license-shield]: https://img.shields.io/github/license/rlayers/ito-segments.svg?style=for-the-badge
-[license-url]: https://github.com/rlayers/ito-segments/blob/master/LICENSE
 [watchers-shield]: https://img.shields.io/github/watchers/rlayers/ito-segments.svg?style=for-the-badge
 [watchers-url]: https://github.com/rlayers/ito-segments/watchers
+[license-shield]: https://img.shields.io/github/license/rlayers/ito-segments.svg?style=for-the-badge
+[license-url]: https://github.com/rlayers/ito-segments/blob/master/LICENSE
+
+
+[forks-shield]: https://img.shields.io/github/forks/rlayers/ito-segments.svg?style=for-the-badge
+[forks-url]: https://github.com/rlayers/ito-segments/network/members
+[issues-url]: https://github.com/rlayers/ito-segments/issues
 [product-screenshot]: images/screenshot.png
-[Python.org]: https://img.shields.io/badge/python-3.10-blue.svg?style=for-the-badge&logo=angular&logoColor=white
-[Python-url]: https://www.python.org
+
 [Anaconda-shield]: https://anaconda.org/conda-forge/mlconjug/badges/version.svg
 [Anaconda-url]: https://anaconda.org
 [PyCharm-shield]: https://img.shields.io/badge/PyCharm-000000.svg?&style=for-the-badge&logo=PyCharm&logoColor=white

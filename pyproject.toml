@@ -8,7 +8,7 @@ version = "2.0.0"
 authors = [
   { name="Robert L. Ayers", email="rlayers@yahoo.com" },
 ]
-description = "Text Processing & Segmentation Framework"
+description = "High Performance Text Processing & Segmentation Framework"
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [

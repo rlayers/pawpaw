@@ -36,7 +36,7 @@ setup(
     url='https://github.com/rlayers/ito-segments',
     packages=find_packages('segments'),
     package_dir={'': 'segments'},
-    py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
+    py_modules=[splitext(basename(path))[0] for path in glob('segments/*.py')],
     include_package_data=True,
     zip_safe=False,
     classifiers=[

@@ -603,6 +603,42 @@ class Ito:
             if (start > ito.start) or (stop < ito.stop):
                 self._span = Span(start, stop)
         
+    def invert_children(self) -> Types.C_ITO:
+        """Creates a clone of the self having children in the gaps
+        
+        Returns:
+            A clone whose children occupy the gaps of self.
+            
+            - If len(self) is zero: the returned clone will have no no children.
+            
+            - If self has no gaps: returned clone will have no children.
+
+            - If self is empty: returned clone will have a single, contiguous child.
+        """            
+        rv = self.clone(clone_children=False)
+        
+        if len(self) == 0:
+            return rv
+            
+        if len(self.children) == 0:
+            rv.children.add(rv.clone())
+            return rv
+        
+        left = self.children[0]
+        if left.start > self.start:
+            rv.children.add(rv.clone(stop=left.start, clone_children=False))
+            
+        for right in self.children[1:]:
+            if left.stop < right.start:
+                rv.children.add(rv.clone(left.stop, right.start, clone_children=False))
+                
+            left = right
+            
+        if left.stop < self.stop:
+            rv.children.add(rv.clone(left.stop, self.stop, clone_children=False))
+            
+        return rv
+    
     def split_iter(
             self,
             re: regex.Pattern,

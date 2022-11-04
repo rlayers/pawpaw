@@ -61,6 +61,13 @@
   <a href="https://github.com/rlayers/ito-segments/issues">Request Feature</a>
 </div>
 
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
 
 <!-- TABLE OF CONTENTS -->
 <details>

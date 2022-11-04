@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ito-segments"
-version = "2.0.0"
+dynamic = ["version"]
 authors = [
   { name="Robert L. Ayers", email="rlayers@yahoo.com" },
 ]
@@ -24,3 +24,7 @@ classifiers = [
 [project.urls]
 "Homepage" = "https://github.com/rlayers/ito-segments"
 "Bug Tracker" = "https://github.com/rlayers/ito-segments/issues"
+
+[tool.hatch.version]
+path = "segments/_version.py"
+#pattern = "__VER_STR__ = '(?P<version>)'"

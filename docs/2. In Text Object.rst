@@ -194,7 +194,30 @@ Guidelines
 
 str equivalence methods
 """"""""""
-** TODO **
+To utilize the substring identified by an ``Ito`` requires first calling the ``.__str__()`` method.  However, this introduces an inefficiency - namely, a new string must be allocated and initialized in memory.  This can be avoided if the target method allows passing start and stop indices.  For example, the ``str`` method ``.find`` has start and end parameters, which can be leverage to avoid creating a substring::
+
+>>> s = ' abc '
+>>> i = Ito(s, 1, -1)
+>>> str(i).find('b')  # Inefficient
+1
+>>> i.string.find('b', i.start, i.stop)  # Better
+2
+
+Although more efficient, the second approach is not desirable because a) it requires you to remember to pass in the indices and b) returns an offset from the start of the string, rather than the start of the substring.  Fortunately, ``Ito`` features built-in equivalence methods for all non-modifying ``str`` methods.  The methods:
+
+* have the same name as their ``str`` counterpart, prefixed with ``str_``
+* have identical parameters
+* have return values that:
+
+  * are identical if the ``str`` counterpart method returns a non-``str``
+  * are ``Ito`` when the ``str`` counterpart method returns a ``str``
+  
+For example:
+
+>>> i.str_find('b')
+1
+
+This method behaves as if you called ``find`` against the underlying substring, with a return value offset from the start of the substring, rather than the basis.
 
 
 regex equivalence methods
@@ -202,7 +225,7 @@ regex equivalence methods
 ** TODO **
 
 
-``children`` 
+``.children`` 
 ============
 
 An ``Ito`` is fully hierarchical through its ``.parent`` and ``.children`` properties.  This allows an ``Ito`` to both represent a segment and act as a node within a graph\ [#]_.

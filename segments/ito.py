@@ -901,7 +901,8 @@ class Ito:
         i = self.start
         while i < self.stop and f_c_in(i):
             i += 1
-        return self.clone(i)
+        
+        return self if i == self.start else self.clone(i)
 
     def str_rstrip(self, chars: str | None = None) -> Types.C_ITO:
         f_c_in = self.__f_c_in(chars)
@@ -909,7 +910,7 @@ class Ito:
         while i >= 0 and f_c_in(i):
             i -= 1
 
-        return self.clone(stop=i+1)
+        return self if i == self.stop - 1 else self.clone(stop=i + 1)
 
     def str_strip(self, chars: str | None = None) -> Types.C_ITO:
         return self.str_lstrip(chars).str_rstrip(chars)

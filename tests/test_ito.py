@@ -295,9 +295,9 @@ class TestIto(_TestIto):
             with self.subTest(string=s, children_added=True):
                 inverted = parent.invert_children()
                 clone = parent.clone(clone_children=False)
-                clone.children.add(*(c.lone() for c in parent.children))
-                clone.children.add(*(c.lone() for c in inverted.children))
-                expected = ''.join(str(c) for c in inverted.children)
+                clone.children.add(*(c.clone() for c in parent.children))
+                clone.children.add(*(c.clone() for c in inverted.children))
+                expected = ''.join(str(c) for c in clone.children)
                 self.assertEqual(s, expected)
         
     def test_split_iter_simple(self):

@@ -597,12 +597,15 @@ class Ito:
         Returns:
             None
         """
-        if len(rv.children) > 0:
-            start = rv.children[0].start
-            stop = rv.children[-1].stop
-            if (start > ito.start) or (stop < ito.stop):
+        if len(self.children) > 0:
+            start = self.children[0].start
+            stop = self.children[-1].stop
+            if (start > self.start) or (stop < self.stop):
                 self._span = Span(start, stop)
-        
+            #     return self.clone(start, stop)
+            # else:
+            #     return self
+
     def invert_children(self) -> Types.C_ITO:
         """Creates a clone of the self having children in the gaps
         

@@ -21,7 +21,7 @@ class ConsolidatorEx(ABC):
         ...
         
         
-class WindowedJoinEx(Consolidator):
+class WindowedJoinEx(ConsolidatorEx):
     F_SQ_ITOS_2_B = typing.Callable[[Types.C_SQ_ITOS], bool]
     
     def __init__(self, window_size: int, predicate: F_SQ_ITOS_2_B, desc: str | None = None):

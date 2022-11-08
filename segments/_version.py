@@ -19,18 +19,19 @@ class Version(typing.NamedTuple):
         return f'{self.major}.{self.minor}.{self.micro}{self.pre_release}'
 
     @classmethod
-    def __from(cls, version: str):
+    def _from(cls, version: str):
         parts = version.split('.')
-        if len(parts == 4):
-            pr = ver_parts[-1]  # must have len > 2
+        if len(parts) == 4:
+            pr = parts[-1]  # must have len > 2
             i = 1 if pr[1].isnumeric() else 2
-            pre_release = PreRelease(pr[:idx], int(pr[idx:]))
+            pre_release = PreRelease(pr[:i], int(pr[i:]))
         else:
-            pre_release = parameter_not_none
+            pre_release = None
 
         mmm = [int(i) for i in parts[:3]]
         return Version(*mmm, pre_release)
 
+
 __VER_STR__ = '2.0.0.a3'  # string literal to be used for build, setup, and documentation tools
 
-__version__ = Version.__from(__VER_STR__)
+__version__ = Version._from(__VER_STR__)

@@ -4,16 +4,16 @@ from segments.consolidator import *
 from tests.util import _TestIto
 
 
-class TestWindowedJoin(_TestIto):
+class TestWindowedJoinEx(_TestIto):
     def test_window_size(self):
         func = lambda itos: True
         for window_size in -1, 0, 1, 2:
           with self.subTest(window_size=window_size):
               if window_size < 2:
                   with self.assertRaises(ValueError):
-                      WindowedJoin(window_size, func)
+                      WindowedJoinEx(window_size, func)
               else:
-                  WindowedJoin(window_size, func)
+                  WindowedJoinEx(window_size, func)
 
     def test_traverse(self):
         func = lambda itos: True
@@ -24,22 +24,17 @@ class TestWindowedJoin(_TestIto):
             desc = 'merged'
             for window_size in 2, 3, 4:
                 with self.subTest(string=s, itos=itos, window_size=window_size, desc=desc):
-                    m = WindowedJoin(window_size, func, desc)
+                    wj = WindowedJoinEx(window_size, func, desc)
                     itos_iter = root.split_iter(re)
                     actual = [*m.traverse(itos_iter)]
                     if len(itos) < window_size:
-                        self.assertListEqual(itos, actual)
-                    elif window_size == 2:
-                        self.assertListEqual([root.clone(desc=desc)], actual)
+                        self.assertListEqual([Types.C_BITO(True, i) for i in itos], actual)
                     else:
-                      i = 0
-                      stack = []
-                      while i < len(itos):
-                          needed = window_size - len(stack)
-                          stack.extend(itos[i:i + needed])
-                          if len(stack) == window_size:
-                              joined = Ito.join(stack, desc=desc)
-                              stack.clear()
-                              stack.append(joined)
-                          i += needed
-                      self.assertEqual(stack, actual)
+                        while len(actual) >= window_size:
+                            self.assertTrue(all(not bi.tf for bi in actual[:window_size]))
+                            del actual[:window_size]
+                            if len(actual) > 0:
+                                self.assertTrue(actual[0].tf)
+                                del actual[0]
+
+                        self.assertTrue(all(bi.tf for bi in actual))

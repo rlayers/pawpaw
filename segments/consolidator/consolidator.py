@@ -24,7 +24,7 @@ class ConsolidatorEx(ABC):
 class WindowedJoinEx(ConsolidatorEx):
     F_SQ_ITOS_2_B = typing.Callable[[Types.C_SQ_ITOS], bool]
     
-    def __init__(self, window_size: int, predicate: F_SQ_ITOS_2_B, desc: str | None = None):
+    def __init__(self, window_size: int, predicate: F_SQ_ITOS_2_B, desc: str | None = None, ito_class: Types.C_ITO = Ito):
         super().__init__()
         
         if not isinstance(window_size, int):
@@ -37,26 +37,26 @@ class WindowedJoinEx(ConsolidatorEx):
             raise Errors.parameter_invalid_type('predicate', predicate, self.F_SQ_ITOS_2_B)
         self.predicate = predicate
 
+        if not issubclass(ito_class, Ito):
+            raise ValueError('parameter \'ito_class\' ({ito_class}) is not an \'{Ito}\' or subclass.')
+        self.ito_class = ito_class
+
         self.desc = desc
 
     def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
-        joined: Types.C_ITO | None = None
         window: typing.List[Types.C_ITO] = []
         for ito in itos:
             window.append(ito)
-            if len(window) == self.window_size:  # Only when window is full?
+            if len(window) == self.window_size:
                 if self.predicate(window):
-                    cur = ito.join(window, desc=self.desc)
-                    if window[0] is joined:
-                        del window[0]
+                    joined = self.ito_class.join(window, desc=self.desc)
                     yield from (Types.C_BITO(False, i) for i in window)
                     window.clear()
-                    window.append(cur)
-                    joined = cur
+                    yield Types.C_BITO(True, joined)
                 else:
-                    yield Types.C_BITO(False, window.pop(0))
+                    yield Types.C_BITO(True, window.pop(0))
 
-        yield from (Types.C_BITO(False, i) for i in window)
+        yield from (Types.C_BITO(True, i) for i in window)
 
         
 class Consolidator(ABC):

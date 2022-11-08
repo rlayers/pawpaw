@@ -927,7 +927,7 @@ class Ito:
         else:
             i = self.str_find(sep)
             if i < 0:
-                return self.clone(), self.clone(self.stop), self.clone(self.stop)
+                return self, self.clone(self.stop), self.clone(self.stop)
             else:
                 j = i + self.start
                 k = j + len(sep)
@@ -941,7 +941,7 @@ class Ito:
         else:
             i = self.str_rfind(sep)
             if i < 0:
-                return self.clone(self.stop), self.clone(self.stop), self.clone()
+                return self.clone(self.stop), self.clone(self.stop), self
             else:
                 j = i + self.start
                 k = j + len(sep)

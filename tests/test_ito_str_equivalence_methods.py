@@ -141,21 +141,30 @@ class TestItoStrEquivalenceMethods(_TestIto):
             for chars in None, '', 'a', 'ba', 'c', 'cb', 'x', 'ac', '32ba', '123abc':
                 with self.subTest(string=s, chars=chars):
                     i = Ito(s)
-                    self.assertEqual(s.lstrip(chars), str(i.str_lstrip(chars)))
+                    s_rv = s.lstrip(chars)
+                    i_rv = i.str_lstrip(chars)
+                    self.assertEqual(s is s_rv, i is i_rv)
+                    self.assertEqual(s_rv, str(i_rv))
                     
     def test_str_rstrip(self):
         for s in '', 'abc', 'abc123', 'a1b2c3':
             for chars in None, '', 'a', 'ba', 'c', 'cb', 'x', 'ac', '32ba', '123abc':
                 with self.subTest(string=s, chars=chars):
                     i = Ito(s)
-                    self.assertEqual(s.rstrip(chars), str(i.str_rstrip(chars)))
+                    s_rv = s.rstrip(chars)
+                    i_rv = i.str_rstrip(chars)
+                    self.assertEqual(s is s_rv, i is i_rv)
+                    self.assertEqual(s_rv, str(i_rv))                    
 
     def test_str_strip(self):
         for s in '', 'abc', 'abc123', 'a1b2c3':
             for chars in None, '', 'a', 'ba', 'c', 'cb', 'x', 'ac', '32ba', '123abc':
                 with self.subTest(string=s, chars=chars):
                     i = Ito(s)
-                    self.assertEqual(s.strip(chars), str(i.str_strip(chars)))
+                    s_rv = s.strip(chars)
+                    i_rv = i.str_strip(chars)
+                    self.assertEqual(s is s_rv, i is i_rv)
+                    self.assertEqual(s_rv, str(i_rv))                           
 
     # endregion
 

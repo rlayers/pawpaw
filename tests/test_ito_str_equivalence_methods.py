@@ -182,12 +182,12 @@ class TestItoStrEquivalenceMethods(_TestIto):
 
         for sep in ['a', 'b', 'ab', 'bc', 'abc', 'z']:
             with self.subTest(sep=sep):
-                s_rv = s.partition(chars)
-                i_rv = i.str_partition(chars)
+                s_rv = s.partition(sep)
+                i_rv = ito.str_partition(sep)
                 
                 self.assertEqual(type(s_rv), type(i_rv))
-                self.assertEqual(s is s_rv[0], i is i_rv[0])
-                self.assertSequenceEqual(s_rv, tuple(str(i) for i in i_rv)
+                self.assertEqual(s is s_rv[0], ito is i_rv[0])
+                self.assertSequenceEqual(s_rv, tuple(str(i) for i in i_rv))
 
     def test_str_rpartition(self):
         basis = f' abc '
@@ -201,82 +201,119 @@ class TestItoStrEquivalenceMethods(_TestIto):
 
         for sep in ['a', 'b', 'ab', 'bc', 'abc', 'z']:
             with self.subTest(sep=sep):
-                s_rv = s.rpartition(chars)
-                i_rv = i.str_rpartition(chars)
+                s_rv = s.rpartition(sep)
+                i_rv = ito.str_rpartition(sep)
                 
                 self.assertEqual(type(s_rv), type(i_rv))
-                self.assertEqual(s is s_rv[-1], i is i_rv[-1])
-                self.assertSequenceEqual(s_rv, tuple(str(i) for i in i_rv)
+                self.assertEqual(s is s_rv[-1], ito is i_rv[-1])
+                self.assertSequenceEqual(s_rv, tuple(str(i) for i in i_rv))
 
     def test_str_rsplit(self):
         for s in ['', ' ', ' a', ' a', ' a ', ' a b', ' a b ', '\ta\nb\rc']:
             for maxsplit in -1, 0, 1:
                 with self.subTest(string=s, sep=None, maxsplit=maxsplit):
                     ito = Ito(s)
-                    expected = [*Ito.from_substrings(s, *s.rsplit(maxsplit=maxsplit))]
-                    actual = ito.str_rsplit(maxsplit=maxsplit)
-                    self.assertListEqual(expected, actual)
+                    s_rv = s.rsplit(maxsplit=maxsplit)
+                    i_rv = ito.str_rsplit(maxsplit=maxsplit)
 
-        s = f' {"xyz" * 3} '
-        ito = Ito(s, 1, -1)
+                    self.assertEqual(type(s_rv), type(i_rv))
+                    self.assertEqual(len(s_rv), len(i_rv))
+                    for a, b in zip(s_rv, i_rv):
+                        self.assertEqual(a is s, b is ito)
+                        self.assertEqual(a, str(b))
+
+        basis = f' {"xyz" * 3} '
+        ito = Ito(basis, 1, -1)
+        s = basis[1:-1]
 
         sep = ''
-        with self.subTest(string=s, sep=sep):
+        with self.subTest(string=basis, sep=sep):
             with self.assertRaises(ValueError):
                 ito.str_rsplit(sep)
 
         for sep in ['x', 'y', 'xy', 'yz', 'z', 'xyz', 'z']:
-            for maxsplit in -1, 0, 1:
-                with self.subTest(string=s, sep=sep, maxsplit=maxsplit):
-                    expected = list(s for s in s.strip().rsplit(sep, maxsplit))
-                    actual = list(str(i) for i in ito.str_rsplit(sep, maxsplit))
-                    self.assertListEqual(expected, actual)
+            for maxsplit in -1, 0, 1, 2:
+                with self.subTest(string=basis, sep=sep, maxsplit=maxsplit):
+                    s_rv = s.rsplit(sep, maxsplit=maxsplit)
+                    i_rv = ito.str_rsplit(sep, maxsplit=maxsplit)
+                    
+                    self.assertEqual(type(s_rv), type(i_rv))
+                    self.assertEqual(len(s_rv), len(i_rv))
+                    for a, b in zip(s_rv, i_rv):
+                        self.assertEqual(a is s, b is ito)
+                        self.assertEqual(a, str(b))
 
     def test_str_split(self):
         for s in ['', ' ', ' a', ' a', ' a ', ' a b', ' a b ', '\ta\nb\rc', 'a b c d e']:
             for maxsplit in -1, 0, 1:
                 with self.subTest(string=s, sep=None, maxsplit=maxsplit):
                     ito = Ito(s)
-                    expected = [*Ito.from_substrings(s, *s.split(maxsplit=maxsplit))]
-                    actual = ito.str_split(maxsplit=maxsplit)
-                    self.assertListEqual(expected, actual)
+                    s_rv = s.split(maxsplit=maxsplit)
+                    i_rv = ito.str_split(maxsplit=maxsplit)
 
-        s = f' {"xyz" * 3} '
-        ito = Ito(s, 1, -1)
+                    self.assertEqual(type(s_rv), type(i_rv))
+                    self.assertEqual(len(s_rv), len(i_rv))
+                    for a, b in zip(s_rv, i_rv):
+                        self.assertEqual(a is s, b is ito)
+                        self.assertEqual(a, str(b))
+
+        basis = f' {"xyz" * 3} '
+        ito = Ito(basis, 1, -1)
+        s = basis[1:-1]
 
         sep = ''
-        with self.subTest(string=s, sep=sep):
+        with self.subTest(string=basis, sep=sep):
             with self.assertRaises(ValueError):
                 ito.str_split(sep)
 
         for sep in ['x', 'y', 'xy', 'yz', 'z', 'xyz', 'z']:
-            for maxsplit in -1, 0, 1:
-                with self.subTest(string=s, sep=sep, maxsplit=maxsplit):
-                    expected = list(s for s in s.strip().split(sep, maxsplit))
-                    actual = list(str(i) for i in ito.str_split(sep, maxsplit))
-                    self.assertListEqual(expected, actual)
+            for maxsplit in -1, 0, 1, 2:
+                with self.subTest(string=basis, sep=sep, maxsplit=maxsplit):
+                    s_rv = s.split(sep, maxsplit=maxsplit)
+                    i_rv = ito.str_split(sep, maxsplit=maxsplit)
+                    
+                    self.assertEqual(type(s_rv), type(i_rv))
+                    self.assertEqual(len(s_rv), len(i_rv))
+                    for a, b in zip(s_rv, i_rv):
+                        self.assertEqual(a is s, b is ito)
+                        self.assertEqual(a, str(b))
 
     def test_str_splitlines(self):
         basis = ''
         ito = Ito(basis)
-        with self.subTest(string=basis, ito_span=ito.span, keepends=None):
-            expected = basis.splitlines()
-            actual = [str(i) for i in ito.str_splitlines()]
-            self.assertListEqual(expected, actual)
+        s = basis
+        with self.subTest(ito=ito, keepends=None):
+            s_rv = s.splitlines()
+            i_rv = ito.str_splitlines()
+            self.assertEqual(type(s_rv), type(i_rv))
+            self.assertEqual(len(s_rv), len(i_rv))
+            for a, b in zip(s_rv, i_rv):
+                self.assertEqual(a is s, b is ito)
+                self.assertEqual(a, str(b))
 
         basis = '\n'
         ito = Ito(basis)
-        with self.subTest(string=basis, ito_span=ito.span, keepends=None):
-            expected = basis.splitlines()
-            actual = [str(i) for i in ito.str_splitlines()]
-            self.assertListEqual(expected, actual)
+        s = basis
+        with self.subTest(ito=ito, keepends=None):
+            s_rv = s.splitlines()
+            i_rv = ito.str_splitlines()
+            self.assertEqual(type(s_rv), type(i_rv))
+            self.assertEqual(len(s_rv), len(i_rv))
+            for a, b in zip(s_rv, i_rv):
+                self.assertEqual(a is s, b is ito)
+                self.assertEqual(a, str(b))
 
         basis = '__'
         ito = Ito(basis, 1, -1)
-        with self.subTest(string=basis, ito_span=ito.span, keepends=None):
-            expected = basis[slice(*ito.span)].splitlines()
-            actual = [str(i) for i in ito.str_splitlines()]
-            self.assertListEqual(expected, actual)
+        s = basis[1:-1]
+        with self.subTest(ito=ito, keepends=None):
+            s_rv = s.splitlines()
+            i_rv = ito.str_splitlines()
+            self.assertEqual(type(s_rv), type(i_rv))
+            self.assertEqual(len(s_rv), len(i_rv))
+            for a, b in zip(s_rv, i_rv):
+                self.assertEqual(a is s, b is ito)
+                self.assertEqual(a, str(b))
 
         basis = 'The\nquick\rbrown\r\nfox\vjumped\fover\xc1the\x1dlazy\u2028dogs.'
         paddings = ('', '\n', '\n\n', '\n\n\n', '\u2029', '\u2029\u2029')
@@ -285,24 +322,38 @@ class TestItoStrEquivalenceMethods(_TestIto):
                 s = f'{prefix}{basis}{suffix}'
                 ito = Ito(s, 1, -1)
                 for keepends in True, False:
-                    with self.subTest(string=s, ito_span=ito.span, keepends=keepends):
-                        expected = s[1:-1].splitlines(keepends=keepends)
-                        actual = [str(i) for i in ito.str_splitlines(keepends=keepends)]
-                        self.assertListEqual(expected, actual)
+                    with self.subTest(ito=ito, keepends=keepends):
+                        s_rv = s[1:-1].splitlines(keepends=keepends)
+                        i_rv = ito.str_splitlines(keepends=keepends)
+                        self.assertEqual(type(s_rv), type(i_rv))
+                        self.assertEqual(len(s_rv), len(i_rv))
+                        for a, b in zip(s_rv, i_rv):
+                            self.assertEqual(a is s, b is ito)
+                            self.assertEqual(a, str(b))
 
     # endregion
 
     def test_str_removeprefix(self):
-        s = '_abc_'
-        i = Ito(s, 1, -1)
-        self.assertEqual(s[1:-1].removeprefix('_'), str(i.str_removeprefix('_')))
-        self.assertEqual(s[1:-1].removeprefix('a'), str(i.str_removeprefix('a')))
+        basis = '_abc_'
+        i = Ito(basis, 1, -1)
+        s = basis[1:-1]
+        for prefix in '_', 'a':
+            with self.subTest(ito=i, prefix=prefix):
+                s_rv = s.removeprefix(prefix)
+                i_rv = i.str_removeprefix(prefix)
+                self.assertEqual(s_rv is s, i_rv is i)
+                self.assertEqual(s_rv, str(i_rv))
 
     def test_str_removesuffix(self):
-        s = '_abc_'
-        i = Ito(s, 1, -1)
-        self.assertEqual(s[1:-1].removesuffix('_'), str(i.str_removesuffix('_')))
-        self.assertEqual(s[1:-1].removesuffix('c'), str(i.str_removesuffix('c')))
+        basis = '_abc_'
+        i = Ito(basis, 1, -1)
+        s = basis[1:-1]
+        for suffix in '_', 'c':
+            with self.subTest(ito=i, suffix=suffix):
+                s_rv = s.removesuffix(suffix)
+                i_rv = i.str_removesuffix(suffix)
+                self.assertEqual(s_rv is s, i_rv is i)
+                self.assertEqual(s_rv, str(i_rv))
 
     def test_str_rfind(self):
         s = 'abcdefgh' * 2

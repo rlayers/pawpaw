@@ -591,8 +591,8 @@ class Ito:
             
         return cls(string, start, stop, desc)
 
-    def reclaim(self) -> None:
-        """Strips span to match extent of any children; non-modifying if .children is empty
+    def strip_to_children(self) -> Types.C_ITO:
+        """Strips span to match extent of any children; returns self if .children is empty
         
         Returns:
             None
@@ -601,10 +601,9 @@ class Ito:
             start = self.children[0].start
             stop = self.children[-1].stop
             if (start > self.start) or (stop < self.stop):
-                self._span = Span(start, stop)
-            #     return self.clone(start, stop)
-            # else:
-            #     return self
+                return self.clone(start, stop)
+        
+        return self
 
     def invert_children(self) -> Types.C_ITO:
         """Creates a clone of the self having children in the gaps
@@ -1004,26 +1003,22 @@ class Ito:
         elif sep == '':
             raise ValueError('empty separator')
 
-        else:
-            if maxsplit == 0:
-                return [self.clone()]
+        elif maxsplit == 0:
+            return [self]
 
+        else:
             rv: typing.List[Types.C_ITO] = []
             i = self.stop
             while (j := self._string.rfind(sep, self.start, i)) >= 0 and maxsplit != 0:
                 rv.insert(0, self.clone(j + len(sep), i))
                 i = j
                 maxsplit -= 1
-            # if i >= self.start + len(sep) and maxsplit != 0:
-            #     rv.insert(0, self.clone(i - len(sep), i))
-            if i >= self.start and maxsplit != 0:
-                rv.insert(0, self.clone(stop=i))
 
-            if maxsplit == 0:
-                head_stop = self.stop if len(rv) == 0 else rv[0].start
-                head = self.clone(stop=head_stop).str_removesuffix(sep)
-                if len(head) > 0:
-                    rv.insert(0, head)
+            if len(rv) == 0:
+                rv.append(self)
+            else:
+                rv.insert(0, self if i == self.stop else self.clone(stop=i))
+
             return rv
 
     def str_split(self, sep: str = None, maxsplit: int = -1) -> typing.List[Types.C_ITO]:
@@ -1051,24 +1046,22 @@ class Ito:
         elif sep == '':
             raise ValueError('empty separator')
 
-        else:
-            if maxsplit == 0:
-                return [self.clone()]
+        elif maxsplit == 0:
+            return [self]
 
+        else:
             rv: typing.List[Types.C_ITO] = []
             i = self.start
             while (j := self._string.find(sep, i, self.stop)) >= 0 and maxsplit != 0:
                 rv.append(self.clone(i, j))
                 i = j + len(sep)
                 maxsplit -= 1
-            if i <= self.stop and maxsplit != 0:
-                rv.append(self.clone(i))
 
-            if maxsplit == 0:
-                tail_start = self.start if len(rv) == 0 else rv[-1].stop
-                tail = self.clone(tail_start).str_removeprefix(sep)
-                if len(tail) > 0:
-                    rv.append(tail)
+            if len(rv) == 0:
+                rv.append(self)
+            else:
+                rv.append(self if i == self.start else self.clone(i))
+
             return rv
 
     # Line separators taken from https://docs.python.org/3/library/stdtypes.html
@@ -1091,13 +1084,13 @@ class Ito:
         if self.str_startswith(prefix):
             return self.__class__(self, len(prefix), desc=self.desc)
         else:
-            return self.clone()
+            return self
 
     def str_removesuffix(self, suffix: str) -> Types.C_ITO:
         if self.str_endswith(suffix):
             return self.__class__(self, stop=-len(suffix), desc=self.desc)
         else:
-            return self.clone()
+            return self
         
     # endregion
 

@@ -171,8 +171,9 @@ class TestItoStrEquivalenceMethods(_TestIto):
     # region partition and split methods
     
     def test_str_partition(self):
-        string = f' abc '
-        ito = Ito(string, 1, -1)
+        basis = f' abc '
+        ito = Ito(basis, 1, -1)
+        s = basis.strip()
 
         for sep in [None, '']:
             with self.subTest(sep=sep):
@@ -181,16 +182,17 @@ class TestItoStrEquivalenceMethods(_TestIto):
 
         for sep in ['a', 'b', 'ab', 'bc', 'abc', 'z']:
             with self.subTest(sep=sep):
-                expected = str(ito).partition(sep)
-                actual = ito.str_partition(sep)
-                self.assertEqual(type(expected), type(actual))
-                expected = list(expected)
-                actual = list(str(i) for i in actual)
-                self.assertListEqual(expected, actual)
+                s_rv = s.partition(chars)
+                i_rv = i.str_partition(chars)
+                
+                self.assertEqual(type(s_rv), type(i_rv))
+                self.assertEqual(s is s_rv[0], i is i_rv[0])
+                self.assertSequenceEqual(s_rv, tuple(str(i) for i in i_rv)
 
     def test_str_rpartition(self):
-        string = f' abc '
-        ito = Ito(string, 1, -1)
+        basis = f' abc '
+        ito = Ito(basis, 1, -1)
+        s = basis.strip()
 
         for sep in [None, '']:
             with self.subTest(sep=sep):
@@ -199,12 +201,12 @@ class TestItoStrEquivalenceMethods(_TestIto):
 
         for sep in ['a', 'b', 'ab', 'bc', 'abc', 'z']:
             with self.subTest(sep=sep):
-                expected = string.strip().rpartition(sep)
-                actual = ito.str_rpartition(sep)
-                self.assertEqual(type(expected), type(actual))
-                expected = list(expected)
-                actual = list(str(i) for i in actual)
-                self.assertListEqual(expected, actual)
+                s_rv = s.rpartition(chars)
+                i_rv = i.str_rpartition(chars)
+                
+                self.assertEqual(type(s_rv), type(i_rv))
+                self.assertEqual(s is s_rv[-1], i is i_rv[-1])
+                self.assertSequenceEqual(s_rv, tuple(str(i) for i in i_rv)
 
     def test_str_rsplit(self):
         for s in ['', ' ', ' a', ' a', ' a ', ' a b', ' a b ', '\ta\nb\rc']:

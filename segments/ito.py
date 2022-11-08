@@ -592,10 +592,10 @@ class Ito:
         return cls(string, start, stop, desc)
 
     def strip_to_children(self) -> Types.C_ITO:
-        """Strips span to match extent of any children; returns self if .children is empty
+        """Creates a clone with span trimmed to match extent of children; returns self if .children is empty
         
         Returns:
-            None
+            Self or clone with adjusted .span
         """
         if len(self.children) > 0:
             start = self.children[0].start

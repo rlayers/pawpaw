@@ -279,9 +279,29 @@ class TestIto(_TestIto):
         self.assertEqual(s, str(joined))
         self.assertEqual(joined_desc, joined.desc)
 
-    def test_reclaim(self):
-        # TODO : Write test
-        self.assertTrue(False)
+    def test_strip_to_children(self):
+        basis = ' abc '
+        ito = Ito(basis, 1, -1)
+        s = basis[1:-1]
+        with self.subTest(ito=ito, children_added=False):
+            actual = ito.strip_to_children()
+            self.assertIs(ito, actual)
+
+        char_itos = list(Ito.from_substrings(basis, *s))
+        for cs in char_itos[:1], char_itos[:2], char_itos[1:2], char_itos[1:], char_itos[2:], char_itos[:]:
+            with self.subTest(ito=ito, children_added=False, children_strs=[str(i) for i in cs]):
+                ito.children.add(*cs)
+                actual = ito.strip_to_children()
+                min_start = min(i.start for i in cs)
+                max_stop = max(i.stop for i in cs)
+                actual = ito.strip_to_children()
+                if Span(min_start, max_stop) == ito.span:
+                    self.assertIs(ito, actual)
+                else:
+                    self.assertEqual(min_start, actual.start)
+                    self.assertEqual(max_stop, actual.stop)
+                    self.assertSequenceEqual([*ito.children], [*actual.children])
+                ito.children.clear()
 
     def test_invert_children(self):
         for s in '', 'AB', ' AB', 'A B', 'AB ', ' A B', 'A B ', ' A B ':

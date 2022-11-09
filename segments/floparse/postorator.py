@@ -104,7 +104,7 @@ class Reduce(Consolidator):
             raise Errors.parameter_invalid_type('pop_predicate', pop_predicate, self.F_SQ_ITOS_ITO_2_B, None)
 
     def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
-        stack: typing.List[Ito] = []
+        stack: typing.List[Types.C_ITO] = []
         for ito in itos:
             if stack:
                 if self.pop_predicate is not None and self.pop_predicate(stack, ito):
@@ -131,7 +131,7 @@ class PromoteChildren(Consolidator):
         self.predicate = predicate
 
     def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
-        stack: typing.List[Ito] = []
+        stack: typing.List[Types.C_ITO] = []
 
         for ito in itos:
             if self.predicate(ito):

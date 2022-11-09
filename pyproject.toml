@@ -11,6 +11,22 @@ authors = [
 description = "High Performance Text Processing & Segmentation Framework"
 readme = "README.md"
 requires-python = ">=3.10"
+license = "MIT"
+license-files = { paths = ["LICENSE"] }
+dependencies = [
+  "regex >= 2022.7.9",
+  #"python-dateutil==2.8.*",
+  #"black @ https://github.com/psf/black/archive/refs/tags/21.10b0.zip",
+  #"pytorch @ https://download.pytorch.org/whl/cu102/torch-1.10.0%2Bcu102-cp39-cp39-linux_x86_64.whl",
+]
+keywords = [
+  "nlp",
+  "information-extraction",
+  "xml-parser",
+  "text-processing",
+  "text-segmentation",
+  "hierarchical-text-segmentation",
+]
 classifiers = [
     "Programming Language :: Python :: 3.10",
     "License :: OSI Approved :: MIT License",

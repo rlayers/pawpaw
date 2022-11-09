@@ -1,9 +1,35 @@
-=====================
-Segments Introduction
-=====================
+============
+Introduction
+============
 
-Jumping Right In: Introducing the ``Ito``
-=========================================
+Jumping Right In : *What segments can do for you*
+=================================================
+
+Say you have some text::
+
+>>> s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
+
+and you wish to perform an nlp-like segmentation on phrases, words, numbers, and so forth.  Given
+the regular expression:
+
+>>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')``
+
+You can use **segments** as follows:
+
+>>> doc = Ito(s)
+>>> doc.children.add(*Ito.from_re(re, doc))
+
+With just two lines of code, you now have a fully hierarchical, tree graph of phrases, words, chars,
+numbers, and digits.  This tree can be traversed, and even searched using a powerful XPATH-like
+structured query language:
+
+>>> print(*doc.find_all('**[d:digit]'), sep=', ')  # print all digits
+9, 1, 0, 1, 1, 1, 2, 1, 3
+>>> print(*doc.find_all('**[d:number]{</*[s:i]}'), sep=',')  # print numbers having leter 'i' in their names
+9, 13
+
+Dive a Bit Deeper: *Introducing* ``Ito``
+========================================
 
 >>> from segments import Ito
 >>> s = 'x Hello, world! x'

@@ -1,4 +1,4 @@
-from segments._version import __version__
+from segments._version import __version__, Version
 del _version
 
 from segments.infix import Infix
@@ -16,8 +16,7 @@ del ito
 from segments.util import find_unescaped, split_unescaped
 del util
 
-import segments.itorator
-import segments.postorator
+import segments.floparse
 import segments.query
 import segments.xml
 import segments.nlp

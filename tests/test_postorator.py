@@ -1,10 +1,10 @@
 import regex
 from segments import Ito
-from segments.postorator import *
+from segments.flowparse import WindowedJoin
 from tests.util import _TestIto
 
 
-class TestWindowedJoinEx(_TestIto):
+class TestWindowedJoin(_TestIto):
     def test_window_size(self):
         func = lambda itos: True
         for window_size in -1, 0, 1, 2:

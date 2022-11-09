@@ -29,29 +29,29 @@
 
 <!-- Overivew -->
 ## Overview
+``ito-segments`` is a framework for easily developing efficient and high performance lexical parsers, which generate parse trees that can be easily serialized, traversed, and searched using a powerful structured query language.  
+
 - Indexed str and substr representation
   - Efficient memory utilization
   - Fast processing
   - Pythonic relative indexing and slicing of segments
   - Runtime & polymorphic value extraction
-  - All non-modifying str and regex methods duplicated within framework    
-  - Extensive use of Python generators
 - Efficient pickling and JSON persistance
   - Security option enables persistance of index-only data, with refrence strings re-injected during de-serialziation 
 - Rules Pipelining Engine
-  - Quickly and easily convert unstructured text into structed, indexed, & searchable collections
-  - Develop complex text parsers with just a few lines of code
-  - Easily pre-process text for downstream NLP/AI/ML consumers
+  - Develop complex lexical parsers with just a few lines of code
+  - Quickly and easily convert unstructured text into structured, indexed, & searchable tree graphs
+  - Pre-process text for downstream NLP/AI/ML consumers
 - Search and Query
   - Hierarchical data structure for all indexed text
   - Search using extensive structured query language
   - Optionally pre-compile queries for reuse to improvement performance
 - XML Processing
   - Features a drop-in replacement for ElementTree.XmlParser
-  - Full text indexes for all Elements, Attributes, Tags, Text, etc. within a document
-  - Search the resulting XML using both XPATH and the included, structured query language
+  - Full text indexes for all Elements, Attributes, Tags, Text, etc. 
+  - Search XML using both XPATH and the included, structured query language
 - Stable
-  - Over 2,000 unit tests and counting!
+  - Over 2,100 unit tests and counting!
 
 <div align="center">
   <a href="https://github.com/rlayers/ito-segments/tree/master/docs">Explore the docs</a>
@@ -61,12 +61,41 @@
   <a href="https://github.com/rlayers/ito-segments/issues">Request Feature</a>
 </div>
 
+
+<!-- Namespace -->
+## Namespace
+
 ```mermaid
-graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
+mindmap
+  root((segments))
+    [Span]
+    [Ito]
+    ((nlp))
+    ((query))
+        Query
+    ((xml))
+        XmlParser
+    ((visualization))
+        ((Sgr))
+            (Sgr)
+                [Fore]
+                [Back]
+                [...]
+            [Colors]
+        (Highlighter)
+        Dump
+            (Compact)
+            (Json)
+            (...)
+    ((util))
+    ((floparse))
+        Itorator
+            (Split)
+            (Extract)
+            (...)
+        Postorator
+            (WindowedJoin)
+            (...)
 ```
 
 <!-- TABLE OF CONTENTS -->
@@ -75,6 +104,7 @@ graph TD;
   <ol>
     <li><a href="#usage">Overivew</a></li>
     <li><a href="#usage">About</a></li>
+    <li><a href="#namespace">Namespace</a></li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#getting-started">Getting Started</a>
       <ul>

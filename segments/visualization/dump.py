@@ -11,7 +11,7 @@ from xml.sax.saxutils import escape
 import segments
 
 
-class DumpBase(abc.ABC):
+class Dump(abc.ABC):
     def __init__(self, indent: str = '    ', substring: bool = True, value: bool = False):
         self.indent = indent
         self.substring = substring
@@ -33,7 +33,7 @@ class DumpBase(abc.ABC):
             return fs.read()
         
 
-class Compact(DumpBase):
+class Compact(Dump):
     def __init__(self, indent: str = '    ', substring: bool = True, value: bool = False):
         super().__init__(indent, substring, value)
         
@@ -52,7 +52,7 @@ class Compact(DumpBase):
             self._dump(fs, ei)
 
                 
-class Xml(DumpBase):
+class Xml(Dump):
     def __init__(self, indent: str = '    ', substring: bool = True, value: bool = False):
         super().__init__(indent, substring, value)
                 
@@ -90,7 +90,7 @@ class Xml(DumpBase):
         fs.write(f'<itos>{self.linesep}')
 
                         
-class Json(DumpBase):
+class Json(Dump):
     def __init__(self, indent: str = '    ', substring: bool = True, value: bool = False):
         super().__init__(indent, substring, value)
                 

@@ -20,7 +20,7 @@ class Postorator(ABC):
         ...
 
 
-class Wrap(Postorator):
+class WrapEx(Postorator):
     def __init__(self, f: Types.F_ITOS_2_BITOS):
         super().__init__()
         self.__f = f

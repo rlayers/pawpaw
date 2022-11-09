@@ -1,5 +1,5 @@
 from segments import Ito
-from segments.itorator import Reflect
+from segments.flowparse import Reflect
 from tests.util import _TestIto
 
 

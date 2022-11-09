@@ -27,4 +27,3 @@ classifiers = [
 
 [tool.hatch.version]
 path = "segments/_version.py"
-#pattern = "__VER_STR__ = '(?P<version>)'"

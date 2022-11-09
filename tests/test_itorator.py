@@ -1,6 +1,6 @@
 import regex
 from segments import Ito
-from segments.flowparse import Reflect, Wrap
+from segments.floparse import Reflect, Wrap
 from tests.util import _TestIto
 
 

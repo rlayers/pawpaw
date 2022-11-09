@@ -1,6 +1,6 @@
 import regex
 from segments import Ito
-from segments.flowparse import WindowedJoin
+from segments.floparse import WindowedJoin
 from tests.util import _TestIto
 
 

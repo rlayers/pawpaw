@@ -126,25 +126,25 @@ class SimpleNlp:
     def __init__(self, number: Number | None = None, chars: bool = False):
         super().__init__()
 
-        doc_trimmer = segments.itorator.Wrap(lambda ito: [ito.str_strip()])
+        doc_trimmer = segments.floparse.Wrap(lambda ito: [ito.str_strip()])
 
-        paragraph = segments.itorator.Split(self._paragraph_re, desc='Paragraph')
+        paragraph = segments.floparse.Split(self._paragraph_re, desc='Paragraph')
         doc_trimmer.itor_next = paragraph
 
-        para_trimmer = segments.itorator.Wrap(lambda ito: [ito.str_strip()])
+        para_trimmer = segments.floparse.Wrap(lambda ito: [ito.str_strip()])
         paragraph.itor_next = para_trimmer
 
-        sentence = segments.itorator.Split(self._sentence_re, desc='Sentence')
+        sentence = segments.floparse.Split(self._sentence_re, desc='Sentence')
         paragraph.itor_children = sentence
 
         self._number = number |nuco| Number()
         word_num_re = regex.compile(r'(?P<Number>' + self._number.num_pat + r')|(?P<Word>' + self._word_pat + r')', regex.DOTALL)
 
-        word_number = segments.itorator.Extract(word_num_re)
+        word_number = segments.floparse.Extract(word_num_re)
         sentence.itor_children = word_number
 
         if chars:
-            char = segments.itorator.Extract(regex.compile(r'(?P<Character>\w)', regex.DOTALL))
+            char = segments.floparse.Extract(regex.compile(r'(?P<Character>\w)', regex.DOTALL))
             word_number.itor_children = lambda ito: char if ito.desc == 'Word' else None
 
         self.itor = doc_trimmer

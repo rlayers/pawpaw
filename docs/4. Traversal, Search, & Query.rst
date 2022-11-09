@@ -13,7 +13,7 @@ be used as a hierarchical data store.  Traversal down to child nodes is possible
 >>> s = 'ten 10 eleven 11 twelve 12 '
 >>> root = segments.Ito(s)
 >>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
->>> itor = segments.itorator.Extract(re)
+>>> itor = segments.floparse.Extract(re)
 >>> root.children.add(*itor.traverse(segments.Ito(s)))
 >>> last_child = root.children[-1]
 >>> str(last_child)

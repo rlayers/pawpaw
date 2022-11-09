@@ -7,7 +7,7 @@ import typing
 
 import regex
 from segments import Types, Errors, Ito, Span
-from segments import postorator
+from segments.floparse import postorator
 
 
 class Itorator(ABC):

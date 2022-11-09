@@ -17,6 +17,7 @@ from segments.util import find_unescaped, split_unescaped
 del util
 
 import segments.itorator
+import segments.postorator
 import segments.query
 import segments.xml
 import segments.nlp

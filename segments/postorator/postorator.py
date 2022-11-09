@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 import typing
 
 from segments import Ito, Types
-from segments.errors import Errors
 
 
 # TODO : output streams could be identities, clones, or something new compared to incoming itos.  So for each chunk,
@@ -15,22 +14,37 @@ from segments.errors import Errors
 #   parent.children.add(*outgoing)
 
 
-class ConsolidatorEx(ABC):
+class Postorator(ABC):
     @abstractmethod
     def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
         ...
+
+
+class Wrap(Postorator):
+    def __init__(self, f: Types.F_ITOS_2_BITOS):
+        super().__init__()
+        self.__f = f
+
+    def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
+        yield from self.__f(itos)
+
         
-        
-class WindowedJoinEx(ConsolidatorEx):
+class WindowedJoin(Postorator):
     F_SQ_ITOS_2_B = typing.Callable[[Types.C_SQ_ITOS], bool]
     
-    def __init__(self, window_size: int, predicate: F_SQ_ITOS_2_B, desc: str | None = None, ito_class: Types.C_ITO = Ito):
+    def __init__(
+            self,
+            window_size: int,
+            predicate: F_SQ_ITOS_2_B,
+            ito_class: Types.C_ITO = Ito,
+            desc: str | None = None
+    ):
         super().__init__()
-        
         if not isinstance(window_size, int):
             raise Errors.parameter_invalid_type('window_size', window_size, int)
         if window_size < 2:
-            raise ValueError(f'parameter \'window_size\' has value {window_size:,}, but must be greater than or equal to 2')
+            raise ValueError(f'parameter \'window_size\' has value '
+                             f'{window_size:,}, but must be greater than or equal to 2')
         self.window_size = window_size
 
         if not Types.is_callable(predicate, self.F_SQ_ITOS_2_B):
@@ -65,38 +79,6 @@ class Consolidator(ABC):
         ...
 
 
-class WindowedJoin(Consolidator):
-    F_SQ_ITOS_2_B = typing.Callable[[Types.C_SQ_ITOS], bool]
-    
-    def __init__(self, window_size: int, predicate: F_SQ_ITOS_2_B, desc: str | None = None):
-        super().__init__()
-        
-        if not isinstance(window_size, int):
-            raise Errors.parameter_invalid_type('window_size', window_size, int)
-        if window_size < 2:
-            raise ValueError(f'parameter \'window_size\' has value {window_size:,}, but must be greater than or equal to 2')
-        self.window_size = window_size
-
-        if not Types.is_callable(predicate, self.F_SQ_ITOS_2_B):
-            raise Errors.parameter_invalid_type('predicate', predicate, self.F_SQ_ITOS_2_B)
-        self.predicate = predicate
-
-        self.desc = desc
-
-    def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
-        window: typing.List[Types.C_ITO] = []
-        for ito in itos:
-            window.append(ito)
-            if len(window) == self.window_size:
-                if self.predicate(window):
-                    window.append(ito.join(window, desc=self.desc))
-                    del window[:-1]
-                else:
-                    yield window.pop(0)
-
-        yield from window
-
-
 class Reduce(Consolidator):
     F_SQ_ITOS_2_ITO = typing.Callable[[Types.C_SQ_ITOS], Types.C_ITO]
     F_SQ_ITOS_ITO_2_B = typing.Callable[[Types.C_SQ_ITOS, Types.C_ITO], bool]
@@ -108,7 +90,7 @@ class Reduce(Consolidator):
             pop_predicate: F_SQ_ITOS_ITO_2_B | None = None
     ):
         super().__init__()
-        if not Types.is_callable(reduce_func, F_SQ_ITOS_2_ITO):
+        if not Types.is_callable(reduce_func, self.F_SQ_ITOS_2_ITO):
             raise Errors.parameter_invalid_type('reduce_func', reduce_func, self.F_SQ_ITOS_2_ITO)
         self.reduce_func = reduce_func
 

@@ -1,6 +1,6 @@
 import regex
 from segments import Ito
-from segments.consolidator import *
+from segments.postorator import *
 from tests.util import _TestIto
 
 
@@ -11,9 +11,9 @@ class TestWindowedJoinEx(_TestIto):
           with self.subTest(window_size=window_size):
               if window_size < 2:
                   with self.assertRaises(ValueError):
-                      WindowedJoinEx(window_size, func)
+                      WindowedJoin(window_size, func)
               else:
-                  WindowedJoinEx(window_size, func)
+                  WindowedJoin(window_size, func)
 
     def test_traverse(self):
         func = lambda itos: True
@@ -24,9 +24,9 @@ class TestWindowedJoinEx(_TestIto):
             desc = 'merged'
             for window_size in 2, 3, 4:
                 with self.subTest(string=s, itos=itos, window_size=window_size, desc=desc):
-                    wj = WindowedJoinEx(window_size, func, desc)
+                    wj = WindowedJoin(window_size, func, desc=desc)
                     itos_iter = root.split_iter(re)
-                    actual = [*m.traverse(itos_iter)]
+                    actual = [*wj.traverse(itos_iter)]
                     if len(itos) < window_size:
                         self.assertListEqual([Types.C_BITO(True, i) for i in itos], actual)
                     else:

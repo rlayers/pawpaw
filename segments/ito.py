@@ -37,6 +37,7 @@ class Types:
         tf: bool
         ito: segments.Types.C_ITO
     C_IT_BITOS = typing.Iterable[C_BITO]
+    F_ITOS_2_BITOS = typing.Callable[[C_IT_ITOS], C_IT_BITOS]
 
     class C_EITO(typing.NamedTuple):
         index: int
@@ -84,8 +85,9 @@ class Types:
         return True
 
 
-#class Operators
 nuco = Infix(lambda x, y: y if x is None else x)
+"""Null coalescing operator
+"""
 
 
 class Ito:
@@ -242,28 +244,31 @@ class Ito:
             *substrings: str,
             desc: str | None = None
     ) -> typing.Iterable[Types.C_ITO]:
-        """
-        :param src:
-        :param substrings: must be:
-            1. present in string
-            2. ordered left to right
-            3. non-overlapping
+        """Generate Itos from substrings
 
-            * substrings do not have to be consecutive
+        Args:
+            src: a str or Ito to use as the basis
+            *substrings: one or more substrings in src that:
+                1. are present in string
+                2. are ordered left to right
+                3. are non-overlapping
+                4. do not have to be consecutive
 
-            * to capture a repeated substring, it must be repeated in the substrings parameter, e.g.:
+                To capture a repeated substring, it must be repeated in the substrings parameter, e.g.:
 
-            given:
+                    given:
 
-                string = 'ababce'
+                        string = 'ababce'
 
-            when substrings =
+                    when substrings =
 
-                ('ab', 'ce') -> returns 2 Ito objects with spans (0,2) and (4,6)
+                        ('ab', 'ce') -> returns 2 Ito objects with spans (0,2) and (4,6)
 
-                ('ab', 'ab', 'ce') -> returns 3 Ito objects with spans (0,2), (2,4) and (4,6)
-        :param desc:
-        :return:
+                        ('ab', 'ab', 'ce') -> returns 3 Ito objects with spans (0,2), (2,4) and (4,6)
+            desc: a descriptor for the generated Itos
+
+        Yields:
+            Itos; stream ordering will be left to right
         """
         if isinstance(src, str):
             s = src

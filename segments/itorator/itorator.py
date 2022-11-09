@@ -7,13 +7,14 @@ import typing
 
 import regex
 from segments import Types, Errors, Ito, Span
+from segments import postorator
 
 
 class Itorator(ABC):
     def __init__(self):
-        self.__itor_next: Types.F_ITO_2_ITOR | None = None
-        self.__itor_children: Types.F_ITO_2_ITOR | None = None
-        #self.post_process: typing.Callable[[Types.C_IT_ITOS], Types.C_IT_ITOS] = lambda itos: itos
+        self.__itor_next: Itorator | Types.F_ITO_2_ITOR | None = None
+        self.__itor_children: Itorator | Types.F_ITO_2_ITOR | None = None
+        self.post_process: postorator.Postorator | Types.F_ITOS_2_BITOS | None = None
 
     @property
     def itor_next(self) -> Types.F_ITO_2_ITOR:
@@ -23,7 +24,7 @@ class Itorator(ABC):
     def itor_next(self, val: Itorator | Types.F_ITO_2_ITOR | None):
         if isinstance(val, Itorator):
             self.__itor_next = lambda ito: val
-        elif val is None or isinstance(val, collections.abc.Callable):  # TODO : Better type checking on Callable
+        elif val is None or Types.is_callable(val, Types.F_ITO_2_ITOR):
             self.__itor_next = val
         else:
             raise Errors.parameter_invalid_type('val', val, Itorator, Types.F_ITO_2_ITOR, types.NoneType)
@@ -36,10 +37,23 @@ class Itorator(ABC):
     def itor_children(self, val: Itorator | Types.F_ITO_2_ITOR | None):
         if isinstance(val, Itorator):
             self.__itor_children = lambda ito: val
-        elif val is None or isinstance(val, collections.abc.Callable):  # TODO : Better type checking on Callable
+        elif val is None or Types.is_callable(val, Types.F_ITO_2_ITOR):
             self.__itor_children = val
         else:
             raise Errors.parameter_invalid_type('val', val, Itorator, Types.F_ITO_2_ITOR, types.NoneType)
+
+    @property
+    def postorator(self) -> Types.F_ITOS_2_BITOS:
+        return self.__postorator
+
+    @postorator.setter
+    def postorator(self, val: postorator.Postorator | Types.F_ITOS_2_BITOS | None):
+        if isinstance(val, postorator.Postorator) or val is None:
+            self.__postorator = val
+        elif Types.is_callable(val, Types.F_ITOS_2_BITOS):
+            self.__postorator = postorator.Wrap(val)
+        else:
+            raise Errors.parameter_invalid_type('val', val, postorator.Postorator, Types.F_ITOS_2_BITOS, types.NoneType)
 
     @abstractmethod
     def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:

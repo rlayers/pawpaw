@@ -29,7 +29,7 @@
 
 <!-- Overivew -->
 ## Overview
-``ito-segments`` is a framework for easily developing efficient and high performance lexical parsers, which generate parse trees that can be easily serialized, traversed, and searched using a powerful structured query language.  
+**ito-segments** is a framework for easily developing efficient and high performance lexical parsers.  The parsers output tree graphs that can be easily serialized, traversed, and searched using a powerful structured query language.
 
 - Indexed str and substr representation
   - Efficient memory utilization
@@ -62,41 +62,6 @@
 </div>
 
 
-<!-- Namespace -->
-## Namespace
-
-```mermaid
-mindmap
-  root((segments))
-    [Span]
-    [Ito]
-    ((nlp))
-    ((query))
-        Query
-    ((xml))
-        XmlParser
-    ((visualization))
-        ((Sgr))
-            (Sgr)
-                [Fore]
-                [Back]
-                [...]
-            [Colors]
-        (Highlighter)
-        Dump
-            (Compact)
-            (Json)
-            (...)
-    ((util))
-    ((floparse))
-        Itorator
-            (Split)
-            (Extract)
-            (...)
-        Postorator
-            (WindowedJoin)
-            (...)
-```
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -104,7 +69,6 @@ mindmap
   <ol>
     <li><a href="#usage">Overivew</a></li>
     <li><a href="#usage">About</a></li>
-    <li><a href="#namespace">Namespace</a></li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#getting-started">Getting Started</a>
       <ul>

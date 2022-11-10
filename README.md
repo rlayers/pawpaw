@@ -17,8 +17,8 @@
 [![Issues][issues-shield]][issues-url]
 -->
 
-<div>
-<h1 align="center">Pawpaw</h1>
+<div align="center">
+<h1>Pawpaw</h1>
 <strong>High Performance Text Processing & Segmentation Framework</strong>
 </div>
 

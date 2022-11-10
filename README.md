@@ -2,6 +2,10 @@
 <a name="readme-top"></a>
 
 
+<!-- PROJECT LOGO -->
+<img align="right" width="25%" height="25%" alt="Logo" src="images/pawpaw.png" >
+
+
 <!-- PROJECT SHIELDS -->
 [![Python][Python.org]][Python-url]
 [![Contributors][contributors-shield]][contributors-url]
@@ -13,23 +17,14 @@
 [![Issues][issues-shield]][issues-url]
 -->
 
-<!-- PROJECT LOGO -->
-<!--
-<br />
-<div align="center">
-  <a href="https://github.com/rlayers/3">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
-  </a>
+<div>
+<h1 align="center">Pawpaw</h1>
+<strong>High Performance Text Processing & Segmentation Framework</strong>
 </div>
--->
-
-<h1 align="center">ito-segments</h1>
-<div align="center"><strong>High Performance Text Processing & Segmentation Framework</strong></div>
-
 
 <!-- Overivew -->
 ## Overview
-**ito-segments** is a framework for easily developing efficient and high performance lexical parsers.  The parsers output tree graphs that can be easily serialized, traversed, and searched using a powerful structured query language.
+**Pawpaw** is a framework for easily developing efficient and high performance lexical parsers.  The parsers output tree graphs that can be easily serialized, traversed, and searched using a powerful structured query language.
 
 - Indexed str and substr representation
   - Efficient memory utilization
@@ -54,11 +49,11 @@
   - Over 2,100 unit tests and counting!
 
 <div align="center">
-  <a href="https://github.com/rlayers/ito-segments/tree/master/docs">Explore the docs</a>
+  <a href="https://github.com/rlayers/pawpaw/tree/master/docs">Explore the docs</a>
   &nbsp;&nbsp;•&nbsp;&nbsp;
-  <a href="https://github.com/rlayers/ito-segments/issues">Report Bug</a>
+  <a href="https://github.com/rlayers/pawpaw/issues">Report Bug</a>
   &nbsp;&nbsp;•&nbsp;&nbsp;
-  <a href="https://github.com/rlayers/ito-segments/issues">Request Feature</a>
+  <a href="https://github.com/rlayers/pawpaw/issues">Request Feature</a>
 </div>
 
 
@@ -176,7 +171,7 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 Robert L. Ayers: <a alt="e-mail" href="email@a.nov.guy@gmail.com">a.nov.guy@gmail.com</a>
 
-Project Link: [https://github.com/rlayers/ito-segments](https://github.com/rlayers/ito-segments)
+Project Link: [Repo][github]
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -193,22 +188,24 @@ Project Link: [https://github.com/rlayers/ito-segments](https://github.com/rlaye
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
+[github]: https://github.com/rlayers/pawpaw "Github Profile"
+
 [Python.org]: https://img.shields.io/badge/python-3.10-blue.svg?style=for-the-badge&logo=angular&logoColor=white
 [Python-url]: https://www.python.org
-[contributors-shield]: https://img.shields.io/github/contributors/rlayers/ito-segments.svg?style=for-the-badge
-[contributors-url]: https://github.com/rlayers/ito-segments/graphs/contributors
-[stars-shield]: https://img.shields.io/github/stars/rlayers/ito-segments.svg?style=for-the-badge
-[stars-url]: https://github.com/rlayers/ito-segments/stargazers
-[issues-shield]: https://img.shields.io/github/issues/rlayers/segments.svg?style=for-the-badge
-[watchers-shield]: https://img.shields.io/github/watchers/rlayers/ito-segments.svg?style=for-the-badge
-[watchers-url]: https://github.com/rlayers/ito-segments/watchers
-[license-shield]: https://img.shields.io/github/license/rlayers/ito-segments.svg?style=for-the-badge
-[license-url]: https://github.com/rlayers/ito-segments/blob/master/LICENSE
+[contributors-shield]: https://img.shields.io/github/contributors/rlayers/pawpaw.svg?style=for-the-badge
+[contributors-url]: https://github.com/rlayers/pawpaw/graphs/contributors
+[stars-shield]: https://img.shields.io/github/stars/rlayers/pawpaw.svg?style=for-the-badge
+[stars-url]: https://github.com/rlayers/pawpaw/stargazers
+[issues-shield]: https://img.shields.io/github/issues/rlayers/pawpaw.svg?style=for-the-badge
+[watchers-shield]: https://img.shields.io/github/watchers/rlayers/pawpaw.svg?style=for-the-badge
+[watchers-url]: https://github.com/rlayers/pawpaw/watchers
+[license-shield]: https://img.shields.io/github/license/rlayers/pawpaw.svg?style=for-the-badge
+[license-url]: https://github.com/rlayers/pawpaw/blob/master/LICENSE
 
-
-[forks-shield]: https://img.shields.io/github/forks/rlayers/ito-segments.svg?style=for-the-badge
-[forks-url]: https://github.com/rlayers/ito-segments/network/members
-[issues-url]: https://github.com/rlayers/ito-segments/issues
+[forks-shield]: https://img.shields.io/github/forks/rlayers/pawpaw.svg?style=for-the-badge
+[forks-url]: https://github.com/rlayers/pawpaw/network/members
+[issues-url]: https://github.com/rlayers/pawpaw/issues
 [product-screenshot]: images/screenshot.png
 
 [Anaconda-shield]: https://anaconda.org/conda-forge/mlconjug/badges/version.svg

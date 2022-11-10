@@ -24,7 +24,9 @@
 
 <!-- Overivew -->
 ## Overview
-**Pawpaw** is a framework for easily developing efficient and high performance lexical parsers.  The parsers output tree graphs that can be easily serialized, traversed, and searched using a powerful structured query language.
+**Pawpaw** is a parsing and segmentation framework for efficient text processing.  It allows
+you to quickly create sophisticated lexcial parsers whose outputs are tree graphs that can be
+serialized, traversed, and searched using a powerful structured query language.
 
 - Indexed str and substr representation
   - Efficient memory utilization

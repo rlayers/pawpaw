@@ -1,7 +1,6 @@
 <!-- Back to top link -->
 <a name="readme-top"></a>
 
-
 <!-- PROJECT SHIELDS -->
 [![Python][Python.org]][Python-url]
 [![Contributors][contributors-shield]][contributors-url]
@@ -9,20 +8,14 @@
 [![MIT License][license-shield]][license-url]
 [![Forks][forks-social]][forks-url]
 [![Stargazers][stars-social]][stars-url]
+<br />
 
+# Pawpaw  [![High Performance Text Processing & Segmentation Framework][byline-img]][repo]
 
 <!-- PROJECT LOGO -->
 <img align="right" width="30%" height="30%" alt="Pawpaw logo" src="images/pawpaw.png" >  
 
-
-<div align="center">
-  <h1>Pawpaw</h1>
-  <strong>High Performance Text Processing & Segmentation Framework</strong>
-</div>
-
-<!-- Overivew -->
-## Overview
-**Pawpaw** is a parsing and segmentation framework for efficient text processing.  It allows
+Pawpaw is a parsing and segmentation framework for efficient text processing.  It allows
 you to quickly create sophisticated lexcial parsers whose outputs are tree graphs that can be
 serialized, traversed, and searched using a powerful structured query language.
 
@@ -136,28 +129,31 @@ Project Link: [Pawpaw repository](/.)
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
-[Python.org]: https://img.shields.io/badge/python-3.10-blue.svg?style=for-the-badge&logo=angular&logoColor=white
+[repo]: ./
+[byline-img]: https://img.shields.io/badge/-High%20Performance%20Text%20Processing%20%26%20Segmentation%20Framework-FFFFFF
+
+[Python.org]: https://img.shields.io/badge/python-3.10-blue.svg?style=flat&logo=angular&logoColor=white
 [Python-url]: https://www.python.org
 
-[contributors-shield]: https://img.shields.io/github/contributors/rlayers/pawpaw.svg?style=for-the-badge
+[contributors-shield]: https://img.shields.io/github/contributors/rlayers/pawpaw.svg?style=flat
 [contributors-url]: https://github.com/rlayers/pawpaw/graphs/contributors
 
-[watchers-shield]: https://img.shields.io/github/watchers/rlayers/pawpaw.svg?style=for-the-badge
+[watchers-shield]: https://img.shields.io/github/watchers/rlayers/pawpaw.svg?style=flat
 [watchers-url]: https://github.com/rlayers/pawpaw/watchers
 
-[license-shield]: https://img.shields.io/github/license/rlayers/pawpaw.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/rlayers/pawpaw.svg?style=flat
 [license-url]: https://github.com/rlayers/pawpaw/blob/master/LICENSE
 
-[issues-shield]: https://img.shields.io/github/issues/rlayers/pawpaw.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/rlayers/pawpaw.svg?style=flat
 [issues-url]: https://github.com/rlayers/pawpaw/issues
 
 [forks-social]: https://img.shields.io/github/forks/rlayers/pawpaw.svg?style=social
-[forks-shield]: https://img.shields.io/github/forks/rlayers/pawpaw.svg?style=for-the-badge
+[forks-shield]: https://img.shields.io/github/forks/rlayers/pawpaw.svg?style=flat
 [forks-url]: https://github.com/rlayers/pawpaw/network/members
 
 [stars-social]: https://img.shields.io/github/stars/rlayers/pawpaw.svg?style=social
-[stars-shield]: https://img.shields.io/github/stars/rlayers/pawpaw.svg?style=for-the-badge
+[stars-shield]: https://img.shields.io/github/stars/rlayers/pawpaw.svg?style=flat
 [stars-url]: https://github.com/rlayers/pawpaw/stargazers
 
-[PyCharm-shield]: https://img.shields.io/badge/PyCharm-000000.svg?&style=for-the-badge&logo=PyCharm&logoColor=white
+[PyCharm-shield]: https://img.shields.io/badge/PyCharm-000000.svg?&style=flat&logo=PyCharm&logoColor=white
 [PyCharm-url]: https://www.jetbrains.com/pycharm/

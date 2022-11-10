@@ -1,11 +1,9 @@
-import enum
 import locale
 import typing
 
 import regex
 import segments
 from segments import nuco
-
 
 
 class Number:
@@ -49,6 +47,7 @@ class Number:
         self._decimal_pat: str
         self._num_pat: str
         self._re: regex.Pattern
+
         self.build_num_pat_re()
 
     # region properties
@@ -126,25 +125,25 @@ class SimpleNlp:
     def __init__(self, number: Number | None = None, chars: bool = False):
         super().__init__()
 
-        doc_trimmer = segments.floparse.Wrap(lambda ito: [ito.str_strip()])
+        doc_trimmer = segments.parsnip.Wrap(lambda ito: [ito.str_strip()])
 
-        paragraph = segments.floparse.Split(self._paragraph_re, desc='Paragraph')
+        paragraph = segments.parsnip.Split(self._paragraph_re, desc='Paragraph')
         doc_trimmer.itor_next = paragraph
 
-        para_trimmer = segments.floparse.Wrap(lambda ito: [ito.str_strip()])
+        para_trimmer = segments.parsnip.Wrap(lambda ito: [ito.str_strip()])
         paragraph.itor_next = para_trimmer
 
-        sentence = segments.floparse.Split(self._sentence_re, desc='Sentence')
+        sentence = segments.parsnip.Split(self._sentence_re, desc='Sentence')
         paragraph.itor_children = sentence
 
         self._number = number |nuco| Number()
         word_num_re = regex.compile(r'(?P<Number>' + self._number.num_pat + r')|(?P<Word>' + self._word_pat + r')', regex.DOTALL)
 
-        word_number = segments.floparse.Extract(word_num_re)
+        word_number = segments.parsnip.Extract(word_num_re)
         sentence.itor_children = word_number
 
         if chars:
-            char = segments.floparse.Extract(regex.compile(r'(?P<Character>\w)', regex.DOTALL))
+            char = segments.parsnip.Extract(regex.compile(r'(?P<Character>\w)', regex.DOTALL))
             word_number.itor_children = lambda ito: char if ito.desc == 'Word' else None
 
         self.itor = doc_trimmer

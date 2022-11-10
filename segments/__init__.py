@@ -16,7 +16,7 @@ del ito
 from segments.util import find_unescaped, split_unescaped
 del util
 
-import segments.floparse
+import segments.parsnip
 import segments.query
 import segments.xml
 import segments.nlp

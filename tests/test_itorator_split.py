@@ -2,7 +2,7 @@ import typing
 
 import regex
 from segments import Ito
-from segments.floparse import Split
+from segments.parsnip import Split
 from tests.util import _TestIto
 
 

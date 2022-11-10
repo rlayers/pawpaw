@@ -1,5 +1,5 @@
 from segments import Ito
-from segments.floparse import Reflect
+from segments.parsnip import Reflect
 from tests.util import _TestIto
 
 

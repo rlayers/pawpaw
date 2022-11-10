@@ -2,7 +2,7 @@ import itertools
 
 import regex
 from segments import Ito
-from segments.floparse import Extract
+from segments.parsnip import Extract
 from tests.util import _TestIto
 
 

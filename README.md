@@ -2,18 +2,17 @@
 <a name="readme-top"></a>
 
 
-<!-- PROJECT LOGO -->
-<img align="right" width="30%" height="30%" alt="Pawpaw logo" src="images/pawpaw.png" >  
-
-
 <!-- PROJECT SHIELDS -->
 [![Python][Python.org]][Python-url]
 [![Contributors][contributors-shield]][contributors-url]
 [![Watchers][watchers-shield]][watchers-url]
 [![MIT License][license-shield]][license-url]
-<!-- [![Issues][issues-shield]][issues-url] -->
 [![Forks][forks-social]][forks-url]
 [![Stargazers][stars-social]][stars-url]
+
+
+<!-- PROJECT LOGO -->
+<img align="right" width="30%" height="30%" alt="Pawpaw logo" src="images/pawpaw.png" >  
 
 
 <div align="center">

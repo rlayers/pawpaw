@@ -1,5 +1,5 @@
 import regex
-from segments import Ito
+from segments import Ito, Types
 from segments.parsnip import Reflect, Wrap
 from tests.util import _TestIto
 
@@ -68,6 +68,45 @@ class TestItorator(_TestIto):
         self.assertIsNot(root, ito)
         self.assertSequenceEqual(s, [str(i) for i in ito.children])
         self.assertTrue(all(c.desc == d_changed for c in ito.children))
+
+    def test_traverse_with_post_processor(self):
+        s = 'abc def ghi'
+        root = Ito(s)
+
+        reflect = Reflect()
+
+        word_splitter = Wrap(lambda ito: ito.str_split())
+        reflect.itor_next = word_splitter
+
+        char_splitter = Wrap(lambda ito: Ito.from_substrings(s, *ito))
+
+        def simple_join(itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
+            window = list(itos)
+            yield from (Types.C_BITO(False, i) for i in window)
+            yield Types.C_BITO(True, Ito.join(window))
+
+        with self.subTest(scenario='itor_next'):
+            word_splitter.itor_next = char_splitter
+            rv = [*reflect.traverse(root)]
+            self.assertEqual(9, len(rv))
+
+            word_splitter.postorator = simple_join
+            rv = [*reflect.traverse(root)]
+            self.assertEqual(3, len(rv))
+
+        with self.subTest(scenario='itor_child'):
+            reflect.itor_next = None
+            reflect.itor_children = word_splitter
+            word_splitter.postorator = None
+            
+            rv = [*reflect.traverse(root)]
+            self.assertEqual(1, len(rv))
+            self.assertEqual(9, len(rv[0].children))
+
+            word_splitter.postorator = simple_join
+            rv = [*reflect.traverse(root)]
+            self.assertEqual(1, len(rv))
+            self.assertEqual(3, len(rv[0].children))
 
     def test_traverse_complex(self):
         basis = 'ABcd123'

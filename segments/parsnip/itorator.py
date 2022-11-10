@@ -50,7 +50,7 @@ class Itorator(ABC):
     @postorator.setter
     def postorator(self, val: Postorator | Types.F_ITOS_2_BITOS | None):
         if val is None or Types.is_callable(val, Types.F_ITOS_2_BITOS):
-            self._postorator = self._post_func = None
+            self._postorator = self._post_func = val
         elif isinstance(val, Postorator):
             self._postorator = val
             self._post_func = val.traverse

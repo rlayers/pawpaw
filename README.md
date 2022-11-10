@@ -3,8 +3,7 @@
 
 
 <!-- PROJECT LOGO -->
-<img align="right" width="25%" height="25%" alt="Logo" src="images/pawpaw.png" >
-
+<img align="right" width="25%" height="25%" alt="Pawpaw logo" src="images/pawpaw.png" >  
 
 <!-- PROJECT SHIELDS -->
 [![Python][Python.org]][Python-url]
@@ -17,9 +16,10 @@
 [![Issues][issues-shield]][issues-url]
 -->
 
+
 <div align="center">
-<h1>Pawpaw</h1>
-<strong>High Performance Text Processing & Segmentation Framework</strong>
+  <h1>Pawpaw</h1>
+  <strong>High Performance Text Processing & Segmentation Framework</strong>
 </div>
 
 <!-- Overivew -->

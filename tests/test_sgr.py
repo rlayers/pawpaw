@@ -1,4 +1,4 @@
-from segments.visualization.sgr import *
+from pawpaw.visualization.sgr import *
 from tests.util import _TestIto
 
 

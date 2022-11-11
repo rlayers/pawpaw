@@ -1,4 +1,4 @@
-import segments.visualization.sgr
+import pawpaw.visualization.sgr
 
 from .highlighter import Highlighter
 del highlighter

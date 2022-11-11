@@ -1,7 +1,7 @@
 import random
 import string as py_string
 
-from segments import Ito, Span
+from pawpaw import Ito, Span
 from tests.util import _TestIto, RandSpans
 
 

@@ -5,24 +5,24 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 
 import regex
-import segments
-from segments import Ito
-from segments.visualization import sgr, Highlighter, dump
+import pawpaw
+from pawpaw import Ito
+from pawpaw.visualization import sgr, Highlighter, dump
 
 
 # # VERSION
 #
-# print(segments.__version__)
-# print(segments.__version__.major)
-# print(segments.__version__.pre_release)
-# print(segments.__version__._asdict())
+# print(pawpaw.__version__)
+# print(pawpaw.__version__.major)
+# print(pawpaw.__version__.pre_release)
+# print(pawpaw.__version__._asdict())
 # exit(0)
 
 
 # DUMPER
 
 s = 'Hello, world!'
-root = segments.Ito(s, desc='root')
+root = pawpaw.Ito(s, desc='root')
 for c in root.split(regex.compile(r'\s')):
     c.desc = 'child'
     root.children.add(c)
@@ -69,7 +69,7 @@ exit()
 # HIGHLIGHTER
 
 s = 'The quick brown fox'
-ito = segments.Ito(s)
+ito = pawpaw.Ito(s)
 ito.children.add(*ito.split(regex.compile('\s+')))
 
 highlighter = Highlighter(

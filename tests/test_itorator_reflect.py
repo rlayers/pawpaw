@@ -1,5 +1,5 @@
-from segments import Ito
-from segments.parsnip import Reflect
+from pawpaw import Ito
+from pawpaw.arborform import Reflect
 from tests.util import _TestIto
 
 

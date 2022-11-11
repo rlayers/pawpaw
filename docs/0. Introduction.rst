@@ -2,7 +2,7 @@
 Introduction
 ============
 
-Jumping Right In : *What segments can do for you*
+Jumping Right In : *What Pawpaw can do for you*
 =================================================
 
 Say you have some text::
@@ -12,9 +12,9 @@ Say you have some text::
 and you wish to perform an nlp-like segmentation on phrases, words, numbers, and so forth.  Given
 the regular expression:
 
->>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')``
+>>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')
 
-You can use **segments** as follows:
+You can use **pawpaw** as follows:
 
 >>> doc = Ito(s)
 >>> doc.children.add(*Ito.from_re(re, doc))
@@ -31,7 +31,13 @@ structured query language:
 Dive a Bit Deeper: *Introducing* ``Ito``
 ========================================
 
->>> from segments import Ito
+>>> from pawpaw import Ito
+>>> s = 'x Hello, world! x'
+>>> i = Ito(s, 2, -2)
+>>> print(i)
+Hello, world!
+
+The class 
 >>> s = 'x Hello, world! x'
 >>> i = Ito(s, 2, -2)
 >>> print(i)
@@ -130,7 +136,7 @@ The ``.children`` collection is not an arbitrary data store.  Nodes added to it 
 * Not overlap any existing child nodes
 * Be non-empty
 
-As ``Ito`` objects, child nodes have their own ``.children` collections.  In other words, ``Ito`` is a hiearchical data store.  This quality  is used for many key features of ``ito-segments``"
+As ``Ito`` objects, child nodes have their own ``.children` collections.  In other words, ``Ito`` is a hiearchical data store.  This quality  is used for many key features of ``pawpaw``"
 
 * Storage and organization of substring data
 * Traversal of substring collections

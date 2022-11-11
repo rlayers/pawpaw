@@ -1,8 +1,8 @@
 import itertools
 
 import regex
-from segments import Ito
-from segments.parsnip import Extract
+from pawpaw import Ito
+from pawpaw.arborform import Extract
 from tests.util import _TestIto
 
 

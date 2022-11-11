@@ -8,7 +8,7 @@ import os
 import typing
 from xml.sax.saxutils import escape
 
-import segments
+import pawpaw
 
 
 class Dump(abc.ABC):
@@ -19,14 +19,14 @@ class Dump(abc.ABC):
         self.linesep = os.linesep
 
     @abc.abstractmethod
-    def _dump(self, fs: typing.IO, ei: segments.Types.C_EITO, level: int = 0) -> None:
+    def _dump(self, fs: typing.IO, ei: pawpaw.Types.C_EITO, level: int = 0) -> None:
         ...
 
     @abc.abstractmethod
-    def dump(self, fs: typing.IO, *itos: segments.Types.C_ITO) -> None:
+    def dump(self, fs: typing.IO, *itos: pawpaw.Types.C_ITO) -> None:
         ...
         
-    def dumps(self, *itos: segments.Types.C_ITO) -> str:
+    def dumps(self, *itos: pawpaw.Types.C_ITO) -> str:
         with io.StringIO() as fs:
             self.dump(fs, *itos)
             fs.seek(0)
@@ -37,18 +37,18 @@ class Compact(Dump):
     def __init__(self, indent: str = '    ', substring: bool = True, value: bool = False):
         super().__init__(indent, substring, value)
         
-    def _dump(self, fs: typing.IO, ei: segments.Types.C_EITO, level: int = 0) -> None:
+    def _dump(self, fs: typing.IO, ei: pawpaw.Types.C_EITO, level: int = 0) -> None:
         fs.write(f'{self.indent * level}{ei.index:,}: .span={ei.ito.span} .desc="{ei.ito.desc}"')
         if self.substring:
             fs.write(f' .__str__(): "{ei.ito}"')
         fs.write(self.linesep)
         
         level += 1
-        for eic in (segments.Types.C_EITO(i, ito) for i, ito in enumerate(ei.ito.children, start=1)):
+        for eic in (pawpaw.Types.C_EITO(i, ito) for i, ito in enumerate(ei.ito.children, start=1)):
             self._dump(fs, eic, level)
 
-    def dump(self, fs: typing.IO, *itos: segments.Types.C_ITO) -> None:
-        for ei in (segments.Types.C_EITO(i, ito) for i, ito in enumerate(itos, start=1)):
+    def dump(self, fs: typing.IO, *itos: pawpaw.Types.C_ITO) -> None:
+        for ei in (pawpaw.Types.C_EITO(i, ito) for i, ito in enumerate(itos, start=1)):
             self._dump(fs, ei)
 
                 
@@ -56,7 +56,7 @@ class Xml(Dump):
     def __init__(self, indent: str = '    ', substring: bool = True, value: bool = False):
         super().__init__(indent, substring, value)
                 
-    def _dump(self, fs: typing.IO, ei: segments.Types.C_EITO, level: int = 0) -> None:
+    def _dump(self, fs: typing.IO, ei: pawpaw.Types.C_EITO, level: int = 0) -> None:
         fs.write(f'{level * self.indent}<ito')
         fs.write(f' start="{ei.ito.start}"')
         fs.write(f' stop="{ei.ito.stop}"')
@@ -73,7 +73,7 @@ class Xml(Dump):
             
             level += 1
             for i, ito in enumerate(ei.ito.children):
-                child = segments.Types.C_EITO(i, ito)
+                child = pawpaw.Types.C_EITO(i, ito)
                 self._dump(fs, child, level)
             
             level -= 1
@@ -82,11 +82,11 @@ class Xml(Dump):
         level -= 1
         fs.write(f'{level * self.indent}</ito>{self.linesep}')
 
-    def dump(self, fs: typing.IO, *itos: segments.Types.C_ITO) -> None:
+    def dump(self, fs: typing.IO, *itos: pawpaw.Types.C_ITO) -> None:
         fs.write(f'<?xml version="1.0" encoding="UTF-8" ?>{self.linesep}')
         fs.write(f'<itos>{self.linesep}')
         for ito in itos:
-            self._dump(fs, segments.Types.C_EITO(0, ito), 1)
+            self._dump(fs, pawpaw.Types.C_EITO(0, ito), 1)
         fs.write(f'<itos>{self.linesep}')
 
                         
@@ -94,7 +94,7 @@ class Json(Dump):
     def __init__(self, indent: str = '    ', substring: bool = True, value: bool = False):
         super().__init__(indent, substring, value)
                 
-    def _dump(self, fs: typing.IO, ei: segments.Types.C_EITO, level: int = 0) -> None:
+    def _dump(self, fs: typing.IO, ei: pawpaw.Types.C_EITO, level: int = 0) -> None:
         fs.write(level * self.indent + '{' + self.linesep)
         
         level += 1
@@ -114,7 +114,7 @@ class Json(Dump):
             
             level += 1
             for i, ito in enumerate(ei.ito.children):
-                child = segments.Types.C_EITO(i, ito)
+                child = pawpaw.Types.C_EITO(i, ito)
                 self._dump(fs, child, level)
                 if i < len(ei.ito.children) - 1:
                     fs.write(',')
@@ -126,7 +126,7 @@ class Json(Dump):
         level -= 1
         fs.write(level * self.indent + '}')
         
-    def dump(self, fs: typing.IO, *itos: segments.Types.C_ITO) -> None:
+    def dump(self, fs: typing.IO, *itos: pawpaw.Types.C_ITO) -> None:
         fs.write('{' + self.linesep)
         
         fs.write(f'{self.indent}"itos": [')
@@ -136,7 +136,7 @@ class Json(Dump):
             if comma_needed:
                 fs.write(',')
             fs.write(self.linesep)
-            self._dump(fs, segments.Types.C_EITO(0, ito), 2)
+            self._dump(fs, pawpaw.Types.C_EITO(0, ito), 2)
             comma_needed = True
         fs.write(self.linesep)
         

@@ -1,7 +1,7 @@
 import json
 import pickle
 
-from segments import Ito
+from pawpaw import Ito
 from tests.util import _TestIto
 
 

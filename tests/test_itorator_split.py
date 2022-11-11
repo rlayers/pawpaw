@@ -1,8 +1,8 @@
 import typing
 
 import regex
-from segments import Ito
-from segments.parsnip import Split
+from pawpaw import Ito
+from pawpaw.arborform import Split
 from tests.util import _TestIto
 
 

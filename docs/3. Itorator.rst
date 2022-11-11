@@ -5,7 +5,7 @@ Itorator
 Introduction
 ============
 
-The ``ito-segments`` module supports rapid creation of complex text parsers using ``Itorator``\ [#]_ instances.
+Pawpaw supports rapid creation of complex text parsers using ``Itorator``\ [#]_ instances.
 
 * pipelined engine
 * generator based
@@ -18,19 +18,19 @@ into paragraphs, which in turn can be broken into sentences, words, and so on.
 
 supports the 
 
-A segment requires a reference string in order to fully describe a substring.  Likewise, a ``Span`` requires a reference ``str`` for context.  The segments module pairs a ``Span`` and ``str`` together as an *In Text Object*\ [#]_, which is implemented in the class ``Ito``.
+A segment requires a reference string in order to fully describe a substring.  Likewise, a ``Span`` requires a reference ``str`` for context.  Pawpaw pairs a ``Span`` and ``str`` together as an *In Text Object*\ [#]_, which is implemented in the class ``Ito``.
 
 Namespace
 =========
 
-``Ito`` is located as a root level object in the namespace ``segments``::
+``Ito`` is located as a root level object in the namespace ``pawpaw``::
 
- >>> import segments
- >>> segments.Ito  # via import
- <class 'segments.ito.Ito'>
- >>> from segments import Ito 
+ >>> import pawpaw
+ >>> pawpaw.Ito  # via import
+ <class 'pawpaw.ito.Ito'>
+ >>> from pawpaw import Ito
  >>> Ito # via from
- <class 'segments.ito.Ito'>
+ <class 'pawpaw.ito.Ito'>
 
 Instantiation
 =============

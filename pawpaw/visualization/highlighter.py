@@ -2,8 +2,8 @@ import random
 import typing
 
 import regex
-import segments
-from segments.visualization import sgr
+import pawpaw
+from pawpaw.visualization import sgr
 
 
 class Highlighter:
@@ -17,7 +17,7 @@ class Highlighter:
             i += 1
             i %= len(self.palette)
             
-    def print(self, ito: segments.Types.C_ITO):
+    def print(self, ito: pawpaw.Types.C_ITO):
         it_col = self._rotate_color()
         
         stop = 0

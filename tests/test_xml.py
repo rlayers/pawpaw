@@ -3,8 +3,8 @@ import sys
 sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 
-import segments
-from segments.xml import XmlParser, ITO_DESCRIPTORS
+import pawpaw
+from pawpaw.xml import XmlParser, ITO_DESCRIPTORS
 from tests.util import _TestIto
 
 
@@ -60,7 +60,7 @@ class TestXml(_TestIto):
         root_e = ET.fromstring(self.xml_no_ns, parser=self.parser)
         self.assertTrue(hasattr(root_e, 'ito'))
         
-        root_i: segments.Ito = root_e.ito
+        root_i: pawpaw.Ito = root_e.ito
         self.assertEqual(ITO_DESCRIPTORS.ELEMENT, root_i.desc)
         
         self.assertIs(root_e, root_i.value())
@@ -68,31 +68,31 @@ class TestXml(_TestIto):
     def test_nsamespace(self):
         root_e = ET.fromstring(self.xml_ns, parser=self.parser)
         
-        first_start_tag = root_e.ito.find(f'**[d:' + segments.xml.ITO_DESCRIPTORS.START_TAG + ']')
+        first_start_tag = root_e.ito.find(f'**[d:' + pawpaw.xml.ITO_DESCRIPTORS.START_TAG + ']')
         self.assertIsNotNone(first_start_tag)
         
-        first_attr = first_start_tag.find(f'**[d:' + segments.xml.ITO_DESCRIPTORS.ATTRIBUTE + ']')
+        first_attr = first_start_tag.find(f'**[d:' + pawpaw.xml.ITO_DESCRIPTORS.ATTRIBUTE + ']')
         self.assertIsNotNone(first_attr)
         self.assertEqual(3, len(first_attr.children))
         
         ns = first_attr.find('*')
         self.assertIsNotNone(ns)
-        self.assertEqual(ns.desc, segments.xml.ITO_DESCRIPTORS.NAMESPACE)
+        self.assertEqual(ns.desc, pawpaw.xml.ITO_DESCRIPTORS.NAMESPACE)
         self.assertEqual('xmlns', str(ns))
         
         name = ns.find('>')
         self.assertIsNotNone(name)
-        self.assertEqual(name.desc, segments.xml.ITO_DESCRIPTORS.NAME)
+        self.assertEqual(name.desc, pawpaw.xml.ITO_DESCRIPTORS.NAME)
         self.assertEqual('fictional', str(name))
         
         value = name.find('>')
         self.assertIsNotNone(value)
-        self.assertEqual(value.desc, segments.xml.ITO_DESCRIPTORS.VALUE)
+        self.assertEqual(value.desc, pawpaw.xml.ITO_DESCRIPTORS.VALUE)
         self.assertEqual('http://characters.example.com', str(value))
         
     def test_hiearchical(self):
         root_e = ET.fromstring(self.xml_no_ns, parser=self.parser)
-        root_i: segments.Ito = root_e.ito
+        root_i: pawpaw.Ito = root_e.ito
             
         expected = root_e.findall('country')
         actual = [i.value() for i in root_i.find_all(f'*[d:{ITO_DESCRIPTORS.ELEMENT}]')]

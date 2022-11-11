@@ -1,13 +1,13 @@
 import typing
 
 import regex
-from segments import Ito
-import segments
+from pawpaw import Ito
+import pawpaw
 from tests.util import _TestIto, IntIto
 
 
 class TestItoQuery(_TestIto):
-    def count_descdendants(cls, node: segments.Types.C_ITO) -> int:
+    def count_descdendants(cls, node: pawpaw.Types.C_ITO) -> int:
         rv = len(node.children)
         for child in node.children:
             rv += cls.count_descdendants(child)
@@ -92,7 +92,7 @@ class TestItoQuery(_TestIto):
                 for or_self in '', '!', '!!':
                     query = f'{order}...{or_self}'
                     with self.subTest(node=node_type, query=query):
-                        expected: typing.List[segments.Types.C_ITO] = []
+                        expected: typing.List[pawpaw.Types.C_ITO] = []
                         cur = node
                         while (par := cur.parent) is not None:
                             expected.append(par)
@@ -116,7 +116,7 @@ class TestItoQuery(_TestIto):
                 for or_self in '', '!', '!!':
                     query = f'{order}..{or_self}'
                     with self.subTest(node=node_type, query=query):
-                        expected: typing.List[segments.Types.C_ITO] = []
+                        expected: typing.List[pawpaw.Types.C_ITO] = []
                         if node is self.root:
                             if or_self in ('!', '!!'):
                                 expected.append(node)
@@ -208,11 +208,11 @@ class TestItoQuery(_TestIto):
                     query = f'{order}<<<{or_self}'
                     with self.subTest(node=node_type, query=query):
                         if node is self.root:
-                            expected: segments.Types.C_ITO = []
+                            expected: pawpaw.Types.C_ITO = []
                             if or_self:
                                 expected.append(node)
                         else:
-                            ancestors: segments.Types.C_ITO = [node]
+                            ancestors: pawpaw.Types.C_ITO = [node]
                             while (parent := ancestors[-1].parent) is not None:
                                 ancestors.append(parent)
                             expected = [*self.root.walk_descendants(order != '-')]
@@ -243,7 +243,7 @@ class TestItoQuery(_TestIto):
                 for or_self in '', '!':
                     query = f'{order}<<{or_self}'                
                     with self.subTest(node=node_type, query=query):
-                        expected: typing.List[segments.Types.C_ITO] = []
+                        expected: typing.List[pawpaw.Types.C_ITO] = []
                         if (p := node.parent) is not None:
                             i = p.children.index(node)
                             expected = p.children[:i]
@@ -265,7 +265,7 @@ class TestItoQuery(_TestIto):
                 for or_self in '', '!':
                     query = f'{order}<{or_self}'                
                     with self.subTest(node=node_type, query=query):
-                        expected: typing.List[segments.Types.C_ITO] = []
+                        expected: typing.List[pawpaw.Types.C_ITO] = []
                         if (p := node.parent) is not None:
                             i = p.children.index(node)
                             if i > 0:
@@ -286,7 +286,7 @@ class TestItoQuery(_TestIto):
                 for or_self in '', '!':
                     query = f'{order}>{or_self}'                
                     with self.subTest(node=node_type, query=query):
-                        expected: typing.List[segments.Types.C_ITO] = []
+                        expected: typing.List[pawpaw.Types.C_ITO] = []
                         if (p := node.parent) is not None:
                             i = p.children.index(node)
                             if i < len(p.children) - 1:
@@ -332,11 +332,11 @@ class TestItoQuery(_TestIto):
                     query = f'{order}>>>{or_self}'
                     with self.subTest(node=node_type, query=query):
                         if node is self.root:
-                            expected: segments.Types.C_ITO = []
+                            expected: pawpaw.Types.C_ITO = []
                             if or_self:
                                 expected.append(node)
                         else:
-                            ancestors: segments.Types.C_ITO = [node]
+                            ancestors: pawpaw.Types.C_ITO = [node]
                             while (parent := ancestors[-1].parent) is not None:
                                 ancestors.append(parent)
                             expected = [*self.root.walk_descendants(order == '-')]
@@ -389,7 +389,7 @@ class TestItoQuery(_TestIto):
     def test_filter_string_scalar(self):
         for node_type, node in {'root': self.root}.items():
             for s in 'ten', 'eleven', 'twelve':
-                query = f'**[s:{segments.query.escape(s)}]'
+                query = f'**[s:{pawpaw.query.escape(s)}]'
                 with self.subTest(node=node_type, query=query):
                     expected = [d for d in node.walk_descendants() if str(d) == s]
                     actual = [*node.find_all(query)]
@@ -398,7 +398,7 @@ class TestItoQuery(_TestIto):
     def test_filter_string_multiple(self):
         for node_type, node in {'root': self.root}.items():
             strings = 'ten', 'eleven', 'twelve'
-            query = f'**[s:{",".join(segments.query.escape(s) for s in strings)}]'
+            query = f'**[s:{",".join(pawpaw.query.escape(s) for s in strings)}]'
             with self.subTest(node=node_type, query=query):
                 expected = [d for d in node.walk_descendants() if str(d) in strings]
                 actual = [*node.find_all(query)]
@@ -413,7 +413,7 @@ class TestItoQuery(_TestIto):
             for s in 'ten', 'ELEVEN', 'twelve':
                 for case_func in str.upper, str.casefold, str.lower:
                     s = case_func(s)
-                    query = f'**[scf:{segments.query.escape(s)}]'
+                    query = f'**[scf:{pawpaw.query.escape(s)}]'
                     with self.subTest(node=node_type, query=query):
                         expected = [d for d in node.walk_descendants() if str(d).casefold() == s.casefold()]
                         actual = [*node.find_all(query)]
@@ -424,7 +424,7 @@ class TestItoQuery(_TestIto):
             basis = 'ten', 'ELEVEN', 'twelve'
             for case_func in str.upper, str.casefold, str.lower:
                 cfs = [case_func(s) for s in basis]
-                query = f'**[scf:{",".join(segments.query.escape(s) for s in cfs)}]'
+                query = f'**[scf:{",".join(pawpaw.query.escape(s) for s in cfs)}]'
                 with self.subTest(node=node_type, query=query):
                         expected = [d for d in node.walk_descendants() if str(d).casefold() in [s.casefold() for s in cfs]]
                         actual = [*node.find_all(query)]

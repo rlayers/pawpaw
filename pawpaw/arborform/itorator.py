@@ -6,7 +6,7 @@ import collections.abc
 import typing
 
 import regex
-from segments import Types, Errors, Ito, Span
+from pawpaw import Types, Errors, Ito, Span
 from .postorator import Postorator
 
 

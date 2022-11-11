@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import typing
 
-import segments
+import pawpaw
 from tests.util import _TestIto
 
 
@@ -76,27 +76,27 @@ class TestTypeChecking(_TestIto):
     def test_is_callable_exact(self):
         for ti in self.test_data:
             with self.subTest(type=ti.name, type_hints=ti.type_hints):
-                self.assertTrue(segments.Types.is_callable(ti.func, F_EXACT))
+                self.assertTrue(pawpaw.Types.is_callable(ti.func, F_EXACT))
 
     def test_is_callable_union_element(self):
         for ti in self.test_data:
             with self.subTest(type=ti.name, type_hints=ti.type_hints):
-                self.assertTrue(segments.Types.is_callable(ti.func, F_UNION_ELEMENT))
+                self.assertTrue(pawpaw.Types.is_callable(ti.func, F_UNION_ELEMENT))
 
     def test_is_callable_subtype(self):
         for ti in self.test_data:
             with self.subTest(type=ti.name, type_hints=ti.type_hints):
-                self.assertTrue(segments.Types.is_callable(ti.func, F_SUBTYPE))
+                self.assertTrue(pawpaw.Types.is_callable(ti.func, F_SUBTYPE))
 
     def test_is_callable_wrong_count(self):
         for ti in self.test_data:
             with self.subTest(type=ti.name, type_hints=ti.type_hints):
-                self.assertFalse(segments.Types.is_callable(ti.func, F_TOO_FEW))
-                self.assertFalse(segments.Types.is_callable(ti.func, F_TOO_MANY))
+                self.assertFalse(pawpaw.Types.is_callable(ti.func, F_TOO_FEW))
+                self.assertFalse(pawpaw.Types.is_callable(ti.func, F_TOO_MANY))
 
     def test_is_callable_wrong_types(self):
         for ti in self.test_data:
             with self.subTest(type=ti.name, type_hints=ti.type_hints):
                 expected = not ti.type_hints or ti.name == 'lambda'  # type hints for lambdas don't show in annotations
-                actual = segments.Types.is_callable(ti.func, F_WRONG_TYPES)
+                actual = pawpaw.Types.is_callable(ti.func, F_WRONG_TYPES)
                 self.assertEqual(expected, actual)

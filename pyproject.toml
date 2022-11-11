@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "ito-segments"
+name = "pawpaw"
 dynamic = ["version"]
 authors = [
   { name="Robert L. Ayers", email="rlayers@yahoo.com" },
@@ -38,8 +38,8 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/rlayers/ito-segments"
-"Bug Tracker" = "https://github.com/rlayers/ito-segments/issues"
+"Homepage" = "https://github.com/rlayers/pawpaw"
+"Bug Tracker" = "https://github.com/rlayers/pawpaw/issues"
 
 [tool.hatch.version]
-path = "segments/_version.py"
+path = "pawpaw/_version.py"

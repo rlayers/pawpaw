@@ -5,7 +5,7 @@ import operator
 import typing
 
 import regex
-import segments
+import pawpaw
 
 
 OPERATORS = {
@@ -52,7 +52,7 @@ def descape(value: str) -> str:
 class Axis:
     _re = regex.compile(r'(?P<axis>(?P<order>[\+\-]?)(?P<key>\-|\.{1,4}|\*{1,3}|\<{1,3}|\>{1,3})(?P<or_self>(?:\!{1,2})?))', regex.DOTALL)
 
-    def __init__(self, phrase: segments.Types.C_ITO):
+    def __init__(self, phrase: pawpaw.Types.C_ITO):
         m = phrase.regex_match(self._re)
         if m is None:
             raise ValueError(f'invalid phrase \'{phrase}\'')
@@ -73,9 +73,9 @@ class Axis:
 
     def to_ecs(
         self,
-        itos: segments.Types.C_IT_ITOS,
-        or_self_ito: segments.Types.C_ITO | None = None
-    ) -> segments.Types.C_IT_EITOS:
+        itos: pawpaw.Types.C_IT_ITOS,
+        or_self_ito: pawpaw.Types.C_ITO | None = None
+    ) -> pawpaw.Types.C_IT_EITOS:
         _iter = iter(itos)
         stopped = False
         e = 0
@@ -87,27 +87,27 @@ class Axis:
                 stopped = True
 
             if not stopped:
-                yield segments.Types.C_EITO(e, or_self_ito)
+                yield pawpaw.Types.C_EITO(e, or_self_ito)
                 e += 1
                 
                 if first is not or_self_ito:
-                    yield segments.Types.C_EITO(e, first)
+                    yield pawpaw.Types.C_EITO(e, first)
                     e += 1
                 
         last = None
         if not stopped:
             for i in _iter:
-                yield segments.Types.C_EITO(e, i)
+                yield pawpaw.Types.C_EITO(e, i)
                 e += 1
 
         if e == 0:
             if self.or_self and or_self_ito is not None:
-                yield segments.Types.C_EITO(e, or_self_ito)
+                yield pawpaw.Types.C_EITO(e, or_self_ito)
 
         elif self.or_self == '!!' and or_self_ito is not None and self.reverse:
-            yield segments.Types.C_EITO(e, or_self_ito)
+            yield pawpaw.Types.C_EITO(e, or_self_ito)
 
-    def find_all(self, itos: typing.Iterable[segments.Types.C_ITO]) -> segments.Types.C_IT_EITOS:
+    def find_all(self, itos: typing.Iterable[pawpaw.Types.C_ITO]) -> pawpaw.Types.C_IT_EITOS:
         reverse = (self.order is not None and str(self.order) == '-')
 
         if self.key == '....':
@@ -182,7 +182,7 @@ class Axis:
         elif self.key == '<<':
             for i in itos:
                 if (p := i.parent) is None:
-                    sliced: typing.List[segments.Types.C_ITO] = []
+                    sliced: typing.List[pawpaw.Types.C_ITO] = []
                 else:
                     idx = p.children.index(i)
                     sliced = p.children[:idx]
@@ -214,7 +214,7 @@ class Axis:
         elif self.key == '>>':
             for i in itos:
                 if (p := i.parent) is None:
-                    sliced: typing.List[segments.Types.C_ITO] = []
+                    sliced: typing.List[pawpaw.Types.C_ITO] = []
                 else:
                     idx = p.children.index(i)
                     sliced = p.children[idx + 1:]
@@ -243,24 +243,24 @@ class Axis:
 
 class Ecf(ABC):
     @classmethod
-    def validate_values(cls, values: segments.Types.C_VALUES) -> segments.Types.C_VALUES:
+    def validate_values(cls, values: pawpaw.Types.C_VALUES) -> pawpaw.Types.C_VALUES:
         if values is None:
             raise ValueError('value expression found, however, no values dictionary supplied')
         return values
     
     @classmethod
-    def validate_predicates(cls, predicates: segments.Types.C_PREDICATES) -> segments.Types.C_PREDICATES:
+    def validate_predicates(cls, predicates: pawpaw.Types.C_PREDICATES) -> pawpaw.Types.C_PREDICATES:
         if predicates is None:
             raise ValueError('predicate expression found, however, no predicates dictionary supplied')
         return predicates
     
     @abstractmethod
-    def func(self, ec: segments.Types.C_EITO, values: segments.Types.C_VALUES, predicates: segments.Types.C_PREDICATES) -> bool:
+    def func(self, ec: pawpaw.Types.C_EITO, values: pawpaw.Types.C_VALUES, predicates: pawpaw.Types.C_PREDICATES) -> bool:
         pass
     
     
 class EcfTautology(Ecf):
-    def func(self, ec: segments.Types.C_EITO, values: segments.Types.C_VALUES, predicates: segments.Types.C_PREDICATES) -> bool:
+    def func(self, ec: pawpaw.Types.C_EITO, values: pawpaw.Types.C_VALUES, predicates: pawpaw.Types.C_PREDICATES) -> bool:
         return True
     
 
@@ -270,8 +270,8 @@ class EcfCombined(Ecf):
 
     def __init__(
             self,
-            ito: segments.Types.C_ITO,
-            filters: typing.Sequence[segments.Types.F_EITO_V_P_2_B],
+            ito: pawpaw.Types.C_ITO,
+            filters: typing.Sequence[pawpaw.Types.F_EITO_V_P_2_B],
             operands: typing.Sequence[str]
     ):
         self.ito = ito
@@ -284,7 +284,7 @@ class EcfCombined(Ecf):
             raise ValueError(f'count of operands ({len(operands):,}) must be one less than count of filters ({len(filters):,}')
         self.operands = operands
 
-    def func(self, ec: segments.Types.C_EITO, values: segments.Types.C_VALUES, predicates: segments.Types.C_PREDICATES) -> bool:
+    def func(self, ec: pawpaw.Types.C_EITO, values: pawpaw.Types.C_VALUES, predicates: pawpaw.Types.C_PREDICATES) -> bool:
         acum = self.filters[0](ec, values, predicates)
         for f, o in zip(self.filters[1:], self.operands):
             op = OPERATORS.get(o)
@@ -306,16 +306,16 @@ class EcfFilter(EcfCombined):
     )
 
     @classmethod
-    def _func(cls, key: str, value: str) -> segments.Types.F_EITO_V_P_2_B:
+    def _func(cls, key: str, value: str) -> pawpaw.Types.F_EITO_V_P_2_B:
         if key in FILTER_KEYS['desc']:
-            return lambda ec, values, predicates: ec.ito.desc in [descape(s) for s in segments.split_unescaped(value, ',')]
+            return lambda ec, values, predicates: ec.ito.desc in [descape(s) for s in pawpaw.split_unescaped(value, ',')]
 
         if key in FILTER_KEYS['string']:
-            return lambda ec, values, predicates: str(ec.ito) in [descape(s) for s in segments.split_unescaped(value, ',')]
+            return lambda ec, values, predicates: str(ec.ito) in [descape(s) for s in pawpaw.split_unescaped(value, ',')]
 
         if key in FILTER_KEYS['string-casefold']:
             return lambda ec, values, predicates: str(ec.ito).casefold() in [
-                descape(s).casefold() for s in segments.split_unescaped(value.casefold(), ',')
+                descape(s).casefold() for s in pawpaw.split_unescaped(value.casefold(), ',')
             ]
 
         if key in FILTER_KEYS['index']:
@@ -338,17 +338,17 @@ class EcfFilter(EcfCombined):
             return lambda ec, values, predicates: ec.index in ints
 
         if key in FILTER_KEYS['predicate']:
-            keys = [descape(s) for s in segments.split_unescaped(value, ',')]
+            keys = [descape(s) for s in pawpaw.split_unescaped(value, ',')]
             return lambda ec, values, predicates: all(p(ec) for p in [v for k, v in cls.validate_predicates(predicates).items() if k in keys])
 
         if key in FILTER_KEYS['value']:
-            keys = [descape(s) for s in segments.split_unescaped(value, ',')]
+            keys = [descape(s) for s in pawpaw.split_unescaped(value, ',')]
             return lambda ec, values, predicates: ec.ito.value() in [v for k, v in cls.validate_values(values).items() if k in keys]
 
         raise ValueError(f'unknown filter key \'{key}\'')
 
-    def __init__(self, ito: segments.Types.C_ITO):
-        filters: typing.List[segments.Types.F_EITO_V_P_2_B] = []
+    def __init__(self, ito: pawpaw.Types.C_ITO):
+        filters: typing.List[pawpaw.Types.F_EITO_V_P_2_B] = []
         operands: typing.List[str] = []
 
         if len([*ito.regex_finditer(self._re_open_bracket)]) != len([*ito.regex_finditer(self._re_close_bracket)]):
@@ -386,12 +386,12 @@ class EcfSubquery(EcfCombined):
     )
     
     @classmethod
-    def _func(cls, sq: segments.Types.C_ITO) -> segments.Types.F_EITO_V_P_2_B:
+    def _func(cls, sq: pawpaw.Types.C_ITO) -> pawpaw.Types.F_EITO_V_P_2_B:
         query = Query(sq)
         return lambda e, v, p: next(query.find_all(e.ito, v, p), None) is not None
     
-    def __init__(self, ito: segments.Types.C_ITO):
-        subqueries: typing.List[segments.Types.F_EITO_V_P_2_B] = []
+    def __init__(self, ito: pawpaw.Types.C_ITO):
+        subqueries: typing.List[pawpaw.Types.F_EITO_V_P_2_B] = []
         operands: typing.List[str] = []
 
         m = ito.regex_search(self._re)
@@ -414,18 +414,18 @@ class EcfSubquery(EcfCombined):
                 elif op not in OPERATORS.keys():
                     raise ValueError(
                         f'invalid subquery operator \'{op}\' between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
-            subqueries.append(self._func(segments.Ito.from_match(sq, 0)[1:-1]))
+            subqueries.append(self._func(pawpaw.Ito.from_match(sq, 0)[1:-1]))
             last = sq
             
         super().__init__(ito, subqueries, operands)
 
         
 class Phrase:
-    def __init__(self, phrase: segments.Types.C_ITO):
+    def __init__(self, phrase: pawpaw.Types.C_ITO):
         self.ito = phrase
         self.axis = Axis(phrase)
         
-        unesc_curl = next(segments.find_unescaped(phrase, '{', start=len(self.axis.ito)), phrase.stop)
+        unesc_curl = next(pawpaw.find_unescaped(phrase, '{', start=len(self.axis.ito)), phrase.stop)
         
         filt_ito = phrase[len(self.axis.ito):unesc_curl].str_strip()
         if len(filt_ito) == 0:
@@ -439,22 +439,22 @@ class Phrase:
         else:
             self.subquery = EcfSubquery(sq_ito)
 
-    def combined(self, ec: segments.Types.C_EITO, values: segments.Types.C_VALUES, predicates: segments.Types.C_PREDICATES) -> bool:
+    def combined(self, ec: pawpaw.Types.C_EITO, values: pawpaw.Types.C_VALUES, predicates: pawpaw.Types.C_PREDICATES) -> bool:
         return self.filter.func(ec, values, predicates) and self.subquery.func(ec, values, predicates)
 
     def find_all(
             self,
-            itos: segments.Types.C_IT_ITOS,
-            values: segments.Types.C_VALUES,
-            predicates: segments.Types.C_PREDICATES
-    ) -> segments.Types.C_IT_ITOS:
+            itos: pawpaw.Types.C_IT_ITOS,
+            values: pawpaw.Types.C_VALUES,
+            predicates: pawpaw.Types.C_PREDICATES
+    ) -> pawpaw.Types.C_IT_ITOS:
         func = lambda ec: self.combined(ec, values, predicates)
         yield from (ec.ito for ec in filter(func, self.axis.find_all(itos)))
 
 
 class Query:
     @classmethod
-    def _split_phrases(cls, query: segments.Types.C_ITO) -> typing.Iterable[segments.Types.C_ITO]:
+    def _split_phrases(cls, query: pawpaw.Types.C_ITO) -> typing.Iterable[pawpaw.Types.C_ITO]:
         ls = 0
         esc = False
         subquery_cnt = 0
@@ -483,7 +483,7 @@ class Query:
             i += 1
             yield query[i-ls:i]
 
-    def __init__(self, query: str | segments.Types.C_ITO):
+    def __init__(self, query: str | pawpaw.Types.C_ITO):
         """Creates a compiled query that can be used to search an Ito hierarchy
 
         Args:
@@ -519,22 +519,22 @@ class Query:
 
         """
         if isinstance(query, str):
-            query = segments.Ito(query)
+            query = pawpaw.Ito(query)
             
-        if not isinstance(query, segments.Ito):
-            raise segments.Errors.parameter_invalid_type('query', query, str, segments.Types.C_ITO)
+        if not isinstance(query, pawpaw.Ito):
+            raise pawpaw.Errors.parameter_invalid_type('query', query, str, pawpaw.Types.C_ITO)
             
         if query is None or len(query) == 0 or not query.str_isprintable():
-            raise segments.Errors.parameter_neither_none_nor_empty('query')
+            raise pawpaw.Errors.parameter_neither_none_nor_empty('query')
 
         self.phrases = [Phrase(p) for p in self._split_phrases(query)]
 
     def find_all(
             self,
-            ito: segments.Types.C_ITO,
-            values: segments.Types.C_VALUES = None,
-            predicates: segments.Types.C_PREDICATES = None
-    ) -> segments.Types.C_IT_ITOS:
+            ito: pawpaw.Types.C_ITO,
+            values: pawpaw.Types.C_VALUES = None,
+            predicates: pawpaw.Types.C_PREDICATES = None
+    ) -> pawpaw.Types.C_IT_ITOS:
         cur = [ito]
         for phrase in self.phrases:
             cur = phrase.find_all(cur, values, predicates)

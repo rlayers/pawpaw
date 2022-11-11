@@ -10,14 +10,14 @@ A segment requires a reference string in order to fully describe a substring.  L
 Namespace
 =========
 
-``Ito`` is located as a root level object in the namespace ``segments``::
+``Ito`` is located as a root level object in the namespace ``pawpaw``::
 
- >>> import segments
- >>> segments.Ito  # via import
- <class 'segments.ito.Ito'>
- >>> from segments import Ito 
+ >>> import pawpaw
+ >>> pawpaw.Ito  # via import
+ <class 'pawpaw.ito.Ito'>
+ >>> from pawpaw import Ito
  >>> Ito # via from
- <class 'segments.ito.Ito'>
+ <class 'pawpaw.ito.Ito'>
 
 Instantiation
 =============

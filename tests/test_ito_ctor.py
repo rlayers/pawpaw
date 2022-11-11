@@ -1,7 +1,7 @@
 import itertools
 
 import regex
-from segments import Ito, Span
+from pawpaw import Ito, Span
 from tests.util import _TestIto, IntIto, RandSpans, RandSubstrings
 
 

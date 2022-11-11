@@ -11,10 +11,10 @@ import typing
 
 import regex
 
-import segments.query
-from segments import Infix
-from segments.span import Span
-from segments.errors import Errors
+import pawpaw.query
+from pawpaw import Infix
+from pawpaw.span import Span
+from pawpaw.errors import Errors
 
 
 class Types:
@@ -35,13 +35,13 @@ class Types:
 
     class C_BITO(typing.NamedTuple):
         tf: bool
-        ito: segments.Types.C_ITO
+        ito: pawpaw.Types.C_ITO
     C_IT_BITOS = typing.Iterable[C_BITO]
     F_ITOS_2_BITOS = typing.Callable[[C_IT_ITOS], C_IT_BITOS]
 
     class C_EITO(typing.NamedTuple):
         index: int
-        ito: segments.Types.C_ITO
+        ito: pawpaw.Types.C_ITO
     C_IT_EITOS = typing.Iterable[C_EITO]
 
     C_VALUES = typing.Dict[str, typing.Any] | None
@@ -1138,7 +1138,7 @@ class Ito:
             values: typing.Dict[str, typing.Any] | None = None,
             predicates: typing.Dict[str, typing.Callable[[int, Types.C_ITO], bool]] | None = None
     ) -> typing.Iterable[Types.C_ITO]:
-        query = segments.query.compile(query)
+        query = pawpaw.query.compile(query)
         yield from query.find_all(self, values, predicates)
 
     # endregion

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import typing
 
-from segments import Ito, Types
+from pawpaw import Ito, Types
 
 
 # TODO : output streams could be identities, clones, or something new compared to incoming itos.  So for each chunk,

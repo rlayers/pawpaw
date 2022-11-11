@@ -1,4 +1,4 @@
-from segments import Span, Ito
+from pawpaw import Span, Ito
 from tests.util import _TestIto
 
 

@@ -9,12 +9,76 @@ be used as a hierarchical data store.  Traversal down to child nodes is possible
 ``.children`` property, while traversal upwards can be accomplished through the ``.parent`` property:
 
 >>> import regex
->>> import segments
+>>> import pawpaw
 >>> s = 'ten 10 eleven 11 twelve 12 '
->>> root = segments.Ito(s)
+>>> root = pawpaw.Ito(s)
 >>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
->>> itor = segments.floparse.Extract(re)
->>> root.children.add(*itor.traverse(segments.Ito(s)))
+>>> itor = pawpaw.floparse.Extract(re)
+>>> root.children.add(*itor.traverse(pawpaw.Ito(s)))
+>>> last_child = root.children[-1]
+>>> str(last_child)
+'twelve 12 '
+>>> parent = last_child.parent
+>>> str(parent)
+'ten 10 eleven 11 twelve 12 '
+
+Manually traversing up and down an
+
+>>> import regex
+>>> import pawpaw
+>>> s = 'ten 10 eleven 11 twelve 12 '
+>>> root = pawpaw.Ito(s)
+>>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
+>>> itor = pawpaw.floparse.Extract(re)
+>>> root.children.add(*itor.traverse(pawpaw.Ito(s)))
+>>> last_child = root.children[-1]
+>>> str(last_child)
+'twelve 12 '
+>>> parent = last_child.parent
+>>> str(parent)
+'ten 10 eleven 11 twelve 12 '
+
+Manually traversing up and down an
+
+>>> import regex
+>>> import pawpaw
+>>> s = 'ten 10 eleven 11 twelve 12 '
+>>> root = pawpaw.Ito(s)
+>>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
+>>> itor = pawpaw.floparse.Extract(re)
+>>> root.children.add(*itor.traverse(pawpaw.Ito(s)))
+>>> last_child = root.children[-1]
+>>> str(last_child)
+'twelve 12 '
+>>> parent = last_child.parent
+>>> str(parent)
+'ten 10 eleven 11 twelve 12 '
+
+Manually traversing up and down an
+
+>>> import regex
+>>> import pawpaw
+>>> s = 'ten 10 eleven 11 twelve 12 '
+>>> root = pawpaw.Ito(s)
+>>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
+>>> itor = pawpaw.floparse.Extract(re)
+>>> root.children.add(*itor.traverse(pawpaw.Ito(s)))
+>>> last_child = root.children[-1]
+>>> str(last_child)
+'twelve 12 '
+>>> parent = last_child.parent
+>>> str(parent)
+'ten 10 eleven 11 twelve 12 '
+
+Manually traversing up and down an
+
+>>> import regex
+>>> import pawpaw
+>>> s = 'ten 10 eleven 11 twelve 12 '
+>>> root = pawpaw.Ito(s)
+>>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
+>>> itor = pawpaw.floparse.Extract(re)
+>>> root.children.add(*itor.traverse(pawpaw.Ito(s)))
 >>> last_child = root.children[-1]
 >>> str(last_child)
 'twelve 12 '
@@ -23,7 +87,7 @@ be used as a hierarchical data store.  Traversal down to child nodes is possible
 'ten 10 eleven 11 twelve 12 '
 
 Manually traversing up and down an ``Ito`` hierarchy is practical for small collections or over small
-numbers of nodes.  For large collections or more complex traversals, ``ito-segments`` offers a fully
+numbers of nodes.  For large collections or more complex traversals, Pawpaw offers a fully
 functional, robust query language, which can also be used for search.  For example:
 
 >>> query_str = '**[d:number]{*[s:2]}'  # descendant with .desc == 'number' having a child whose str == '2'

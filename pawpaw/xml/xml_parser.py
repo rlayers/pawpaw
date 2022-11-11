@@ -5,9 +5,9 @@ import xml.etree.ElementTree as ET
 import xml.parsers.expat as expat
 
 import regex
-from segments import Span, Ito
-from segments.parsnip import Extract
-import segments.xml.ito_descriptors as ITO_DESCRIPTORS
+from pawpaw import Span, Ito
+from pawpaw.arborform import Extract
+import pawpaw.xml.ito_descriptors as ITO_DESCRIPTORS
 
         
 class XmlParser(ET.XMLParser):

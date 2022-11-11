@@ -4,7 +4,7 @@ import typing
 from unittest import TestCase
 
 import regex
-from segments import Span, Ito, Types
+from pawpaw import Span, Ito, Types
 
 
 class IntIto(Ito):  # Used for derived class tests

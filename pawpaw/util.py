@@ -1,11 +1,11 @@
 from __future__ import annotations
 import typing
 
-import segments
+import pawpaw
 
 
 def find_unescaped(
-        src: str | segments.Types.C_ITO,
+        src: str | pawpaw.Types.C_ITO,
         char: str,
         escape: str = '\\',
         start: int | None = None,
@@ -14,21 +14,21 @@ def find_unescaped(
     if isinstance(src, str):
         s = src
         offset = 0
-    elif isinstance(src, segments.Ito):
+    elif isinstance(src, pawpaw.Ito):
         s = src.string
         offset = src.start
     else:
-        raise segments.Errors.parameter_invalid_type('src', src, str, segments.Ito)
+        raise pawpaw.Errors.parameter_invalid_type('src', src, str, pawpaw.Ito)
 
-    span = segments.Span.from_indices(src, start, stop).offset(offset)
+    span = pawpaw.Span.from_indices(src, start, stop).offset(offset)
 
     if not isinstance(char, str):
-        raise segments.Errors.parameter_invalid_type('char', char, str)
+        raise pawpaw.Errors.parameter_invalid_type('char', char, str)
     elif len(char) != 1:
         raise ValueError('parameter \'char\' must have length 1')
 
     if not isinstance(escape, str):
-        raise segments.Errors.parameter_invalid_type('escape', escape, str)
+        raise pawpaw.Errors.parameter_invalid_type('escape', escape, str)
     elif len(escape) != 1:
         raise ValueError('parameter \'escape\' must have length 1')
 
@@ -47,12 +47,12 @@ def find_unescaped(
 
 
 def split_unescaped(
-        src: str | segments.Types.C_ITO,
+        src: str | pawpaw.Types.C_ITO,
         char: str,
         escape: str = '\\',
         start: int | None = None,
         stop: int | None = None
-) -> typing.Iterable[str] | typing.Iterable[segments.Types.C_ITO]:
+) -> typing.Iterable[str] | typing.Iterable[pawpaw.Types.C_ITO]:
     cur = 0
     for i in find_unescaped(src, char, escape, start, stop):
         yield src[cur:i]

@@ -1,6 +1,6 @@
 import regex
-from segments import Ito, Types
-from segments.parsnip import Reflect, Wrap
+from pawpaw import Ito, Types
+from pawpaw.arborform import Reflect, Wrap
 from tests.util import _TestIto
 
 

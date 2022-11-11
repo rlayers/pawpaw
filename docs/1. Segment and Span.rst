@@ -51,14 +51,14 @@ In Python, a ``str`` is immutable.  And because since substrings are themselves 
 Span
 ====
 
-A segment can be represented in Python with a 2-``tuple`` of ``int`` values.  The ``ito-segments`` module offers a class named ``Span``\ [#]_ for this purpose. ``Span`` is derived from Python's `NamedTuple <https://docs.python.org/3/library/collections.html?highlight=namedtuple#collections.namedtuple>`_, which results in a tuple-like object that:
+A segment can be represented in Python with a 2-``tuple`` of ``int`` values.  The ``pawpaw`` module offers a class named ``Span``\ [#]_ for this purpose. ``Span`` is derived from Python's `NamedTuple <https://docs.python.org/3/library/collections.html?highlight=namedtuple#collections.namedtuple>`_, which results in a tuple-like object that:
 
  - has fields accessible by attribute lookup
  - is indexable and iterable
  - requires no more memory than regular tuples
  - has immutable elements.
  
-Because they are tuples, ``Span`` objects are themselves immutable.  This ensures that immutable representation for segments within the ``ito-segments`` module.
+Because they are tuples, ``Span`` objects are themselves immutable.  This ensures that immutable representation for segments within Pawpaw.
 
 Creating a ``Span`` only requires a pair of ``int`` value for ``start`` and ``stop``:
 
@@ -94,7 +94,7 @@ However, a ``Span`` and ``slice`` are not equivalent.  A Python's ``slice`` cons
  s = slice(-10, 1)
  print((s.start, s.stop))  # (-10, 1): tuple has negative value - not valid Span
  s = slice(3)
- print((s.start, s.stop))  # (None, 3): tuple has mising start - not valid Span
+ print((s.start, s.stop))  # (None, 3): tuple has missing start - not valid Span
   
 To convert a ``slice`` to a ``Span``, the indices must be *normalized* to valid locations within the reference string.  For example, given a ``str`` of length ``n`` and a ``slice(1, -1)``, the associated ``Span`` would be:
 

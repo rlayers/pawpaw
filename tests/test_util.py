@@ -1,4 +1,4 @@
-import segments
+import pawpaw
 
 from tests.util import _TestIto
 
@@ -6,40 +6,40 @@ from tests.util import _TestIto
 class TestFindUnescaped(_TestIto):
     def test_find_unescaped_invalid(self):
         s = ' abc '
-        for src in s, segments.Ito(s, 1, -1):
+        for src in s, pawpaw.Ito(s, 1, -1):
             for char in [None, '', 'ab']:
                 with self.subTest(src=src, char=char):
                     with self.assertRaises((TypeError, ValueError)):
-                        next(segments.find_unescaped(src, char))
+                        next(pawpaw.find_unescaped(src, char))
 
         char = 'a'
-        for src in s, segments.Ito(s, 1, -1):
+        for src in s, pawpaw.Ito(s, 1, -1):
             for escape in [None, '', '\\\\']:
                 with self.subTest(src=src, char=char, escape=escape):
                     with self.assertRaises((TypeError, ValueError)):
-                        next(segments.find_unescaped(src, char, escape))
+                        next(pawpaw.find_unescaped(src, char, escape))
 
     def test_find_unescaped_trailing_escape(self):
         char = 'a'
         src = 'a\\'
         with self.subTest(src=src, char=char):
             with self.assertRaises(ValueError):
-                [*segments.find_unescaped(src, char)]
+                [*pawpaw.find_unescaped(src, char)]
                 
     def test_find_unescaped_empty_src(self):
         s = ''
         char = 'a'
-        for src in s, segments.Ito(s), segments.Ito('ab', 1, -1):
+        for src in s, pawpaw.Ito(s), pawpaw.Ito('ab', 1, -1):
             with self.subTest(src=src, char=char):
-                i = next(segments.find_unescaped(src, char), None)
+                i = next(pawpaw.find_unescaped(src, char), None)
                 self.assertIsNone(i)
 
     def test_find_unescaped_not_present(self):
         s = ' abc '
         char = 'z'
-        for src in s, segments.Ito(s), segments.Ito(s, 1, -1):
+        for src in s, pawpaw.Ito(s), pawpaw.Ito(s, 1, -1):
             with self.subTest(src=src, char=char):
-                i = next(segments.find_unescaped(src, char), None)
+                i = next(pawpaw.find_unescaped(src, char), None)
                 self.assertIsNone(i)
 
     def test_find_unescaped_simple(self):
@@ -53,20 +53,20 @@ class TestFindUnescaped(_TestIto):
                     else:        # even
                         expected = s.find(char)
                         expected = [] if expected == -1 else [expected]
-                    actual = [*segments.find_unescaped(s, char)]
+                    actual = [*pawpaw.find_unescaped(s, char)]
                     self.assertListEqual(expected, actual)
     
     def test_find_unescaped_complex(self):
         s = ' a&b&&c '
         escape = '&'
-        for src in s, segments.Ito(s, 1, -1):
+        for src in s, pawpaw.Ito(s, 1, -1):
             for char in 'a', 'b', 'c':
                 with self.subTest(src=src, char=char, escape=escape):
                     if char == 'b':
                         expected = []
                     else:
                         expected = [str(src).find(char)]
-                    actual = [*segments.find_unescaped(src, char, escape)]
+                    actual = [*pawpaw.find_unescaped(src, char, escape)]
                     self.assertListEqual(expected, actual)
 
 
@@ -74,7 +74,7 @@ class TestSplitUnescaped(_TestIto):
     def test_split_unescaped_complex(self):
         s = ' a&b&&c '
         escape = '&'
-        for src in s, segments.Ito(s, 1, -1):
+        for src in s, pawpaw.Ito(s, 1, -1):
             for char in 'a', 'b', 'c':
                 with self.subTest(src=src, char=char, escape=escape):
                     if char == 'b':
@@ -82,12 +82,12 @@ class TestSplitUnescaped(_TestIto):
                     else:
                         i = str(src).index(char)
                         expected = [src[:i], src[i + 1:]]
-                actual = [*segments.split_unescaped(src, char, escape)]
+                actual = [*pawpaw.split_unescaped(src, char, escape)]
                 self.assertListEqual(expected, actual)
 
     def test_split_unescaped_prefix_suffix(self):
         s = 'aba'
-        for src in s, segments.Ito(s):
+        for src in s, pawpaw.Ito(s):
             for char in 'a', 'b', 'c':
                 with self.subTest(src=src, char=char):
                     if isinstance(src, str):
@@ -98,5 +98,5 @@ class TestSplitUnescaped(_TestIto):
                         expected = [src[0:1], src[2:3]]
                     else:  # char == 'c'
                         expected = [src]
-                    actual = [*segments.split_unescaped(src, char)]
+                    actual = [*pawpaw.split_unescaped(src, char)]
                     self.assertListEqual(expected, actual)

@@ -3,7 +3,7 @@ import collections.abc
 import types
 import typing
 
-from segments.errors import Errors
+from pawpaw.errors import Errors
 
 
 class Span(typing.NamedTuple):

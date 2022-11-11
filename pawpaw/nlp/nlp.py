@@ -2,8 +2,8 @@ import locale
 import typing
 
 import regex
-import segments
-from segments import nuco
+import pawpaw
+from pawpaw import nuco
 
 
 class Number:
@@ -68,7 +68,7 @@ class Number:
     @thousands_sep.setter
     def thousands_sep(self, thousands_sep: str) -> None:
         if not isinstance(thousands_sep, str):
-            raise segments.Errors.parameter_invalid_type('thousands_sep', thousands_sep, str)
+            raise pawpaw.Errors.parameter_invalid_type('thousands_sep', thousands_sep, str)
         if thousands_sep == '' or thousands_sep.isspace():
             raise ValueError('parameter \'thousands_sep\' must contain a non-whitespace character')
         self._thousands_sep = thousands_sep
@@ -125,25 +125,25 @@ class SimpleNlp:
     def __init__(self, number: Number | None = None, chars: bool = False):
         super().__init__()
 
-        doc_trimmer = segments.parsnip.Wrap(lambda ito: [ito.str_strip()])
+        doc_trimmer = pawpaw.arborform.Wrap(lambda ito: [ito.str_strip()])
 
-        paragraph = segments.parsnip.Split(self._paragraph_re, desc='Paragraph')
+        paragraph = pawpaw.arborform.Split(self._paragraph_re, desc='Paragraph')
         doc_trimmer.itor_next = paragraph
 
-        para_trimmer = segments.parsnip.Wrap(lambda ito: [ito.str_strip()])
+        para_trimmer = pawpaw.arborform.Wrap(lambda ito: [ito.str_strip()])
         paragraph.itor_next = para_trimmer
 
-        sentence = segments.parsnip.Split(self._sentence_re, desc='Sentence')
+        sentence = pawpaw.arborform.Split(self._sentence_re, desc='Sentence')
         paragraph.itor_children = sentence
 
         self._number = number |nuco| Number()
         word_num_re = regex.compile(r'(?P<Number>' + self._number.num_pat + r')|(?P<Word>' + self._word_pat + r')', regex.DOTALL)
 
-        word_number = segments.parsnip.Extract(word_num_re)
+        word_number = pawpaw.arborform.Extract(word_num_re)
         sentence.itor_children = word_number
 
         if chars:
-            char = segments.parsnip.Extract(regex.compile(r'(?P<Character>\w)', regex.DOTALL))
+            char = pawpaw.arborform.Extract(regex.compile(r'(?P<Character>\w)', regex.DOTALL))
             word_number.itor_children = lambda ito: char if ito.desc == 'Word' else None
 
         self.itor = doc_trimmer
@@ -152,7 +152,7 @@ class SimpleNlp:
     def number(self) -> Number:
         return self._number
 
-    def from_text(self, text: str) -> segments.Ito:
-        doc = segments.Ito(text, desc='Document')
+    def from_text(self, text: str) -> pawpaw.Ito:
+        doc = pawpaw.Ito(text, desc='Document')
         doc.children.add(*self.itor.traverse(doc))
         return doc

@@ -1,5 +1,5 @@
 <?xml version="1.0" standalone="no"?>
-<svg fill="none" viewBox="0 0 600 100" width="75%" height="100" version="1.1" xmlns="http://www.w3.org/2000/svg">
+<svg fill="none" viewBox="0 0 430 110" version="1.1" xmlns="http://www.w3.org/2000/svg">
     <foreignObject width="100%" height="100%">
         <div xmlns="http://www.w3.org/1999/xhtml">
             <style>
@@ -16,18 +16,17 @@
                     color: #000000;
                 }
                 p {
-                    font-family: 'Josefin Sans', sans-serif;
+                    font-family: 'Roboto Slab', serif;
                     font-weight: 400;
                     font-size: 20px;
-                    margin: 10px 0 0 25px; 
+                    margin: 15px 0 0 25px; 
                     color: #000000;
-                    padding: 0 0 0 10px;
                 }
 	    </style>
             <div class="container">
 <!-- 		<image width="25%" height="25%" xlink:href="../images/pawpaw.png" /> -->
                 <h1>Pawpaw</h1>
-                <p>High performance text processing and segmentation framework</p>
+                <p>High performance segmentation framework</p>
 		    
             </div>
         </div>

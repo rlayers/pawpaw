@@ -20,14 +20,15 @@
                     font-weight: 400;
                     font-size: 20px;
                     margin: 10px 0 0 25px; 
-                    border-left: #CFffffff solid 3px;
                     color: #000000;
                     padding: 0 0 0 10px;
                 }
 	    </style>
             <div class="container">
+<!-- 		<image width="25%" height="25%" xlink:href="../images/pawpaw.png" /> -->
                 <h1>Pawpaw</h1>
                 <p>High performance text processing and segmentation framework</p>
+		    
             </div>
         </div>
     </foreignObject>

@@ -12,6 +12,9 @@
 
 ![Pawpaw](svg/title.svg)
 
+<!-- [![Typing SVG](https://readme-typing-svg.demolab.com/?lines=First+line+of+text;Second+line+of+text)](https://git.io/typing-svg)
+ -->
+ 
 # Pawpaw  [![High Performance Text Processing & Segmentation Framework][byline-img]][repo]
 
 <!-- PROJECT LOGO -->
@@ -117,12 +120,13 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 
 
-<!-- CONTACT -->
-## Contact
+<!-- CONTACTS -->
+## Contacts
 
-Robert L. Ayers: <a alt="e-mail" href="email@a.nov.guy@gmail.com">a.nov.guy@gmail.com</a>
+Robert L. Ayers:&nbsp;&nbsp;<a alt="e-mail" href="email@a.nov.guy@gmail.com">a.nov.guy@gmail.com</a>
+<!-- &nbsp;&nbsp;&nbsp;[☕ Buy me a coffee](https://ko-fi.com/jlawrence) -->
 
-Project Link: [Pawpaw repository](/.)
+Pawpaw Link:&nbsp;&nbsp;[Pawpaw Repo](/.)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

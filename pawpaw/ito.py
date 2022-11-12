@@ -84,6 +84,91 @@ class Types:
 
         return True
 
+    @classmethod
+    def is_desc_func(cls, func: typing.Any) -> bool:
+        if not isinstance(func, typing.Callable):
+            return False
+
+        sig = inspect.signature(func)
+        if not cls.type_matches_annotation(str, sig.return_annotation):
+            return False
+
+        return True
+
+    @classmethod
+    def invoke_func(cls, func: typing.Any, *vals: typing.Any) -> typing.Any:
+        """Wire and fire
+
+        Args:
+            func:
+            *vals:
+
+        Returns:
+            Invokes func and returns its return value
+        """
+        unpaired: typing.List[typing.Any] = list(vals)
+
+        arg_spec = inspect.getfullargspec(func)
+        del arg_spec.annotations['return']
+
+        p_args: typing.List[typing.Any] = []
+        for arg in arg_spec.args:
+            for val in unpaired:
+                val_type = type(val)
+                if cls.type_matches_annotation(val_type, arg_spec.annotations[arg]):
+                    p_args.append(val)
+                    unpaired.remove(val)
+                    break
+
+        p_kwonlyargs: typing.Dict[str, typing.Any] = {}
+        for arg in arg_spec.kwonlyargs:
+            for val in unpaired:
+                val_type = type(val)
+                if cls.type_matches_annotation(val_type, arg_spec.annotations[arg]):
+                    p_kwonlyargs[arg] = val
+                    unpaired.remove(val)
+                    break
+
+        p_vargs: typing.List[typing.Any] = []
+        if len(unpaired) > 0 and arg_spec.varargs is not None:
+            p_vargs[arg_spec.varargs] = unpaired
+
+        return func(*p_args, *p_vargs, **p_kwonlyargs)
+
+        #
+        # unpaired_annos = arg_spec.annotations.items()
+        # unpaired_vals = list(vals)
+        # paired: typing.Dict[str, typing.Any] = {}
+        #
+        # for val in vals:
+        #     val_type = type(val)
+        #     for k, annotation in unpaired_annos:
+        #         if cls.type_matches_annotation(val_type, annotation):
+        #             paired[k] = val
+        #             unpaired_vals.remove(val)
+        #             break
+        #
+        # if len(unpaired_vals) > 0 and arg_spec.varargs is not None:
+        #     paired[arg_spec.varargs] = vals
+        #
+        # ordered_args = []
+        # for n in arg_spec.args:
+        #     if n in paired.keys():
+        #         ordered_args.append(paired[n])
+        #         del paired[n]
+        #
+        # ordered_vargs = []
+        # if arg_spec.varargs in ordered_args:
+        #     ordered_vargs.append(paired[arg_spec.varargs])
+        #
+        # ordered_kwonlyargs = {}
+        # for n in arg_spec.kwonlyargs:
+        #     if n in paired.keys():
+        #         ordered_kwonlyargs[n] = paired[n]
+        #         del paired[n]
+        #
+        # return func(*ordered_args, *ordered_vargs, **ordered_kwonlyargs)
+
 
 nuco = Infix(lambda x, y: y if x is None else x)
 """Null coalescing operator

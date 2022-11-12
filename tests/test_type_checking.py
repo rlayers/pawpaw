@@ -26,8 +26,10 @@ F_TOO_FEW = typing.Callable[[T_A, T_B], T_RET]
 F_TOO_MANY = typing.Callable[[T_A, T_B, T_C, T_A], T_RET]
 F_WRONG_TYPES = typing.Callable[[T_C, T_B, T_A], T_RET]
 
+
 def def_ub_w_typehints(a: T_A, b: T_B, c: T_C) -> T_RET:
     return True
+
 
 def def_ub_wo_typehints(a, b, c):
     return True

@@ -19,6 +19,54 @@ from pawpaw.visualization import sgr, Highlighter, dump
 # exit(0)
 
 
+import inspect
+import typing
+import types
+
+
+def my_func(ito: Ito, match: regex.Match | None = None, fall_back: str = 'Ugh') -> str:
+    return '...'.join([str(ito), str(match), str(fall_back)])
+
+
+
+
+argspec = inspect.getfullargspec(my_func)
+print(f'.args: {argspec.args}')
+print(f'.defaults: {argspec.defaults}')
+print(f'.kwonlyargs: {argspec.kwonlyargs}')
+print(f'.kwonlydefaults: {argspec.kwonlydefaults}')
+print(f'.annotations: {argspec.annotations}')
+print()
+
+s = 'abc'
+ito = Ito(s)
+re = regex.compile('.')
+m = re.match(s)
+# print(ito, re, m)
+
+print(pawpaw.Types.invoke_desc_func(my_func, m, ito))
+print(pawpaw.Types.invoke_desc_func(my_func, ito, m))
+print(pawpaw.Types.invoke_desc_func(my_func, m, ito, 'fallback param val'))
+exit(0)
+
+vals = (ito, m)
+target_param_vals = {}
+for val in vals:
+    val_type = type(val)
+    for k, annotation in argspec.annotations.items():
+        origin = typing.get_origin(annotation)
+        print(f'val_type: {val_type}; annotation: {annotation}; result: ', end='')
+        if origin is types.UnionType:
+            result = val_type in typing.get_args(annotation)
+        else:
+            result = issubclass(val_type, annotation)
+        print(result)
+        if result:
+            target_param_vals[k] = val_type
+print(target_param_vals)
+exit(0)
+
+
 # DUMPER
 
 s = 'Hello, world!'

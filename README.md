@@ -10,6 +10,8 @@
 [![Stargazers][stars-social]][stars-url]
 <br />
 
+![Pawpaw](svg/title.svg)
+
 # Pawpaw  [![High Performance Text Processing & Segmentation Framework][byline-img]][repo]
 
 <!-- PROJECT LOGO -->

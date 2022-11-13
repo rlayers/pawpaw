@@ -10,7 +10,7 @@
 [![Stargazers][stars-social]][stars-url]
 <br />
 
-![Pawpaw](svg/title.svg)
+<!-- ![Pawpaw](svg/title.svg) -->
 
 <!-- [![Typing SVG](https://readme-typing-svg.demolab.com/?lines=First+line+of+text;Second+line+of+text)](https://git.io/typing-svg)
  -->

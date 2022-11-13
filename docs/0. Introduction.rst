@@ -19,7 +19,7 @@ You can use **pawpaw** as follows:
 >>> doc = Ito(s)
 >>> doc.children.add(*Ito.from_re(re, doc))
 
-With just two lines of code, you now have a fully hierarchical, tree graph of phrases, words, chars,
+With just two lines of code, you now have a fully hierarchical, tree\ [#]_ of phrases, words, chars,
 numbers, and digits.  This tree can be traversed, and even searched using a powerful XPATH-like
 structured query language:
 
@@ -118,8 +118,8 @@ Descriptor
  
  The low memory footprints offer a strong advantage for processing large strings because any substrings don't involve additional memory allocation.
  
-Hierarchical Data Store
-=======================
+Tree Data Store
+===============
 
 ``Ito`` supports nested storage of child ``Ito`` instances via the ``.children`` property.  Nodes can be added in via the ``.add`` method in arbitrary order, and are stored in sorted order:
 
@@ -136,10 +136,37 @@ The ``.children`` collection is not an arbitrary data store.  Nodes added to it 
 * Not overlap any existing child nodes
 * Be non-empty
 
-As ``Ito`` objects, child nodes have their own ``.children` collections.  In other words, ``Ito`` is a hiearchical data store.  This quality  is used for many key features of ``pawpaw``"
+As ``Ito`` objects, child nodes have their own ``.children` collections.  In other words, ``Ito`` and its descednants are hieraarchical, and from a tree graph.  a hiearchical data store.  This quality  is used for many key features of ``pawpaw``"
 
 * Storage and organization of substring data
 * Traversal of substring collections
 * Structured search and query
 
+Aborform
+========
+
+Pawpaw makes it easy to create to create trees.  As seen in the introduction above, a fully formed tree of arbitrary depth can be formed using a regular expression.  However, creating every larger regular expressions can be unwieldy.  The ``.aborform`` namespace contains a large number of tools to help you quicly build trees.  For example, the earlier example can also be created in piecemeal fashion follows::
+
+>>> s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
+>>>
+>>> to_phrases = Split(regex.compile('(?<=\d )'), desc='Phrase')
+>>>
+>>> to_wrd_nums = Split(regex.compile('\s'))
+>>> to_phrases.itor_children = to_wrd_nums
+>>>
+>>> wrd_num_desc = Desc(lambda ito: 'number' if ito.str_isdecimal() else 'word')
+>>> to_wrd_nums.itor_next = wrd_num_desc
+>>>
+>>> to_chr_dig = Extract(regex.compile(r'(?P<c>.)'))
+>>> wrd_num_desc.itor_children = to_chr_dig
+>>>
+>>> chr_dig_desc = Desc(lambda ito: 'digit' if ito.str_isdecimal() else 'char')
+>>> to_chr_dig.itor_next = chr_dig_desc
+>>>
+>>> root = Ito(s)
+>>> root.children.add(*to_phrases.traverse(root))
+
+.. [#] A tree is an undirected graph in which any two vertices are connected by exactly one path.  An ``Ito`` is technically a *rooted tree*, where the root is the ``Ito`` and the branches and leaves its descendants.
+
 .. [#] Slices with step values other than 1 (or ``None``) are not supported because the resulting sequences of characters will typically *not* be valid substrings.  For example, ``'abc[::-1]`` results in the reversed string ``cba``, which doesn't align with the starting ``str``.
+

@@ -24,6 +24,7 @@ class Types:
 
     F_ITO_2_B = typing.Callable[[C_ITO], bool]
     F_ITO_2_VAL = typing.Callable[[C_ITO], typing.Any]
+    F_ITO_2_DESC = typing.Callable[[C_ITO], str]
     F_ITO_2_ITOR = typing.Callable[[C_ITO], 'Itorator']
     F_ITO_2_SQ_ITOS = typing.Callable[[C_ITO], C_SQ_ITOS]
     F_ITO_2_IT_ITOS = typing.Callable[[C_ITO], C_IT_ITOS]
@@ -85,7 +86,7 @@ class Types:
         return True
 
     @classmethod
-    def is_desc_func(cls, func: typing.Any) -> bool:
+    def is_desc_func(cls, func: typing.Callable) -> bool:
         if not isinstance(func, typing.Callable):
             return False
 
@@ -94,6 +95,10 @@ class Types:
             return False
 
         return True
+
+    @classmethod
+    def is_lambda(cls, func: typing.Callable):
+        return type(func) is types.LambdaType and func.__name__ == '<lambda>'
 
     @classmethod
     def invoke_func(cls, func: typing.Any, *vals: typing.Any) -> typing.Any:
@@ -106,6 +111,10 @@ class Types:
         Returns:
             Invokes func and returns its return value
         """
+
+        if cls.is_lambda(func):
+            return func(*vals)  # No type hints on lamdbas, so this is the best we can do
+
         unpaired: typing.List[typing.Any] = list(vals)
 
         arg_spec = inspect.getfullargspec(func)
@@ -134,40 +143,6 @@ class Types:
             p_vargs[arg_spec.varargs] = unpaired
 
         return func(*p_args, *p_vargs, **p_kwonlyargs)
-
-        #
-        # unpaired_annos = arg_spec.annotations.items()
-        # unpaired_vals = list(vals)
-        # paired: typing.Dict[str, typing.Any] = {}
-        #
-        # for val in vals:
-        #     val_type = type(val)
-        #     for k, annotation in unpaired_annos:
-        #         if cls.type_matches_annotation(val_type, annotation):
-        #             paired[k] = val
-        #             unpaired_vals.remove(val)
-        #             break
-        #
-        # if len(unpaired_vals) > 0 and arg_spec.varargs is not None:
-        #     paired[arg_spec.varargs] = vals
-        #
-        # ordered_args = []
-        # for n in arg_spec.args:
-        #     if n in paired.keys():
-        #         ordered_args.append(paired[n])
-        #         del paired[n]
-        #
-        # ordered_vargs = []
-        # if arg_spec.varargs in ordered_args:
-        #     ordered_vargs.append(paired[arg_spec.varargs])
-        #
-        # ordered_kwonlyargs = {}
-        # for n in arg_spec.kwonlyargs:
-        #     if n in paired.keys():
-        #         ordered_kwonlyargs[n] = paired[n]
-        #         del paired[n]
-        #
-        # return func(*ordered_args, *ordered_vargs, **ordered_kwonlyargs)
 
 
 nuco = Infix(lambda x, y: y if x is None else x)
@@ -734,9 +709,9 @@ class Ito:
     def split_iter(
             self,
             re: regex.Pattern,
-            desc: str | None = None,
             max_split: int = 0,
-            keep_seps: bool = False
+            keep_seps: bool = False,
+            desc: str | typing.Callable | None = None
     ) -> typing.Iterable[Types.C_ITO]:
         count = 0
         i = self.start
@@ -756,11 +731,11 @@ class Ito:
     def split(
             self,
             re: regex.Pattern,
-            desc: str | None = None,
             max_split: int = 0,
-            keep_seps: bool = False
+            keep_seps: bool = False,
+            desc: str | None = None
     ) -> typing.List[Types.C_ITO]:
-        return [*self.split_iter(re, desc, max_split, keep_seps)]
+        return [*self.split_iter(re, max_split, keep_seps, desc)]
 
     # endregion
 
@@ -1157,8 +1132,8 @@ class Ito:
     # Line separators taken from https://docs.python.org/3/library/stdtypes.html
     _splitlines_re = regex.compile(r'\r\n|\r|\n|\v|\x0b|\f|\x0c|\x1c|\x1d|\x1e|\x85|\u2028|\u2029', regex.DOTALL)
 
-    def str_splitlines(self, desc: str | None = None, keepends: bool = False) -> typing.List[Types.C_ITO]:
-        rv = [*self.split_iter(self._splitlines_re, desc, 0, keepends)]
+    def str_splitlines(self, keepends: bool = False, desc: str | None = None) -> typing.List[Types.C_ITO]:
+        rv = [*self.split_iter(self._splitlines_re, 0, keepends, desc)]
 
         if len(rv) == 0:
             return rv

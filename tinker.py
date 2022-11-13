@@ -18,54 +18,30 @@ from pawpaw.visualization import sgr, Highlighter, dump
 # print(pawpaw.__version__._asdict())
 # exit(0)
 
+from pawpaw.arborform.itorator import Desc, Extract, Split, Wrap
 
-import inspect
-import typing
-import types
+s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
+re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')
 
+to_phrases = Split(regex.compile('(?<=\d )'), desc='Phrase')
 
-def my_func(ito: Ito, match: regex.Match | None = None, fall_back: str = 'Ugh') -> str:
-    return '...'.join([str(ito), str(match), str(fall_back)])
+to_wrd_nums = Split(regex.compile('\s'))
+to_phrases.itor_children = to_wrd_nums
 
+wrd_num_desc = Desc(lambda ito: 'number' if ito.str_isdecimal() else 'word')
+to_wrd_nums.itor_next = wrd_num_desc
 
+to_chr_dig = Extract(regex.compile(r'(?P<c>.)'))
+wrd_num_desc.itor_children = to_chr_dig
 
+chr_dig_desc = Desc(lambda ito: 'digit' if ito.str_isdecimal() else 'char')
+to_chr_dig.itor_next = chr_dig_desc
 
-argspec = inspect.getfullargspec(my_func)
-print(f'.args: {argspec.args}')
-print(f'.defaults: {argspec.defaults}')
-print(f'.kwonlyargs: {argspec.kwonlyargs}')
-print(f'.kwonlydefaults: {argspec.kwonlydefaults}')
-print(f'.annotations: {argspec.annotations}')
-print()
+root = Ito(s)
+root.children.add(*to_phrases.traverse(root))
 
-s = 'abc'
-ito = Ito(s)
-re = regex.compile('.')
-m = re.match(s)
-# print(ito, re, m)
-
-print(pawpaw.Types.invoke_desc_func(my_func, m, ito))
-print(pawpaw.Types.invoke_desc_func(my_func, ito, m))
-print(pawpaw.Types.invoke_desc_func(my_func, m, ito, 'fallback param val'))
+print(dump.Compact().dumps(root))
 exit(0)
-
-vals = (ito, m)
-target_param_vals = {}
-for val in vals:
-    val_type = type(val)
-    for k, annotation in argspec.annotations.items():
-        origin = typing.get_origin(annotation)
-        print(f'val_type: {val_type}; annotation: {annotation}; result: ', end='')
-        if origin is types.UnionType:
-            result = val_type in typing.get_args(annotation)
-        else:
-            result = issubclass(val_type, annotation)
-        print(result)
-        if result:
-            target_param_vals[k] = val_type
-print(target_param_vals)
-exit(0)
-
 
 # DUMPER
 

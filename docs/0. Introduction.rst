@@ -18,6 +18,8 @@ You can use **pawpaw** as follows:
 
 >>> root = next(Ito.from_re(re, s))
 
+
+
 With just one line of code, you now have a fully hierarchical, tree\ [#]_ of phrases, words, chars,
 numbers, and digits.  This tree can be traversed, and even searched using a powerful XPATH-like
 structured query language:
@@ -36,18 +38,12 @@ Dive a Bit Deeper: *Introducing* ``Ito``
 >>> print(i)
 Hello, world!
 
-The class 
->>> s = 'x Hello, world! x'
->>> i = Ito(s, 2, -2)
->>> print(i)
-Hello, world!
-
 The class ``Ito``, short for *In Text Object*, is a high performance, indexed substring. Creating
 an ``Ito`` does *not* create a new string.  Rather, an ``Ito`` maintains a reference to a basis
 string, along with start and stop indexes:
 
 >>> i
-Ito('Hello, world!', 2, 15, None)
+Ito('x Hello, world! x', 2, 15, None)
 
 Because ``Ito`` only maintains a reference to its basis string, its memory requirements are low:
 
@@ -72,12 +68,12 @@ Hello
 >>> str(i[-6:])  # slice accessor
 world!
   
-While index access to the character data in a ``str`` returns another ``str``, index access to the character data in an ``Ito`` returns another ``Ito``:
+Index access on a ``str`` returns another ``str``.  Likewise, index access on an ``Ito`` returns another ``Ito``:
 
 >>> i[-6:]
 Ito(Hello, world!', 7, 13, None)
 
-Note that index access allows you to enumerate an ``Ito``:
+Note that index access allows ``Ito`` enumeration:
 
 >>> for idx, ito in enumerate(i[:5]):
 ...     print(idx, ito):
@@ -88,22 +84,22 @@ Note that index access allows you to enumerate an ``Ito``:
 3: l
 4: o
 
-All index book keeping is handled internally, allowing code like this:
+Relative index access allows for clear, easy to use code:
 
->>> j = i[-6:]   # new Ito based on the last 6 characters of Ito 'i'
->>> str(j[0:3])  # print first three characters of Ito 'j'
+>>> j = i[-6:]   # new Ito based on the last 6 characters of the previous Ito
+>>> str(j[0:3])  # print first three characters of the new Ito
 
-The idiom of relative access extends to the ``Ito`` constructor, which can take either a ``str`` or an ``Ito`` as the first parameter, ``src``.  The subsequent ``start`` and ``stop`` parameters are always *relative to ``src``*, with the original source string carried through and all indexing book-keeping handled automatically:
+``Ito`` constructors allow for using either a ``str`` or an ``Ito`` as the basis parameter, ``src``.  The subsequent ``start`` and ``stop`` parameters are always *relative to ``src``*, with the original source string carried through and all indexing book-keeping handled automatically:
 
 >>> s = '_abc_'
->>> i1 = Ito(s, 1, -1)   # skip first an last chars o s
->>> i2 = Ito(i1, 1, -1)  # skip first and last chars of i1
+>>> i1 = Ito(s, 1, -1)   # str basis; skip first & last chars of str s
+>>> i2 = Ito(i1, 1, -1)  # Ito basis; skip first and last chars of Ito i1
 >>> str(i1), str(i2)
 ('abc', 'b')
 
 Descriptor
 ==========
-``Ito`` features a ``.desc`` property that can be used to tag an ``Ito`` with an arbitrary string.  Values for ``.desc`` can be specified as the final constructor property, or post-instantition via a property of the same name::
+``Ito`` features a ``.desc`` property that can be used for tagging.  Values for ``.desc`` can be specified as the final constructor property, or post-instantition via a property of the same name::
 
  >>> i = Ito('abc', desc='something useful')
  >>> i.desc
@@ -112,15 +108,12 @@ Descriptor
  >>> i.desc
  'something different'
  
- The ``.desc`` property can be used to search and filter ``Ito`` collections.
-
- 
- The low memory footprints offer a strong advantage for processing large strings because any substrings don't involve additional memory allocation.
+ The ``.desc`` property facilitates search and retrieval of ``Ito`` collections.
  
 Tree Data Store
 ===============
 
-``Ito`` supports nested storage of child ``Ito`` instances via the ``.children`` property.  Nodes can be added in via the ``.add`` method in arbitrary order, and are stored in sorted order:
+``Ito`` supports nested storage of child ``Ito`` instances via the ``.children`` property.  Nodes can be added via the ``.add`` method in arbitrary order.  They are always stored in sorted order:
 
 >>> s = 'ABC 123'
 >>> root = Ito(s)
@@ -135,16 +128,17 @@ The ``.children`` collection is not an arbitrary data store.  Nodes added to it 
 * Not overlap any existing child nodes
 * Be non-empty
 
-As ``Ito`` objects, child nodes have their own ``.children` collections.  In other words, ``Ito`` and its descednants are hieraarchical, and from a tree graph.  a hiearchical data store.  This quality  is used for many key features of ``pawpaw``"
+Child nodes have their own ``.children` collections, and so on.  In other words, ``Ito`` and its descendants form are hierarchical and from a tree graph.  This quality  is used for many key features of ``pawpaw``", such as:
 
 * Storage and organization of substring data
+* Hiearchical segmentation processing
 * Traversal of substring collections
 * Structured search and query
 
 Aborform
 ========
 
-Pawpaw makes it easy to create to create trees.  As seen in the introduction above, a fully formed tree of arbitrary depth can be formed using a single regular expression.  However, creating large regular expressions can be unwieldy.  The ``.aborform`` namespace contains a large number of tools to help you quicly build trees.  For example, an identical tree can also be created in piecemeal fashion as follows::
+Pawpaw makes it easy to create to create trees.  As seen in the introduction above, a fully formed tree of arbitrary depth can be formed using a single regular expression.  Creating large regular expressions, however, can sometimes be unwieldy.  Pawpaw's ``.aborform`` namespace contains wide variety of tools to help you quicly build trees using pipelining.  For example, the same tree shown in the Introduction can be created in chained, piecemeal fashion as follows::
 
 >>> s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
 >>>
@@ -158,8 +152,8 @@ Pawpaw makes it easy to create to create trees.  As seen in the introduction abo
 >>> chrs_digs = Extract(regex.compile(r'(?P<char>[a-z])+|(?P<digit>\d)+'))
 >>> wrds_nums.itor_children = chrs_digs
 
+----
 
 .. [#] A tree is an undirected graph in which any two vertices are connected by exactly one path.  An ``Ito`` is technically a *rooted tree*, where the root is the ``Ito`` and the branches and leaves its descendants.
 
 .. [#] Slices with step values other than 1 (or ``None``) are not supported because the resulting sequences of characters will typically *not* be valid substrings.  For example, ``'abc[::-1]`` results in the reversed string ``cba``, which doesn't align with the starting ``str``.
-

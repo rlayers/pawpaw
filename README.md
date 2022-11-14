@@ -12,8 +12,16 @@
 
 <!-- ![Pawpaw](svg/title.svg) -->
 
-<!-- [![Typing SVG](https://readme-typing-svg.demolab.com/?lines=First+line+of+text;Second+line+of+text)](https://git.io/typing-svg)
- -->
+<!-- 533E30  D2AC70  E4D1AE  517D3D  90C246 -->
+
+
+<!-- <span>
+  <h1 align="top">
+  Pawpaw
+  <img align="bottom" src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=800&duration=2000&pause=3000&color=533E30&vCenter=true&width=375&height=25&lines=High+Performance+Text+Segmentation">
+  </h1>
+</span> -->
+
 
 # Pawpaw  [![High Performance Text Processing & Segmentation Framework][byline-img]][repo]
 
@@ -136,13 +144,15 @@ Pawpaw Link:&nbsp;&nbsp;[Pawpaw Repo](/.)
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
 <!-- Palatte Info:
-  https://www.schemecolor.com/oriental-beauty-color-combination.php
-  Oriental Beauty
+  "Oriental Beauty"
   533E30	D2AC70	E4D1AE	517D3D	90C246
+  https://www.schemecolor.com/oriental-beauty-color-combination.php
 -->
 
 [repo]: ./
 [byline-img]: https://img.shields.io/badge/-High%20Performance%20Text%20Segmentation%20Framework-FFFFFF
+
+[byline2-img]: https://readme-typing-svg.demolab.com?font=Fira+Code&weight=800&duration=500&pause=1500&color=533E30&vCenter=true&width=375&height=25&lines=High+Performance+Text+Segmentation
 
 [Python.org]: https://img.shields.io/badge/python-≥3.10-517D3D.svg?style=flat&logo=angular&logoColor=white
 [Python-url]: https://www.python.org

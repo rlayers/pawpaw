@@ -5,8 +5,8 @@
 [![Python][Python.org]][Python-url]
 [![Contributors][contributors-shield]][contributors-url]
 [![Watchers][watchers-shield]][watchers-url]
+[![Forks][forks-shield]][forks-url]
 [![MIT License][license-shield]][license-url]
-[![Forks][forks-social]][forks-url]
 [![Stargazers][stars-social]][stars-url]
 <br />
 
@@ -14,7 +14,7 @@
 
 <!-- [![Typing SVG](https://readme-typing-svg.demolab.com/?lines=First+line+of+text;Second+line+of+text)](https://git.io/typing-svg)
  -->
- 
+
 # Pawpaw  [![High Performance Text Processing & Segmentation Framework][byline-img]][repo]
 
 <!-- PROJECT LOGO -->
@@ -135,27 +135,33 @@ Pawpaw Link:&nbsp;&nbsp;[Pawpaw Repo](/.)
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
-[repo]: ./
-[byline-img]: https://img.shields.io/badge/-High%20Performance%20Text%20Processing%20%26%20Segmentation%20Framework-FFFFFF
+<!-- Palatte Info:
+  https://www.schemecolor.com/oriental-beauty-color-combination.php
+  Oriental Beauty
+  533E30	D2AC70	E4D1AE	517D3D	90C246
+-->
 
-[Python.org]: https://img.shields.io/badge/python-3.10-blue.svg?style=flat&logo=angular&logoColor=white
+[repo]: ./
+[byline-img]: https://img.shields.io/badge/-High%20Performance%20Text%20Segmentation%20Framework-FFFFFF
+
+[Python.org]: https://img.shields.io/badge/python-≥3.10-517D3D.svg?style=flat&logo=angular&logoColor=white
 [Python-url]: https://www.python.org
 
-[contributors-shield]: https://img.shields.io/github/contributors/rlayers/pawpaw.svg?style=flat
+[contributors-shield]: https://img.shields.io/github/contributors/rlayers/pawpaw.svg?color=90C246&style=flat
 [contributors-url]: https://github.com/rlayers/pawpaw/graphs/contributors
 
-[watchers-shield]: https://img.shields.io/github/watchers/rlayers/pawpaw.svg?style=flat
+[watchers-shield]: https://img.shields.io/github/watchers/rlayers/pawpaw.svg?color=E4D1AE&style=flat
 [watchers-url]: https://github.com/rlayers/pawpaw/watchers
-
-[license-shield]: https://img.shields.io/github/license/rlayers/pawpaw.svg?style=flat
-[license-url]: https://github.com/rlayers/pawpaw/blob/master/LICENSE
 
 [issues-shield]: https://img.shields.io/github/issues/rlayers/pawpaw.svg?style=flat
 [issues-url]: https://github.com/rlayers/pawpaw/issues
 
 [forks-social]: https://img.shields.io/github/forks/rlayers/pawpaw.svg?style=social
-[forks-shield]: https://img.shields.io/github/forks/rlayers/pawpaw.svg?style=flat
+[forks-shield]: https://img.shields.io/github/forks/rlayers/pawpaw.svg?color=D2AC70&style=flat
 [forks-url]: https://github.com/rlayers/pawpaw/network/members
+
+[license-shield]: https://img.shields.io/github/license/rlayers/pawpaw.svg?color=533E30&style=flat
+[license-url]: https://github.com/rlayers/pawpaw/blob/master/LICENSE
 
 [stars-social]: https://img.shields.io/github/stars/rlayers/pawpaw.svg?style=social
 [stars-shield]: https://img.shields.io/github/stars/rlayers/pawpaw.svg?style=flat

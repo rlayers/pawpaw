@@ -2,7 +2,7 @@
 <a name="readme-top"></a>
 
 <!-- PROJECT SHIELDS -->
-[![Python][Python.org]][Python-url]
+[![Python][Python-shield]][Python-url]
 [![Contributors][contributors-shield]][contributors-url]
 [![Watchers][watchers-shield]][watchers-url]
 [![Forks][forks-shield]][forks-url]
@@ -13,7 +13,6 @@
 <!-- ![Pawpaw](svg/title.svg) -->
 
 <!-- 533E30  D2AC70  E4D1AE  517D3D  90C246 -->
-
 
 <!-- <span>
   <h1 align="top">
@@ -28,17 +27,13 @@
 <!-- PROJECT LOGO -->
 <img align="right" width="30%" height="30%" alt="Pawpaw logo" src="images/pawpaw.png" >  
 
-Pawpaw is a parsing and segmentation framework for efficient text processing.  It allows
-you to quickly create sophisticated lexcial parsers whose outputs are tree graphs that can be
-serialized, traversed, and searched using a powerful structured query language.
+Pawpaw is a high performance text segmentation framework that allows you you to quickly create parsers whose outputs are tree graphs.  The resulting trees can be serialized, traversed, and searched using a powerful structured query language.
 
 - Indexed str and substr representation
   - Efficient memory utilization
   - Fast processing
-  - Pythonic relative indexing and slicing of segments
+  - Pythonic relative indexing and slicing
   - Runtime & polymorphic value extraction
-- Efficient pickling and JSON persistance
-  - Security option enables persistance of index-only data, with refrence strings re-injected during de-serialziation 
 - Rules Pipelining Engine
   - Develop complex lexical parsers with just a few lines of code
   - Quickly and easily convert unstructured text into structured, indexed, & searchable tree graphs
@@ -51,6 +46,8 @@ serialized, traversed, and searched using a powerful structured query language.
   - Features a drop-in replacement for ElementTree.XmlParser
   - Full text indexes for all Elements, Attributes, Tags, Text, etc. 
   - Search XML using both XPATH and the included, structured query language
+- Efficient pickling and JSON persistance
+  - Security option enables persistance of index-only data, with refrence strings re-injected during de-serialziation 
 - Stable
   - Over 2,100 unit tests and counting!
 
@@ -154,7 +151,7 @@ Pawpaw Link:&nbsp;&nbsp;[Pawpaw Repo](/.)
 
 [byline2-img]: https://readme-typing-svg.demolab.com?font=Fira+Code&weight=800&duration=500&pause=1500&color=533E30&vCenter=true&width=375&height=25&lines=High+Performance+Text+Segmentation
 
-[Python.org]: https://img.shields.io/badge/python-≥3.10-517D3D.svg?style=flat&logo=angular&logoColor=white
+[Python-shield]: https://img.shields.io/badge/python-≥3.10-517D3D.svg?style=flat
 [Python-url]: https://www.python.org
 
 [contributors-shield]: https://img.shields.io/github/contributors/rlayers/pawpaw.svg?color=90C246&style=flat

@@ -1,40 +1,40 @@
+from itertools import tee
+
 import regex
 from pawpaw import Ito, Types
-from pawpaw.arborform import WindowedJoin
+from pawpaw.arborform import WrapEx, Split
 from tests.util import _TestIto
 
 
-class TestWindowedJoin(_TestIto):
-    def test_window_size(self):
-        func = lambda itos: True
-        for window_size in -1, 0, 1, 2:
-          with self.subTest(window_size=window_size):
-              if window_size < 2:
-                  with self.assertRaises(ValueError):
-                      WindowedJoin(window_size, func)
-              else:
-                  WindowedJoin(window_size, func)
+class TestPostorator(_TestIto):
+    post_desc = 'joined'
+
+    @classmethod
+    def simple(cls, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
+        iter_1, iter_2 = tee(itos, 2)
+        joined = Ito.join(iter_1, desc=cls.post_desc)
+        yield from (Types.C_BITO(False, i) for i in iter_2)
+        yield Types.C_BITO(True, joined)
 
     def test_traverse(self):
-        func = lambda itos: True
-        re = regex.compile(r'\s')
-        for s in '', 'One', 'One Two', 'One Two Three', 'One Two Three Four':
-            root = Ito(s, desc='root')
-            itos = root.split(re)
-            desc = 'merged'
-            for window_size in 2, 3, 4:
-                with self.subTest(string=s, itos=itos, window_size=window_size, desc=desc):
-                    wj = WindowedJoin(window_size, func, desc=desc)
-                    itos_iter = root.split_iter(re)
-                    actual = [*wj.traverse(itos_iter)]
-                    if len(itos) < window_size:
-                        self.assertListEqual([Types.C_BITO(True, i) for i in itos], actual)
-                    else:
-                        while len(actual) >= window_size:
-                            self.assertTrue(all(not bi.tf for bi in actual[:window_size]))
-                            del actual[:window_size]
-                            if len(actual) > 0:
-                                self.assertTrue(actual[0].tf)
-                                del actual[0]
+        for s in 'One', 'One Two', 'One Two Three', 'One Two Three Four':
+            itos = Ito(s).str_split()
+            with self.subTest(string=s, itos=itos, desc=self.post_desc):
+                wrapped = WrapEx(self.simple)
+                expected = [Types.C_BITO(False, i) for i in itos]
+                expected.append(Types.C_BITO(True, Ito(s, desc=self.post_desc)))
+                actual = [*wrapped.traverse(itos)]
+                self.assertListEqual(expected, actual)
 
-                        self.assertTrue(all(bi.tf for bi in actual))
+    def test_post(self):
+        for s in 'One', 'One Two', 'One Two Three', 'One Two Three Four':
+            root = Ito(s, desc='root')
+            splitter = Split(regex.compile(r'\s+'))
+
+            rv = [*splitter.traverse(root)]
+            self.assertListEqual(root.str_split(), rv)
+
+            splitter.postorator = WrapEx(self.simple)
+            expected = [Ito(s, desc=self.post_desc)]
+            actual = [*splitter.traverse(root)]
+            self.assertListEqual(expected, actual)

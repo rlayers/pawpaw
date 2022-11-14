@@ -4,16 +4,6 @@ import typing
 from pawpaw import Ito, Types
 
 
-# TODO : output streams could be identities, clones, or something new compared to incoming itos.  So for each chunk,
-# do something like:
-#
-#   for i in incoming:
-#       parent = i.parent  # First parent of chunk should be same as subsequents...
-#       parent.children.remove(i)
-#
-#   parent.children.add(*outgoing)
-
-
 class Postorator(ABC):
     @abstractmethod
     def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
@@ -73,13 +63,7 @@ class WindowedJoin(Postorator):
         yield from (Types.C_BITO(True, i) for i in window)
 
         
-class Consolidator(ABC):
-    @abstractmethod
-    def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
-        ...
-
-
-class Reduce(Consolidator):
+class StackedReduce(Postorator):
     F_SQ_ITOS_2_ITO = typing.Callable[[Types.C_SQ_ITOS], Types.C_ITO]
     F_SQ_ITOS_ITO_2_B = typing.Callable[[Types.C_SQ_ITOS, Types.C_ITO], bool]
     
@@ -103,7 +87,7 @@ class Reduce(Consolidator):
         else:
             raise Errors.parameter_invalid_type('pop_predicate', pop_predicate, self.F_SQ_ITOS_ITO_2_B, None)
 
-    def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
+    def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
         stack: typing.List[Types.C_ITO] = []
         for ito in itos:
             if stack:
@@ -123,20 +107,20 @@ class Reduce(Consolidator):
             yield self.reduce_func(stack)
 
 
-class PromoteChildren(Consolidator):
-    def __init__(self, predicate: Types.F_ITO_2_B):
-        super().__init__()
-        if not Types.is_callable(predicate, Types.F_ITO_2_B):
-            raise Errors.parameter_invalid_type('predicate', predicate, Types.F_ITO_2_B)
-        self.predicate = predicate
+# class PromoteChildren(Consolidator):
+#     def __init__(self, predicate: Types.F_ITO_2_B):
+#         super().__init__()
+#         if not Types.is_callable(predicate, Types.F_ITO_2_B):
+#             raise Errors.parameter_invalid_type('predicate', predicate, Types.F_ITO_2_B)
+#         self.predicate = predicate
 
-    def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
-        stack: typing.List[Types.C_ITO] = []
+#     def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
+#         stack: typing.List[Types.C_ITO] = []
 
-        for ito in itos:
-            if self.predicate(ito):
-                stack.extend(ito.children)
-            else:
-                stack.append(ito)
+#         for ito in itos:
+#             if self.predicate(ito):
+#                 stack.extend(ito.children)
+#             else:
+#                 stack.append(ito)
 
-        yield from stack
+#         yield from stack

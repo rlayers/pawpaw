@@ -85,28 +85,49 @@ class TestItorator(_TestIto):
             yield from (Types.C_BITO(False, i) for i in window)
             yield Types.C_BITO(True, Ito.join(window))
 
-        with self.subTest(scenario='itor_next'):
+        with self.subTest(chain_length=1, scenario='itor_next'):
+            rv = [*reflect.traverse(root)]
+            self.assertEqual(3, len(rv))
+
+            word_splitter.postorator = simple_join
+            rv = [*reflect.traverse(root)]
+            self.assertEqual(1, len(rv))
+
+        with self.subTest(chain_length=2, scenario='itor_next'):
+            word_splitter.postorator = None
             word_splitter.itor_next = char_splitter
             rv = [*reflect.traverse(root)]
             self.assertEqual(9, len(rv))
 
-            word_splitter.postorator = simple_join
+            char_splitter.postorator = simple_join
             rv = [*reflect.traverse(root)]
             self.assertEqual(3, len(rv))
 
-        with self.subTest(scenario='itor_child'):
-            reflect.itor_next = None
-            reflect.itor_children = word_splitter
-            word_splitter.postorator = None
-            
+            word_splitter.postorator = simple_join
             rv = [*reflect.traverse(root)]
             self.assertEqual(1, len(rv))
-            self.assertEqual(9, len(rv[0].children))
+
+            char_splitter.postorator = None
+            rv = [*reflect.traverse(root)]
+            self.assertEqual(1, len(rv))
+
+        with self.subTest(chain_length=2, scenario='itor_child'):
+            word_splitter.postorator = None
+            word_splitter.itor_next = None
+            word_splitter.itor_children = char_splitter
+            rv = [*reflect.traverse(root)]
+            self.assertEqual(3, len(rv))
+            self.assertEqual(9, sum(len(i.children) for i in rv))            
+
+            char_splitter.postorator = simple_join
+            rv = [*reflect.traverse(root)]
+            self.assertEqual(3, len(rv))
+            self.assertEqual(3, sum(len(i.children) for i in rv))            
 
             word_splitter.postorator = simple_join
             rv = [*reflect.traverse(root)]
             self.assertEqual(1, len(rv))
-            self.assertEqual(3, len(rv[0].children))
+            self.assertEqual(0, len(rv[0].children))  # Ito.join doesn't include children
 
     def test_traverse_complex(self):
         basis = 'ABcd123'
@@ -157,4 +178,3 @@ class TestItorator(_TestIto):
             cur = cur.children[0]
             depth += 1
         self.assertEqual(6, depth)
-                                                     

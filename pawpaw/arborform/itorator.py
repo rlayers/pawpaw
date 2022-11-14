@@ -1,8 +1,9 @@
 from __future__ import annotations
-import enum
-import types
 from abc import ABC, abstractmethod
 import collections.abc
+import enum
+import itertools
+import types
 import typing
 
 import regex
@@ -95,15 +96,16 @@ class Itorator(ABC):
         elif (parent := ito.parent) is not None:
             parent.children.remove(ito)  
   
+        iters: List[iter] = []
         for cur in curs:
             if parent is not None and cur.parent is not parent:
                 parent.children.add(cur)
 
             self._do_children(cur)
 
-            _iter = self._do_next(cur)
+            iters.append(self._do_next(cur))
 
-            yield from self._do_post(parent, _iter)
+        yield from self._do_post(parent, itertools.chain(*iters))
 
     def traverse(self, ito: Types.C_ITO) -> Types.C_IT_ITOS:
         yield from self._traverse(ito.clone())

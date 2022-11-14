@@ -6,41 +6,41 @@ Definitions
 ===========
 
 string
- an ordered sequence of ``n`` characters; n is equivalent to ``length``:
+ an ordered sequence of **n** characters; the *length* of a string is equivalent to **n**:
 
-  ``0 <= n ≡ length``
+ ``0 <= n ≡ length``
 
 substring
- an ordered sequence of ``m`` characters *contained in* or *equal to* a reference string of length ``n``; may exist in more than one *location* within a string:
+ an ordered sequence of **m** characters *contained in* or *equal to* a reference string of length **n**; may exist in more than one *location* within a string:
 
-  ``m <= n``
+ ``m <= n``
 
 proper substring
- a substring of ``m`` characters that is *not equal to* a reference string of length ``n``:
+ a substring of **m** characters that is *not equal to* a reference string of length **n**:
 
-  ``m < n``
+ ``m < n``
     
 segment
- a *specific* substring of ``m`` characters identified by its *inclusive* ``start`` location, a zero-based index; the sum of ``start`` and ``m`` is equivalent to the *exclusive* ``stop`` location:
+ a *specific* substring of **m** characters identified by its *inclusive* **start** location, a zero-based index; the sum of **start** and **m** is equivalent to the *exclusive* **stop** location:
 
-  ``start + m ≡ stop``
+ ``start + m ≡ stop``
 
- as a result of this relationship, a segment can be uniquely identified using *any two* values from ``start``, ``stop``, or ``m``; ``stop`` must be less than or equal to ``n``:
+ as a result of this relationship, a segment can be uniquely identified using *any two* values from **start**, **stop**, or **m**; **stop** must be less than or equal to **n**:
 
-  ``0 <= start <= stop <= n``
+ ``0 <= start <= stop <= n``
  
-A *segment* is frequently identified by its *inclusive* ``start`` and *exclusive* ``stop`` locations within a reference string.  Two integers can identify a valid segment for a string of length ``n`` if they are:
+A *segment* is frequently identified by its *inclusive* **start** and *exclusive* **stop** locations within a reference string.  Two integers can identify a valid segment for a string of length **n** if they are:
 
  1. ordered
- 2. between zero and ``n`` inclusive
+ 2. between zero and **n** inclusive
 
 .. sidebar:: Segment as a vector
 
  A segment can be thought of as a one dimensional vector having a location at ``start``, and a length of ``stop-start``.
 
-A segment having a non-zero ``start`` value, *or* a ``stop`` value less than ``n`` defines a *proper substring*.
+A segment having a non-zero **start** value, *or* a **stop** value less than **n** defines a *proper substring*.
 
-It is possible for a segment to have identical ``start`` and ``stop`` values, in which case it defines an *empty substring* (i.e., zero length) at a *specific location*.
+It is possible for a segment to have identical **start** and **stop** values, in which case it defines an *empty substring* (i.e., zero length) at a *specific location*.
 
 In Python, a ``str`` is immutable.  And because since substrings are themselves ``str`` objects, they too are immutable.  This attribute extends to segments, which because they define a substring, are also immutable.
 
@@ -51,7 +51,7 @@ In Python, a ``str`` is immutable.  And because since substrings are themselves 
 Span
 ====
 
-A segment can be represented in Python with a 2-``tuple`` of ``int`` values.  The ``pawpaw`` module offers a class named ``Span``\ [#]_ for this purpose. ``Span`` is derived from Python's `NamedTuple <https://docs.python.org/3/library/collections.html?highlight=namedtuple#collections.namedtuple>`_, which results in a tuple-like object that:
+A segment can be represented in Python with a 2-tuple of ``int`` values.  Pawpaw offers a class named ``Span``\ [#]_ for this purpose. ``Span`` is derived from Python's `NamedTuple <https://docs.python.org/3/library/collections.html?highlight=namedtuple#collections.namedtuple>`_, which results in a tuple-like object that:
 
  - has fields accessible by attribute lookup
  - is indexable and iterable
@@ -65,7 +65,7 @@ Creating a ``Span`` only requires a pair of ``int`` value for ``start`` and ``st
 >>> Span(0, 3)
 Span(start=0, stop=3)
 
-Because it is a named tuple, it can be used as direct replacement wherever a tuple would be:
+As a named tuple, ``Span`` can be used as direct replacement for a tuple:
 
 >>> 'The vals are %d and %d.' % Span(2, 5)
 'The vals are 2 and 5'
@@ -89,18 +89,18 @@ A ``Span`` can be easily converted to a Python ``slice`` via unpacking:
 >>> s[_slice]  # strip leading and trailing chars
 'leading and trailing spaces'
 
-However, a ``Span`` and ``slice`` are not equivalent.  A Python's ``slice`` constructor has ``start`` and ``stop`` parameters[#]_, but they are *Python-style indices*, which can have negative values.  So although a ``Span`` can always be converted to a ``slice``, the reverse is not true::
+However, a ``Span`` and ``slice`` are **not** equivalent.  A Python's ``slice`` constructor has ``start`` and ``stop`` parameters[#]_, but they are *Python-style indices*, which allow negative values.  So although a ``Span`` can always be converted to a ``slice``, the reverse is not true:
   
- s = slice(-10, 1)
- print((s.start, s.stop))  # (-10, 1): tuple has negative value - not valid Span
- s = slice(3)
- print((s.start, s.stop))  # (None, 3): tuple has missing start - not valid Span
-  
-To convert a ``slice`` to a ``Span``, the indices must be *normalized* to valid locations within the reference string.  For example, given a ``str`` of length ``n`` and a ``slice(1, -1)``, the associated ``Span`` would be:
+>>> slice(-10, 1)
+slice(-10, 1, None)
+>>> slice(3)
+slice(None, 3, None)
+
+To convert from ``slice`` to ``Span``, the indices must be *normalized* to valid locations within the reference string.  For example, given a ``str`` of length ``n`` and a ``slice(1, -1)``, the associated ``Span`` would be:
 
  ``Span(1, n - 1)``
 
-Given a reference ``str``, valid *Python-style indices* can be always be normalized.  The ``Span`` class offers a static constructor method ``.from_indices`` that accomplishes this:
+The ``Span`` class offers a static constructor method ``.from_indices`` that performs normalization for you:
 
 >>> s = 'abcd'
 >>> Span.from_indices(s, 1, -1)
@@ -110,8 +110,12 @@ Span(start=3, stop=4)
 >>> Span.from_indices(s, stop=-2)
 Span(start=0, stop=2)
 
-``.from_indices`` only uses the length of the reference ``str``.  The first parameter, named ``basis``, allows for an ``int`` or any ``Sized`` type (which supports the ``len`` keyword via a ``__len__`` method.)
+The ``.from_indices`` constructor only uses the length of the reference ``str``.  The first parameter, ``basis``, accepts an ``int`` or any ``Sized``\ [#]_ type.
+
+----
 
 .. [#] The choice of *Span* for this type name instead of *Segment* is based on the extensive use of *span* in the ``re`` and ``regex`` modules.
 
 .. [#] Python's ``slice`` constructor also features a ``step`` parameter, which defaults to 1. Slicing a ``str`` with ``step`` values other than 1 does not result in a *proper substring*, i.e., the resulting ``str`` is not contained within the starting ``str``.
+
+.. [#] Python's ``Sized`` type supports the ``len`` keyword via a ``__len__`` method, which is used to supply a length by ``.from_indices``.

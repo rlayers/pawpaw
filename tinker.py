@@ -18,47 +18,49 @@ from pawpaw.visualization import sgr, Highlighter, dump
 # print(pawpaw.__version__._asdict())
 # exit(0)
 
-from pawpaw.arborform.itorator import Desc, Extract, Split, Wrap
+# from pawpaw.arborform.itorator import Desc, Extract, Split, Wrap
+#
+# s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
+# re = regex.compile(r'(?P<root>(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)\s*)+)')
+#
+# # root = next(Ito.from_re(re, s))
+# # print(*root.find_all('**[d:digit]'), sep=', ')  # print all digits
+# # print(*root.find_all('**[d:number]{</*[s:i]}'), sep=',')  # print numbers having leter 'i' in their names
+#
+#
+# root = Ito(s, desc='root')
+#
+# phrases = Split(regex.compile('(?<=\d )'), desc='Phrase')
+#
+# wrds_nums = Extract(regex.compile(r'(?P<word>[a-z]+) (?P<number>\d+)'))
+# phrases.itor_children = wrds_nums
+#
+# chrs_digs = Extract(regex.compile(r'(?P<char>[a-z])+|(?P<digit>\d)+'))
+# wrds_nums.itor_children = chrs_digs
+#
+# root.children.add(*phrases.traverse(root))
+#
+# print(dump.Compact().dumps(root))
+# exit(0)
 
-s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
-re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')
 
-to_phrases = Split(regex.compile('(?<=\d )'), desc='Phrase')
 
-to_wrd_nums = Split(regex.compile('\s'))
-to_phrases.itor_children = to_wrd_nums
-
-wrd_num_desc = Desc(lambda ito: 'number' if ito.str_isdecimal() else 'word')
-to_wrd_nums.itor_next = wrd_num_desc
-
-to_chr_dig = Extract(regex.compile(r'(?P<c>.)'))
-wrd_num_desc.itor_children = to_chr_dig
-
-chr_dig_desc = Desc(lambda ito: 'digit' if ito.str_isdecimal() else 'char')
-to_chr_dig.itor_next = chr_dig_desc
-
-root = Ito(s)
-root.children.add(*to_phrases.traverse(root))
-
-print(dump.Compact().dumps(root))
-exit(0)
-
-# DUMPER
-
-s = 'Hello, world!'
-root = pawpaw.Ito(s, desc='root')
-for c in root.split(regex.compile(r'\s')):
-    c.desc = 'child'
-    root.children.add(c)
-for dumper in dump.Compact(), dump.Json(), dump.Xml():
-    name = type(dumper).__name__.upper()
-    print(name)
-    print('=' * len(name))
-    print()
-    print(dumper.dumps(root))
-    print()
-
-exit(0)
+# # DUMPER
+#
+# s = 'Hello, world!'
+# root = pawpaw.Ito(s, desc='root')
+# for c in root.split(regex.compile(r'\s')):
+#     c.desc = 'child'
+#     root.children.add(c)
+# for dumper in dump.Compact(), dump.Json(), dump.Xml():
+#     name = type(dumper).__name__.upper()
+#     print(name)
+#     print('=' * len(name))
+#     print()
+#     print(dumper.dumps(root))
+#     print()
+#
+# exit(0)
 
     
 # SGR    

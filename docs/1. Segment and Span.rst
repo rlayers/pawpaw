@@ -5,32 +5,30 @@
 Definitions
 ===========
 
-string
+**string**:
  an ordered sequence of **n** characters; the *length* of a string is equivalent to **n**:
-
- 0 ≤ n ≡ length
 
  :math:`0 \leq n \equiv length`
 
-substring
+**substring**:
  an ordered sequence of **m** characters *contained in* or *equal to* a reference string of length **n**; may exist in more than one *location* within a string:
 
- ``m <= n``
+ :math:`m \leq n`
 
-proper substring
+**proper substring**:
  a substring of **m** characters that is *not equal to* a reference string of length **n**:
 
- ``m < n``
-    
-segment
+ :math:`m < n`
+
+**segment**:
  a *specific* substring of **m** characters identified by its *inclusive* **start** location, a zero-based index; the sum of **start** and **m** is equivalent to the *exclusive* **stop** location:
 
- ``start + m ≡ stop``
+ :math:`start + m \equiv stop`
 
  as a result of this relationship, a segment can be uniquely identified using *any two* values from **start**, **stop**, or **m**; **stop** must be less than or equal to **n**:
 
- ``0 <= start <= stop <= n``
- 
+ :math:`0 \leq start \leq stop \leq n`
+
 A *segment* is frequently identified by its *inclusive* **start** and *exclusive* **stop** locations within a reference string.  Two integers can identify a valid segment for a string of length **n** if they are:
 
  1. ordered

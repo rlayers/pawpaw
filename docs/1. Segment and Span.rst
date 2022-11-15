@@ -8,7 +8,7 @@ Definitions
 string
  an ordered sequence of **n** characters; the *length* of a string is equivalent to **n**:
 
- ``0 <= n ≡ length``
+ $$\0leqn\equivlength$$
 
 substring
  an ordered sequence of **m** characters *contained in* or *equal to* a reference string of length **n**; may exist in more than one *location* within a string:

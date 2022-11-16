@@ -25,7 +25,7 @@
 # Pawpaw  [![High Performance Text Processing & Segmentation Framework][byline-img]][repo]
 
 <!-- PROJECT LOGO -->
-<img align="right" width="30%" height="30%" alt="Pawpaw logo" src="images/pawpaw.png" >  
+<img align="right" width="30%" height="30%" alt="Asimina triloba: the American papaw" src="https://raw.githubusercontent.com/rlayers/pawpaw/master/images/pawpaw.png">  
 
 Pawpaw is a high performance text segmentation framework that allows you you to quickly create parsers whose outputs are tree graphs.  The resulting trees can be serialized, traversed, and searched using a powerful structured query language.
 
@@ -162,7 +162,8 @@ Robert L. Ayers:&nbsp;&nbsp;<a alt="e-mail" href="email@a.nov.guy@gmail.com">a.n
   https://www.schemecolor.com/oriental-beauty-color-combination.php
 -->
 
-[repo]: ./
+[repo]: https://github.com/rlayers/pawpaw
+
 [byline-img]: https://img.shields.io/badge/-High%20Performance%20Text%20Segmentation%20Framework-FFFFFF
 
 [byline2-img]: https://readme-typing-svg.demolab.com?font=Fira+Code&weight=800&duration=500&pause=1500&color=533E30&vCenter=true&width=375&height=25&lines=High+Performance+Text+Segmentation

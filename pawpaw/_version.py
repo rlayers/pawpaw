@@ -1,6 +1,6 @@
 import typing
 
-__version__ = '2.0.0.a3'
+__version__ = '1.0.0.a4'
 """The str literal that build, setup, documentation, and other tools typically want
 """
 

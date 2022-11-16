@@ -101,7 +101,7 @@ with pip or conda.
    git clone https://github.com/rlayers/pawpaw
    ```
    
-### Check
+### Verify
 
 Open and python prompt and type:
 

@@ -65,8 +65,6 @@ Pawpaw is a high performance text segmentation framework that allows you you to 
 
 Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
-_For more examples, please refer to the [Documentation](docs)_
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 -->
 
@@ -131,6 +129,14 @@ See the [open issues](issues) for a full list of proposed features (and known is
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 -->
+
+
+<!-- CONTRIBUTING -->
+## Contributing
+
+Contributions to Pawpaw are **greatly appreciated** - please refer to the [contributing guildelines](/contributing.md) for details.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <!-- LICENSE -->

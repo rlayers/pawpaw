@@ -15,17 +15,17 @@ license = "MIT"
 license-files = { paths = ["LICENSE"] }
 dependencies = [
   "regex >= 2022.7.9",
-  #"python-dateutil==2.8.*",
-  #"black @ https://github.com/psf/black/archive/refs/tags/21.10b0.zip",
-  #"pytorch @ https://download.pytorch.org/whl/cu102/torch-1.10.0%2Bcu102-cp39-cp39-linux_x86_64.whl",
 ]
 keywords = [
   "nlp",
   "information-extraction",
-  "xml-parser",
   "text-processing",
   "text-segmentation",
   "hierarchical-text-segmentation",
+  "python",
+  "xml-parser",
+  "extract-text",
+  "knowledge-graph",
 ]
 classifiers = [
     # See https://pypi.org/classifiers/

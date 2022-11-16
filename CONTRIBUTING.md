@@ -22,9 +22,15 @@
 
 #### **Did you write a patch that fixes a bug?**
 
-* Open a new GitHub pull request with the patch.
+* Open a new GitHub pull request with your patch.
 
 * Ensure the PR description clearly describes the problem and solution. Include the relevant issue number if applicable.
+
+#### **Did you write an enhacement to PawPaw?**
+
+* If you have a suggestion that would make this better, please fork the repo and create a pull request.
+
+* You can also simply open an issue with the tag "enhancement".
 
 #### **Did you fix whitespace, format code, or make a purely cosmetic patch?**
 

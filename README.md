@@ -61,6 +61,7 @@ Pawpaw is a high performance text segmentation framework that allows you you to 
 <br />
 
 <!-- USAGE EXAMPLES -->
+<!--
 ## Usage
 
 Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
@@ -68,41 +69,58 @@ Use this space to show useful examples of how a project can be used. Additional 
 _For more examples, please refer to the [Documentation](docs)_
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
+-->
 
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
-
 ### Prerequisites
 
-Pawpaw has been written and tested using Python 3.10.14.  The only dependency is
-```regex```, which will be fetched automatically if you install using pip or conda.
+Pawpaw has been written and tested using Python 3.10.  The only dependency is
+``regex``, which will be fetched and installed automatically if you install Pawpaw
+with pip or conda.
 
 ### Installation
 
-1. Install with pip
+1. Install with pip from pypi:  
    ```
-   pip install Tornado
-   pip install Tornado -e git+https://github.com/facebook/tornado.git#egg=Tornado
+   pip install pawpaw
    ```
-  
-2. Install with conda
+   
+2. Install with pip from github:
    ```
-   git clone https://github.com/your_username_/Project-Name.git
+   pip install git+https://github.com/rlayers/pawpaw.git
    ```
 
-3. Clone the repo
+3. Install with conda
    ```
-   git clone https://github.com/your_username_/Project-Name.git
+   source activate myenv
+   conda install git pip
+   pip install git+https://github.com/rlayers/pawpaw.git
    ```
+
+4. Clone the repo with git
+   ```
+   git clone https://github.com/rlayers/pawpaw
+   ```
+   
+### Check
+
+Open and python prompt and type:
+
+  ```
+  >>> from pawpaw import Ito
+  >>> Ito('Hello, World!')
+  Ito('Hello, World!', 0, 13, None)
+  ```
+  
+If your last line looks like this, you are up and running with Pawpaw!
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <!-- ROADMAP -->
+<!--
 ## Roadmap
 
 - [ ] Feature 1
@@ -113,7 +131,7 @@ Pawpaw has been written and tested using Python 3.10.14.  The only dependency is
 See the [open issues](issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
+-->
 
 
 <!-- LICENSE -->
@@ -130,8 +148,6 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 Robert L. Ayers:&nbsp;&nbsp;<a alt="e-mail" href="email@a.nov.guy@gmail.com">a.nov.guy@gmail.com</a>
 <!-- &nbsp;&nbsp;&nbsp;[☕ Buy me a coffee](https://ko-fi.com/jlawrence) -->
-
-Pawpaw Link:&nbsp;&nbsp;[Pawpaw Repo](/.)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

@@ -5,22 +5,23 @@ import xml.etree.ElementTree as ET
 import typing
 
 import regex
-from pawpaw import nuco, Ito
+from pawpaw import Ito, Types.C_ITO
 from pawpaw.errors import Errors
 from pawpaw.arborform import Extract
-
+from pawpaw.xml import ito_descriptors
+import pawpaw
 
 # See 4 Qualified Names in https://www.w3.org/TR/xml-names/
 class QualifiedName(typing.NamedTuple):
-    prefix: Ito | None
-    local_part: Ito
+    prefix: Types.C_ITO | None
+    local_part: Types.C_ITO
 
     @classmethod
-    def from_src(cls, src: str | Ito) -> QualifiedName:
+    def from_src(cls, src: str | Types.C_ITO) -> QualifiedName:
         if isinstance(src, str):
             src = Ito(src)
-        elif not isinstance(src, Ito):
-            raise Errors.parameter_invalid_type('src', src, str, Ito)
+        elif not isinstance(src, Types.C_ITO):
+            raise Errors.parameter_invalid_type('src', src, str, Types.C_ITO)
         
         parts = src.str_split(':', maxsplit=1)
         if len(parts) == 1:
@@ -36,7 +37,7 @@ class QualifiedName(typing.NamedTuple):
         else:
             return self.local_part.string[start:stop]
 
-# Deals with ElementTree.Element tag and attrib keys
+# # Deals with ElementTree.Element tag and attrib keys
 class EtName(typing.NamedTuple):
     namespace: Ito | None
     name: Ito
@@ -67,6 +68,56 @@ class EtName(typing.NamedTuple):
             return self.name.string[start:stop]
 
 class XmlHelper:
+
+    @classmethod
+    def _error_missing_ito_attr(cls, )
+
+    @classmethod
+    def get_qualified_name(cls, ito: Types.C_ITO) -> QualifiedName:
+        if not isinstance(ito, Types.C_ITO):
+        elif ito.desc not in (ito_descriptors.START_TAG, ito_descriptors.ATTRIBUTE):
+            return ValueError(f'parameter \'{ito}\' lacks children with descriptor \'{ito_descriptors.NAME}\' - did you forget to use pawpaw.XmlParser?'')
+
+        ns = st.find(f'*[d:{ito_descriptors.NAMESPACE}]')
+        name = st.find(f'*[d:{ito_descriptors.NAME}]')
+
+        return QualifiedName(ns, name)
+
+    _query_xmlns = pawpaw.query.compile(f'*[d:{ito_descriptors.START_TAG}]/*[d:{ito_descriptors.ATTRIBUTE}]' + '{*[s:xmlns]}')
+
+    @classmethod
+    def get_xmlns(cls, element: ET.Element) -> typing.Dict[QualifiedName, Types.C_ITO]:
+        if not isinstance(element, ET.Element):
+            raise Errors.parameter_invalid_type('element', element, ET.Element)
+        elif not hasattr(element, 'ito'):
+            raise ValueError(f'parameter \'{element}\' missing attr \'.ito\' - did you forget to use pawpaw.XmlParser?'')
+        
+        rv: typing.Dict[QualifiedName, str] = {}
+        
+        for xmlns in cls._query_xmlns.find_all(e):
+            qn = get_qualified_name(xmlns)
+            value = xmlns.find(f'*[d:{ito_descriptors.VALUE}]')
+            rv[qn] = value
+
+        return rv
+
+    @classmethod
+    def get_prefix_map(cls, element: ET.ElementTree) -> typing.Dict[str, str]:
+        """Builds a prefix dict suitable for passing to ET methods, e.g., Element.find('foo:goo', prefix_map)
+
+        Args:
+            element: ET.Element
+
+        Raises:
+            Errors.parameter_invalid_type
+            ValueError
+        """
+        return {str(qn.local_part): str(val) for qn, val in cls.get_xmlns(element).items() if qn.prefix is not None}
+
+    @classmethod
+    def get_default_namespace(cls, element: ET.ElementTree) -> Types.C_ITO | None:
+        return next((val for qn, val in cls.get_xmlns(element).items() if qn.prefix is None), None)
+
     @classmethod
     def get_element_text_if_found(cls, element: ET.Element, path: str) -> str | None:
         if not isinstance(element, ET.Element):
@@ -101,15 +152,3 @@ class XmlHelper:
         
         i = tag.find('}')
         return tag[:i + 1] if i >= 0 else None
-
-    @classmethod
-    def get_default_namespace(cls, item: ET.ElementTree | ET.Element) -> str | None:
-        if isinstance(item, ET.ElementTree):
-            root = item.getroot()
-        elif not isinstance(item, ET.Element):
-            raise Errors.parameter_invalid_type('item',item, ET.ElementTree, ET.Element)
-
-        while item.attrib.get('xmlns') is None and (parent := root.find('..')) is not None:
-            root = parent
-
-        return item.attrib.get('xmlns')

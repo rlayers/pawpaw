@@ -72,8 +72,8 @@ class TestItoQuery(_TestIto):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for order in '', '+', '-':
                 for or_self in '', '!', '!!':
-                    query = f'{order}....{or_self}'
-                    with self.subTest(node=node_type, query=query):
+                    path = f'{order}....{or_self}'
+                    with self.subTest(node=node_type, path=path):
                         if node is self.root:
                             expected = [self.root] if or_self in ('!', '!!') else []
                         else:
@@ -83,15 +83,15 @@ class TestItoQuery(_TestIto):
                                     expected.append(node)
                                 else:
                                     expected.insert(0, node)
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertListEqual(expected, actual)
 
     def test_axis_ancestors(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for order in '', '+', '-':
                 for or_self in '', '!', '!!':
-                    query = f'{order}...{or_self}'
-                    with self.subTest(node=node_type, query=query):
+                    path = f'{order}...{or_self}'
+                    with self.subTest(node=node_type, path=path):
                         expected: typing.List[pawpaw.Types.C_ITO] = []
                         cur = node
                         while (par := cur.parent) is not None:
@@ -107,15 +107,15 @@ class TestItoQuery(_TestIto):
                                 expected.append(node)
                             else:
                                 expected.insert(0, node)
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertListEqual(expected, actual)
 
     def test_axis_parent(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for order in '', '+', '-':
                 for or_self in '', '!', '!!':
-                    query = f'{order}..{or_self}'
-                    with self.subTest(node=node_type, query=query):
+                    path = f'{order}..{or_self}'
+                    with self.subTest(node=node_type, path=path):
                         expected: typing.List[pawpaw.Types.C_ITO] = []
                         if node is self.root:
                             if or_self in ('!', '!!'):
@@ -127,29 +127,29 @@ class TestItoQuery(_TestIto):
                                     expected.append(node)
                                 else:
                                     expected.insert(0, node)
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertListEqual(expected, actual)
 
     def test_axis_self(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for order in '', '+', '-':
-                query = f'{order}.'
-                with self.subTest(node=node_type, query=query):
-                    i = node.find(query)
+                path = f'{order}.'
+                with self.subTest(node=node_type, path=path):
+                    i = node.find(path)
                     self.assertIs(node, i)
 
     def test_axis_dedup(self):
         # First ensure dups present
-        query = f'*/..'
-        rv = [*self.root.find_all(query)]
+        path = f'*/..'
+        rv = [*self.root.find_all(path)]
         self.assertEqual(len(self.root.children), len(rv))
         self.assertTrue(all(i is self.root for i in rv))
                                                                         
         # Now make sure they get removed
         for order in '', '+', '-':
-            query = f'*/../{order}-'
-            with self.subTest(query=query):
-                rv = [*self.root.find_all(query)]
+            path = f'*/../{order}-'
+            with self.subTest(path=path):
+                rv = [*self.root.find_all(path)]
                 self.assertEqual(1, len(rv))
                 self.assertIs(self.root, rv[0])
                                                                         
@@ -157,42 +157,42 @@ class TestItoQuery(_TestIto):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for order in '', '+', '-':
                 for or_self in '', '!':
-                    query = f'{order}*{or_self}'                
-                    with self.subTest(node=node_type, query=query):
+                    path = f'{order}*{or_self}'                
+                    with self.subTest(node=node_type, path=path):
                         expected = [*node.children]
                         if order == '-':
                             expected.reverse()
                         if len(expected) == 0 and or_self == '!':
                             expected.append(node)
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertListEqual(expected, actual)
 
     def test_axis_descendants(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for order in '', '+', '-':
                 for or_self in '', '!':
-                    query = f'{order}**{or_self}'                
-                    with self.subTest(node=node_type, query=query):
+                    path = f'{order}**{or_self}'                
+                    with self.subTest(node=node_type, path=path):
                         expected = [*node.walk_descendants()]
                         if order == '-':
                             expected.reverse()
                         if len(expected) == 0 and or_self == '!':
                             expected.append(node)
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertListEqual(expected, actual)
 
     def test_axis_leaves(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for order in '', '+', '-':
                 for or_self in '', '!':
-                    query = f'{order}***{or_self}'                
-                    with self.subTest(node=node_type, query=query):
+                    path = f'{order}***{or_self}'                
+                    with self.subTest(node=node_type, path=path):
                         if node in self.leaves:
                             expected = [node] if or_self == '!' else []
                         else:
                             step = -1 if order == '-' else 1
                             expected = self.leaves[::step]
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertListEqual(expected, actual)
 
     def test_preceding(self):
@@ -205,8 +205,8 @@ class TestItoQuery(_TestIto):
         }.items():
             for order in '', '+', '-':
                 for or_self in '', '!':
-                    query = f'{order}<<<{or_self}'
-                    with self.subTest(node=node_type, query=query):
+                    path = f'{order}<<<{or_self}'
+                    with self.subTest(node=node_type, path=path):
                         if node is self.root:
                             expected: pawpaw.Types.C_ITO = []
                             if or_self:
@@ -229,7 +229,7 @@ class TestItoQuery(_TestIto):
                             if len(expected) == 0 and or_self:
                                 expected.append(node)
 
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertListEqual(expected, actual)
                         
     def test_prior_siblings(self):
@@ -241,8 +241,8 @@ class TestItoQuery(_TestIto):
         }.items():
             for order in '', '+', '-':
                 for or_self in '', '!':
-                    query = f'{order}<<{or_self}'                
-                    with self.subTest(node=node_type, query=query):
+                    path = f'{order}<<{or_self}'                
+                    with self.subTest(node=node_type, path=path):
                         expected: typing.List[pawpaw.Types.C_ITO] = []
                         if (p := node.parent) is not None:
                             i = p.children.index(node)
@@ -251,7 +251,7 @@ class TestItoQuery(_TestIto):
                                 expected.reverse()
                         if len(expected) == 0 and or_self == '!':
                             expected.append(node)
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertListEqual(expected, actual)
 
     def test_prior_sibling(self):
@@ -263,8 +263,8 @@ class TestItoQuery(_TestIto):
         }.items():
             for order in '', '+', '-':
                 for or_self in '', '!':
-                    query = f'{order}<{or_self}'                
-                    with self.subTest(node=node_type, query=query):
+                    path = f'{order}<{or_self}'                
+                    with self.subTest(node=node_type, path=path):
                         expected: typing.List[pawpaw.Types.C_ITO] = []
                         if (p := node.parent) is not None:
                             i = p.children.index(node)
@@ -272,7 +272,7 @@ class TestItoQuery(_TestIto):
                                 expected = p.children[i - 1:i]
                         if len(expected) == 0 and or_self == '!':
                             expected.append(node)
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertListEqual(expected, actual)
 
     def test_next_sibling(self):
@@ -284,8 +284,8 @@ class TestItoQuery(_TestIto):
         }.items():
             for order in '', '+', '-':
                 for or_self in '', '!':
-                    query = f'{order}>{or_self}'                
-                    with self.subTest(node=node_type, query=query):
+                    path = f'{order}>{or_self}'                
+                    with self.subTest(node=node_type, path=path):
                         expected: typing.List[pawpaw.Types.C_ITO] = []
                         if (p := node.parent) is not None:
                             i = p.children.index(node)
@@ -293,7 +293,7 @@ class TestItoQuery(_TestIto):
                                 expected = p.children[i + 1:i + 2]
                         if len(expected) == 0 and or_self == '!':
                             expected.append(node)
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertListEqual(expected, actual)                        
 
     def test_next_siblings(self):
@@ -305,8 +305,8 @@ class TestItoQuery(_TestIto):
         }.items():
             for order in '', '+', '-':
                 for or_self in '', '!':
-                    query = f'{order}>>{or_self}'                
-                    with self.subTest(node=node_type, query=query):
+                    path = f'{order}>>{or_self}'                
+                    with self.subTest(node=node_type, path=path):
                         expected: typing.List[Ito] = []
                         if node.parent is not None:
                             i = node.parent.children.index(node)
@@ -316,7 +316,7 @@ class TestItoQuery(_TestIto):
                                     expected.reverse()
                         if len(expected) == 0 and or_self == '!':
                             expected.append(node)
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertListEqual(expected, actual)
 
     def test_following(self):
@@ -329,8 +329,8 @@ class TestItoQuery(_TestIto):
         }.items():
             for order in '', '+', '-':
                 for or_self in '', '!':
-                    query = f'{order}>>>{or_self}'
-                    with self.subTest(node=node_type, query=query):
+                    path = f'{order}>>>{or_self}'
+                    with self.subTest(node=node_type, path=path):
                         if node is self.root:
                             expected: pawpaw.Types.C_ITO = []
                             if or_self:
@@ -355,7 +355,7 @@ class TestItoQuery(_TestIto):
                             if len(expected) == 0 and or_self:
                                 expected.append(node)
 
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertListEqual(expected, actual)
 
     # endregion
@@ -367,19 +367,19 @@ class TestItoQuery(_TestIto):
     def test_filter_desc_scalar(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for desc in 'word', 'char':
-                query = f'**[d:{desc}]'
-                with self.subTest(node=node_type, query=query):
+                path = f'**[d:{desc}]'
+                with self.subTest(node=node_type, path=path):
                     expected = [d for d in node.walk_descendants() if d.desc == desc]
-                    actual = [*node.find_all(query)]
+                    actual = [*node.find_all(path)]
                     self.assertSequenceEqual(expected, actual)
     
     def test_filter_desc_multiple(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             descs = 'word', 'char'
-            query = f'**[d:{",".join(descs)}]'
-            with self.subTest(node=node_type, query=query):
+            path = f'**[d:{",".join(descs)}]'
+            with self.subTest(node=node_type, path=path):
                 expected = [d for d in node.walk_descendants() if d.desc in descs]
-                actual = [*node.find_all(query)]
+                actual = [*node.find_all(path)]
                 self.assertSequenceEqual(expected, actual)
 
     # endregion
@@ -389,19 +389,19 @@ class TestItoQuery(_TestIto):
     def test_filter_string_scalar(self):
         for node_type, node in {'root': self.root}.items():
             for s in 'ten', 'eleven', 'twelve':
-                query = f'**[s:{pawpaw.query.escape(s)}]'
-                with self.subTest(node=node_type, query=query):
+                path = f'**[s:{pawpaw.query.escape(s)}]'
+                with self.subTest(node=node_type, path=path):
                     expected = [d for d in node.walk_descendants() if str(d) == s]
-                    actual = [*node.find_all(query)]
+                    actual = [*node.find_all(path)]
                     self.assertSequenceEqual(expected, actual)
     
     def test_filter_string_multiple(self):
         for node_type, node in {'root': self.root}.items():
             strings = 'ten', 'eleven', 'twelve'
-            query = f'**[s:{",".join(pawpaw.query.escape(s) for s in strings)}]'
-            with self.subTest(node=node_type, query=query):
+            path = f'**[s:{",".join(pawpaw.query.escape(s) for s in strings)}]'
+            with self.subTest(node=node_type, path=path):
                 expected = [d for d in node.walk_descendants() if str(d) in strings]
-                actual = [*node.find_all(query)]
+                actual = [*node.find_all(path)]
                 self.assertSequenceEqual(expected, actual)
     
     # endregion
@@ -413,10 +413,10 @@ class TestItoQuery(_TestIto):
             for s in 'ten', 'ELEVEN', 'twelve':
                 for case_func in str.upper, str.casefold, str.lower:
                     s = case_func(s)
-                    query = f'**[scf:{pawpaw.query.escape(s)}]'
-                    with self.subTest(node=node_type, query=query):
+                    path = f'**[scf:{pawpaw.query.escape(s)}]'
+                    with self.subTest(node=node_type, path=path):
                         expected = [d for d in node.walk_descendants() if str(d).casefold() == s.casefold()]
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertSequenceEqual(expected, actual)
     
     def test_filter_string_casefold_multiple(self):
@@ -424,10 +424,10 @@ class TestItoQuery(_TestIto):
             basis = 'ten', 'ELEVEN', 'twelve'
             for case_func in str.upper, str.casefold, str.lower:
                 cfs = [case_func(s) for s in basis]
-                query = f'**[scf:{",".join(pawpaw.query.escape(s) for s in cfs)}]'
-                with self.subTest(node=node_type, query=query):
+                path = f'**[scf:{",".join(pawpaw.query.escape(s) for s in cfs)}]'
+                with self.subTest(node=node_type, path=path):
                         expected = [d for d in node.walk_descendants() if str(d).casefold() in [s.casefold() for s in cfs]]
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertSequenceEqual(expected, actual)
     
     # endregion
@@ -438,13 +438,13 @@ class TestItoQuery(_TestIto):
         for node_type, node in {'root': self.root}.items():
             for order in '', '+', '-':
                 for index in 0, 1, 2:
-                    query = f'*{order}[i:{index}]'
-                    with self.subTest(node=node_type, order=order, index=index, query=query):
+                    path = f'*{order}[i:{index}]'
+                    with self.subTest(node=node_type, order=order, index=index, path=path):
                         expected = [c for c in node.children]
                         if order == 'r':
                             expected.reverse()
                         expected = [expected[index]]
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertSequenceEqual(expected, actual)
                 
     def test_filter_index_range(self):
@@ -452,28 +452,28 @@ class TestItoQuery(_TestIto):
             for order in '', '+', '-':
                 for index in (0, 1), (1, 2), (0, 2):
                     istr = '-'.join(str(i) for i in index)
-                    query = f'*{order}[i:{istr}]'
-                    with self.subTest(node=node_type, order=order, index=istr, query=query):
+                    path = f'*{order}[i:{istr}]'
+                    with self.subTest(node=node_type, order=order, index=istr, path=path):
                         expected = [c for c in node.children]
                         if order == 'r':
                             expected.reverse()
                         expected = expected[slice(*index)]
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertSequenceEqual(expected, actual)
 
     def test_filter_index_mix(self):
         for node_type, node in {'root': self.root}.items():
             for order in '', '+', '-':
                 for istr, _slices in (('0,2-4,6', (slice(0, 1), slice(2, 4), slice(6, 7))), ):
-                    query = f'**{order}[i:{istr}]'
-                    with self.subTest(node=node_type, order=order, index=istr, query=query):
+                    path = f'**{order}[i:{istr}]'
+                    with self.subTest(node=node_type, order=order, index=istr, path=path):
                         tmp = [*node.walk_descendants()]
                         if order == 'r':
                             tmp.reverse()
                         expected = []
                         for _slice in _slices:
                             expected.extend(tmp[_slice])
-                        actual = [*node.find_all(query)]
+                        actual = [*node.find_all(path)]
                         self.assertSequenceEqual(expected, actual)
 
     # endregion
@@ -485,12 +485,12 @@ class TestItoQuery(_TestIto):
         for node_type, node in {'root': self.root}.items():
             for order in '', '+', '-':
                 for keys in ('a',), ('a', 'b'), ('b',):
-                    query = f'**{order}[p:{",".join(keys)}]'
-                    with self.subTest(node=node_type, order=order, keys=keys, query=query):
+                    path = f'**{order}[p:{",".join(keys)}]'
+                    with self.subTest(node=node_type, order=order, keys=keys, path=path):
                         selected = [v for k, v in predicates.items() if k in keys]
                         combined = lambda ei: all(p(ei) for p in selected)
                         expected = [ei.ito for ei in filter(combined, node.walk_descendants_levels(order == 'r'))]
-                        actual = [*node.find_all(query, predicates=predicates)]
+                        actual = [*node.find_all(path, predicates=predicates)]
                         self.assertListEqual(expected, actual)
     
     # endregion
@@ -502,14 +502,14 @@ class TestItoQuery(_TestIto):
         for node_type, node in {'root': self.root}.items():
             for order in '', '+', '-':
                 for keys in ('a',), ('a', 'b'), ('b',), ('b', 'c'), ('c',), ('a', 'c'), ('a', 'b', 'c'):
-                    query = f'**{order}[v:{",".join(keys)}]'
-                    with self.subTest(node=node_type, order=order, keys=keys, query=query):
+                    path = f'**{order}[v:{",".join(keys)}]'
+                    with self.subTest(node=node_type, order=order, keys=keys, path=path):
                         vals = [v for k, v in values.items() if k in keys]
                         tmp = [*node.walk_descendants()]
                         if order == 'r':
                             tmp.reverse()
                         expected = [i for i in tmp if i.value() in vals]
-                        actual = [*node.find_all(query, values=values)]
+                        actual = [*node.find_all(path, values=values)]
                         self.assertListEqual(expected, actual)
 
     # endregion
@@ -521,11 +521,11 @@ class TestItoQuery(_TestIto):
     def test_subquery_scalar(self):
         for node_type, node in {'root': self.root}.items():
             for order in '', '+', '-':
-                query = '**' + order + '[d:word]{*[d:char]&[s:e]}'  # words with 'e'
-                with self.subTest(node=node_type, order=order, query=query):
+                path = '**' + order + '[d:word]{*[d:char]&[s:e]}'  # words with 'e'
+                with self.subTest(node=node_type, order=order, path=path):
                     step = -1 if order == 'r' else 1
                     expected = [*dict.fromkeys(leaf.parent for leaf in self.leaves[::step] if str(leaf) == 'e').keys()]
-                    actual = [*node.find_all(query)]
+                    actual = [*node.find_all(path)]
                     self.assertListEqual(expected, actual)
     
     # endregion

@@ -1186,20 +1186,19 @@ class Ito:
 
     def find(
             self,
-            query: str,
+            path: pawpaw.Query.Path,
             values: typing.Dict[str, typing.Any] | None = None,
             predicates: typing.Dict[str, typing.Callable[[int, Types.C_ITO], bool]] | None = None
     ) -> Types.C_ITO | None:
-        return next(self.find_all(query, values, predicates), None)
+        return pawpaw.query(path, values, predicates)
 
     def find_all(
             self,
-            query: str,
+            path: pawpaw.Query.Path,
             values: typing.Dict[str, typing.Any] | None = None,
             predicates: typing.Dict[str, typing.Callable[[int, Types.C_ITO], bool]] | None = None
     ) -> typing.Iterable[Types.C_ITO]:
-        query = pawpaw.query.compile(query)
-        yield from query.find_all(self, values, predicates)
+        yield from pawpaw.query.find_all(path, values, predicates)
 
     # endregion
 

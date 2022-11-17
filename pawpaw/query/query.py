@@ -26,6 +26,9 @@ FILTER_KEYS = {
 MUST_ESCAPE_CHARS = ('\\', '[', ']', '/', ',', '{', '}',)
 
 
+Path = str | pawpaw.Types.C_ITO
+
+
 def escape(value: str) -> str:
     rv = value.replace('\\', '\\\\')  # Must do backslash before other chars
     for c in filter(lambda e: e != '\\',  MUST_ESCAPE_CHARS):
@@ -454,11 +457,11 @@ class Phrase:
 
 class Query:
     @classmethod
-    def _split_phrases(cls, query: pawpaw.Types.C_ITO) -> typing.Iterable[pawpaw.Types.C_ITO]:
+    def _split_phrases(cls, path: pawpaw.Types.C_ITO) -> typing.Iterable[pawpaw.Types.C_ITO]:
         ls = 0
         esc = False
         subquery_cnt = 0
-        for i, ito in enumerate(query):
+        for i, ito in enumerate(path):
             c = str(ito)
             if esc:
                 ls += 2
@@ -472,24 +475,24 @@ class Query:
                 ls += 1
                 subquery_cnt -= 1
             elif c == '/' and subquery_cnt == 0:
-                yield query[i-ls:i]
+                yield path[i-ls:i]
                 ls = 0
             else:
                 ls += 1
 
         if esc:
-            raise ValueError('found escape with no succeeding character in \'{query}\'')
+            raise ValueError('found escape with no succeeding character in \'{path}\'')
         else:
             i += 1
-            yield query[i-ls:i]
+            yield path[i-ls:i]
 
-    def __init__(self, query: str | pawpaw.Types.C_ITO):
+    def __init__(self, path: Path):
         """Creates a compiled query that can be used to search an Ito hierarchy
 
         Args:
-            query: one or more phrases, separated by foreslashes:
+            path: one or more phrases, separated by foreslashes:
 
-                query := {phrase}[/phrase][/phrase]...
+                path := {phrase}[/phrase][/phrase]...
 
                 Each phrase consists of an axis, and optional order, filter, and subquery:
 
@@ -518,19 +521,19 @@ class Query:
                 https://www.tutorialspoint.com/xpath/xpath_axes.htm
 
         """
-        if isinstance(query, str):
-            query = pawpaw.Ito(query)
+        if isinstance(path, str):
+            path = pawpaw.Ito(path)
             
-        if not isinstance(query, pawpaw.Ito):
-            raise pawpaw.Errors.parameter_invalid_type('query', query, str, pawpaw.Types.C_ITO)
+        if not isinstance(path, pawpaw.Ito):
+            raise pawpaw.Errors.parameter_invalid_type('path', path, Path)
             
-        if query is None or len(query) == 0 or not query.str_isprintable():
-            raise pawpaw.Errors.parameter_neither_none_nor_empty('query')
+        if len(path) == 0 or not path.str_isprintable():
+            raise pawpaw.Errors.parameter_neither_none_nor_empty('path')
 
-        self.phrases = [Phrase(p) for p in self._split_phrases(query)]
+        self.phrases = [Phrase(p) for p in self._split_phrases(path)]
 
     def find_all(
-            self,
+            path: str | pawpaw.Types.C_ITO,
             ito: pawpaw.Types.C_ITO,
             values: pawpaw.Types.C_VALUES = None,
             predicates: pawpaw.Types.C_PREDICATES = None
@@ -539,3 +542,24 @@ class Query:
         for phrase in self.phrases:
             cur = phrase.find_all(cur, values, predicates)
         yield from cur
+
+
+def compile(path: Path) -> Query:
+    return Query(path)
+
+def find_all(
+        self,
+        path: Path,
+        ito: pawpaw.Types.C_ITO,
+        values: pawpaw.Types.C_VALUES = None,
+        predicates: pawpaw.Types.C_PREDICATES = None
+) -> pawpaw.Types.C_IT_ITOS:
+    yield from Query(path).find_all(ito, values, predicates)
+
+def find(
+        path: str | pawpaw.Types.C_ITO,
+        ito: pawpaw.Types.C_ITO,
+        values: pawpaw.Types.C_VALUES = None,
+        predicates: pawpaw.Types.C_PREDICATES = None
+) -> Types.C_ITO | None:
+    return next(find_all(path, ito, values, predicates), None)

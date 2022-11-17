@@ -53,9 +53,9 @@ Pawpaw is a high performance text segmentation framework that allows you you to 
 <div align="center">
   <a href="https://github.com/rlayers/pawpaw/tree/master/docs">Explore the docs</a>
   &nbsp;&nbsp;•&nbsp;&nbsp;
-  <a href="https://github.com/rlayers/pawpaw/issues">Report Bug</a>
+  <a href="https://github.com/rlayers/pawpaw/issues">Request a feature or report a bug</a>
   &nbsp;&nbsp;•&nbsp;&nbsp;
-  <a href="https://github.com/rlayers/pawpaw/issues">Request Feature</a>
+  <a href="https://github.com/rlayers/pawpaw/tree/master/pawpaw">Explore the code</a>
 </div>
 <br />
 
@@ -77,33 +77,42 @@ Pawpaw has been written and tested using Python 3.10.  The only dependency is
 ``regex``, which will be fetched and installed automatically if you install Pawpaw
 with pip or conda.
 
-### Installation
+### Installation Options
 
-1. Install with pip from pypi:  
+There are lots of ways to install Pawpaw:
+
+1. Install with pip from PyPI:  
    ```
    pip install pawpaw
    ```
    
-2. Install with pip from github:
+2. Install with pip from GitHub:
    ```
    pip install git+https://github.com/rlayers/pawpaw.git
    ```
 
-3. Install with conda
+3. Install with conda from PyPI:
    ```
-   source activate myenv
+   conda activate myenv
+   conda install git pip
+   pip install pawpaw
+   ```
+
+4. Install with conda from GitHub:
+   ```
+   conda activate myenv
    conda install git pip
    pip install git+https://github.com/rlayers/pawpaw.git
    ```
 
-4. Clone the repo with git
+5. Clone the repo with git from GitHub:
    ```
    git clone https://github.com/rlayers/pawpaw
    ```
    
 ### Verify
 
-Open and python prompt and type:
+Open a python prompt and type:
 
   ```
   >>> from pawpaw import Ito

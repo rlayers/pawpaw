@@ -89,6 +89,8 @@ With just one line of code, Pawpaw generates a fully hierarchical, tree\ [#]_ of
 9, 13
  ```
 
+While this example uses a single regular expression, Pawpaw also features a library of pipelined parser components, which can be quickly chained together to develop large, sophisticated parsers.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- GETTING STARTED -->

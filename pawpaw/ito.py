@@ -49,6 +49,8 @@ class Types:
     C_PREDICATES = typing.Dict[str, typing.Callable[[C_EITO], bool]] | None
     F_EITO_V_P_2_B = typing.Callable[[C_EITO, C_VALUES, C_PREDICATES], bool]
 
+    C_PATH = str | C_ITO
+
     @classmethod
     def type_matches_annotation(cls, _type: typing.Type, annotation: typing.Type) -> bool:
         if annotation == inspect._empty:
@@ -1190,7 +1192,7 @@ class Ito:
             values: typing.Dict[str, typing.Any] | None = None,
             predicates: typing.Dict[str, typing.Callable[[int, Types.C_ITO], bool]] | None = None
     ) -> Types.C_ITO | None:
-        return pawpaw.query(path, values, predicates)
+        return pawpaw.query.find(path, self, values, predicates)
 
     def find_all(
             self,
@@ -1198,7 +1200,7 @@ class Ito:
             values: typing.Dict[str, typing.Any] | None = None,
             predicates: typing.Dict[str, typing.Callable[[int, Types.C_ITO], bool]] | None = None
     ) -> typing.Iterable[Types.C_ITO]:
-        yield from pawpaw.query.find_all(path, values, predicates)
+        yield from pawpaw.query.find_all(path, self, values, predicates)
 
     # endregion
 

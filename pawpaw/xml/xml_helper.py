@@ -1,11 +1,12 @@
 from __future__ import annotations
 import sys
 # Force Python XML parser, not faster C accelerators because we can't hook the C implementation (3.x hack)
+sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 import typing
 
 import regex
-from pawpaw import Ito, Types.C_ITO
+from pawpaw import Ito, Types
 from pawpaw.errors import Errors
 from pawpaw.arborform import Extract
 from pawpaw.xml import ito_descriptors
@@ -70,13 +71,11 @@ class EtName(typing.NamedTuple):
 class XmlHelper:
 
     @classmethod
-    def _error_missing_ito_attr(cls, )
-
-    @classmethod
     def get_qualified_name(cls, ito: Types.C_ITO) -> QualifiedName:
         if not isinstance(ito, Types.C_ITO):
+            return Errors.parameter_invalid_type('ito', ito, Types.C_ITO)
         elif ito.desc not in (ito_descriptors.START_TAG, ito_descriptors.ATTRIBUTE):
-            return ValueError(f'parameter \'{ito}\' lacks children with descriptor \'{ito_descriptors.NAME}\' - did you forget to use pawpaw.XmlParser?'')
+            return ValueError(f'parameter \'{ito}\' lacks children with descriptor \'{ito_descriptors.NAME}\' - did you forget to use pawpaw.XmlParser?')
 
         ns = st.find(f'*[d:{ito_descriptors.NAMESPACE}]')
         name = st.find(f'*[d:{ito_descriptors.NAME}]')
@@ -90,7 +89,7 @@ class XmlHelper:
         if not isinstance(element, ET.Element):
             raise Errors.parameter_invalid_type('element', element, ET.Element)
         elif not hasattr(element, 'ito'):
-            raise ValueError(f'parameter \'{element}\' missing attr \'.ito\' - did you forget to use pawpaw.XmlParser?'')
+            raise ValueError(f'parameter \'{element}\' missing attr \'.ito\' - did you forget to use pawpaw.XmlParser?')
         
         rv: typing.Dict[QualifiedName, str] = {}
         
@@ -103,7 +102,8 @@ class XmlHelper:
 
     @classmethod
     def get_prefix_map(cls, element: ET.ElementTree) -> typing.Dict[str, str]:
-        """Builds a prefix dict suitable for passing to ET methods, e.g., Element.find('foo:goo', prefix_map)
+        """Builds a prefix dict suitable for passing to ET methods such as Element.find('foo:goo', prefix_map);
+        keys & values are suitable for passing to xml.etree.ElementTree.register_namespace
 
         Args:
             element: ET.Element

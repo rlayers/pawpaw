@@ -18,8 +18,6 @@ You can use **pawpaw** as follows:
 
 >>> root = next(Ito.from_re(re, s))
 
-
-
 With just one line of code, you now have a fully hierarchical, tree\ [#]_ of phrases, words, chars,
 numbers, and digits.  This tree can be traversed, and even searched using a powerful XPATH-like
 structured query language:

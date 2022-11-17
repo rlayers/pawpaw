@@ -60,13 +60,38 @@ Pawpaw is a high performance text segmentation framework that allows you you to 
 <br />
 
 <!-- USAGE EXAMPLES -->
-<!--
 ## Usage
+
+Pawpaw has extensive features and capabilities you can read about in the [Docs](/Docs), however, to get started, say you have some text:
+
+ ```
+ >>> s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
+ ```
+
+that you would like to perform an nlp-like segmentation on, in order to get phrases, words, numbers, and so forth.  Given the regular expression:
+
+ ```
+ >>> re = regex.compile(r'(?P<doc>(?P<phrs>(?P<wrd>(?P<chr>\w)+) (?P<num>(?P<dig>\d)+)\s*)+)')
+ ```
+ 
+You can use **pawpaw** as follows:
+
+  ```
+  >>> doc = next(Ito.from_re(re, s))
+  ```
+
+With just one line of code, Pawpaw generates a fully hierarchical, tree\ [#]_ of phrases, words, chars, numbers, and digits.  This tree can be traversed, and even searched using a powerful XPATH-like structured query language:
+
+ ```
+ >>> print(*doc.find_all('**[d:dig]'), sep=', ')  # all digits
+9, 1, 0, 1, 1, 1, 2, 1, 3
+ >>> print(*doc.find_all('**[d:num]{</*[s:i]}'), sep=',')  # all numbers having leter 'i' in their names
+9, 13
+ ```
 
 Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
--->
 
 <!-- GETTING STARTED -->
 ## Getting Started

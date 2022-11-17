@@ -8,7 +8,7 @@ from pawpaw.xml import XmlParser, ITO_DESCRIPTORS
 from tests.util import _TestIto
 
 
-class TestXml(_TestIto):
+class TestXmlHlper(_TestIto):
     def setUp(self) -> None:
         self.parser = XmlParser()        
         

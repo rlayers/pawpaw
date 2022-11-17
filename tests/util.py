@@ -1,3 +1,4 @@
+from __future__ import annotations
 import collections.abc
 import random
 import typing
@@ -76,3 +77,65 @@ class RandSubstrings(RandSpans):
     def generate(self, string: str, start: int | None = None, stop: int | None = None) -> typing.Iterable[str]:
         for span in super().generate(string, start, stop):
             yield string[slice(*span)]
+
+
+class XmlTestSample(typing.NamedTuple):
+    default_namespace: None | str
+    prefix_map: typing.Dict[str, str]
+    source: str
+    xml: str
+
+
+XML_TEST_SAMPLES: typing.List[XmlTestSample] = [
+    XmlTestSample(
+        source = 'https://docs.python.org/3/library/xml.etree.elementtree.html',
+        default_namespace = None,
+        prefix_map = {},
+        xml = 
+"""<?xml version="1.0"?>
+<data>
+    <country name="Liechtenstein">
+        <rank>1</rank>
+        <year>2008</year>
+        <gdppc>141100</gdppc>
+        <neighbor name="Austria" direction="E"/>
+        <neighbor name="Switzerland" direction="W"/>
+    </country>
+    <country name="Singapore">
+        <rank>4</rank>
+        <year>2011</year>
+        <gdppc>59900</gdppc>
+        <neighbor name="Malaysia" direction="N"/>
+    </country>
+    <country name="Panama">
+        <rank>68</rank>
+        <year>2011</year>
+        <gdppc>13600</gdppc>
+        <neighbor name="Costa Rica" direction="W"/>
+        <neighbor name="Colombia" direction="E"/>
+    </country>
+</data>"""        
+    ),
+
+    XmlTestSample(
+        source = 'https://docs.python.org/3/library/xml.etree.elementtree.html',
+        default_namespace = 'http://people.example.com',
+        prefix_map = {'fictional': 'http://characters.example.com'},
+        xml = 
+"""<?xml version="1.0"?>
+<actors xmlns:fictional="http://characters.example.com"
+        xmlns="http://people.example.com">
+    <actor>
+        <name>John Cleese</name>
+        <fictional:character>Lancelot</fictional:character>
+        <fictional:character>Archie Leach</fictional:character>
+    </actor>
+    <actor>
+        <name>Eric Idle</name>
+        <fictional:character>Sir Robin</fictional:character>
+        <fictional:character>Gunther</fictional:character>
+        <fictional:character>Commander Clement</fictional:character>
+    </actor>
+</actors>"""   
+    ),    
+]

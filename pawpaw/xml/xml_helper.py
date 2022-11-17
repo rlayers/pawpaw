@@ -21,7 +21,7 @@ class QualifiedName(typing.NamedTuple):
     def from_src(cls, src: str | Types.C_ITO) -> QualifiedName:
         if isinstance(src, str):
             src = Ito(src)
-        elif not isinstance(src, Types.C_ITO):
+        elif not isinstance(src, Ito):
             raise Errors.parameter_invalid_type('src', src, str, Types.C_ITO)
         
         parts = src.str_split(':', maxsplit=1)
@@ -69,16 +69,15 @@ class EtName(typing.NamedTuple):
             return self.name.string[start:stop]
 
 class XmlHelper:
-
     @classmethod
     def get_qualified_name(cls, ito: Types.C_ITO) -> QualifiedName:
-        if not isinstance(ito, Types.C_ITO):
-            return Errors.parameter_invalid_type('ito', ito, Types.C_ITO)
+        if not isinstance(ito, Ito):
+            raise Errors.parameter_invalid_type('ito', ito, Types.C_ITO)
         elif ito.desc not in (ito_descriptors.START_TAG, ito_descriptors.ATTRIBUTE):
-            return ValueError(f'parameter \'{ito}\' lacks children with descriptor \'{ito_descriptors.NAME}\' - did you forget to use pawpaw.XmlParser?')
+            raise ValueError(f'parameter \'{ito}\' lacks children with descriptor \'{ito_descriptors.NAME}\' - did you forget to use pawpaw.XmlParser?')
 
-        ns = st.find(f'*[d:{ito_descriptors.NAMESPACE}]')
-        name = st.find(f'*[d:{ito_descriptors.NAME}]')
+        ns = ito.find(f'*[d:{ito_descriptors.NAMESPACE}]')
+        name = ito.find(f'*[d:{ito_descriptors.NAME}]')
 
         return QualifiedName(ns, name)
 
@@ -93,8 +92,8 @@ class XmlHelper:
         
         rv: typing.Dict[QualifiedName, str] = {}
         
-        for xmlns in cls._query_xmlns.find_all(e):
-            qn = get_qualified_name(xmlns)
+        for xmlns in cls._query_xmlns.find_all(element.ito):
+            qn = cls.get_qualified_name(xmlns)
             value = xmlns.find(f'*[d:{ito_descriptors.VALUE}]')
             rv[qn] = value
 

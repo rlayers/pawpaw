@@ -5,59 +5,16 @@ import xml.etree.ElementTree as ET
 
 import pawpaw
 from pawpaw.xml import XmlParser, ITO_DESCRIPTORS
-from tests.util import _TestIto
+from tests.util import _TestIto, XML_TEST_SAMPLES
 
 
 class TestXmlParser(_TestIto):
     def setUp(self) -> None:
         self.parser = XmlParser()        
         
-        # Sample xml taken from https://docs.python.org/3/library/xml.etree.elementtree.html
-        self.xml_no_ns = \
-"""<?xml version="1.0"?>
-<data>
-    <country name="Liechtenstein">
-        <rank>1</rank>
-        <year>2008</year>
-        <gdppc>141100</gdppc>
-        <neighbor name="Austria" direction="E"/>
-        <neighbor name="Switzerland" direction="W"/>
-    </country>
-    <country name="Singapore">
-        <rank>4</rank>
-        <year>2011</year>
-        <gdppc>59900</gdppc>
-        <neighbor name="Malaysia" direction="N"/>
-    </country>
-    <country name="Panama">
-        <rank>68</rank>
-        <year>2011</year>
-        <gdppc>13600</gdppc>
-        <neighbor name="Costa Rica" direction="W"/>
-        <neighbor name="Colombia" direction="E"/>
-    </country>
-</data>"""
-
-        # Taken from https://docs.python.org/3/library/xml.etree.elementtree.html
-        self.xml_ns = \
-"""<?xml version="1.0"?>
-<actors xmlns:fictional="http://characters.example.com"
-        xmlns="http://people.example.com">
-    <actor>
-        <name>John Cleese</name>
-        <fictional:character>Lancelot</fictional:character>
-        <fictional:character>Archie Leach</fictional:character>
-    </actor>
-    <actor>
-        <name>Eric Idle</name>
-        <fictional:character>Sir Robin</fictional:character>
-        <fictional:character>Gunther</fictional:character>
-        <fictional:character>Commander Clement</fictional:character>
-    </actor>
-</actors>"""
-        
     def test_basic(self):
-        root_e = ET.fromstring(self.xml_no_ns, parser=self.parser)
+        sample = next(s for s in XML_TEST_SAMPLES if s.default_namespace is None)
+        root_e = ET.fromstring(sample.xml, parser=self.parser)
         self.assertTrue(hasattr(root_e, 'ito'))
         
         root_i: pawpaw.Ito = root_e.ito
@@ -66,7 +23,8 @@ class TestXmlParser(_TestIto):
         self.assertIs(root_e, root_i.value())
 
     def test_nsamespace(self):
-        root_e = ET.fromstring(self.xml_ns, parser=self.parser)
+        sample = next(s for s in XML_TEST_SAMPLES if s.default_namespace is Not None)
+        root_e = ET.fromstring(sample.xml, parser=self.parser)
         
         first_start_tag = root_e.ito.find(f'**[d:' + pawpaw.xml.ITO_DESCRIPTORS.START_TAG + ']')
         self.assertIsNotNone(first_start_tag)
@@ -91,7 +49,8 @@ class TestXmlParser(_TestIto):
         self.assertEqual('http://characters.example.com', str(value))
         
     def test_hiearchical(self):
-        root_e = ET.fromstring(self.xml_no_ns, parser=self.parser)
+        sample = next(s for s in XML_TEST_SAMPLES if s.default_namespace is None)
+        root_e = ET.fromstring(sample.xml, parser=self.parser)
         root_i: pawpaw.Ito = root_e.ito
             
         expected = root_e.findall('country')

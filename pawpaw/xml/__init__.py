@@ -1,6 +1,6 @@
 from pawpaw.xml import ito_descriptors as ITO_DESCRIPTORS
 
-from .xml_helper import XmlHelper
+from .xml_helper import *
 del xml_helper
 
 from .xml_parser import XmlParser

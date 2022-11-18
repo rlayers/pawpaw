@@ -23,7 +23,7 @@ class TestXmlParser(_TestIto):
         self.assertIs(root_e, root_i.value())
 
     def test_nsamespace(self):
-        sample = next(s for s in XML_TEST_SAMPLES if s.default_namespace is Not None)
+        sample = next(s for s in XML_TEST_SAMPLES if s.default_namespace is not None)
         root_e = ET.fromstring(sample.xml, parser=self.parser)
         
         first_start_tag = root_e.ito.find(f'**[d:' + pawpaw.xml.ITO_DESCRIPTORS.START_TAG + ']')

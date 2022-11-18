@@ -18,30 +18,30 @@ from pawpaw.visualization import sgr, Highlighter, dump
 # print(pawpaw.__version__._asdict())
 # exit(0)
 
-# from pawpaw.arborform.itorator import Desc, Extract, Split, Wrap
-#
-# s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
-# re = regex.compile(r'(?P<root>(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)\s*)+)')
-#
-# # root = next(Ito.from_re(re, s))
-# # print(*root.find_all('**[d:digit]'), sep=', ')  # print all digits
-# # print(*root.find_all('**[d:number]{</*[s:i]}'), sep=',')  # print numbers having leter 'i' in their names
-#
-#
-# root = Ito(s, desc='root')
-#
-# phrases = Split(regex.compile('(?<=\d )'), desc='Phrase')
-#
-# wrds_nums = Extract(regex.compile(r'(?P<word>[a-z]+) (?P<number>\d+)'))
-# phrases.itor_children = wrds_nums
-#
-# chrs_digs = Extract(regex.compile(r'(?P<char>[a-z])+|(?P<digit>\d)+'))
-# wrds_nums.itor_children = chrs_digs
-#
-# root.children.add(*phrases.traverse(root))
-#
-# print(dump.Compact().dumps(root))
-# exit(0)
+from pawpaw.arborform.itorator import Desc, Extract, Split, Wrap
+
+s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
+re = regex.compile(r'(?P<root>(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)\s*)+)')
+
+root = next(Ito.from_re(re, s))
+# print(*root.find_all('**[d:digit]'), sep=', ')  # print all digits
+# print(*root.find_all('**[d:number]{</*[s:i]}'), sep=',')  # print numbers having leter 'i' in their names
+
+
+root = Ito(s, desc='root')
+
+phrases = Split(regex.compile('(?<=\d )'), desc='Phrase')
+
+wrds_nums = Extract(regex.compile(r'(?P<word>[a-z]+) (?P<number>\d+)'))
+phrases.itor_children = wrds_nums
+
+chrs_digs = Extract(regex.compile(r'(?P<char>[a-z])+|(?P<digit>\d)+'))
+wrds_nums.itor_children = chrs_digs
+
+root.children.add(*phrases.traverse(root))
+
+print(dump.Compact().dumps(root))
+exit(0)
 
 
 

@@ -571,7 +571,7 @@ class Ito:
         if self.span == span:
             return self  # Replicate Python's str[:] behavior, which returns self ref
                                             
-        return self.clone(*span)
+        return self.clone(*span, clone_children=False)
 
     # endregion
 

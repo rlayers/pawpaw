@@ -30,6 +30,8 @@ class Types:
     F_ITO_2_IT_ITOS = typing.Callable[[C_ITO], C_IT_ITOS]
 
     C_GK = int | str
+    F_M_GK_2_DESC = typing.Callable[[regex.Match, C_GK], str]
+
     F_ITO_M_GK_2_B = typing.Callable[[C_ITO | None, regex.Match, C_GK], bool]
     F_ITO_M_GK_2_DESC = typing.Callable[[C_ITO | None, regex.Match, C_GK], str]
     F_M_GK_2_B = typing.Callable[[regex.Match, C_GK], bool]
@@ -183,9 +185,63 @@ class Ito:
         self._children = ChildItos(self)
 
     @classmethod
+    def from_match_super(
+        cls,
+        match: regex.Match,
+        *group_keys: Types.C_GK,
+        desc: str | Types.F_M_GK_2_DESC = lambda m, gk: str(gk)
+    ) -> typing.Iterable[Types.C_ITO]:
+        if match is None:
+            raise Errors.parameter_not_none('match')
+        elif not isinstance(match, regex.Match):
+            raise Errors.parameter_invalid_type('match', match, regex.Match)
+
+        if len(group_keys) == 0:
+            gn_spans = {k: match.spans(k) for k in match.re.groupindex.keys()}
+            redundants = match.re.groupindex.values()
+            numerics = [i for i in range(0, match.re.groups + 1) if i not in redundants]
+        else:
+            gn_spans = {}
+            numerics = []
+            for gk in set(group_keys)
+                if isinstance(gk, int):
+                    numerics.append(gk)
+                else:
+                    gn_spans[gk] = match.spans(gk)
+
+        # only add numerics if their spans are absent
+        for nk in numerics:
+            ns = match.spans(nk)
+            if ns not in gn_spans.values():
+                gn_spans[nk] = ns
+
+        if isinstance(desc, str):
+            desc_func = lambda match, group: desc
+        elif Types.is_callable(desc, Types.F_M_GK_2_DESC):
+            desc_func = desc
+        else:
+            raise Errors.parameter_invalid_type('desc', desc, Types.F_M_GK_2_DESC)
+
+        path_stack: typing.List[Types.C_ITO] = []
+        match_itos: typing.List[Types.C_ITO] = []
+        gn_span_tups = [(gn, span) for gn, spans in gn_spans.items() for span in spans]
+        for gn, span in sorted(gn_span_tups, key=lambda val: (val[1][0], -val[1][1])):
+            ito = cls(match.string, *span, desc=desc_func(match, gn))
+            while len(path_stack) > 0 and (ito.start < path_stack[-1].start or ito.stop > path_stack[-1].stop):
+                path_stack.pop()
+            if len(path_stack) == 0:
+                match_itos.append(ito)
+            else:
+                path_stack[-1].children.add(ito)
+
+            path_stack.append(ito)
+
+        yield from match_itos
+
+    @classmethod
     def from_match(cls,
                    match: regex.Match,
-                   group: str | int = 0,
+                   group: Types.C_GK = 0,
                    desc: str = None
                    ) -> Types.C_ITO:
         if match is None:
@@ -533,9 +589,13 @@ class Ito:
         
         return self.__key() == o.__key()
     
-    def __iter__(self) -> typing.Iterable[str]:
-        for i in range(*self.span):
-            yield self._string[i]
+    def __iter__(self) -> typing.Iterable[Ito]:
+        length = len(self)
+        if length == 1:
+            yield self
+        elif length > 1:
+            for i in range(*self.span):
+                yield self.clone(i, i + 1, clone_children=False)
 
     def __ne__(self, o: typing.Any) -> bool:
         return not self.__eq__(o)

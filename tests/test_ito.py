@@ -160,11 +160,22 @@ class TestIto(_TestIto):
         for span in Span.from_indices(s), Span.from_indices(s, 1, -1), Span.from_indices(s, 2, -2), Span(3, 3):
             with self.subTest(string=s, span=span):
                 ito = Ito(s, *span)
-                expected = [c for c in str(ito)]
-                actual = [c for c in ito]
-                self.assertEqual(len(ito), len(actual))
+                expected = [*Ito.from_substrings(s, *s[slice(*span)])]
+                actual = [*ito]
                 self.assertListEqual(expected, actual)
-                self.assertEqual(str(ito), ''.join(actual))
+                if len(actual) == 1:
+                    self.assertIs(ito, actual[0])
+
+    def test_iter_when_zero_length(self):
+        # Ensure iter works the same for Ito as it does for str, i.e., it should yield nothing:
+        #
+        # >>> s = ''
+        # >>> [*s]
+        # []
+        #
+
+        ito = Ito('')
+        self.assertListEqual([], [*ito])
 
     def test_repr(self):
         s = 'x123x'
@@ -225,7 +236,7 @@ class TestIto(_TestIto):
     def test_getitem_valid_slice(self):
         s = 'x123x'
         ito = Ito(s, 1, -1)
-        ito.children.add(*Ito.from_substrings(s, *s))
+        ito.children.add(*ito)
         for start in None, *range(-len(s) - 1, len(s) + 1):
             with self.subTest(ito=ito, start=start):
                 span = Span.from_indices(ito, start).offset(ito.start)
@@ -288,7 +299,7 @@ class TestIto(_TestIto):
             actual = ito.strip_to_children()
             self.assertIs(ito, actual)
 
-        char_itos = list(Ito.from_substrings(basis, *s))
+        char_itos = [*Ito.from_substrings(basis, *s)]
         for cs in char_itos[:1], char_itos[:2], char_itos[1:2], char_itos[1:], char_itos[2:], char_itos[:]:
             with self.subTest(ito=ito, children_added=False, children_strs=[str(i) for i in cs]):
                 ito.children.add(*cs)

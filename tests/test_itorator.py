@@ -78,7 +78,7 @@ class TestItorator(_TestIto):
         word_splitter = Wrap(lambda ito: ito.str_split())
         reflect.itor_next = word_splitter
 
-        char_splitter = Wrap(lambda ito: Ito.from_substrings(s, *ito))
+        char_splitter = Wrap(lambda ito: (*ito))
 
         def simple_join(itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
             window = list(itos)

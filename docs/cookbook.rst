@@ -6,22 +6,32 @@
 Extraction
 **********
 
-Extract all ``char`` as ``str`` 
+Extract all characters as ``str`` 
 =================================================
 
 ::
 
  s = 'abc'
+ print(*s)  # For a str, do this
 
- print(*Ito(s))
-
-Extract all ``char`` as ``Itos``
+ i = Ito(s)
+ print(*str(Ito))  # For an Ito, do this
+ 
+Extract all characters as ``Itos``
 =============================================
 
 ::
 
  s = 'abc'
- 
- print(*[Ito(s, i, i + 1) for i, c in enumerate(s)])  # Painful...
+ print(*Ito(s))
 
- print(*Ito.from_substrings(s, *s))  # better...
+
+ Create a char-extracting itorator
+=============================================
+
+::
+
+ chars = Wrap(lambda ito: iter(ito))  # Use pawpaw.itorator.Wrap
+
+ chars = Wrap(lambda ito: Ito.from_substrings(s, *ito, desc='char'))  # If you want to also supply a desc
+ 

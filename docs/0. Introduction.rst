@@ -37,8 +37,8 @@ Dive a Bit Deeper: *Introducing* ``Ito``
 Hello, world!
 
 The class ``Ito``, short for *In Text Object*, is a high performance, indexed substring. Creating
-an ``Ito`` does *not* create a new string.  Rather, an ``Ito`` maintains a reference to a basis
-string, along with start and stop indexes:
+an ``Ito`` does *not* create a new string.  Rather, an ``Ito`` instance maintains a reference to its
+basis string, along with start and stop indexes:
 
 >>> i
 Ito('x Hello, world! x', 2, 15, None)
@@ -52,10 +52,21 @@ Because ``Ito`` only maintains a reference to its basis string, its memory requi
 >>> sys.getsizeof(s2), sys.getsizeof(Ito(s2))
 (69681, 48)
 
-Index Access
-============
 
-Like a regular Python ``str``, you access the character data in an ``Ito`` via ``int`` or ``slice`` indexers\ [#]_\ .  Indexing an ``Ito`` is always *relative to itself*, not the basis string:
+``str``-like Behavior
+=====================
+
+The class ``Ito`` behaves like a ``str`` whenever possible.
+
+len
+---
+
+For example, you can access its length:
+
+>>> len(i)
+13
+
+Likewise, you can access character data via ``int`` or ``slice`` indexers\ [#]_\ .  Note that indexing an ``Ito`` is always *relative to itself*, not its basis string:
 
 >>> str(i[0])    # int accessor
 H
@@ -66,12 +77,17 @@ Hello
 >>> str(i[-6:])  # slice accessor
 world!
   
-Index access on a ``str`` returns another ``str``.  Likewise, index access on an ``Ito`` returns another ``Ito``:
+Just as index access on a ``str`` returns another ``str``, index access on an ``Ito`` returns another ``Ito``:
 
 >>> i[-6:]
 Ito(Hello, world!', 7, 13, None)
 
-Note that index access allows ``Ito`` enumeration:
+Relative index access allows for clear, easy to use code:
+
+>>> j = i[-6:]   # new Ito based on the last 6 characters of the previous Ito
+>>> str(j[0:3])  # print first three characters of the new Ito
+
+An ``Ito`` is iterable in the same way a Python ``str`` is:
 
 >>> for idx, ito in enumerate(i[:5]):
 ...     print(idx, ito):
@@ -82,12 +98,7 @@ Note that index access allows ``Ito`` enumeration:
 3: l
 4: o
 
-Relative index access allows for clear, easy to use code:
-
->>> j = i[-6:]   # new Ito based on the last 6 characters of the previous Ito
->>> str(j[0:3])  # print first three characters of the new Ito
-
-``Ito`` constructors allow for using either a ``str`` or an ``Ito`` as the basis parameter, ``src``.  The subsequent ``start`` and ``stop`` parameters are always *relative to ``src``*, with the original source string carried through and all indexing book-keeping handled automatically:
+``Ito`` constructors allow either a ``str`` or an ``Ito`` as the basis parameter, ``src``.  The subsequent ``start`` and ``stop`` parameters are always *relative to ``src``*, with the original source string carried through and all indexing book-keeping handled automatically:
 
 >>> s = '_abc_'
 >>> i1 = Ito(s, 1, -1)   # str basis; skip first & last chars of str s

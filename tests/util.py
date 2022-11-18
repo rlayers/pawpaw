@@ -88,10 +88,10 @@ class XmlTestSample(typing.NamedTuple):
 
 XML_TEST_SAMPLES: typing.List[XmlTestSample] = [
     XmlTestSample(
-        source = 'https://docs.python.org/3/library/xml.etree.elementtree.html',
-        default_namespace = None,
-        prefix_map = {},
-        xml = 
+        source='https://docs.python.org/3/library/xml.etree.elementtree.html',
+        default_namespace=None,
+        prefix_map={},
+        xml=
 """<?xml version="1.0"?>
 <data>
     <country name="Liechtenstein">
@@ -118,10 +118,10 @@ XML_TEST_SAMPLES: typing.List[XmlTestSample] = [
     ),
 
     XmlTestSample(
-        source = 'https://docs.python.org/3/library/xml.etree.elementtree.html',
-        default_namespace = 'http://people.example.com',
-        prefix_map = {'fictional': 'http://characters.example.com'},
-        xml = 
+        source='https://docs.python.org/3/library/xml.etree.elementtree.html',
+        default_namespace='http://people.example.com',
+        prefix_map={'fictional': 'http://characters.example.com'},
+        xml=
 """<?xml version="1.0"?>
 <actors xmlns:fictional="http://characters.example.com"
         xmlns="http://people.example.com">
@@ -137,5 +137,32 @@ XML_TEST_SAMPLES: typing.List[XmlTestSample] = [
         <fictional:character>Commander Clement</fictional:character>
     </actor>
 </actors>"""   
-    ),    
+    ),
+
+    XmlTestSample(
+        source='https://www.xml.com/pub/a/1999/01/namespaces.html',
+        default_namespace=None,
+        prefix_map={'xdc': 'http://www.xml.com/books', 'h': 'http://www.w3.org/HTML/1998/html4'},
+        xml='''
+<h:html xmlns:xdc="http://www.xml.com/books"
+        xmlns:h="http://www.w3.org/HTML/1998/html4">
+ <h:head><h:title>Book Review</h:title></h:head>
+ <h:body>
+  <xdc:bookreview>
+   <xdc:title>XML: A Primer</xdc:title>
+   <h:table>
+    <h:tr align="center">
+     <h:td>Author</h:td><h:td>Price</h:td>
+     <h:td>Pages</h:td><h:td>Date</h:td></h:tr>
+    <h:tr align="left">
+     <h:td><xdc:author>Simon St. Laurent</xdc:author></h:td>
+     <h:td><xdc:price>31.98</xdc:price></h:td>
+     <h:td><xdc:pages>352</xdc:pages></h:td>
+     <h:td><xdc:date>1998/01</xdc:date></h:td>
+    </h:tr>
+   </h:table>
+  </xdc:bookreview>
+ </h:body>
+</h:html>'''
+    ),
 ]

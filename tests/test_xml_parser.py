@@ -13,14 +13,15 @@ class TestXmlParser(_TestIto):
         self.parser = XmlParser()        
         
     def test_basic(self):
-        sample = next(s for s in XML_TEST_SAMPLES if s.default_namespace is None)
-        root_e = ET.fromstring(sample.xml, parser=self.parser)
-        self.assertTrue(hasattr(root_e, 'ito'))
-        
-        root_i: pawpaw.Ito = root_e.ito
-        self.assertEqual(ITO_DESCRIPTORS.ELEMENT, root_i.desc)
-        
-        self.assertIs(root_e, root_i.value())
+        for sample in XML_TEST_SAMPLES:
+            with self.subTest(xml_source=sample.source):
+                root_e = ET.fromstring(sample.xml, parser=XmlParser())
+                self.assertTrue(hasattr(root_e, 'ito'))
+
+                root_i: pawpaw.Ito = root_e.ito
+                self.assertEqual(ITO_DESCRIPTORS.ELEMENT, root_i.desc)
+
+                self.assertIs(root_e, root_i.value())
 
     def test_nsamespace(self):
         sample = next(s for s in XML_TEST_SAMPLES if s.default_namespace is not None)

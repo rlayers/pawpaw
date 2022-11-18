@@ -27,7 +27,7 @@ class TestQualifiedName(_TestIto):
                 self.assertEqual(expected, actual)
 
 
-class TestXmlHlper(_TestIto):
+class TestXmlHelper(_TestIto):
     def test_get_qualified_name(self):
         pass
 
@@ -36,8 +36,8 @@ class TestXmlHlper(_TestIto):
         root = ET.fromstring(sample.xml, XmlParser())
         xmlns = XmlHelper.get_xmlns(root)
         xmlns = {str(k.local_part): str(v) for k, v in xmlns.items()}
-        self.assertDictContainsSubset({'xmlns': sample.default_namespace}, xmlns)
-        self.assertDictContainsSubset(sample.prefix_map, xmlns)
+        self.assertLessEqual({'xmlns': sample.default_namespace}.items(), xmlns.items())
+        self.assertLessEqual(sample.prefix_map.items(), xmlns.items())
 
     def test_get_prefix_map(self):
         sample = next(s for s in XML_TEST_SAMPLES if s.default_namespace is not None)
@@ -51,4 +51,3 @@ class TestXmlHlper(_TestIto):
 
     def test_get_element_text_if_found(self):
         pass
-

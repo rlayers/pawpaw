@@ -225,7 +225,7 @@ class TestIto(_TestIto):
     def test_getitem_valid_slice(self):
         s = 'x123x'
         ito = Ito(s, 1, -1)
-        for start in None, *range(-len(ito), len(ito)):
+        for start in None, *range(-len(s) - 1, len(s) + 1):
             with self.subTest(ito=ito, start=start):
                 span = Span.from_indices(ito, start).offset(ito.start)
                 expected = ito.clone(*span)
@@ -233,7 +233,7 @@ class TestIto(_TestIto):
                 self.assertEqual(expected, actual)
                 if ito == expected:
                     self.assertIs(ito, actual)
-                for stop in None, *range(-len(ito), len(ito)):
+                for stop in None, *range(-len(s) - 1, len(s) + 1):
                     with self.subTest(ito=ito, start=start, stop=stop):
                         span = Span.from_indices(ito, start, stop).offset(ito.start)
                         expected = ito.clone(*span)

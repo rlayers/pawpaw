@@ -38,6 +38,7 @@ Pawpaw is a high performance text segmentation framework that allows you you to 
   - Quickly and easily convert unstructured text into structured, indexed, & searchable tree graphs
   - Pre-process text for downstream NLP/AI/ML consumers
 - Search and Query
+<!-- Pawpaw's query engine, **radicle**, allows you to rapidly find and extract data using plumule expressions - a query language similar to XPath. -->
 <!--  - XQuery (supported by XPath) is a query language for XML to extract data, similar to the role of SQL for databases, or SPARQL for the Semantic Web. -->
   
     

@@ -72,14 +72,14 @@ Pawpaw has extensive features and capabilities you can read about in the [Docs](
  >>> s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
  ```
 
-You can use a regular expression to produce a match against this text as follows:
+You can use a regular expression for segmentation as follows:
 
  ```
  >>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)\s*)+')
 >>> match = re.fullmatch(s)
  ```
  
-You can then feed this match to **Pawpaw** as follows:
+The resulting match can then be fed into **Pawpaw** as follows:
 
  ```
  >>> doc = Ito.from_match(match)

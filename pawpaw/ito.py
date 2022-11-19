@@ -158,11 +158,11 @@ class Ito:
     # region ctors & clone
 
     def __init__(
-            self,
-            src: str | Ito,
-            start: int | None = None,
-            stop: int | None = None,
-            desc: str | None = None
+        self,
+        src: str | Ito,
+        start: int | None = None,
+        stop: int | None = None,
+        desc: str | None = None
     ):
         if isinstance(src, str):
             self._string = src
@@ -185,35 +185,30 @@ class Ito:
         self._children = ChildItos(self)
 
     @classmethod
-    def from_match_super(
+    def from_match(
         cls,
         match: regex.Match,
-        *group_keys: Types.C_GK,
+        *exclude_keys: Types.C_GK,
         desc: str | Types.F_M_GK_2_DESC = lambda m, gk: str(gk)
-    ) -> typing.Iterable[Types.C_ITO]:
+    ) -> Types.C_ITO:
         if match is None:
             raise Errors.parameter_not_none('match')
         elif not isinstance(match, regex.Match):
             raise Errors.parameter_invalid_type('match', match, regex.Match)
 
-        if len(group_keys) == 0:
-            gn_spans = {k: match.spans(k) for k in match.re.groupindex.keys()}
-            redundants = match.re.groupindex.values()
-            numerics = [i for i in range(0, match.re.groups + 1) if i not in redundants]
-        else:
-            gn_spans = {}
-            numerics = []
-            for gk in set(group_keys)
-                if isinstance(gk, int):
-                    numerics.append(gk)
-                else:
-                    gn_spans[gk] = match.spans(gk)
+        # Include all named keys, unless in exclude_keys or same group excluded by index
+        gn_spans: typing.Dict[Types.C_GK, typing.List[typing.Tuple[int]]] = {
+            k: match.spans(k)
+            for k in match.re.groupindex.keys()
+            if k not in exclude_keys and match.re.groupindex[k] not in exclude_keys
+        }
 
-        # only add numerics if their spans are absent
-        for nk in numerics:
-            ns = match.spans(nk)
-            if ns not in gn_spans.values():
-                gn_spans[nk] = ns
+        # Include all remaining int keys
+        gn_spans |= {
+            i: match.spans(i)
+            for i in range(1, match.re.groups + 1)
+            if i not in exclude_keys and i not in match.re.groupindex.values()
+        }
 
         if isinstance(desc, str):
             desc_func = lambda match, group: desc
@@ -236,14 +231,17 @@ class Ito:
 
             path_stack.append(ito)
 
-        yield from match_itos
+        # Entire match serves as root
+        rv = cls(match.string, *match.span(), desc=desc_func(match, 0))
+        rv.children.add(*match_itos)
+        return rv
 
     @classmethod
-    def from_match(cls,
-                   match: regex.Match,
-                   group: Types.C_GK = 0,
-                   desc: str = None
-                   ) -> Types.C_ITO:
+    def from_match_group(cls,
+        match: regex.Match,
+        group: Types.C_GK = 0,
+        desc: str | Types.F_M_GK_2_DESC = lambda m, gk: str(gk)
+    ) -> Types.C_ITO:
         if match is None:
             raise Errors.parameter_not_none('match')
         elif not isinstance(match, regex.Match):
@@ -252,52 +250,14 @@ class Ito:
         if group is None:
             raise Errors.parameter_not_none('group')
 
-        return cls(match.string, *match.span(group), desc=desc)
+        if isinstance(desc, str):
+            desc_func = lambda match, group: desc
+        elif Types.is_callable(desc, Types.F_M_GK_2_DESC):
+            desc_func = desc
+        else:
+            raise Errors.parameter_invalid_type('desc', desc, Types.F_M_GK_2_DESC)
 
-    @classmethod
-    def _group_filter(
-            cls,
-            group_filter: typing.Iterable[str] | Types.F_M_GK_2_B | None
-    ) -> typing.Callable[[regex.Match, str], bool]:
-        if group_filter is None:
-            return lambda m_, g: True
-
-        if Types.is_callable(group_filter, Types.F_M_GK_2_B):
-            return group_filter
-
-        if hasattr(group_filter, '__contains__'):
-            return lambda m_, g: g in group_filter
-
-        raise Errors.parameter_invalid_type(
-            'group_filter',
-            group_filter,
-            typing.Iterable[str],
-            Types.F_M_GK_2_B,
-            types.NoneType)
-
-    @classmethod
-    def from_match_ex(
-            cls,
-            match: regex.Match,
-            desc_func: Types.F_ITO_M_GK_2_DESC = lambda ito, match, group: group,
-            group_filter: typing.Iterable[str] | typing.Callable[[regex.Match, str], bool] | None = None
-    ) -> typing.Iterable[Types.C_ITO]:
-        path_stack: typing.List[Types.C_ITO] = []
-        match_itos: typing.List[Types.C_ITO] = []
-        filtered_gns = (gn for gn in match.re.groupindex.keys() if cls._group_filter(group_filter)(match, gn))
-        span_gns = ((span, gn) for gn in filtered_gns for span in match.spans(gn))
-        for span, gn in sorted(span_gns, key=lambda val: (val[0][0], -val[0][1])):
-            ito = cls(match.string, *span, desc_func(None, match, gn))
-            while len(path_stack) > 0 and (ito.start < path_stack[-1].start or ito.stop > path_stack[-1].stop):
-                path_stack.pop()
-            if len(path_stack) == 0:
-                match_itos.append(ito)
-            else:
-                path_stack[-1].children.add(ito)
-
-            path_stack.append(ito)
-
-        yield from match_itos
+        return cls(match.string, *match.span(group), desc=desc_func(match, group))
 
     @classmethod
     def from_re(
@@ -808,7 +768,7 @@ class Ito:
             re: regex.Pattern,
             concurrent: bool | None = None,
             timeout: float | None = None
-    ) -> regex.Match:
+    ) -> regex.Match | None:
         return re.search(
             self.string,
             *self.span,
@@ -820,7 +780,7 @@ class Ito:
             re: regex.Pattern,
             concurrent: bool | None = None,
             timeout: float | None = None
-    ) -> regex.Match:
+    ) -> regex.Match | None:
         return re.match(
             self.string,
             *self.span,
@@ -832,7 +792,7 @@ class Ito:
             re: regex.Pattern,
             concurrent: bool | None = None,
             timeout: float | None = None
-    ) -> regex.Match:
+    ) -> regex.Match | None:
         return re.fullmatch(
             self.string,
             *self.span,

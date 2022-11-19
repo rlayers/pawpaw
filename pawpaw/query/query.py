@@ -50,13 +50,13 @@ def descape(value: str) -> str:
 
 
 class Axis:
-    _re = regex.compile(r'(?P<axis>(?P<order>[\+\-]?)(?P<key>\-|\.{1,4}|\*{1,3}|\<{1,3}|\>{1,3})(?P<or_self>(?:\!{1,2})?))', regex.DOTALL)
+    _re = regex.compile(r'(?P<order>[\+\-]?)(?P<key>\-|\.{1,4}|\*{1,3}|\<{1,3}|\>{1,3})(?P<or_self>(?:\!{1,2})?)', regex.DOTALL)
 
     def __init__(self, phrase: pawpaw.Types.C_ITO):
         m = phrase.regex_match(self._re)
         if m is None:
             raise ValueError(f'invalid phrase \'{phrase}\'')
-        self.ito = next(phrase.from_match_ex(m))
+        self.ito = phrase.from_match(m)
 
         try:
             self.key = next(str(i) for i in self.ito.children if i.desc == 'key')

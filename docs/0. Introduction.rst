@@ -9,18 +9,16 @@ Say you have some text::
 
 >>> s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
 
-and you wish to perform an nlp-like segmentation on phrases, words, numbers, and so forth.  Given
-the regular expression:
+and you wish to perform an nlp-like segmentation on it to identify phrases, words, numbers, and so forth.  One approach is to use a regular expression:
 
 >>> re = regex.compile(r'(?P<root>(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)\s*)+)')
+>>> m = regex.fullmatch()
 
-You can use **pawpaw** as follows:
+You can then feed the match object to **pawpaw** as follows:
 
->>> root = next(Ito.from_re(re, s))
+>>> root = Ito.from_match(m)
 
-With just one line of code, you now have a fully hierarchical, tree\ [#]_ of phrases, words, chars,
-numbers, and digits.  This tree can be traversed, and even searched using a powerful XPATH-like
-structured query language:
+With just this one line of code, you now have a fully hierarchical, tree\ [#]_ of phrases, words, chars, numbers, and digits.  This tree can be traversed, and even searched using a powerful XPATH-like structured query language:
 
 >>> print(*root.find_all('**[d:digit]'), sep=', ')  # print all digits
 9, 1, 0, 1, 1, 1, 2, 1, 3

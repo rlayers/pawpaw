@@ -66,25 +66,26 @@ Pawpaw is a high performance text segmentation framework that allows you you to 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Pawpaw has extensive features and capabilities you can read about in the [Docs](/Docs), however, to get started, say you have some text:
+Pawpaw has extensive features and capabilities you can read about in the [Docs](/Docs).  As a quick example, say you have some text that would like to perform nlp-like segmentation on. 
 
  ```
  >>> s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
  ```
 
-that you would like to perform an nlp-like segmentation on, in order to get phrases, words, numbers, and so forth.  Given the regular expression:
+You can use a regular expression to produce a match against this text as follows:
 
  ```
- >>> re = regex.compile(r'(?P<doc>(?P<phrs>(?P<wrd>(?P<chr>\w)+) (?P<num>(?P<dig>\d)+)\s*)+)')
+ >>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)\s*)+')
+>>> match = re.fullmatch(s)
  ```
  
-You can use **pawpaw** as follows:
+You can then feed this match to **Pawpaw** as follows:
 
  ```
- >>> doc = next(Ito.from_re(re, s))
+ >>> doc = Ito.from_match(match)
  ```
 
-With just one line of code, Pawpaw generates a fully hierarchical, tree\ [#]_ of phrases, words, chars, numbers, and digits.  This tree can be traversed, and even searched using a powerful XPATH-like structured query language:
+With this single line of code, Pawpaw generates a fully hierarchical, tree\ [#]_ of phrases, words, chars, numbers, and digits.  This tree can be traversed, and even searched using a powerful XPATH-like structured query language:
 
  ```
  >>> print(*doc.find_all('**[d:dig]'), sep=', ')  # all digits
@@ -93,7 +94,7 @@ With just one line of code, Pawpaw generates a fully hierarchical, tree\ [#]_ of
 9, 13
  ```
 
-While this example uses a single regular expression, Pawpaw also features a library of pipelined parser components, which can be quickly chained together to develop large, sophisticated parsers.
+This example uses regular expressions as a source, however, Pawpaw is able to work with many other input types.  Pawpaw also includes a library of parser components that can be easily chained together to help you quickly develop large, sophisticated parsers.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

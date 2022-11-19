@@ -18,10 +18,10 @@ class TestItoQuery(_TestIto):
 
         self.src = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')
+        m = re.fullmatch(self.src)
         
-        self.root = Ito(self.src, self.src.index('ten'), self.src.index('thirteen') - 1, desc='root')
-        self.root.children.add(*Ito.from_re(re, self.root))
-
+        self.root = Ito.from_match(m)
+        self.desc = 'root'
         self.descendants_count = self.count_descdendants(self.root)
 
         numbers = [i for i in self.root.walk_descendants() if i.desc == 'number']

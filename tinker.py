@@ -21,9 +21,14 @@ from pawpaw.visualization import sgr, Highlighter, dump
 from pawpaw.arborform.itorator import Desc, Extract, Split, Wrap
 
 s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
-re = regex.compile(r'(?P<root>(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)\s*)+)')
+re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)\s*)+')
+match = re.fullmatch(s)
 
-root = next(Ito.from_re(re, s))
+root = Ito.from_match_super2(match)
+print(dump.Compact().dumps(root))
+exit(0)
+
+root = next(Ito.from_match(re, s))
 # print(*root.find_all('**[d:digit]'), sep=', ')  # print all digits
 # print(*root.find_all('**[d:number]{</*[s:i]}'), sep=',')  # print numbers having leter 'i' in their names
 

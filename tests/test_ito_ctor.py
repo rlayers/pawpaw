@@ -42,6 +42,24 @@ class TestItoCtor(_TestIto):
                             self.assertEqual(src.string, ito.string)
                             self.assertEqual(src[start:stop], ito)
 
+    def test_from_match_group(self):
+        first = 'John'
+        last = 'Doe'
+        string = ' '.join((first, last))
+        re = regex.compile(r'(?P<fn>.+)\s(?P<ln>.+)')
+        m = re.fullmatch(string)
+
+        for group in None, 0, 1, 'fn', 2, 'ln':
+            with self.subTest(group=group):
+                if group is None:
+                    ito = Ito.from_match_group(m)
+                    desc = '0'
+                else:
+                    ito = Ito.from_match_group(m, group)
+                    desc = str(group)
+                self.assertEqual(m.group() if group is None else m.group(group), str(ito))
+                self.assertEqual(desc, ito.desc)
+
     def test_from_match_simple(self):
         first = 'John'
         last = 'Doe'
@@ -49,46 +67,57 @@ class TestItoCtor(_TestIto):
         re = regex.compile(r'(?P<fn>.+)\s(?P<ln>.+)')
         m = re.fullmatch(string)
 
-        desc = 'x'
-        with self.subTest(group='Absent'):
-            ito = Ito.from_match(m, desc=desc)
-            self.assertEqual(m.group(), str(ito))
-            self.assertEqual(desc, ito.desc)
+        for exclude_keys in None, [0], [1], ['fn'], [2], ['ln'], ['fn', 2], [1, 'ln']:
+            with self.subTest(exclude_keys=exclude_keys):
+                if exclude_keys is None:
+                    ito = Ito.from_match(m)
+                else:
+                    ito = Ito.from_match(m, *exclude_keys)
 
-        for group in 0, 1, 'fn', 2, 'ln':
-            with self.subTest(group=group):
-                ito = Ito.from_match(m, group, desc=desc)
-                self.assertEqual(m.group(group), str(ito))
-                self.assertEqual(desc, ito.desc)
+                itos = [ito, *ito.walk_descendants()]
 
-    def test_from_re_str(self):
-        re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')
-        s = 'nine 9 ten 10 eleven 11 twelve 12 thirteen 13'
+                if exclude_keys is not None:
+                    for k in exclude_keys:
+                        if k == 0:
+                            self.assertIn('0', [i.desc for i in itos])
+                        else:
+                            self.assertNotIn(k, [i.desc for i in itos])
 
-        root = Ito(s, desc='root')
-        rv = [*Ito.from_re(re, s)]
-        root.children.add(*rv)
-        self.assertEqual(5, len(root.children))
-        itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]
-        grouped = {k: [v for v in itos if v.desc == k] for k, val in itertools.groupby(itos, lambda x: x.desc)}
-        self.assertEqual(5, len(grouped['word']))
-        self.assertEqual(5, len(grouped['number']))
-        self.assertEqual(9, len(grouped['digit']))
+                for i in itos:
+                    k = i.desc
+                    if i.desc.isnumeric():
+                        k = int(k)
+                    self.assertEqual(m.group(k), str(i))
 
-    def test_from_re_ito(self):
-        re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')
-        s = 'nine 9 ten 10 eleven 11 twelve 12 thirteen 13'
+    def test_from_match_complex(self):
+        s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
+        re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)\s*)+')
+        m = re.fullmatch(s)
 
-        root = Ito(s, s.index('ten'), s.index('thirteen'), desc='root')
-        rv = [*Ito.from_re(re, root)]
-        root.children.add(*rv)
-        self.assertEqual(3, len(root.children))
-        itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]
-        grouped = {k: [v for v in itos if v.desc == k] for k, val in itertools.groupby(itos, lambda x: x.desc)}
-        self.assertEqual(3, len(grouped['word']))
-        self.assertEqual(3, len(grouped['number']))
-        self.assertEqual(6, len(grouped['digit']))
-        
+        for exclude_keys in None, [0], [1], ['phrase'], ['char', 'digit']:
+            with self.subTest(exclude_keys=exclude_keys):
+                if exclude_keys is None:
+                    ito = Ito.from_match(m)
+                else:
+                    ito = Ito.from_match(m, *exclude_keys)
+
+                itos = [ito, *ito.walk_descendants()]
+
+                if exclude_keys is not None:
+                    for k in exclude_keys:
+                        if k == 0:
+                            self.assertIn('0', [i.desc for i in itos])
+                        else:
+                            self.assertNotIn(k, [i.desc for i in itos])
+
+                for i in itos:
+                    k = i.desc
+                    if i.desc.isnumeric():
+                        k = int(k)
+                    for span in m.spans(k):
+                        j = s[slice(*span)]
+                        self.assertIn(j, [str(i) for i in itos if i.desc == str(k)])
+
     def test_from_spans_simple(self):
         s = 'abcd' * 100
         spans = [*RandSpans(Span(1, 10), Span(0, 3)).generate(s)]

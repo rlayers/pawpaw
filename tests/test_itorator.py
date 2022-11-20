@@ -6,6 +6,17 @@ from tests.util import _TestIto
 
 class TestItorator(_TestIto):
     """Uses Reflect and Wrap classes, which have trivial implementation, to test base class functionality"""
+
+    def test_add_self(self):
+        i = Reflect()
+
+        with self.assertRaises(ValueError):
+            i.itor_children = i
+
+        with self.assertRaises(ValueError):
+            i.itor_next = i
+
+
     def test_traverse(self):
         s = 'abc'
         root = Ito(s)

@@ -6,6 +6,21 @@ import pawpaw
 from pawpaw import nuco
 
 
+class RePatterns:
+    WHITESPACE = r'\s+'
+    WHITEPSACE_EX1 = '((?u)\s)'
+    WHITESPACE_EX2 = r'\p{IsWhiteSpace}'
+
+    regex = regex.compile(WHITESPACE)
+
+    def test(self):
+        s = " \t\n\u00A0\u2002\u2003\u2006\u202F"
+        for pat in RePatterns.WHITESPACE, RePatterns.WHITEPSACE_EX1, RePatterns.WHITESPACE_EX2:
+            re = regex.compile(pat, regex.UNICODE)
+            matches = [*re.finditer(s)]
+            print(f'{pat}:\t{len(matches),}')
+
+
 class Number:
     _sign_pat = r'(?P<sign>[-+])'
     _sci_exp_e_notation_pat = r'[Ee]' + _sign_pat + r'?\d+'

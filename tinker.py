@@ -10,6 +10,34 @@ from pawpaw import Ito
 from pawpaw.visualization import sgr, Highlighter, dump
 
 
+import nltk
+import regex
+import pawpaw
+
+from pawpaw import Ito
+s = 'Here is one sentence.  Here is another.'
+i = Ito(s)
+
+nltk_tok = nltk.tokenize
+sent_itor = pawpaw.arborform.Wrap(lambda ito: ito.from_substrings(ito, *nltk_tok.sent_tokenize(str(ito))))
+
+word_itor = pawpaw.arborform.Wrap(lambda ito: ito.from_substrings(ito, *nltk_tok.word_tokenize(str(ito))))
+sent_itor.itor_children = word_itor
+
+i.children.add(*(sent_itor.traverse(i)))
+dumper = pawpaw.visualization.Compact()
+print(dumper.dumps(i))
+exit(0)
+
+
+ws_tok = nltk.tokenize.WhitespaceTokenizer()
+splitter = pawpaw.arborform.Split(regex.compile(ws_tok._pattern, ws_tok._flags))
+i = pawpaw.Ito('The quick brown fox.')
+[str(i) for i in splitter.traverse(i)]
+
+
+
+
 # # VERSION
 #
 # print(pawpaw.__version__)

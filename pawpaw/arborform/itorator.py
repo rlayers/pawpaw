@@ -24,7 +24,9 @@ class Itorator(ABC):
 
     @itor_next.setter
     def itor_next(self, val: Itorator | Types.F_ITO_2_ITOR | None):
-        if isinstance(val, Itorator):
+        if val is self:
+            raise ValueError('can\'t set .itor_next to self')
+        elif isinstance(val, Itorator):
             self._itor_next = lambda ito: val
         elif val is None or Types.is_callable(val, Types.F_ITO_2_ITOR):
             self._itor_next = val
@@ -37,7 +39,9 @@ class Itorator(ABC):
 
     @itor_children.setter
     def itor_children(self, val: Itorator | Types.F_ITO_2_ITOR | None):
-        if isinstance(val, Itorator):
+        if val is self:
+            raise ValueError('can\'t set .itor_children to self')
+        elif isinstance(val, Itorator):
             self._itor_children = lambda ito: val
         elif val is None or Types.is_callable(val, Types.F_ITO_2_ITOR):
             self._itor_children = val

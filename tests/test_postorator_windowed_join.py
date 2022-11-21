@@ -1,6 +1,6 @@
 import regex
 from pawpaw import Ito, Types
-from pawpaw.arborform import WindowedJoin
+from pawpaw.arborform.postorator import WindowedJoin
 from tests.util import _TestIto
 
 

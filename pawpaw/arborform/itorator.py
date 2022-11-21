@@ -8,7 +8,7 @@ import typing
 
 import regex
 from pawpaw import Types, Errors, Ito, Span
-from .postorator import Postorator
+from .postorator.postorator import Postorator
 
 
 class Itorator(ABC):

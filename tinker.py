@@ -7,8 +7,11 @@ from dataclasses import dataclass, field
 import regex
 import pawpaw
 from pawpaw import Ito
-from pawpaw.visualization import sgr, Highlighter, dump
+from pawpaw.visualization import sgr, Highlighter, Pepo
 
+v_compact = pepo.Compact()
+v_xml = pepo.Xml()
+v_json = pepo.Json()
 
 import nltk
 import regex

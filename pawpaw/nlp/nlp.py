@@ -1,9 +1,48 @@
+import itertools
 import locale
 import typing
 
 import regex
 import pawpaw
 from pawpaw import nuco
+
+
+class UNICODE_CATEGORIES:
+    CONTROL = {
+        '\u0009': 'Tab',
+        '\u000A': 'Line feed',
+        '\u000C': 'Form feed',
+        '\u000D': 'Carriage return',
+    }
+
+    WHITE_SPACE = {
+        '\u0020': 'Space',
+        '\u00A0': 'No-break space',
+        '\u2000': 'En quad',
+        '\u2001': 'Em quad',
+        '\u2002': 'En space',
+        '\u2003': 'Em space',
+        '\u2004': 'Three-per-em space',
+        '\u2005': 'Four-per-em space',
+        '\u2006': 'Six-per-em space',
+        '\u2007': 'Figure space',
+        '\u2008': 'Punctuation space',
+        '\u2009': 'Thin space',
+        '\u200A': 'Hair space',
+        '\u200B': 'Zero width space',
+        '\u202F': 'Narrow no-break space',
+        '\u2020': 'Tag space',
+        '\u205F': 'Mathematical space',
+        '\u3000': 'Ideographic space',
+        '\uFEFF': 'Zero width no-break space',
+    }
+
+
+PAT_WHITESPACE = r'(?u)\s'    
+
+iter_ws = itertools.chain(UNICODE_CATEGORIES.CONTROL.keys(), UNICODE_CATEGORIES.WHITE_SPACE.keys())
+PAT_WHITESPACE_EX = f'[{regex.escape("".join(iter_ws))}]'
+PAT_WHITESPACE_EX2 = f'(?u)[\s\u200B\u2020\uFEFF]'
 
 
 class RePatterns:

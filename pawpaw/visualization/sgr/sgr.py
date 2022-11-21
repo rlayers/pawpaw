@@ -115,7 +115,7 @@ class Colors:
         """
 
 
-C_COLOR = Colors.Named | Colors.Rgb | Colors.EightBit
+Color = Colors.Named | Colors.Rgb | Colors.EightBit
 
 
 @dataclass
@@ -125,7 +125,7 @@ class Fore(_Sgr):
     RESET        : str = encode(39)
 
     @classmethod
-    def from_color(cls, src: C_COLOR) -> str:
+    def from_color(cls, src: Color) -> str:
         if isinstance(src, Colors.Named):
             nc = getattr(Colors.Named, src.name)
             return encode(nc.value + cls._NAMED_OFFSET)
@@ -134,7 +134,7 @@ class Fore(_Sgr):
         elif isinstance(src, Colors.EightBit):
             return encode(cls._BY_IDX, 5, src)
         
-    def __init__(self, src: C_COLOR):
+    def __init__(self, src: Color):
         self.value = self.from_color(src)
         
     def __str__(self) -> str:
@@ -147,5 +147,5 @@ class Back(Fore):
     _BY_IDX      : int = Fore._BY_IDX + 10
     RESET        : str = encode(49)
 
-    def __init__(self, src: C_COLOR):
+    def __init__(self, src: Color):
         super().__init__(src)

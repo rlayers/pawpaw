@@ -3,7 +3,7 @@ from itertools import tee
 import regex
 from pawpaw import Ito, Types
 from pawpaw.arborform import Split
-from pawpaw.arborform.postorator import Wrap, Split
+from pawpaw.arborform.postorator import Wrap
 from tests.util import _TestIto
 
 

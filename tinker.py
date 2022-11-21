@@ -79,25 +79,6 @@ root.children.add(*phrases.traverse(root))
 print(dump.Compact().dumps(root))
 exit(0)
 
-
-
-# # DUMPER
-#
-# s = 'Hello, world!'
-# root = pawpaw.Ito(s, desc='root')
-# for c in root.split(regex.compile(r'\s')):
-#     c.desc = 'child'
-#     root.children.add(c)
-# for dumper in dump.Compact(), dump.Json(), dump.Xml():
-#     name = type(dumper).__name__.upper()
-#     print(name)
-#     print('=' * len(name))
-#     print()
-#     print(dumper.dumps(root))
-#     print()
-#
-# exit(0)
-
     
 # SGR    
 

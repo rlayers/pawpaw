@@ -7,7 +7,7 @@ from pawpaw.visualization import sgr
 
 
 class Highlighter:
-    def __init__(self, *colors: sgr.C_COLOR):
+    def __init__(self, *colors: sgr.Color):
         self.palette = tuple(sgr.Back.from_color(col) for col in colors)
 
     def _rotate_color(self) -> typing.Iterable[sgr.Back]:

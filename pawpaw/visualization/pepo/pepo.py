@@ -22,7 +22,7 @@ class Dumpstr:
 
     def dump(self, fs: typing.IO, val: typing.Any) -> None:
         basis = self.repr_(str(val))
-        if self.limit >= 0 and len(basis) <= self.limit:
+        if self.limit < 0 or len(basis) <= self.limit:
             fs.write(f'{basis}')
         else:
             stop = max(0, self.limit - len(self.abbr_suffix))
@@ -59,16 +59,14 @@ class Compact(Pepo):
 
     def _dump(self, fs: typing.IO, ei: pawpaw.Types.C_EITO, level: int = 0) -> None:
         fs.write(f'{self.indent * level}{ei.index:,}:')
-        fs.write(f' .span={tuple(ei.ito.span)}')
-        fs.write(f' .desc="{ei.ito.desc}"')
+        fs.write(f' {tuple(ei.ito.span)}')
+        fs.write(f' \'{ei.ito.desc}\'')
         if self.substr is not None:
-            fs.write(f' : "')
+            fs.write(f' \u2014 ')
             self.substr.dump(fs, ei.ito)
-            fs.write(f'"')
         if self.value is not None:
-            fs.write(f' : .value()="')
+            fs.write(f' : .value()=')
             self.value.dump(fs, ei.ito.value())
-            fs.write(f'"')
         fs.write(self.linesep)
         
         if self.children:
@@ -82,7 +80,7 @@ class Compact(Pepo):
 
                 
 class Xml(Pepo):
-    def __init__(self, indent: str = '    ', substr=Dumpstr(repr_=xml_escape)):
+    def __init__(self, indent: str = '    ', substr=Dumpstr(limit=-1, repr_=xml_escape)):
         super().__init__(indent, substr=substr)
                 
     def _dump(self, fs: typing.IO, ei: pawpaw.Types.C_EITO, level: int = 0) -> None:
@@ -124,7 +122,7 @@ class Xml(Pepo):
 
                         
 class Json(Pepo):
-    def __init__(self, indent: str = '    ', substr=Dumpstr(repr_=lambda s: json.encode.encode_basestring(s).strip('"'))):
+    def __init__(self, indent: str = '    ', substr=Dumpstr(repr_=lambda s: json.encoder.encode_basestring(s).strip('"'))):
         super().__init__(indent, substr=substr)
                 
     def _dump(self, fs: typing.IO, ei: pawpaw.Types.C_EITO, level: int = 0) -> None:

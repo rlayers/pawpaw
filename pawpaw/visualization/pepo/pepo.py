@@ -9,6 +9,7 @@ import typing
 from xml.sax.saxutils import escape as xml_escape
 
 import pawpaw
+from pawpaw.visualization import ascii_box_drawing
 
 
 Repr = typing.Callable[[str], str]
@@ -38,10 +39,6 @@ class Pepo(abc.ABC):
         self.children: bool = True
 
     @abc.abstractmethod
-    def _dump(self, fs: typing.IO, ei: pawpaw.Types.C_EITO, level: int = 0) -> None:
-        ...
-
-    @abc.abstractmethod
     def dump(self, fs: typing.IO, *itos: pawpaw.Types.C_ITO) -> None:
         ...
 
@@ -59,7 +56,7 @@ class Compact(Pepo):
 
     def _dump(self, fs: typing.IO, ei: pawpaw.Types.C_EITO, level: int = 0) -> None:
         fs.write(f'{self.indent * level}{ei.index:,}:')
-        fs.write(f' {tuple(ei.ito.span)}')
+        fs.write(f' {tuple(ei.ito.span)}:')
         fs.write(f' \'{ei.ito.desc}\'')
         if self.substr is not None:
             fs.write(f' \u2014 ')
@@ -76,7 +73,45 @@ class Compact(Pepo):
 
     def dump(self, fs: typing.IO, *itos: pawpaw.Types.C_ITO) -> None:
         for ei in (pawpaw.Types.C_EITO(i, ito) for i, ito in enumerate(itos, start=1)):
-            self._dump(fs, ei)   
+            self._dump(fs, ei)
+
+
+class Tree(Pepo):
+    HORZ = ascii_box_drawing.Lines.Horizontal.SINGLE_LIGHT
+    VERT = ascii_box_drawing.Lines.Vertical.SINGLE_LIGHT
+    TEE = '├'
+    ELBOW = ascii_box_drawing.Corners.SW.HZ_LIGHT_VT_LIGHT
+
+    def __init__(self, indent: str = '  '):
+        super().__init__(indent)
+        self.children = False
+
+    def _dump_ito(self, fs: typing.IO, ito: pawpaw.Types.C_ITO) -> None:
+        fs.write(f'{ito.desc} {tuple(ito.span)}')
+        if self.substr is not None:
+            fs.write(f': ')
+            self.substr.dump(fs, ito)
+        if self.value is not None:
+            fs.write(f' : .value()=')
+            self.value.dump(fs, ito.value())
+        fs.write(self.linesep)
+
+    def _dump_children(self, fs: typing.IO, ito: pawpaw.Types.C_ITO, prefix: str = '') -> None:
+        for child in ito.children[:-1]:
+            fs.write(f'{prefix}{self.TEE}{self.HORZ * len(self.indent)}')
+            self._dump_ito(fs, child)
+            self._dump_children(fs, child, prefix + f'{self.VERT}{self.indent}')
+
+        if len(ito.children) > 0:
+            fs.write(f'{prefix}{self.ELBOW}{self.HORZ * len(self.indent)}')
+            child = ito.children[-1]
+            self._dump_ito(fs, child)
+            self._dump_children(fs, child, prefix + f' {self.indent}')
+
+    def dump(self, fs: typing.IO, *itos: pawpaw.Types.C_ITO) -> None:
+        for ito in itos:
+            self._dump_ito(fs, ito)
+            self._dump_children(fs, ito)
 
                 
 class Xml(Pepo):

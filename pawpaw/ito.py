@@ -15,6 +15,7 @@ import pawpaw.query
 from pawpaw import Infix
 from pawpaw.span import Span
 from pawpaw.errors import Errors
+from .util import find_escapes
 
 
 class Types:
@@ -592,6 +593,107 @@ class Ito:
             return self  # Replicate Python's str[:] behavior, which returns self ref
                                             
         return self.clone(*span, clone_children=False)
+
+    _re_format_dir = regex.compile(r'%(?:(?P<zws> )|(?:P<dir>[a-z]+)(?:\!(?P<conv>[ars]))?(\[(??P<max_w>\d+)(?:,(?P<suf>.+?))?\])?)')
+
+    def __format__(self, format_spec: str) -> str:
+        """
+            %{directive} [{conversion}] [{width} [,{suffix}] ]  # Spaces added between brackets and/or braces for clarity
+
+            Directive
+            ---------
+            %string
+            %span : as tuple, e.g. '(2, 3)'
+            %start : as format(start, 'n')
+            %stop : as format(stop, 'n')
+            %desc
+            %substr " ito.__str__()
+            %value: str(.value())
+
+            Conversion
+            ----------
+            a: ascii
+            r: repr
+            s: str (default)
+
+            Width
+            -----
+            any positive integer
+
+            Suffix
+            ------
+            any string; can't contain ']'
+        """
+
+        if format_spec is None or format_spec == '':
+            return str(self)
+
+        idxs = [*find_escapes(format_spec, '%')]
+        len_idxs = len(idxs)
+
+        re = regex.compile(r'%(?:(?P<zws> )|(?:P<dir>[a-z]+)(?:\!(?P<conv>[ars]))?(\[(??P<max_w>\d+)(?:,(?P<suf>.+?))?\])?)')
+
+        matches: typing.List[regex.Match] = {}
+        for i in range(0, count):
+            start = idxs[i]
+            if i == len_idxs - 1:
+                m = re.match(format_spec, start)
+            else:
+                stop = idxs[i + 1]
+                m = re.match(format_spec, start, stop)
+
+            if m is not None:
+                matches.append(m)
+
+        rv = format_spec
+        for m in matches[::-1]:
+            if m.group('zws') is not None:
+                rv = rv[:m.span()[0]] + rv[:m.span()[1]:]
+                continue
+
+            directive = m.group('dir')
+            if directive == 'string':
+                sub = self._string
+            elif directive == 'span':
+                sub = str(self._span)
+            elif directive == 'start':
+                sub = format(self.start, 'n')
+            elif directive == 'stop':
+                sub = format(self.stop, 'n')
+            elif directive == 'desc':
+                sub = str(self.desc)
+            elif directive == 'substr':
+                sub = self.__str__()
+            elif directive == 'value':
+                sub = str(self.value())
+            else:
+                continue
+
+            if (conv := m.group('conv')) is not None:
+                if conv == 'a':
+                    sub = ascii(sub)
+                elif conv == 'r':
+                    sub = repr(sub)
+
+            if (max_w := m.group('max_w')) is not None:
+                max_w = int(max_w)
+                if len(sub) > max_w:
+                    if (suf := m.group('suf')) is None:
+                        sub = sub[:max_w]
+                    else:
+                        len_suf = len(suf)
+                        if len_suf >= max_w:
+                            sub = suf[-max_w:]
+                        else:
+                            max_w -= len_suf
+                            if max_w <= 0:
+                                sub = suf
+                            else:
+                                sub = sub[:max_w] + suf
+            
+            rv = rv[:m.span()[0]] + sub + rv[m.span()[1]:]
+
+        return rv
 
     # endregion
 

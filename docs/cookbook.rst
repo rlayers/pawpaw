@@ -22,8 +22,9 @@ Extract all characters as ``Itos``
 
 ::
 
- s = 'abc'
- print(*Ito(s))
+ s = ' abc '
+ i = Ito(s, 1, -1)
+ print(*i)
 
 
  Create a char-extracting itorator

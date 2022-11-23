@@ -594,7 +594,7 @@ class Ito:
                                             
         return self.clone(*span, clone_children=False)
 
-    _re_format_dir = regex.compile(r'%(?:(?P<zws> )|(?:P<dir>[a-z]+)(?:\!(?P<conv>[ars]))?(\[(??P<max_w>\d+)(?:,(?P<suf>.+?))?\])?)')
+    _re_format_str = regex.compile(r'%(?:(?P<zws> )|(?P<dir>[a-z]+)(?:\!(?P<conv>[ars]))?(\[(?P<max_w>\d+)(?:,(?P<suf>.+?))?\])?)')
 
     def __format__(self, format_spec: str) -> str:
         """
@@ -631,16 +631,14 @@ class Ito:
         idxs = [*find_escapes(format_spec, '%')]
         len_idxs = len(idxs)
 
-        re = regex.compile(r'%(?:(?P<zws> )|(?:P<dir>[a-z]+)(?:\!(?P<conv>[ars]))?(\[(??P<max_w>\d+)(?:,(?P<suf>.+?))?\])?)')
-
-        matches: typing.List[regex.Match] = {}
-        for i in range(0, count):
+        matches: typing.List[regex.Match] = []
+        for i in range(0, len_idxs):
             start = idxs[i]
             if i == len_idxs - 1:
-                m = re.match(format_spec, start)
+                m = self._re_format_str.match(format_spec, start)
             else:
                 stop = idxs[i + 1]
-                m = re.match(format_spec, start, stop)
+                m = self._re_format_str.match(format_spec, start, stop)
 
             if m is not None:
                 matches.append(m)
@@ -648,14 +646,14 @@ class Ito:
         rv = format_spec
         for m in matches[::-1]:
             if m.group('zws') is not None:
-                rv = rv[:m.span()[0]] + rv[:m.span()[1]:]
+                rv = rv[:m.span()[0]] + rv[m.span()[1]:]
                 continue
 
             directive = m.group('dir')
             if directive == 'string':
                 sub = self._string
             elif directive == 'span':
-                sub = str(self._span)
+                sub = str(tuple(self._span))
             elif directive == 'start':
                 sub = format(self.start, 'n')
             elif directive == 'stop':

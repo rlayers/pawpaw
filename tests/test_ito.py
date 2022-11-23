@@ -262,6 +262,25 @@ class TestIto(_TestIto):
                 with self.assertRaises(IndexError):
                     ito[_slice]
 
+    def test_format_directives(self):
+        s = 'x123456789x'
+        i = IntIto(s, 1, -1, 'my_desc')
+
+        for directive in 'string', 'span', 'start', 'stop', 'desc', 'substr', 'value':
+            with self.subTest(directive=directive):
+                if directive == 'substr':
+                    expected = str(i)
+                elif directive == 'value':
+                    expected = format(i.value(), 'n')
+                else:
+                    expected = getattr(i, directive)
+                    if isinstance(expected, Span):
+                        expected = str(tuple(expected))
+                    elif not isinstance(expected, str):
+                        expected = str(expected)
+                actual = foprmat(i, f'%{directive}')
+                self.assertEqual(expected, actual)
+
     # endregion
 
     # region combinatorics

@@ -9,6 +9,13 @@ import pawpaw
 from pawpaw import Ito
 from pawpaw.visualization import sgr, Highlighter, pepo
 
+
+s = ' The quick brown fox jumped over the lazy dogs. '
+i = Ito(s)
+i.children.add(Ito.from_substrings(s, *i.str_split()))
+
+
+
 v_compact = pepo.Compact()
 v_tree = pepo.Tree()
 v_xml = pepo.Xml()

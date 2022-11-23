@@ -1,2 +1,2 @@
-from .pepo import Dumpstr, Pepo, Compact, Xml, Json
+from .pepo import Dumpstr, Pepo, Compact, Tree, Xml, Json
 del pepo

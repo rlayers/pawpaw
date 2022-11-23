@@ -7,9 +7,10 @@ from dataclasses import dataclass, field
 import regex
 import pawpaw
 from pawpaw import Ito
-from pawpaw.visualization import sgr, Highlighter, Pepo
+from pawpaw.visualization import sgr, Highlighter, pepo
 
 v_compact = pepo.Compact()
+v_tree = pepo.Tree()
 v_xml = pepo.Xml()
 v_json = pepo.Json()
 
@@ -28,8 +29,7 @@ word_itor = pawpaw.arborform.Wrap(lambda ito: ito.from_substrings(ito, *nltk_tok
 sent_itor.itor_children = word_itor
 
 i.children.add(*(sent_itor.traverse(i)))
-dumper = pawpaw.visualization.Compact()
-print(dumper.dumps(i))
+print(v_tree.dumps(i))
 exit(0)
 
 

@@ -196,7 +196,7 @@ class TestItoCtor(_TestIto):
                 with self.subTest(size_range=size):
                     rs = RandSubstrings(size, Span(0, 0))
                     subs = [*rs.generate(string, 1, -1)]
-                    itos = Ito.from_substrings(string, *subs)
+                    itos = Ito.from_substrings(string, subs)
                     self.assertListEqual(subs, [str(i) for i in itos])
 
         with self.subTest(spacing='Gaps'):
@@ -204,7 +204,7 @@ class TestItoCtor(_TestIto):
                 with self.subTest(size_range=size):
                     rs = RandSubstrings(size, Span(1, 2))
                     subs = [*rs.generate(string, 1, -1)]
-                    itos = Ito.from_substrings(string, *subs)
+                    itos = Ito.from_substrings(string, subs)
                     self.assertListEqual(subs, [str(i) for i in itos])
 
         with self.subTest(spacing='Overlaps'):
@@ -213,7 +213,7 @@ class TestItoCtor(_TestIto):
                     rs = RandSubstrings(size, Span(-1, -1))
                     subs = [*rs.generate(string, 1, -1)]
                     with self.assertRaises(Exception):
-                        itos = [*Ito.from_substrings(string, *subs)]
+                        itos = [*Ito.from_substrings(string, subs)]
 
     def test_clone_basic(self):
         string = 'abc'

@@ -160,7 +160,7 @@ class TestIto(_TestIto):
         for span in Span.from_indices(s), Span.from_indices(s, 1, -1), Span.from_indices(s, 2, -2), Span(3, 3):
             with self.subTest(string=s, span=span):
                 ito = Ito(s, *span)
-                expected = [*Ito.from_substrings(s, *s[slice(*span)])]
+                expected = [*Ito.from_substrings(s, s[slice(*span)])]
                 actual = [*ito]
                 self.assertListEqual(expected, actual)
                 if len(actual) == 1:
@@ -278,7 +278,7 @@ class TestIto(_TestIto):
                         expected = str(tuple(expected))
                     elif not isinstance(expected, str):
                         expected = str(expected)
-                actual = foprmat(i, f'%{directive}')
+                actual = format(i, f'%{directive}')
                 self.assertEqual(expected, actual)
 
     # endregion
@@ -289,9 +289,9 @@ class TestIto(_TestIto):
         s = 'abc 123'
         adopted_desc = 'adopted'
 
-        children = [*Ito.from_substrings(s, *s.split(), desc='children')]
+        children = [*Ito.from_substrings(s, s.split(), desc='children')]
         for child in children:
-            child.children.add(*Ito.from_substrings(s, *str(child), desc='grandchild'))
+            child.children.add(*Ito.from_substrings(s, str(child), desc='grandchild'))
         grandchildren = [*itertools.chain.from_iterable(ito.children for ito in children)]
 
         adopted = Ito.adopt(children, desc=adopted_desc)
@@ -303,7 +303,7 @@ class TestIto(_TestIto):
     def test_join(self):
         s = 'the quick brown fox'
         joined_desc = 'joined'
-        children = [*Ito.from_substrings(s, *s.split(), desc='children')]
+        children = [*Ito.from_substrings(s, s.split(), desc='children')]
 
         joined = Ito.join(children, desc=joined_desc)
         self.assertTrue(all(joined is not child for child in children))
@@ -318,7 +318,7 @@ class TestIto(_TestIto):
             actual = ito.strip_to_children()
             self.assertIs(ito, actual)
 
-        char_itos = [*Ito.from_substrings(basis, *s)]
+        char_itos = [*Ito.from_substrings(basis, s)]
         for cs in char_itos[:1], char_itos[:2], char_itos[1:2], char_itos[1:], char_itos[2:], char_itos[:]:
             with self.subTest(ito=ito, children_added=False, children_strs=[str(i) for i in cs]):
                 ito.children.add(*cs)

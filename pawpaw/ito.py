@@ -320,18 +320,17 @@ class Ito:
     def from_substrings(
             cls,
             src: str | Ito,
-            *substrings: str,
+            substrings: typing.Iterable[str],
             desc: str | None = None
     ) -> typing.Iterable[Types.C_ITO]:
         """Generate Itos from substrings
 
         Args:
             src: a str or Ito to use as the basis
-            *substrings: one or more substrings in src that:
+            substrings: iterable strings in src that:
                 1. are present in string
                 2. are ordered left to right
                 3. are non-overlapping
-                4. do not have to be consecutive
 
                 To capture a repeated substring, it must be repeated in the substrings parameter, e.g.:
 

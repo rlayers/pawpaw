@@ -593,11 +593,11 @@ class Ito:
                                             
         return self.clone(*span, clone_children=False)
 
-    _re_format_str = regex.compile(r'%(?:(?P<zws> )|(?P<dir>[a-z]+)(?:\!(?P<conv>[ars]))?(\[(?P<max_w>\d+)(?:,(?P<suf>.+?))?\])?)')
+    _re_format_str = regex.compile(r'%(?:(?P<zws> )|(?P<dir>[a-z]+)(?:\!(?P<conv>[ars]))?(\:\[(?P<max_w>\d+)(?:,(?P<suf>.+?))?\])?)')
 
     def __format__(self, format_spec: str) -> str:
         """
-            %{directive} [{conversion}] [{width} [,{suffix}] ]  # Spaces added between brackets and/or braces for clarity
+            %{directive} |!{conversion}| |:[{width} |,{suffix}| ] |  # Spaces added for clarity
 
             Directive
             ---------
@@ -674,19 +674,14 @@ class Ito:
 
             if (max_w := m.group('max_w')) is not None:
                 max_w = int(max_w)
-                if len(sub) > max_w:
+                if (max_w := int(max_w)) < len(sub):
                     if (suf := m.group('suf')) is None:
                         sub = sub[:max_w]
                     else:
-                        len_suf = len(suf)
-                        if len_suf >= max_w:
+                        if (len_suf := len(suf)) >= max_w:
                             sub = suf[-max_w:]
                         else:
-                            max_w -= len_suf
-                            if max_w <= 0:
-                                sub = suf
-                            else:
-                                sub = sub[:max_w] + suf
+                            sub = sub[max_w - len_suf:] + suf
             
             rv = rv[:m.span()[0]] + sub + rv[m.span()[1]:]
 

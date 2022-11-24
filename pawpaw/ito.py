@@ -599,6 +599,8 @@ class Ito:
         """
             %{directive} |!{conversion}| |:[{width} |,{suffix}| ] |  # Spaces added for clarity
 
+            %directive!conversion[:[[fill]align][width[,abbr_suffix]][grouping_option]
+
             Directive
             ---------
             %string
@@ -615,13 +617,30 @@ class Ito:
             r: repr
             s: str (default)
 
+            Fill
+            ----
+            a char to be used as full for min-width, default is ' '
+
+            Align
+            -----
+            < : left align, default
+            = : center align
+            > : right align
+
             Width
             -----
             any positive integer
 
-            Suffix
-            ------
-            any string; can't contain ']'
+            Abbr Suffix
+            -----------
+            a str of zero or more characters; can't contain ']'
+
+            present: width treated as max-width
+            absent: width treated as min-width
+
+            Grouping Option
+            ---------------
+            passed to numeric formatter
         """
 
         if format_spec is None or format_spec == '':

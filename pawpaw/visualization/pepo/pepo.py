@@ -136,8 +136,13 @@ class Json(Pepo):
         level += 1
         fs.write(f'{level * self.indent}"start": {ei.ito.start},{self.linesep}')
         fs.write(f'{level * self.indent}"stop": {ei.ito.stop},{self.linesep}')
-        fs.write(f'{level * self.indent}"desc": "{ei.ito.desc or "null"}",{self.linesep}')
-        fs.write(f'{level * self.indent}"substr": "{str(ei.ito)}",{self.linesep}')
+        if ei.ito.desc == None:
+            desc = "null"
+        else:
+            desc = json.encoder.encode_basestring(ei.ito.desc)
+        fs.write(f'{level * self.indent}"desc": {desc},{self.linesep}')
+        substr = json.encoder.encode_basestring(str(ei.ito))
+        fs.write(f'{level * self.indent}"substr": {substr},{self.linesep}')
         if self.children:
             fs.write(f'{level * self.indent}"children": [')
             if len(ei.ito.children) == 0:

@@ -243,6 +243,13 @@ class TestItoStrEquivalenceMethods(_TestIto):
                         self.assertEqual(a is s, b is ito)
                         self.assertEqual(a, str(b))
 
+    def test_str_split_simple(self):
+        s = ' A B '
+        i = Ito(s, 1, -1)
+        expected = str(i).split()
+        actual = [str(j) for j in i.str_split()]
+        self.assertEqual(expected, actual)
+
     def test_str_split(self):
         for s in ['', ' ', ' a', ' a', ' a ', ' a b', ' a b ', '\ta\nb\rc', 'a b c d e']:
             for maxsplit in -1, 0, 1:

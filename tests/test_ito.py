@@ -1,7 +1,7 @@
 import itertools
 
 import regex
-from pawpaw import Span, Ito
+from pawpaw import Span, Ito, nuco
 from tests.util import _TestIto, IntIto
 
 
@@ -281,7 +281,23 @@ class TestIto(_TestIto):
                 actual = format(i, f'%{directive}')
                 self.assertEqual(expected, actual)
 
-    def test_format_conversion(self):
+    def test_format_int_directive(self):
+        s = '0123456789' * 102
+        i = IntIto(s, 1, -1, 'my_desc')
+
+        for directive in 'span', 'start', 'stop':
+            for fstr in ',', '10n', 'x>20,':
+                with self.subTest(directive=directive, format_string=fstr):
+                    if directive == 'span':
+                        expected = f'({format(i.start, fstr)}, {format(i.stop, fstr)})'
+                    elif directive == 'start':
+                        expected = f'{format(i.start, fstr)}'
+                    else:  # 'stop'
+                        expected = f'{format(i.stop, fstr)}'
+                    actual = format(i, f'%{directive}{":" + fstr}')
+                    self.assertEqual(expected, actual)
+
+    def test_format_str_conversion(self):
         s = ' \t\n\r '
         i = Ito(s, 1, -1, 'my_desc')
 
@@ -304,7 +320,7 @@ class TestIto(_TestIto):
                     actual = format(i, f'%{directive}{conv}')
                     self.assertEqual(expected, actual)
 
-    def test_format_width(self):
+    def test_format_str_width(self):
         s = ' Two\twords '
         i = Ito(s, 1, -1, 'my_desc')
 
@@ -313,34 +329,24 @@ class TestIto(_TestIto):
         for directive in 'string', 'substr':
             for conversion in '', 'r':
                 for width in 0, 1, 2, 3, 5, 10:
-                    for suffix in None, '…', '12':
+                    for suffix in '', '…', 'xx':
                         with self.subTest(directive=directive, conversion=conversion, width=width, suffix=suffix):
                             if directive == 'substr':
                                 expected = str(i)
                             else:
                                 expected = getattr(i, directive)
+
                             if conversion == 'r':
                                 expected = repr(expected)
 
-                            if len(expected) > width:
-                                if suffix is None:
-                                    expected = expected[:width]
-                                else:
-                                    len_suffix = len(suffix)
-                                    if len_suffix >= width:
-                                        expected = suffix[-width:]
-                                    else:
-                                        expected = expected[width - len_suffix:] + suffix
+                            if len(expected) < width or suffix == '':
+                                expected = format(expected, str(width))
+                            elif (len_suf := len(suffix)) >= width:
+                                expected = suffix[len_suf - width:]
+                            else:
+                                expected = expected[:width - len_suf] + suffix
 
-                            conv = conversion
-                            if (conv := conversion) != '':
-                                conv = '!' + conv
-                            actual = format(i, f'%{directive}{conv}')
-                            w = f'[{width}'
-                            if suffix is not None:
-                                w += f',{suffix}'
-                            w += ']'
-                            actual = format(i, f'%{directive}{conv}:{w}')
+                            actual = format(i, f'%{directive}{"!" + conversion if conversion != "" else ""}:{width}{suffix}')
                             self.assertEqual(expected, actual)
 
     # endregion

@@ -252,7 +252,7 @@ class Ito:
             raise Errors.parameter_not_none('group')
 
         if isinstance(desc, str):
-            desc_func = lambda match, group: desc
+            desc_func = lambda m, g: desc
         elif Types.is_callable(desc, Types.F_M_GK_2_DESC):
             desc_func = desc
         else:
@@ -593,23 +593,48 @@ class Ito:
                                             
         return self.clone(*span, clone_children=False)
 
-    _re_format_str = regex.compile(r'%(?:(?P<zws> )|(?P<dir>[a-z]+)(?:\!(?P<conv>[ars]))?(\:\[(?P<max_w>\d+)(?:,(?P<suf>.+?))?\])?)')
+    _format_int_directives = ['span', 'start', 'stop']
+    _format_str_directives = ['desc', 'string', 'substr', 'value']
+    _pat_format_zero_whitespace = r'(?P<zws> )'
+
+    # %directive[:[[fill]align][sign][#][0][width][grouping_option][.precision][type]]}
+
+    _pat_format_int = r'(?P<dir>' + '|'.join(_format_int_directives) + r')' \
+                      r'(?:\:' \
+                      r'(?:(?P<fill>.)(?P<align>[\<\>\=\^])?)?' \
+                      r'(?P<sign>[\+\- ])?' \
+                      r'(?P<width>\d+)?' \
+                      r'(?P<grouping>.)?' \
+                      r')?'
+    _pat_format_str = r'(?P<dir>' + '|'.join(_format_str_directives) + r')' \
+                      r'(?:\!(?P<conv>[ars]))?' \
+                      r'(?:\:' \
+                      r'(?:(?P<fill>.)(?P<align>\<\>\^))?' \
+                      r'(?P<width>\d+)?' \
+                      r'(?P<absufx>.+)?' \
+                      r')?'
+    _pat_format = '|'.join([_pat_format_zero_whitespace, _pat_format_int, _pat_format_str])
+    _pat_format = r'%(?:' + _pat_format + r')'
+    _re_format = regex.compile(_pat_format, regex.DOTALL)
 
     def __format__(self, format_spec: str) -> str:
         """
-            %{directive} |!{conversion}| |:[{width} |,{suffix}| ] |  # Spaces added for clarity
+            int format: %directive[:[[fill]align][sign][width][grouping_option]]}
 
-            %directive!conversion[:[[fill]align][width[,abbr_suffix]][grouping_option]
+            str_format: %directive[!conversion][:[[fill]align][width[,abbr_suffix]]
 
-            Directive
-            ---------
-            %string
-            %span : as tuple, e.g. '(2, 3)'
-            %start : as format(start, 'n')
-            %stop : as format(stop, 'n')
-            %desc
-            %substr " ito.__str__()
-            %value: str(.value())
+            int Directives
+            --------------
+            span : as tuple, e.g. '(2, 3)'
+            start : as format(start, 'n')
+            stop : as format(stop, 'n')
+
+            str Directives
+            --------------
+            string
+            desc
+            substr: ito.__str__()
+            value: str(.value())
 
             Conversion
             ----------
@@ -633,7 +658,9 @@ class Ito:
 
             Abbr Suffix
             -----------
-            a str of zero or more characters; can't contain ']'
+            a str of zero or more characters; can't start with a digit (for same reason
+            regular python format string grouping-option can't be a digit - it gets merged
+            into width)
 
             present: width treated as max-width
             absent: width treated as min-width
@@ -653,10 +680,10 @@ class Ito:
         for i in range(0, len_idxs):
             start = idxs[i]
             if i == len_idxs - 1:
-                m = self._re_format_str.match(format_spec, start)
+                m = self._re_format.match(format_spec, start)
             else:
                 stop = idxs[i + 1]
-                m = self._re_format_str.match(format_spec, start, stop)
+                m = self._re_format.match(format_spec, start, stop)
 
             if m is not None:
                 matches.append(m)
@@ -668,40 +695,50 @@ class Ito:
                 continue
 
             directive = m.group('dir')
-            if directive == 'string':
-                sub = self._string
-            elif directive == 'span':
-                sub = str(tuple(self._span))
-            elif directive == 'start':
-                sub = format(self.start, 'n')
-            elif directive == 'stop':
-                sub = format(self.stop, 'n')
-            elif directive == 'desc':
-                sub = str(self.desc)
-            elif directive == 'substr':
-                sub = self.__str__()
-            elif directive == 'value':
-                sub = str(self.value())
-            else:
-                continue
+            if directive in self._format_int_directives:
+                fstr = m.group(0)[m.span('dir')[1] + 1:]
+                if directive == 'span':
+                    start = format(self.start, fstr)
+                    stop = format(self.stop, fstr)
+                    sub = f'({start}, {stop})'
+                elif directive == 'start':
+                    sub = format(self.start, fstr)
+                else:  # 'stop'
+                    sub = format(self.stop, fstr)
 
-            if (conv := m.group('conv')) is not None:
-                if conv == 'a':
-                    sub = ascii(sub)
-                elif conv == 'r':
-                    sub = repr(sub)
+            elif directive in self._format_str_directives:
+                if directive == 'string':
+                    sub = self._string
+                elif directive == 'desc':
+                    sub = str(self.desc)
+                elif directive == 'substr':
+                    sub = self.__str__()
+                else:  # 'value'
+                    sub = str(self.value())
 
-            if (max_w := m.group('max_w')) is not None:
-                max_w = int(max_w)
-                if (max_w := int(max_w)) < len(sub):
-                    if (suf := m.group('suf')) is None:
-                        sub = sub[:max_w]
+                if (conv := m.group('conv')) is not None:
+                    if conv == 'a':
+                        sub = ascii(sub)
+                    elif conv == 'r':
+                        sub = repr(sub)
+
+                if (width := m.group('width')) is not None:
+                    if (absufx := m.group('absufx')) is None:
+                        start = (m.span('dir')[1] + 1) if conv is None else (m.span('conv')[1] + 1)
+                        fstr = m.group(0)[start:]
+                        sub = format(sub, fstr)
+                    elif (width := int(width)) >= len(sub):
+                        start = (m.span('dir')[1] + 1) if conv is None else (m.span('conv')[1] + 1)
+                        stop = m.span('width')[1]
+                        fstr = m.group(0)[start:stop]
+                        sub = format(sub, fstr)
+                    elif (len_suf := len(absufx)) >= width:
+                        sub = absufx[len_suf - width:]
                     else:
-                        if (len_suf := len(suf)) >= max_w:
-                            sub = suf[-max_w:]
-                        else:
-                            sub = sub[max_w - len_suf:] + suf
-            
+                        sub = sub[:width - len_suf] + absufx
+            else:
+                raise ValueError(f'unknown format directive \'%{directive}\'')
+
             rv = rv[:m.span()[0]] + sub + rv[m.span()[1]:]
 
         return rv
@@ -1146,9 +1183,11 @@ class Ito:
                 k = j + len(sep)
                 return self.clone(stop=j), self.clone(j, k), self.clone(k)
 
-    def __nearest_non_ws_sub(self, start: int, reverse: bool = False) -> Types.C_ITO | None:
+    def _nearest_non_ws_sub(self, start: int, reverse: bool = False) -> Types.C_ITO | None:
+        start += self.start
+
         if reverse:
-            stop = -1
+            stop = self.start -1
             step = -1
         else:
             stop = self.stop
@@ -1160,10 +1199,10 @@ class Ito:
             else:
                 return self.clone(i + 1, non_ws_i + 1)
 
-        non_ws_i: 0
+        non_ws_i: start
         in_ws = True
         for i in range(start, stop, step):
-            c = str(self[i])
+            c = self._string[i]
             if in_ws:
                 if not c.isspace():
                     non_ws_i = i
@@ -1182,9 +1221,9 @@ class Ito:
             if self._string == '':
                 return rv
 
-            i = self.stop - 1
+            i = len(self) - 1
             rv: typing.List[Types.C_ITO] = []
-            while (sub := self.__nearest_non_ws_sub(i, True)) is not None and maxsplit != 0:
+            while (sub := self._nearest_non_ws_sub(i, True)) is not None and maxsplit != 0:
                 rv.append(sub)
                 i = sub.start - 1
                 maxsplit -= 1
@@ -1227,8 +1266,8 @@ class Ito:
             if self._string == '':
                 return rv
 
-            i = self.start
-            while (sub := self.__nearest_non_ws_sub(i)) is not None and maxsplit != 0:
+            i = 0
+            while (sub := self._nearest_non_ws_sub(i)) is not None and maxsplit != 0:
                 rv.append(sub)
                 i = sub.stop
                 maxsplit -= 1

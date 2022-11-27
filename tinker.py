@@ -10,22 +10,22 @@ from pawpaw import Ito
 from pawpaw.visualization import sgr, Highlighter, pepo
 
 
-s = ' The quick brown fox jumped over the lazy dogs. '
-i = Ito(s)
-i.children.add(Ito.from_substrings(s, *i.str_split()))
-
-
+s = ' The quick brown fox. '
+i = Ito(s, 1, -1)
+i.children.add(*i.str_split())
+# for c in i.children:
+#     c.children.add(*c)
 
 v_compact = pepo.Compact()
 v_tree = pepo.Tree()
 v_xml = pepo.Xml()
 v_json = pepo.Json()
 
-import nltk
-import regex
-import pawpaw
+print(v_json.dumps(i))
+exit(0)
 
-from pawpaw import Ito
+import nltk
+
 s = 'Here is one sentence.  Here is another.'
 i = Ito(s)
 

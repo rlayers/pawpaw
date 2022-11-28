@@ -367,11 +367,12 @@ class TestItoQuery(_TestIto):
     def test_filter_desc_scalar(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for desc in 'word', 'char':
-                path = f'**[d:{desc}]'
-                with self.subTest(node=node_type, path=path):
-                    expected = [d for d in node.walk_descendants() if d.desc == desc]
-                    actual = [*node.find_all(path)]
-                    self.assertSequenceEqual(expected, actual)
+                for not_ in '', '~':
+                    path = f'**[d:{not_}{desc}]'
+                    with self.subTest(node=node_type, path=path):
+                        expected = [d for d in node.walk_descendants() if d.desc == desc if (not_ == '') else d.desc != desc]
+                        actual = [*node.find_all(path)]
+                        self.assertSequenceEqual(expected, actual)
     
     def test_filter_desc_multiple(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():

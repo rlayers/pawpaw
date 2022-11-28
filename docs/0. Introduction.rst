@@ -18,7 +18,7 @@ You can then feed the match object to **pawpaw** as follows:
 
 >>> root = Ito.from_match(m)
 
-With just this one line of code, you now have a fully hierarchical, tree\ [#]_ of phrases, words, chars, numbers, and digits.  This tree can be traversed, and even searched using a powerful XPATH-like structured query language:
+With just this one line of code, Pawpaw creates a fully hierarchical, tree\ [#]_ of phrases, words, chars, numbers, and digits.  This tree can be traversed, and even searched using a powerful XPATH-like structured query language:
 
 >>> print(*root.find_all('**[d:digit]'), sep=', ')  # print all digits
 9, 1, 0, 1, 1, 1, 2, 1, 3
@@ -54,17 +54,36 @@ Because ``Ito`` only maintains a reference to its basis string, its memory requi
 ``str``-like Behavior
 =====================
 
-The class ``Ito`` behaves like a ``str`` whenever possible.
+The class ``Ito`` behaves like a ``str`` whenever possible.  For example you can print and Ito, or use it with a f-style string:
 
-len
----
+Formatted Output
+----------------
+
+>>> print(i)
+Hello, world!
+>>> f'{i}'
+'Hello, world!'
+
+``Ito`` also supports custom format strings.  You can quickly develop custom outputs by combining and formating ``Ito``
+attributes in various ways, and even perform truncations to facilitate visualizations:
+
+>>> j = Ito('Here is\n a super\nduper, very long string!')
+>>> f'{i:%span% : %substr!r:21…}'  # Show span and substr
+(0, 40) : 'Here is\n a super\n'…'
+
+
+``len``
+-------
 
 For example, you can access its length:
 
 >>> len(i)
 13
 
-Likewise, you can access character data via ``int`` or ``slice`` indexers\ [#]_\ .  Note that indexing an ``Ito`` is always *relative to itself*, not its basis string:
+Indexing and Slicing
+--------------------
+
+As with strings, you can access character data via ``int`` or ``slice`` indexers\ [#]_\ .  Note that indexing an ``Ito`` is always *relative to itself*, not its basis string:
 
 >>> str(i[0])    # int accessor
 H
@@ -96,6 +115,9 @@ An ``Ito`` is iterable in the same way a Python ``str`` is:
 3: l
 4: o
 
+Instantiation
+=============
+
 ``Ito`` constructors allow either a ``str`` or an ``Ito`` as the basis parameter, ``src``.  The subsequent ``start`` and ``stop`` parameters are always *relative to ``src``*, with the original source string carried through and all indexing book-keeping handled automatically:
 
 >>> s = '_abc_'
@@ -103,6 +125,12 @@ An ``Ito`` is iterable in the same way a Python ``str`` is:
 >>> i2 = Ito(i1, 1, -1)  # Ito basis; skip first and last chars of Ito i1
 >>> str(i1), str(i2)
 ('abc', 'b')
+
+Multiple static constructor methods are available to create and ``Ito`` from things such as:
+
+ * regex.Match
+ * spans or gaps
+ * ordinary substrings
 
 Descriptor
 ==========

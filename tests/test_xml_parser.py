@@ -9,9 +9,6 @@ from tests.util import _TestIto, XML_TEST_SAMPLES
 
 
 class TestXmlParser(_TestIto):
-    def setUp(self) -> None:
-        self.parser = XmlParser()        
-        
     def test_basic(self):
         for sample in XML_TEST_SAMPLES:
             with self.subTest(xml_source=sample.source):
@@ -23,45 +20,48 @@ class TestXmlParser(_TestIto):
 
                 self.assertIs(root_e, root_i.value())
 
-    def test_nsamespace(self):
-        sample = next(s for s in XML_TEST_SAMPLES if s.default_namespace is not None)
-        root_e = ET.fromstring(sample.xml, parser=self.parser)
-        
-        first_start_tag = root_e.ito.find(f'**[d:' + pawpaw.xml.ITO_DESCRIPTORS.START_TAG + ']')
-        self.assertIsNotNone(first_start_tag)
-        
-        first_attr = first_start_tag.find(f'**[d:' + pawpaw.xml.ITO_DESCRIPTORS.ATTRIBUTE + ']')
-        self.assertIsNotNone(first_attr)
-        self.assertEqual(3, len(first_attr.children))
-        
-        ns = first_attr.find('*')
-        self.assertIsNotNone(ns)
-        self.assertEqual(ns.desc, pawpaw.xml.ITO_DESCRIPTORS.NAMESPACE)
-        self.assertEqual('xmlns', str(ns))
-        
-        name = ns.find('>')
-        self.assertIsNotNone(name)
-        self.assertEqual(name.desc, pawpaw.xml.ITO_DESCRIPTORS.NAME)
-        self.assertEqual('fictional', str(name))
-        
-        value = name.find('>')
-        self.assertIsNotNone(value)
-        self.assertEqual(value.desc, pawpaw.xml.ITO_DESCRIPTORS.VALUE)
-        self.assertEqual('http://characters.example.com', str(value))
-        
+    def test_namespace(self):
+        for sample in XML_TEST_SAMPLES:
+            with self.subTest(xml_source=sample.source):
+                root_e = ET.fromstring(sample.xml, parser=XmlParser())
+
+                start_tag = root_e.ito.find(f'**[d:' + pawpaw.xml.ITO_DESCRIPTORS.START_TAG + ']')
+                self.assertIsNotNone(start_tag)
+
+                for attr in start_tag.find_all(f'**[d:' + pawpaw.xml.ITO_DESCRIPTORS.ATTRIBUTE + ']'):
+                    if attr is not None:
+                        eq_idx = attr.str_index('=')
+                        if attr.str_find(':', end=eq_idx) < 0:
+                            self.assertEqual(2, len(attr.children))
+                            self.assertEqual(pawpaw.xml.ITO_DESCRIPTORS.NAME, attr.children[0].desc)
+                            self.assertEqual(pawpaw.xml.ITO_DESCRIPTORS.VALUE, attr.children[1].desc)
+                        else:
+                            self.assertEqual(3, len(attr.children))
+                            self.assertEqual(pawpaw.xml.ITO_DESCRIPTORS.NAMESPACE, attr.children[0].desc)
+                            self.assertEqual(pawpaw.xml.ITO_DESCRIPTORS.NAME, attr.children[1].desc)
+                            self.assertEqual(pawpaw.xml.ITO_DESCRIPTORS.VALUE, attr.children[2].desc)
+
     def test_hiearchical(self):
-        sample = next(s for s in XML_TEST_SAMPLES if s.default_namespace is None)
-        root_e = ET.fromstring(sample.xml, parser=self.parser)
-        root_i: pawpaw.Ito = root_e.ito
-            
-        expected = root_e.findall('country')
-        actual = [i.value() for i in root_i.find_all(f'*[d:{ITO_DESCRIPTORS.ELEMENT}]')]
-        self.assertEqual(len(expected), len(actual))
-        for e, a in zip(expected, actual):
-            self.assertIs(e, a)
-            
-        expected = root_e.findall('.//neighbor')
-        actual = [i.value() for i in root_i.find_all(f'**[d:{ITO_DESCRIPTORS.ELEMENT}]' + '{*[d:' + ITO_DESCRIPTORS.START_TAG + ']/*[s:neighbor]&[i:0]}')]
-        self.assertEqual(len(expected), len(actual))
-        for e, a in zip(expected, actual):
-            self.assertIs(e, a)
+        for sample in XML_TEST_SAMPLES:
+            with self.subTest(xml_source=sample.source):
+                root_e = ET.fromstring(sample.xml, parser=XmlParser())
+
+                root_i: pawpaw.Ito = root_e.ito
+                self.assertIsNotNone(root_i)
+                self.assertIs(root_e, root_i.value())
+
+                for child_e in root_e.findall('.//'):
+                    child_i = child_e.ito
+                    self.assertIsNotNone(child_i)
+                    self.assertIs(child_e, child_i.value())
+
+    def test_tails(self):
+        # xml fragment taken from https://docs.python.org/3/library/xml.etree.elementtree.html
+        xml = '<?xml version="1.0"?><a><b>1<c>2<d/>3</c></b>4</a>'
+        root = ET.fromstring(xml, parser=XmlParser())
+        for descendant in root.findall('.//'):
+            next_sibling = descendant.ito.find('>')
+            if descendant.tail is None:
+                self.assertTrue(next_sibling is None or next_sibling.desc != ITO_DESCRIPTORS.TEXT)
+            else:
+                self.assertEqual(descendant.tail, str(next_sibling))

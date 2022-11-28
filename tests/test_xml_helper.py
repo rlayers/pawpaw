@@ -32,22 +32,43 @@ class TestXmlHelper(_TestIto):
         pass
 
     def test_get_xmlns(self):
-        sample = next(s for s in XML_TEST_SAMPLES if s.default_namespace is not None)
-        root = ET.fromstring(sample.xml, XmlParser())
-        xmlns = XmlHelper.get_xmlns(root)
-        xmlns = {str(k.local_part): str(v) for k, v in xmlns.items()}
-        self.assertLessEqual({'xmlns': sample.default_namespace}.items(), xmlns.items())
-        self.assertLessEqual(sample.prefix_map.items(), xmlns.items())
+        for sample in XML_TEST_SAMPLES:
+            root = ET.fromstring(sample.xml, XmlParser())
+            with self.subTest(sample=root):
+                xmlns = XmlHelper.get_xmlns(root)
+                xmlns = {str(k.local_part): str(v) for k, v in xmlns.items()}
+                if sample.default_namespace is None:
+                    self.assertIsNone(xmlns.get('xmlns'))
+                else:
+                    self.assertLessEqual({'xmlns': sample.default_namespace}.items(), xmlns.items())
+                self.assertLessEqual(sample.root_prefix_map.items(), xmlns.items())
 
-    def test_get_prefix_map(self):
-        sample = next(s for s in XML_TEST_SAMPLES if s.default_namespace is not None)
-        root = ET.fromstring(sample.xml, XmlParser())
-        self.assertDictEqual(sample.prefix_map, XmlHelper.get_prefix_map(root))
+    def test_get_prefix_map_root(self):
+        for sample in XML_TEST_SAMPLES:
+            root = ET.fromstring(sample.xml, XmlParser())
+            with self.subTest(sample=root):
+                self.assertDictEqual(sample.root_prefix_map, XmlHelper.get_prefix_map(root))
+
+    def test_get_prefix_map_composite(self):
+        for sample in XML_TEST_SAMPLES:
+            root = ET.fromstring(sample.xml, XmlParser())
+            with self.subTest(sample=root):
+                actual = XmlHelper.get_prefix_map(root)
+                self.assertEqual(sample.root_prefix_map, actual)
+
+                actaul = {}
+                for e in root.findall('.//'):
+                    actual |= XmlHelper.get_prefix_map(e)
+                self.assertDictEqual(sample.descendants_composite_prefix_map, actual)
 
     def test_get_default_namespace(self):
-        sample = next(s for s in XML_TEST_SAMPLES if s.default_namespace is not None)
-        root = ET.fromstring(sample.xml, XmlParser())
-        self.assertEqual(sample.default_namespace, str(XmlHelper.get_default_namespace(root)))
+        for sample in XML_TEST_SAMPLES:
+            root = ET.fromstring(sample.xml, XmlParser())
+            with self.subTest(sample=root):
+                if sample.default_namespace is None:
+                    self.assertIsNone(XmlHelper.get_default_namespace(root))
+                else:
+                    self.assertEqual(sample.default_namespace, str(XmlHelper.get_default_namespace(root)))
 
     def test_get_element_text_if_found(self):
         pass

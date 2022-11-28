@@ -126,19 +126,25 @@ class XmlParser(ET.XMLParser):
         ito.value_func = lambda i: element
 
         ito.children.add(start_tag)
+        
         if element.text is not None:
-            if element.text is not None or not(self.ignore_empties and str.isspace(element.text)):
+            if not self.ignore_empties or not element.text.isspace():
                 text = Ito(self._text, start_tag.stop, start_tag.stop + len(element.text), ITO_DESCRIPTORS.TEXT)
                 ito.children.add(text)
-            for child in element:
-                self._extract_itos(child)
-                ito.children.add(child.ito)
-                if child.tail is not None:
-                    if element.text is not None or not(self.ignore_empties and not str.isspace(element.tail)):
-                        ito_text = Ito(self._text, child.ito.stop, child.ito.stop + len(child.tail), ITO_DESCRIPTORS.TEXT)
-                        ito.children.add(ito_text)
-            if end_tag is not None:
-                ito.children.add(end_tag)
+
+        for child in element:
+            self._extract_itos(child)
+            ito.children.add(child.ito)
+
+            # Add child element's .tail to parent element's children
+            # (See https://docs.python.org/3/library/xml.etree.elementtree.html for definition of .tail attr.)
+            if child.tail is not None:
+                if not self.ignore_empties or not child.tail.isspace():
+                    ito_text = Ito(self._text, child.ito.stop, child.ito.stop + len(child.tail), ITO_DESCRIPTORS.TEXT)
+                    ito.children.add(ito_text)
+
+        if end_tag is not None:
+            ito.children.add(end_tag)
 
         element.ito = ito
 

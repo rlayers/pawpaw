@@ -80,9 +80,10 @@ class RandSubstrings(RandSpans):
 
 
 class XmlTestSample(typing.NamedTuple):
-    default_namespace: None | str
-    prefix_map: typing.Dict[str, str]
     source: str
+    default_namespace: None | str
+    root_prefix_map: typing.Dict[str, str]
+    descendants_composite_prefix_map: typing.Dict[str, str]
     xml: str
 
 
@@ -90,7 +91,8 @@ XML_TEST_SAMPLES: typing.List[XmlTestSample] = [
     XmlTestSample(
         source='https://docs.python.org/3/library/xml.etree.elementtree.html',
         default_namespace=None,
-        prefix_map={},
+        root_prefix_map={},
+        descendants_composite_prefix_map={},
         xml=
 """<?xml version="1.0"?>
 <data>
@@ -120,7 +122,8 @@ XML_TEST_SAMPLES: typing.List[XmlTestSample] = [
     XmlTestSample(
         source='https://docs.python.org/3/library/xml.etree.elementtree.html',
         default_namespace='http://people.example.com',
-        prefix_map={'fictional': 'http://characters.example.com'},
+        root_prefix_map={'fictional': 'http://characters.example.com'},
+        descendants_composite_prefix_map={},
         xml=
 """<?xml version="1.0"?>
 <actors xmlns:fictional="http://characters.example.com"
@@ -142,7 +145,8 @@ XML_TEST_SAMPLES: typing.List[XmlTestSample] = [
     XmlTestSample(
         source='https://www.xml.com/pub/a/1999/01/namespaces.html',
         default_namespace=None,
-        prefix_map={'xdc': 'http://www.xml.com/books', 'h': 'http://www.w3.org/HTML/1998/html4'},
+        root_prefix_map={'xdc': 'http://www.xml.com/books', 'h': 'http://www.w3.org/HTML/1998/html4'},
+        descendants_composite_prefix_map={},
         xml='''
 <h:html xmlns:xdc="http://www.xml.com/books"
         xmlns:h="http://www.w3.org/HTML/1998/html4">
@@ -164,5 +168,29 @@ XML_TEST_SAMPLES: typing.List[XmlTestSample] = [
   </xdc:bookreview>
  </h:body>
 </h:html>'''
+    ),
+
+    XmlTestSample(
+        source='https://www.w3schools.com/xml/xml_namespaces.asp',
+        default_namespace=None,
+        root_prefix_map={},
+        descendants_composite_prefix_map={'h': 'http://www.w3.org/TR/html4/', 'f': 'https://www.w3schools.com/furniture'},
+        xml='''
+<root>
+
+<h:table xmlns:h="http://www.w3.org/TR/html4/">
+  <h:tr>
+    <h:td>Apples</h:td>
+    <h:td>Bananas</h:td>
+  </h:tr>
+</h:table>
+
+<f:table xmlns:f="https://www.w3schools.com/furniture">
+  <f:name>African Coffee Table</f:name>
+  <f:width>80</f:width>
+  <f:length>120</f:length>
+</f:table>
+
+</root>'''
     ),
 ]

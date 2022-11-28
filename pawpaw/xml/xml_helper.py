@@ -81,7 +81,9 @@ class XmlHelper:
 
         return QualifiedName(ns, name)
 
-    _query_xmlns = pawpaw.query.compile(f'*[d:{ito_descriptors.START_TAG}]/*[d:{ito_descriptors.ATTRIBUTE}]' + '{*[s:xmlns]}')
+    _re_xmlns = regex.compile(r'xmlns(?:\:.+)?', regex.DOTALL)
+    _query_xmlns_predicates = {'is_xmlns': lambda ei: ei.ito.regex_fullmatch(XmlHelper._re_xmlns) is not None}
+    _query_xmlns = pawpaw.query.compile(f'*[d:{ito_descriptors.START_TAG}]/*[d:{ito_descriptors.ATTRIBUTE}]' + '{*[p:is_xmlns]}')
 
     @classmethod
     def get_xmlns(cls, element: ET.Element) -> typing.Dict[QualifiedName, Types.C_ITO]:
@@ -90,14 +92,11 @@ class XmlHelper:
         elif not hasattr(element, 'ito'):
             raise ValueError(f'parameter \'{element}\' missing attr \'.ito\' - did you forget to use pawpaw.XmlParser?')
         
-        rv: typing.Dict[QualifiedName, str] = {}
-        
-        for xmlns in cls._query_xmlns.find_all(element.ito):
-            qn = cls.get_qualified_name(xmlns)
-            value = xmlns.find(f'*[d:{ito_descriptors.VALUE}]')
-            rv[qn] = value
-
-        return rv
+        return {
+            cls.get_qualified_name(xmlns): xmlns.find(f'*[d:{ito_descriptors.VALUE}]')
+            for xmlns
+            in cls._query_xmlns.find_all(element.ito, predicates=cls._query_xmlns_predicates)
+        }
 
     @classmethod
     def get_prefix_map(cls, element: ET.ElementTree) -> typing.Dict[str, str]:

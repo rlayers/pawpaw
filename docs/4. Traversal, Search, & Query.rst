@@ -182,6 +182,27 @@ Axis Identifiers:
 |            |                | and *excludes* ancestors & descendants                                 |
 +------------+----------------+------------------------------------------------------------------------+
 
+Filter
+------
+
+A filter only allows nodes matching a given criteria to pass through.  A filter takes the form of one or more key-value pairs
+separated by logical operator::
+
+ filter := [key:value] [logical_operator [key:value] ] ...
+
+The key indicates a action to perform.  The axis nodes, along with the filter value, are used as parameters for this action.
+Multiple filter key-value pairs can be combined using the logical operators:
+
++------------+----------------+
+| Operator   | Meaning        |
++============+================+
+| ``&``      | And            |
++------------+----------------+
+| ``|``      | Or             |
+|            |                |
++------------+----------------+
+| ``^``      | XOR            |
++------------+----------------+
 
 +---------------------+------------------+------------------------------------------------------------------------+------------------+
 | Key                 | Alt Keys(s)      | Meaning                                                                | Example(s)       |
@@ -223,6 +244,8 @@ Axis Identifiers:
 |                     |                  | The value retrieved from the ``dict`` is used to match against the     |                  |
 |                     |                  | ``.value()`` of the axis                                               |                  |
 +---------------------+------------------+------------------------------------------------------------------------+------------------+
+
+
 
 
 TIPS & TRICKS

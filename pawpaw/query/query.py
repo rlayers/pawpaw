@@ -11,7 +11,8 @@ import pawpaw
 OPERATORS = {
     '&': operator.and_,
     '|': operator.or_,
-    '^': operator.xor
+    '^': operator.xor,
+    '~': operator.not_
 }
 
 FILTER_KEYS = {
@@ -299,24 +300,36 @@ class EcfFilter(EcfCombined):
     _re_open_bracket = regex.compile(EcfCombined._obs_pat_1 + r'\[', regex.DOTALL)
     _re_close_bracket = regex.compile(EcfCombined._obs_pat_1 + r'\]', regex.DOTALL)
 
-    _re = regex.compile(r'\[(?P<k>[a-z\-]+):\s*(?P<v>.+?)\]', regex.DOTALL)
+    _re = regex.compile(r'\[(?P<not>\~)?(?P<k>[a-z\-]+):\s*(?P<v>.+?)\]', regex.DOTALL)
     _re_balanced_splitter = regex.compile(
         r'(?P<bra>(?<!' + EcfCombined._obs_pat_2 + r')\[(?:(?:' + EcfCombined._obs_pat_2 + r'[\[\]]|[^\[\]])++|(?&bra))*(?<!' + EcfCombined._obs_pat_2 + r')\])',
         regex.DOTALL
     )
 
     @classmethod
-    def _func(cls, key: str, value: str) -> pawpaw.Types.F_EITO_V_P_2_B:
+    def _func(cls, not_: str, key: str, value: str) -> pawpaw.Types.F_EITO_V_P_2_B:
         if key in FILTER_KEYS['desc']:
-            return lambda ec, values, predicates: ec.ito.desc in [descape(s) for s in pawpaw.split_unescaped(value, ',')]
+            if not_ == '!':
+                return lambda ec, values, predicates: ec.ito.desc not in [descape(s) for s in pawpaw.split_unescaped(value, ',')]
+            else:
+                return lambda ec, values, predicates: ec.ito.desc in [descape(s) for s in pawpaw.split_unescaped(value, ',')]
 
         if key in FILTER_KEYS['string']:
-            return lambda ec, values, predicates: str(ec.ito) in [descape(s) for s in pawpaw.split_unescaped(value, ',')]
+            if not_ == '!':
+                return lambda ec, values, predicates: str(ec.ito) not in [descape(s) for s in pawpaw.split_unescaped(value, ',')]
+            else:
+                return lambda ec, values, predicates: str(ec.ito) in [descape(s) for s in pawpaw.split_unescaped(value, ',')]
 
         if key in FILTER_KEYS['string-casefold']:
-            return lambda ec, values, predicates: str(ec.ito).casefold() in [
-                descape(s).casefold() for s in pawpaw.split_unescaped(value.casefold(), ',')
-            ]
+            if not_ == '!':
+                return lambda ec, values, predicates: str(ec.ito).casefold() not in [
+                    descape(s).casefold() for s in pawpaw.split_unescaped(value.casefold(), ',')
+                ]
+            else:
+                return lambda ec, values, predicates: str(ec.ito).casefold() in [
+                    descape(s).casefold() for s in pawpaw.split_unescaped(value.casefold(), ',')
+                ]
+
 
         if key in FILTER_KEYS['index']:
             ints: typing.Set[int] = set()
@@ -335,15 +348,24 @@ class EcfFilter(EcfCombined):
                 else:
                     raise ValueError('invalid index item \'value\'')
 
-            return lambda ec, values, predicates: ec.index in ints
+            if not_ == '!':
+                return lambda ec, values, predicates: ec.index not in ints
+            else:
+                return lambda ec, values, predicates: ec.index in ints
 
         if key in FILTER_KEYS['predicate']:
             keys = [descape(s) for s in pawpaw.split_unescaped(value, ',')]
-            return lambda ec, values, predicates: all(p(ec) for p in [v for k, v in cls.validate_predicates(predicates).items() if k in keys])
+            if not_ == '!':
+                return lambda ec, values, predicates: all(not p(ec) for p in [v for k, v in cls.validate_predicates(predicates).items() if k in keys])
+            else:
+                return lambda ec, values, predicates: all(p(ec) for p in [v for k, v in cls.validate_predicates(predicates).items() if k in keys])
 
         if key in FILTER_KEYS['value']:
             keys = [descape(s) for s in pawpaw.split_unescaped(value, ',')]
-            return lambda ec, values, predicates: ec.ito.value() in [v for k, v in cls.validate_values(values).items() if k in keys]
+            if not_ == '!':
+                return lambda ec, values, predicates: ec.ito.value() not in [v for k, v in cls.validate_values(values).items() if k in keys]
+            else:
+                return lambda ec, values, predicates: ec.ito.value() in [v for k, v in cls.validate_values(values).items() if k in keys]
 
         raise ValueError(f'unknown filter key \'{key}\'')
 
@@ -369,7 +391,7 @@ class EcfFilter(EcfCombined):
             m = self._re.fullmatch(f.group(0))
             if m is None:
                 raise ValueError(f'invalid filter \'{f.group(0)}\'')
-            filters.append(self._func(m.group('k'), m.group('v')))
+            filters.append(self._func(m.group('not'), m.group('k'), m.group('v')))
             last = f
 
         super().__init__(ito, filters, operands)

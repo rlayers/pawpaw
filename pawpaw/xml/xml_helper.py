@@ -143,7 +143,7 @@ class XmlHelper:
     def get_namespace(cls, item: str | ET.Element) -> str | None:
         if isinstance(item, str):
             tag = item
-        elif isinstance(item, ET.element):
+        elif isinstance(item, ET.Element):
             tag = item.tag
         else:
             raise Errors.parameter_invalid_type('item', item, str, ET.Element)

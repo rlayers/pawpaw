@@ -39,7 +39,7 @@ def find_escapes(
 
 def find_unescaped(
     src: str | pawpaw.Types.C_ITO,
-    char: str,
+    chars: str,
     escape: str = '\\',
     start: int | None = None,
     stop: int | None = None
@@ -55,10 +55,10 @@ def find_unescaped(
 
     span = pawpaw.Span.from_indices(src, start, stop).offset(offset)
 
-    if not isinstance(char, str):
-        raise pawpaw.Errors.parameter_invalid_type('char', char, str)
-    elif len(char) != 1:
-        raise ValueError('parameter \'char\' must have length 1')
+    if not isinstance(chars, str):
+        raise pawpaw.Errors.parameter_invalid_type('chars', chars, str)
+    elif len(chars) == 0:
+        raise ValueError('parameter \'chars\' must have non-zero length')
 
     if not isinstance(escape, str):
         raise pawpaw.Errors.parameter_invalid_type('escape', escape, str)
@@ -72,7 +72,7 @@ def find_unescaped(
             esc = False
         elif c == escape:
             esc = True
-        elif c == char:
+        elif c in chars:
             yield i - offset
 
     if esc:

@@ -10,16 +10,65 @@ from pawpaw import Ito
 from pawpaw.visualization import sgr, Highlighter, pepo
 
 
+v_compact = pepo.Compact()
+v_tree = pepo.Tree()
+v_xml = pepo.Xml()
+v_json = pepo.Json()
+
+import pawpaw.visualization.ascii_box_drawing as ascii_box_drawing
+
+Boxer = box.Box(vertical_style=box.Style(count=box.Style.Count.PARALLEL))
+for line in boxer.from_text('The quick\nbrown fox\njumped over the lazy\ndogs.')
+    print(line)
+
+exit(0)
+
+chars = set()
+for orientation in box.Side.Orientation:
+    print(f'Orientation: {orientation}')
+    for couunt in box.Style.Count:
+        for weight in box.Style.Weight:
+            style = box.Style(weight, count)
+            try:
+                side = box.Side(style)
+                char = side[orientation]
+                chars.add(char)
+                print(f'\t{char}')
+            except:
+                phrases
+
+print(f'Expected Side character count: {len(box.Side._characters):n}')
+print(f'Actual Side character count: {len(chars):n}')
+
+print()
+
+chars = set()
+for orientation in box.Side.Orientation:
+    print(f'Orientation: {orientation}')
+    for hcount in box.Style.Count:
+        for hweight in box.Style.Weight:
+            hz_style = box.Style(hweight, hcount)
+            for vcount in box.Style.Count:
+                for vweight in box.Style.Weight:
+                    vt_style = box.Style(vweight, vcount)
+                    try:
+                        corner = box.Corner(hz_style, vt_style)
+                        char = corner[orientation]
+                        chars.add(char)
+                        print(f'\t{char}')
+                    except:
+                        phrases
+
+print(f'Expected Corner character count: {len(box.Corner._characters):n}')
+print(f'Actual Corner character count: {len(chars):n}')
+
+exit(0)
+
 s = ' The quick brown fox. '
 i = Ito(s, 1, -1)
 i.children.add(*i.str_split())
 # for c in i.children:
 #     c.children.add(*c)
-
-v_compact = pepo.Compact()
-v_tree = pepo.Tree()
-v_xml = pepo.Xml()
-v_json = pepo.Json()
 
 print(v_json.dumps(i))
 exit(0)

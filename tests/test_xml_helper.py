@@ -56,7 +56,7 @@ class TestXmlHelper(_TestIto):
                 actual = XmlHelper.get_prefix_map(root)
                 self.assertEqual(sample.root_prefix_map, actual)
 
-                actaul = {}
+                actual = {}
                 for e in root.findall('.//'):
                     actual |= XmlHelper.get_prefix_map(e)
                 self.assertDictEqual(sample.descendants_composite_prefix_map, actual)

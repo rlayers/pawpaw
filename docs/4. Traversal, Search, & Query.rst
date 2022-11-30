@@ -185,24 +185,12 @@ Axis Identifiers:
 Filter
 ------
 
-A filter only allows nodes matching a given criteria to pass through.  A filter takes the form of one or more key-value pairs
-separated by logical operator::
+A filter only allows nodes matching a given criteria to pass through.  The general form for a filter is:
 
- filter := [key:value] [logical_operator [key:value] ] ...
+ filter := [~] [[~]key:value] ] | [&, ^, or |] [~] [[~]key:value] ] | ...
 
-The key indicates a action to perform.  The axis nodes, along with the filter value, are used as parameters for this action.
-Multiple filter key-value pairs can be combined using the logical operators:
-
-+------------+----------------+
-| Operator   | Meaning        |
-+============+================+
-| ``&``      | And            |
-+------------+----------------+
-| ``|``      | Or             |
-|            |                |
-+------------+----------------+
-| ``^``      | XOR            |
-+------------+----------------+
+A filter must include a key-value pair.  The key indicates a action to perform.  The axis nodes, along with the filter value,
+are used as parameters for this action.  Allowed keys are as follows:
 
 +---------------------+------------------+------------------------------------------------------------------------+------------------+
 | Key                 | Alt Keys(s)      | Meaning                                                                | Example(s)       |
@@ -244,6 +232,24 @@ Multiple filter key-value pairs can be combined using the logical operators:
 |                     |                  | The value retrieved from the ``dict`` is used to match against the     |                  |
 |                     |                  | ``.value()`` of the axis                                               |                  |
 +---------------------+------------------+------------------------------------------------------------------------+------------------+
+
+Each key-value pair can be optionally preceeded by a non-combining logical operator (NOT).  Adjacenet key-value pairs must be separated from one another by a combining logical operator (AND, XOR, or OR).
+
+Logical Operators (Listed in Order of Precedence)
+
++------------+----------------+----------------+
+| Operator   | Meaning        | Combining      |
++============+================+================+
+| ``~``      | NOT            |                |
++------------+----------------+----------------+
+| ``&``      | AND            | ✓              |
++------------+----------------+----------------+
+| ``^``      | XOR            | ✓              |
++------------+----------------+----------------+
+| ``|``      | OR             | ✓              |
++------------+----------------+----------------+
+
+Parentheses are allowed to perform logical grouping::
 
 
 

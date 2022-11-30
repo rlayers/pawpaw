@@ -15,6 +15,24 @@ v_tree = pepo.Tree()
 v_xml = pepo.Xml()
 v_json = pepo.Json()
 
+s = ' The quick brown fox. '
+i = Ito(s, 1, -1)
+i.children.add(*i.str_split())
+# for c in i.children:
+#     c.children.add(*c)
+
+for result in i.find_all('*[s:The] | ~[s:quick] & [s:brown]')
+    print(v_compact.dumps(result))
+exit(0)
+
+# TODO: Make query tests for:
+# even/odd '~'
+# precedence
+# parens: '*([s:The] | ~[s:quick]) & [s:brown]' versus '*[s:The] | (~[s:quick]) & [s:brown])'
+# ensure '~' in 'A & (~(B | C))' is considered against (B | C), not against B
+# handle '... () ...'
+# ensure '(A | (B) | C) gets treated as A | B | C, and not as invalid paren nesting
+
 import pawpaw.visualization.ascii_box as box
 
 boxer = box.Box(vertical_style=box.Style(count=box.Style.Count.PARALLEL))
@@ -62,15 +80,6 @@ for orientation in box.Side.Orientation:
 print(f'Expected Corner character count: {len(box.Corner._characters):n}')
 print(f'Actual Corner character count: {len(chars):n}')
 
-exit(0)
-
-s = ' The quick brown fox. '
-i = Ito(s, 1, -1)
-i.children.add(*i.str_split())
-# for c in i.children:
-#     c.children.add(*c)
-
-print(v_json.dumps(i))
 exit(0)
 
 import nltk

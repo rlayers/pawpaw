@@ -8,11 +8,12 @@ import regex
 import pawpaw
 
 
+# Ordered by precedance
 OPERATORS = {
+    '~': operator.not_,
     '&': operator.and_,
-    '|': operator.or_,
     '^': operator.xor,
-    '~': operator.not_
+    '|': operator.or_,
 }
 
 FILTER_KEYS = {
@@ -279,21 +280,67 @@ class EcfCombined(Ecf):
         
         if len(filters) == 0:
             raise ValueError(f'empty filters list')
-        self.filters = filters
 
-        if len(operands) != len(filters) - 1:
-            raise ValueError(f'count of operands ({len(operands):,}) must be one less than count of filters ({len(filters):,}')
+        if len(operands) != len(filters) + 1:
+            raise ValueError(f'count of operands ({len(operands)}) must be one more than count of filters ({len(filters)}')
+
+        for operand in operands:
+            for c in operand:
+                if c not in OPERATORS.keys() and c not in ' ()':
+                    raise ValueError(f'invalid character \'{c}\' found in operand \'{operand}\' in {ito}')
+
+        while True:
+            last_open_i, last_open_op = next(((i, operands[i]) for i in range(len(operands) - 1, -1, -1) if '(' in operands[i]), (None, None))
+
+            if last_open_i is None:
+                break
+
+            operands[last_open_i], discard, last_open_op = last_open_op.rpartition('(')
+
+            next_closed_i, next_closed_op = next(((i, operands[i]) for i in range(last_open_i + 1, len(operands)) if ')' in operands[i]), (None, None))
+            if next_closed_i is None:
+                raise ValueError(f'unbalanced opening parentheses found in {ito} at location {next_closed_i - ito.start}')
+            next_closed_op, discard, operands[next_closed_i] = next_closed_op.partition(')')
+
+            if next_closed_i - last_open_i == 1:  # don't need to combine a single filter, so just add any an post-parentheses ops back in
+                operands[last_open_i] += last_open_op
+            else:
+                subf = EcfCombined(ito, filters[last_open_i:next_closed_i], [last_open_op, *operands[last_open_i + 1:next_closed_i], next_closed_op]).func
+                filters[last_open_i:next_closed_i] = [subf]
+                del operands[last_open_i + 1:next_closed_i]
+
+        self.filters = filters
         self.operands = operands
 
+    @classmethod
+    def _eval(self, operand: str, filter_: pawpaw.Types.F_EITO_V_P_2_B, ec, values, predicates):
+        rv = filter_(ec, values, predicates)
+
+        if operand.count('~') & 1 == 1:  # bitwise op to determine if n is odd
+            rv = not rv
+        
+        return rv
+
+    def _highest_precedence_diadic(self, ops: List[str]) -> typing.Tuple[int, typing.Callable]:
+        for k, f in OPERATORS.items():
+            if k == '~':
+                continue
+
+            for i, op in enumerate(ops):
+                if k in op:
+                    return i, f
+
     def func(self, ec: pawpaw.Types.C_EITO, values: pawpaw.Types.C_VALUES, predicates: pawpaw.Types.C_PREDICATES) -> bool:
-        acum = self.filters[0](ec, values, predicates)
-        for f, o in zip(self.filters[1:], self.operands):
-            op = OPERATORS.get(o)
-            if op is None:
-                raise ValueError('invalid operator \'{o}\'')
-            cur = f(ec, values, predicates)
-            acum = op(acum, cur)
-        return acum
+        vals = [self._eval(self.operands[i], f, ec, values, predicates) for i, f in enumerate(self.filters)]
+        ops = self.operands[1:-1]
+
+        while(len(vals) > 1):
+            i, op = self._highest_precedence_diadic(ops)
+            combined = op(vals[i], vals[i + 1])
+            vals[i:i + 2] = [combined]
+            del ops[i]
+
+        return vals[0]
 
 
 class EcfFilter(EcfCombined):
@@ -374,24 +421,27 @@ class EcfFilter(EcfCombined):
 
         if len([*ito.regex_finditer(self._re_open_bracket)]) != len([*ito.regex_finditer(self._re_close_bracket)]):
             raise ValueError(f'unbalanced brackets in filter(s) \'{ito}\'')
+
         last = None
-        for f in ito.regex_finditer(self._re_balanced_splitter):
-            if last is not None:
-                start = last.span(0)[1]
-                stop = f.span(0)[0]
-                op = ito.string[start:stop].strip()
-                if len(op) == 0:
-                    raise ValueError(
-                        f'missing operator between filters \'{last.group(0)}\' and \'{f.group(0)}\'')
-                elif op not in OPERATORS.keys():
-                    raise ValueError(
-                        f'invalid filter operator \'{op}\' between filters \'{last.group(0)}\' and \'{f.group(0)}\'')
-                operands.append(op)
+        for i, f in enumerate(ito.regex_finditer(self._re_balanced_splitter)):
+            start = ito.start if last is None else last.span(0)[1]
+            stop = f.span(0)[0]
+            op = ito.string[start:stop].strip()
+            if i > 0 and len(op) == 0:
+                raise ValueError(f'missing operator between filters \'{last.group(0)}\' and \'{f.group(0)}\'')
+
+            operands.append(op)
             m = self._re.fullmatch(f.group(0))
             if m is None:
                 raise ValueError(f'invalid filter \'{f.group(0)}\'')
             filters.append(self._func(m.group('not'), m.group('k'), m.group('v')))
             last = f
+
+        if last is not None:
+            op = ito.string[last.span(0)[1]:ito.stop]
+            if any(c != ')' for c in op.strip()):
+                raise ValueError(f'trailing, unbalanced operator found after filter \'{last.group(0)}\'')
+            operands.append(op)
 
         super().__init__(ito, filters, operands)
 
@@ -437,6 +487,9 @@ class EcfSubquery(EcfCombined):
                         f'invalid subquery operator \'{op}\' between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
             subqueries.append(self._func(pawpaw.Ito.from_match(sq, 0)[1:-1]))
             last = sq
+
+        operands.insert(0, '')
+        operands.append('')
             
         super().__init__(ito, subqueries, operands)
 

@@ -26,7 +26,7 @@
 
 * Ensure the PR description clearly describes the problem and solution. Include the relevant issue number if applicable.
 
-#### **Did you write an enhacement to PawPaw?**
+#### **Did you write an enhancement to PawPaw?**
 
 * If you have a suggestion that would make this better, please fork the repo and create a pull request.
 
@@ -52,7 +52,7 @@ Robert
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
-<!-- Palatte Info:
+<!-- Palette Info:
   "Oriental Beauty"
   533E30	D2AC70	E4D1AE	517D3D	90C246
   https://www.schemecolor.com/oriental-beauty-color-combination.php

@@ -7,7 +7,7 @@ class TestFindUnescaped(_TestIto):
     def test_find_unescaped_invalid(self):
         s = ' abc '
         for src in s, pawpaw.Ito(s, 1, -1):
-            for chars in [None, '', 'ab']:
+            for chars in [None, '']:
                 with self.subTest(src=src, chars=chars):
                     with self.assertRaises((TypeError, ValueError)):
                         next(pawpaw.find_unescaped(src, chars))
@@ -47,7 +47,7 @@ class TestFindUnescaped(_TestIto):
             for chars in 'a', 'ab', 'cb':
                 with self.subTest(src=string, chars=chars):
                     expected = [i for i, c in enumerate(string) if c in chars]
-                    actual = [*pawpaw.find_unescaped(s, chars)]
+                    actual = [*pawpaw.find_unescaped(string, chars)]
                     self.assertListEqual(expected, actual)
 
     def test_find_unescaped_simple(self):

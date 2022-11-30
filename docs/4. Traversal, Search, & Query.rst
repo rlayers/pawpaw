@@ -13,7 +13,7 @@ be used as a hierarchical data store.  Traversal down to child nodes is possible
 >>> s = 'ten 10 eleven 11 twelve 12 '
 >>> root = pawpaw.Ito(s)
 >>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
->>> itor = pawpaw.floparse.Extract(re)
+>>> itor = pawpaw.arborform.Extract(re)
 >>> root.children.add(*itor.traverse(pawpaw.Ito(s)))
 >>> last_child = root.children[-1]
 >>> str(last_child)
@@ -29,7 +29,7 @@ Manually traversing up and down an
 >>> s = 'ten 10 eleven 11 twelve 12 '
 >>> root = pawpaw.Ito(s)
 >>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
->>> itor = pawpaw.floparse.Extract(re)
+>>> itor = pawpaw.arborform.Extract(re)
 >>> root.children.add(*itor.traverse(pawpaw.Ito(s)))
 >>> last_child = root.children[-1]
 >>> str(last_child)
@@ -45,7 +45,7 @@ Manually traversing up and down an
 >>> s = 'ten 10 eleven 11 twelve 12 '
 >>> root = pawpaw.Ito(s)
 >>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
->>> itor = pawpaw.floparse.Extract(re)
+>>> itor = pawpaw.arborform.Extract(re)
 >>> root.children.add(*itor.traverse(pawpaw.Ito(s)))
 >>> last_child = root.children[-1]
 >>> str(last_child)
@@ -61,7 +61,7 @@ Manually traversing up and down an
 >>> s = 'ten 10 eleven 11 twelve 12 '
 >>> root = pawpaw.Ito(s)
 >>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
->>> itor = pawpaw.floparse.Extract(re)
+>>> itor = pawpaw.arborform.Extract(re)
 >>> root.children.add(*itor.traverse(pawpaw.Ito(s)))
 >>> last_child = root.children[-1]
 >>> str(last_child)
@@ -77,7 +77,7 @@ Manually traversing up and down an
 >>> s = 'ten 10 eleven 11 twelve 12 '
 >>> root = pawpaw.Ito(s)
 >>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
->>> itor = pawpaw.floparse.Extract(re)
+>>> itor = pawpaw.arborform.Extract(re)
 >>> root.children.add(*itor.traverse(pawpaw.Ito(s)))
 >>> last_child = root.children[-1]
 >>> str(last_child)
@@ -167,7 +167,7 @@ Axis Identifiers:
 +------------+----------------+------------------------------------------------------------------------+
 | ``***``    | leaves         | Descendants of the current node that have no descendants themselves    |
 +------------+----------------+------------------------------------------------------------------------+
-| ``<<<``    | preceeding     | Nodes that are *before* the current node, *includes* piror siblings    |
+| ``<<<``    | preceeding     | Nodes that are *before* the current node, *includes* prior siblings    |
 |            |                | and *excludes* ancestors & descendants                                 |
 +------------+----------------+------------------------------------------------------------------------+
 | ``<<``     | prior siblings | Nodes *before* the current node that have the same parent              |
@@ -178,7 +178,7 @@ Axis Identifiers:
 +------------+----------------+------------------------------------------------------------------------+
 | ``>>``     | next siblings  |  Nodes *after* the current node that have the same parent              |
 +------------+----------------+------------------------------------------------------------------------+
-| ``>>>``    | following      | Nodes that are *after* the current node, *includes* piror siblings     |
+| ``>>>``    | following      | Nodes that are *after* the current node, *includes* prior siblings     |
 |            |                | and *excludes* ancestors & descendants                                 |
 +------------+----------------+------------------------------------------------------------------------+
 
@@ -207,7 +207,7 @@ Multiple filter key-value pairs can be combined using the logical operators:
 +---------------------+------------------+------------------------------------------------------------------------+------------------+
 | Key                 | Alt Keys(s)      | Meaning                                                                | Example(s)       |
 +=====================+==================+========================================================================+==================+
-| ``desc``            | ``d``            | One or more ``str`` values used to match agains ``.desc`` of axis;     | ::               |
+| ``desc``            | ``d``            | One or more ``str`` values used to match againss ``.desc`` of axis;    | ::               |
 |                     |                  | values must be separated with commas                                   |                  |
 |                     |                  |                                                                        |  [d:number]      |
 |                     |                  |                                                                        |  [d:word,char]   |
@@ -231,7 +231,7 @@ Multiple filter key-value pairs can be combined using the logical operators:
 | ``predicate``       | ``p``            | Key for filter function used to match against axis                     | ::               |
 |                     |                  | A ``str`` used as a key to entry in dictionary of type:                |                  |
 |                     |                  |                                                                        |   [p:key1]       |
-|                     |                  |   typing.Dict[str, typing.Callabe[[int, Ito], bool]                    |   [p:key1,key2]  |
+|                     |                  |   typing.Dict[str, typing.Callable[[int, Ito], bool]                   |   [p:key1,key2]  |
 |                     |                  |                                                                        |                  |
 |                     |                  | The value retrieved from the ``dict`` use used as a filter against     |                  |
 |                     |                  | the axis                                                               |                  |

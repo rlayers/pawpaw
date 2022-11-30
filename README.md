@@ -26,7 +26,7 @@
 
 <img align="right" width="30%" height="30%" alt="Botanical Drawing: Asimina triloba: the American papaw" src="https://raw.githubusercontent.com/rlayers/pawpaw/master/images/pawpaw.png"> 
 
-Pawpaw is a high performance text segmentation framework that allows you you to quickly create parsers whose outputs are tree graphs.  The resulting trees can be serialized, traversed, and searched using a powerful structured query language.
+Pawpaw is a high performance text segmentation framework that allows you to quickly create parsers whose outputs are tree graphs.  The resulting trees can be serialized, traversed, and searched using a powerful structured query language.
 
 - Indexed str and substr representation
   - Efficient memory utilization
@@ -200,7 +200,7 @@ Robert L. Ayers:&nbsp;&nbsp;<a alt="e-mail" href="email@a.nov.guy@gmail.com">a.n
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 
-<!-- Palatte Info:
+<!-- Palette Info:
   "Oriental Beauty"
   533E30	D2AC70	E4D1AE	517D3D	90C246
   https://www.schemecolor.com/oriental-beauty-color-combination.php

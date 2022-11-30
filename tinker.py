@@ -15,10 +15,10 @@ v_tree = pepo.Tree()
 v_xml = pepo.Xml()
 v_json = pepo.Json()
 
-import pawpaw.visualization.ascii_box_drawing as ascii_box_drawing
+import pawpaw.visualization.ascii_box as box
 
-Boxer = box.Box(vertical_style=box.Style(count=box.Style.Count.PARALLEL))
-for line in boxer.from_text('The quick\nbrown fox\njumped over the lazy\ndogs.')
+boxer = box.Box(vertical_style=box.Style(count=box.Style.Count.PARALLEL))
+for line in boxer.from_text('The quick\nbrown fox\njumped over the lazy\ndogs.'):
     print(line)
 
 exit(0)
@@ -26,7 +26,7 @@ exit(0)
 chars = set()
 for orientation in box.Side.Orientation:
     print(f'Orientation: {orientation}')
-    for couunt in box.Style.Count:
+    for count in box.Style.Count:
         for weight in box.Style.Weight:
             style = box.Style(weight, count)
             try:
@@ -35,7 +35,7 @@ for orientation in box.Side.Orientation:
                 chars.add(char)
                 print(f'\t{char}')
             except:
-                phrases
+                pass
 
 print(f'Expected Side character count: {len(box.Side._characters):n}')
 print(f'Actual Side character count: {len(chars):n}')
@@ -57,7 +57,7 @@ for orientation in box.Side.Orientation:
                         chars.add(char)
                         print(f'\t{char}')
                     except:
-                        phrases
+                        pass
 
 print(f'Expected Corner character count: {len(box.Corner._characters):n}')
 print(f'Actual Corner character count: {len(chars):n}')

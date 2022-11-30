@@ -22,7 +22,7 @@ With just this one line of code, Pawpaw creates a fully hierarchical, tree\ [#]_
 
 >>> print(*root.find_all('**[d:digit]'), sep=', ')  # print all digits
 9, 1, 0, 1, 1, 1, 2, 1, 3
->>> print(*root.find_all('**[d:number]{</*[s:i]}'), sep=',')  # print numbers having leter 'i' in their names
+>>> print(*root.find_all('**[d:number]{</*[s:i]}'), sep=',')  # print numbers having letter 'i' in their names
 9, 13
 
 Dive a Bit Deeper: *Introducing* ``Ito``
@@ -64,7 +64,7 @@ Hello, world!
 >>> f'{i}'
 'Hello, world!'
 
-``Ito`` also supports custom format strings.  You can quickly develop custom outputs by combining and formating ``Ito``
+``Ito`` also supports custom format strings.  You can quickly develop custom outputs by combining and formatting ``Ito``
 attributes in various ways, and even perform truncations to facilitate visualizations:
 
 >>> j = Ito('Here is\n a super\nduper, very long string!')
@@ -134,7 +134,7 @@ Multiple static constructor methods are available to create and ``Ito`` from thi
 
 Descriptor
 ==========
-``Ito`` features a ``.desc`` property that can be used for tagging.  Values for ``.desc`` can be specified as the final constructor property, or post-instantition via a property of the same name::
+``Ito`` features a ``.desc`` property that can be used for tagging.  Values for ``.desc`` can be specified as the final constructor property, or post-instantiation via a property of the same name::
 
  >>> i = Ito('abc', desc='something useful')
  >>> i.desc
@@ -166,14 +166,14 @@ The ``.children`` collection is not an arbitrary data store.  Nodes added to it 
 Child nodes have their own ``.children` collections, and so on.  In other words, ``Ito`` and its descendants form are hierarchical and from a tree graph.  This quality  is used for many key features of ``pawpaw``", such as:
 
 * Storage and organization of substring data
-* Hiearchical segmentation processing
+* Hierarchical segmentation processing
 * Traversal of substring collections
 * Structured search and query
 
-Aborform
-========
+Arborform
+=========
 
-Pawpaw makes it easy to create to create trees.  As seen in the introduction above, a fully formed tree of arbitrary depth can be formed using a single regular expression.  Creating large regular expressions, however, can sometimes be unwieldy.  Pawpaw's ``.aborform`` namespace contains wide variety of tools to help you quicly build trees using pipelining.  For example, the same tree shown in the Introduction can be created in chained, piecemeal fashion as follows::
+Pawpaw makes it easy to create to create trees.  As seen in the introduction above, a fully formed tree of arbitrary depth can be formed using a single regular expression.  Creating large regular expressions, however, can sometimes be unwieldy.  Pawpaw's ``.arborform`` namespace contains wide variety of tools to help you quicly build trees using pipelining.  For example, the same tree shown in the Introduction can be created in chained, piecemeal fashion as follows::
 
 >>> s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
 >>>

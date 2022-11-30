@@ -7,10 +7,11 @@ from tests.util import _TestIto, IntIto
 
 
 class TestItoQuery(_TestIto):
-    def count_descdendants(cls, node: pawpaw.Types.C_ITO) -> int:
+    @classmethod
+    def count_descendants(cls, node: pawpaw.Types.C_ITO) -> int:
         rv = len(node.children)
         for child in node.children:
-            rv += cls.count_descdendants(child)
+            rv += cls.count_descendants(child)
         return rv
 
     def setUp(self) -> None:
@@ -22,7 +23,7 @@ class TestItoQuery(_TestIto):
         
         self.root = Ito.from_match(m)
         self.desc = 'root'
-        self.descendants_count = self.count_descdendants(self.root)
+        self.descendants_count = self.count_descendants(self.root)
 
         numbers = [i for i in self.root.walk_descendants() if i.desc == 'number']
         for n in numbers:

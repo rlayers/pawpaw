@@ -136,7 +136,7 @@ Clone versus ctor:
     * .children
     * *type* of Ito (i.e., derived)
 
-Prevervation of *type* is important if you have classes derived from ``Ito``:
+Preservaton of *type* is important if you have classes derived from ``Ito``:
 The typing is important for derived classes:
 
 >>> class DerivedIto(Ito):
@@ -221,7 +221,7 @@ An ``Ito`` is fully hierarchical through its ``.parent`` and ``.children`` prope
    Segment relevance is determined by both a) the location of ``Ito`` within its hierarchy and b) the .desc for the ``Ito``
    
 
-An ``Ito`` is not an arbitray data collection.  Rather, it defines segments wihtin text and can have ancestors, siblings, and decendants.  This results in several implicit assumptions:
+An ``Ito`` is not an arbitrary data collection.  Rather, it defines segments within text and can have ancestors, siblings, and descendants.  This results in several implicit assumptions:
 
 * Children are contained in their parent: The ``.span`` for a child ``Ito`` is contained within the ``.span`` of its ``.parent``
 * Non-overlapping siblings: An ``Ito`` does not overlap any other ``Ito`` objects that share the same ``.parent``

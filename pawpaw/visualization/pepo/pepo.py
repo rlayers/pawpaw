@@ -9,13 +9,13 @@ import typing
 from xml.sax.saxutils import escape as xml_escape
 
 import pawpaw
-from pawpaw.visualization import ascii_box_drawing
+from pawpaw.visualization import ascii_box
 
 
 Repr = typing.Callable[[str], str]
 
 
-class Pepo:
+class Pepo(abc.ABC):
     def __init__(self, indent: str = '    ', children: bool = True):
         self.linesep: str = os.linesep
         self.indent: str = indent
@@ -58,10 +58,10 @@ class Compact(_PepoFstr):
 
 
 class Tree(_PepoFstr):
-    HORZ = ascii_box_drawing.Lines.Horizontal.SINGLE_LIGHT
-    VERT = ascii_box_drawing.Lines.Vertical.SINGLE_LIGHT
+    HORZ = ascii_box.Side().HORIZONTAL
+    VERT = ascii_box.Side().VERTICAL
     TEE = '├'
-    ELBOW = ascii_box_drawing.Corners.SW.HZ_LIGHT_VT_LIGHT
+    ELBOW = ascii_box.Corner().SW
 
     def __init__(self, indent: str = '  ', children: bool = True):
         super().__init__(indent, children, '%span \'%desc\' : %substr!r:40…')

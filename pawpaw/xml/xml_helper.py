@@ -131,7 +131,7 @@ class XmlHelper:
     def get_local_name(cls, item: str | ET.Element) -> str:
         if isinstance(item, str):
             tag = item
-        elif isinstance(item, ET.element):
+        elif isinstance(item, ET.Element):
             tag = item.tag
         else:
             raise Errors.parameter_invalid_type('item', item, str, ET.Element)

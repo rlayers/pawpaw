@@ -21,7 +21,7 @@ i.children.add(*i.str_split())
 # for c in i.children:
 #     c.children.add(*c)
 
-for result in i.find_all('*[s:The] | ~[s:quick] & [s:brown]')
+for result in i.find_all('*([s:The] | ~[s:quick]) & [s:brown]'):
     print(v_compact.dumps(result))
 exit(0)
 

@@ -142,7 +142,7 @@ class Axis:
             
             # TODO : raise exception if self.or_self?
 
-        elif self.key == '-':
+        elif self.key == '-':  # TODO : choose better de-dup operator than '-'
             rv = list(dict.fromkeys(itos))
             if reverse:
                 rv.reverse()
@@ -321,7 +321,8 @@ class EcfCombined(Ecf):
         
         return rv
 
-    def _highest_precedence_diadic(self, ops: List[str]) -> typing.Tuple[int, typing.Callable]:
+    @classmethod
+    def _highest_precedence_diadic(cls, ops: typing.List[str]) -> typing.Tuple[int, typing.Callable]:
         for k, f in OPERATORS.items():
             if k == '~':
                 continue
@@ -334,7 +335,7 @@ class EcfCombined(Ecf):
         vals = [self._eval(self.operands[i], f, ec, values, predicates) for i, f in enumerate(self.filters)]
         ops = self.operands[1:-1]
 
-        while(len(vals) > 1):
+        while len(vals) > 1:
             i, op = self._highest_precedence_diadic(ops)
             combined = op(vals[i], vals[i + 1])
             vals[i:i + 2] = [combined]
@@ -618,6 +619,7 @@ class Query:
 def compile(path: pawpaw.Types.C_PATH) -> Query:
     return Query(path)
 
+
 def find_all(
         path: pawpaw.Types.C_PATH,
         ito: pawpaw.Types.C_ITO,
@@ -625,6 +627,7 @@ def find_all(
         predicates: pawpaw.Types.C_PREDICATES = None
 ) -> pawpaw.Types.C_IT_ITOS:
     yield from Query(path).find_all(ito, values, predicates)
+
 
 def find(
         path: pawpaw.Types.C_PATH,

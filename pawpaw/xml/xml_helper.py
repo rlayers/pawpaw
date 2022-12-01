@@ -150,3 +150,18 @@ class XmlHelper:
         
         i = tag.find('}')
         return tag[:i + 1] if i >= 0 else None
+
+    @classmethod
+    def reverse_find(cls, element: ET.Element, predicate: str) -> ET.Element | None:
+        if not isinstance(element, ET.Element):
+            raise Errors.parameter_invalid_type('element', element, ET.Element)
+
+        if not isinstance(predicate, str):
+            raise Errors.parameter_invalid_type('predicate', predicate, str)
+
+        while element is not None:
+            if element.find(f'.[{predicate}]'):
+                return element
+            element = element.find('..')
+
+        return element

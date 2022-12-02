@@ -289,6 +289,9 @@ class EcfCombined(Ecf):
                 if c not in OPERATORS.keys() and c not in ' ()':
                     raise ValueError(f'invalid character \'{c}\' found in operand \'{operand}\' in {ito}')
 
+        if sum(op.count('(') for op in operands) |= sum(op.count(')') for op in operands):
+            raise ValueError(f'unbalanced parentheses in {ito}')
+
         while True:
             last_open_i, last_open_op = next(((i, operands[i]) for i in range(len(operands) - 1, -1, -1) if '(' in operands[i]), (None, None))
 

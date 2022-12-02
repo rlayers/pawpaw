@@ -557,6 +557,26 @@ class TestItoQuery(_TestIto):
                     with self.assertRaises(ValueError):
                         node.find(path)
 
+    def test_ecf_unbalanced_parens(self):
+        for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
+            for path in f'.([d:{node.desc}] & [d:{node.desc}]', \
+                f'.[d:{node.desc}] (& [d:{node.desc}]', \
+                f'.[d:{node.desc}] & ([d:{node.desc}]', \
+                f'.[d:{node.desc}] & [d:{node.desc}](', \
+                f'.)[d:{node.desc}] & [d:{node.desc}]', \
+                f'.[d:{node.desc}]) & [d:{node.desc}]', \
+                f'.[d:{node.desc}] &) [d:{node.desc}]', \
+                f'.[d:{node.desc}] & [d:{node.desc}])', \
+                f'.(([d:{node.desc}] & [d:{node.desc}])', \
+                f'.([d:{node.desc}] & [d:{node.desc}]))':
+
+                with self.subTest(node=node_type, path=path):
+                    with self.assertRaises(ValueError) as cm:
+                        node.find(path)
+
+                    msg = str(cm.exception)
+                    self.assertTrue(all(w in msg for w in ['unbalanced', 'parentheses']))
+
     def test_ecf_logic_not(self):
         for node_type, node in {'root': self.root, 'middle-child': self.root.children[0], 'leaf': self.leaf}.items():
             for not_option in '', '~', '~~', '~~~':
@@ -571,6 +591,23 @@ class TestItoQuery(_TestIto):
                     expected = node if len(not_option) % 2 == 0 else None
                     actual = node.find(path)
                     self.assertEqual(expected, actual)
+
+    def test_ecf_logic_precedence(self):
+        s = ' The quick brown fox. '
+        root = Ito(s, 1, -1)
+        root.children.add(*root.str_split())
+
+        path_expected_counts = {
+            '*[s:The] | ~[s:quick] & [s:brown]': 2,
+            '*([s:The] | ~[s:quick]) & [s:brown]': 1,
+            '*[s:brown] | [s:The] & ~[s:brown]': 1,
+            '*([s:brown] | [s:The]) & ~[s:brown]': 2,
+        }
+
+        for path, expected in path_expected_counts.items():
+            with self.subTest(root=root, path=path):
+                actual = sum(1 for i in root.find_all(path))
+                self.assertEqual(expected, actual)
 
     # endregion
 

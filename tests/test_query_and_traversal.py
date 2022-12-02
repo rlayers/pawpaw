@@ -549,17 +549,13 @@ class TestItoQuery(_TestIto):
 
     def test_ecf_empty_parens(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
-            path = f'.([d:{node.desc}] & () & [d:{node.desc}])'
+            for path in f'.(()[d:{node.desc}] & [d:{node.desc}])', \
+                f'.([d:{node.desc}] & () & [d:{node.desc}])', \
+                f'.([d:{node.desc}] & [d:{node.desc}]())':
 
-            with self.subTest(node=node_type, path=path):
-                expected = node
-                actual = [*node.find(path)]
-                self.assertEqual(expected, actual)
-
-            path = f'.(() & [d:{node.desc}] & [d:{node.desc}])'
-            with self.subTest(node=node_type, path=path):
-                actual = node.find(path)
-                self.assertEqual(expected, actual)
+                with self.subTest(node=node_type, path=path):
+                    with self.assertRaises(ValueError):
+                        result = node.find(path)
 
     def test_ecf_logic_not(self):
         for node_type, node in {'root': self.root, 'middle-child': self.root.children[0], 'leaf': self.leaf}.items():

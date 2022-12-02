@@ -295,7 +295,10 @@ class EcfCombined(Ecf):
             if last_open_i is None:
                 break
 
-            operands[last_open_i], discard, last_open_op = last_open_op.rpartition('(')
+            operands[last_open_i], discard, tmp = last_open_op.rpartition('(')
+            if ')' in tmp:
+                raise ValueError('empty parentheses found in \'{last_open_op}\' for expression \'{ito}\'')
+            last_open_op = tmp
 
             next_closed_i, next_closed_op = next(((i, operands[i]) for i in range(last_open_i + 1, len(operands)) if ')' in operands[i]), (None, None))
             if next_closed_i is None:

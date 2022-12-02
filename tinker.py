@@ -30,7 +30,6 @@ exit(0)
 # precedence
 # parens: '*([s:The] | ~[s:quick]) & [s:brown]' versus '*[s:The] | (~[s:quick]) & [s:brown])'
 # ensure '~' in 'A & (~(B | C))' is considered against (B | C), not against B
-# handle '... () ...'
 # ensure '(A | (B) | C) gets treated as A | B | C, and not as invalid paren nesting
 
 import pawpaw.visualization.ascii_box as box

@@ -360,7 +360,7 @@ class TestItoQuery(_TestIto):
                         self.assertListEqual(expected, actual)
 
     # endregion
-    
+
     # region filter
     
     # region filter desc
@@ -481,7 +481,7 @@ class TestItoQuery(_TestIto):
     # endregion
     
     # region filter predicates
-    
+
     def test_filter_predicates(self):
         predicates = {'a': lambda ei: ei.ito.desc == 'digit', 'b': lambda ei: ei.ito.desc == 'char'}
         for node_type, node in {'root': self.root}.items():
@@ -530,6 +530,51 @@ class TestItoQuery(_TestIto):
                     actual = [*node.find_all(path)]
                     self.assertListEqual(expected, actual)
     
+    # endregion
+
+    # region logical operators and combinatorics (EcfFilter)
+
+    def test_ecf_single_parens(self):
+        for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
+                path = f'.[d:{node.desc}]'
+                with self.subTest(node=node_type, path=path):
+                    expected = node
+                    actual = node.find(path)
+                    self.assertEqual(expected, actual)
+
+                path = f'.([d:{node.desc}])'
+                with self.subTest(node=node_type, path=path):
+                    actual = node.find(path)
+                    self.assertEqual(expected, actual)
+
+    def test_ecf_empty_parens(self):
+        for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
+            path = f'.([d:{node.desc}] & () & [d:{node.desc}])'
+
+            with self.subTest(node=node_type, path=path):
+                expected = node
+                actual = [*node.find(path)]
+                self.assertEqual(expected, actual)
+
+            path = f'.(() & [d:{node.desc}] & [d:{node.desc}])'
+            with self.subTest(node=node_type, path=path):
+                actual = node.find(path)
+                self.assertEqual(expected, actual)
+
+    def test_ecf_logic_not(self):
+        for node_type, node in {'root': self.root, 'middle-child': self.root.children[0], 'leaf': self.leaf}.items():
+            for not_option in '', '~', '~~', '~~~':
+                path = f'.({not_option}[d:{node.desc}])'
+                with self.subTest(node=node_type, path=path):
+                    expected = node if len(not_option) % 2 == 0 else None
+                    actual = node.find(path)
+                    self.assertEqual(expected, actual)
+
+                path = f'.([d:{node.desc}] & {not_option}[d:{node.desc}])'
+                with self.subTest(node=node_type, path=path):
+                    expected = node if len(not_option) % 2 == 0 else None
+                    actual = node.find(path)
+                    self.assertEqual(expected, actual)
     # endregion
 
     # endregion

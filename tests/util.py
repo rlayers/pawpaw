@@ -81,9 +81,21 @@ class RandSubstrings(RandSpans):
 
 class XmlTestSample(typing.NamedTuple):
     source: str
+    
     default_namespace: None | str
+    
+    # prefix_map of root node
     root_prefix_map: typing.Dict[str, str]
+    
+    # combined prefix_map of all non-root nodes
     descendants_composite_prefix_map: typing.Dict[str, str]
+    
+    # path to arbitrary descendant that has non-emtpy .text
+    text_containing_descendant_path: str  
+    
+    # path to arbitrary descendant that can be reversed searched to find ancestor that matches predicate
+    descendant_path_with_ancestor_predicate: typing.Tuple[str, str]
+
     xml: str
 
 
@@ -93,6 +105,8 @@ XML_TEST_SAMPLES: typing.List[XmlTestSample] = [
         default_namespace=None,
         root_prefix_map={},
         descendants_composite_prefix_map={},
+        text_containing_descendant_path='.//year',
+        descendant_path_with_ancestor_predicate=('.//gdppc', 'rank'),
         xml=
 """<?xml version="1.0"?>
 <data>
@@ -124,6 +138,8 @@ XML_TEST_SAMPLES: typing.List[XmlTestSample] = [
         default_namespace='http://people.example.com',
         root_prefix_map={'fictional': 'http://characters.example.com'},
         descendants_composite_prefix_map={},
+        text_containing_descendant_path='.//{http://people.example.com}name',
+        descendant_path_with_ancestor_predicate=('.//{http://characters.example.com}character', '{http://people.example.com}actor'),
         xml=
 """<?xml version="1.0"?>
 <actors xmlns:fictional="http://characters.example.com"
@@ -147,6 +163,8 @@ XML_TEST_SAMPLES: typing.List[XmlTestSample] = [
         default_namespace=None,
         root_prefix_map={'xdc': 'http://www.xml.com/books', 'h': 'http://www.w3.org/HTML/1998/html4'},
         descendants_composite_prefix_map={},
+        text_containing_descendant_path='.//{http://www.xml.com/books}author',
+        descendant_path_with_ancestor_predicate=('.//{http://www.xml.com/books}date', '@align'),
         xml='''
 <h:html xmlns:xdc="http://www.xml.com/books"
         xmlns:h="http://www.w3.org/HTML/1998/html4">
@@ -175,6 +193,8 @@ XML_TEST_SAMPLES: typing.List[XmlTestSample] = [
         default_namespace=None,
         root_prefix_map={},
         descendants_composite_prefix_map={'h': 'http://www.w3.org/TR/html4/', 'f': 'https://www.w3schools.com/furniture'},
+        text_containing_descendant_path='.//{http://www.w3.org/TR/html4/}td',
+        descendant_path_with_ancestor_predicate=('.//{https://www.w3schools.com/furniture}length', '{https://www.w3schools.com/furniture}name'),
         xml='''
 <root>
 

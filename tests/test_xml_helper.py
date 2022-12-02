@@ -71,4 +71,27 @@ class TestXmlHelper(_TestIto):
                     self.assertEqual(sample.default_namespace, str(XmlHelper.get_default_namespace(root)))
 
     def test_get_element_text_if_found(self):
-        pass
+        for sample in XML_TEST_SAMPLES:
+            root = ET.fromstring(sample.xml, XmlParser())
+            path = sample.text_containing_descendant_path
+
+            with self.subTest(sample=root, path=path):
+                expected = root.find(path).text
+                actual = XmlHelper.get_element_text_if_found(root, path)
+                self.assertEqual(expected, actual)
+
+            invalid_path = path + '/.[tag=""]'  # ensures path returns nothing
+            with self.subTest(sample=root, path=invalid_path):
+                actual = XmlHelper.get_element_text_if_found(root, invalid_path)
+                self.assertIsNone(actual)
+
+    def test_reverse_find(self):
+        for sample in XML_TEST_SAMPLES:
+            root = ET.fromstring(sample.xml, XmlParser())
+            desc_path, anc_pred = sample.descendant_path_ancestor_predicate
+            with self.subTest(sample=root, descendant_path=desc_path, ancestor_predicate=anc_pred):
+                desc = root.find(desc_path)
+                self.assertIsNotNone(desc)
+
+                actual = XmlHelper.reverse_find(desc, anc_pred)
+                self.assertIsNotNone(actual)

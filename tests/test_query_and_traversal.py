@@ -555,7 +555,7 @@ class TestItoQuery(_TestIto):
 
                 with self.subTest(node=node_type, path=path):
                     with self.assertRaises(ValueError):
-                        result = node.find(path)
+                        node.find(path)
 
     def test_ecf_logic_not(self):
         for node_type, node in {'root': self.root, 'middle-child': self.root.children[0], 'leaf': self.leaf}.items():
@@ -571,6 +571,7 @@ class TestItoQuery(_TestIto):
                     expected = node if len(not_option) % 2 == 0 else None
                     actual = node.find(path)
                     self.assertEqual(expected, actual)
+
     # endregion
 
     # endregion

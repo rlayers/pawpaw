@@ -68,6 +68,11 @@ class EtName(typing.NamedTuple):
         else:
             return self.name.string[start:stop]
 
+class XmlErrors:
+    @classmethod
+    def element_lacks_ito_attr(cls, name: str, value: typing.Any) -> ValueError:
+        return ValueError(f'parameter \'{name}\' missing attr \'.ito\' - did you forget to use pawpaw.XmlParser?')
+
 class XmlHelper:
     @classmethod
     def get_qualified_name(cls, ito: Types.C_ITO) -> QualifiedName:
@@ -90,7 +95,7 @@ class XmlHelper:
         if not isinstance(element, ET.Element):
             raise Errors.parameter_invalid_type('element', element, ET.Element)
         elif not hasattr(element, 'ito'):
-            raise ValueError(f'parameter \'{element}\' missing attr \'.ito\' - did you forget to use pawpaw.XmlParser?')
+            raise XmlErrors.element_lacks_ito_attr('ito', ito)
         
         return {
             cls.get_qualified_name(xmlns): xmlns.find(f'*[d:{ito_descriptors.VALUE}]')
@@ -153,8 +158,29 @@ class XmlHelper:
 
     @classmethod
     def reverse_find(cls, element: ET.Element, predicate: str) -> ET.Element | None:
+        """ElementTree support for XPATH is limited, and the '..' operator will
+        not traverse upwards beyond the node you being a .find or .find_all with.
+        This method applies an XPATH predicate to the current node, and returns if
+        it passes.  If it fails, it uses the .ito to traverse UP to the parent,
+        and repeates the process.
+
+        Args:
+            element: _description_
+            predicate: _description_
+
+        Raises:
+            Errors.parameter_invalid_type: _description_
+            XmlErrors.element_lacks_ito_attr: _description_
+            Errors.parameter_invalid_type: _description_
+
+        Returns:
+            Matching element or None
+        """
+        
         if not isinstance(element, ET.Element):
             raise Errors.parameter_invalid_type('element', element, ET.Element)
+        elif not hasattr(element, 'ito'):
+            raise XmlErrors.element_lacks_ito_attr('ito', ito)
 
         if not isinstance(predicate, str):
             raise Errors.parameter_invalid_type('predicate', predicate, str)
@@ -162,6 +188,10 @@ class XmlHelper:
         while element is not None:
             if element.find(f'.[{predicate}]'):
                 return element
-            element = element.find('..')
+
+            if (parent := element.ito.find(f'...[d:{ito_descriptors.ELEMENT}]')) is None:
+                return None
+            
+            element = parent.value()
 
         return element

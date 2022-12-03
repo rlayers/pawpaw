@@ -461,8 +461,7 @@ class EcfFilter(EcfCombined):
         if last is not None:
             op = ito.string[last.span(0)[1]:ito.stop]
             if '(' in op:
-                raise QueryErrors.unbalanced_parens(ito)
-                raise ValueError(f'trailing, unbalanced operator found after filter \'{last.group(0)}\'')
+                raise QueryErrors.unbalanced_parens(ito, str(last.group(0)))
             operands.append(op)
 
         super().__init__(ito, filters, operands)

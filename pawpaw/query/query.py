@@ -28,6 +28,20 @@ FILTER_KEYS = {
 MUST_ESCAPE_CHARS = ('\\', '[', ']', '/', ',', '{', '}',)
 
 
+class QueryErrors:
+    @classmethod
+    def unbalanced_parens(
+            cls,
+            expression: pawpaw.Types.C_ITO | str,
+            sub_region: pawpaw.Types.C_ITO | str | int = None) -> ValueError:
+        msg = f'unbalanced parentheses in \'{expression}\''
+        if isinstance(sub_region, int):
+            msg += f' at location {sub_region}'
+        elif isinstance(sub_region, (pawpaw.Ito, str)):
+            msg += f' in sub-region \'sub_region\''
+        raise ValueError(msg)
+
+
 def escape(value: str) -> str:
     rv = value.replace('\\', '\\\\')  # Must do backslash before other chars
     for c in filter(lambda e: e != '\\',  MUST_ESCAPE_CHARS):
@@ -290,7 +304,7 @@ class EcfCombined(Ecf):
                     raise ValueError(f'invalid character \'{c}\' found in operand \'{operand}\' in {ito}')
 
         if sum(op.count('(') for op in operands) != sum(op.count(')') for op in operands):
-            raise ValueError(f'unbalanced parentheses in {ito}')
+            raise QueryErrors.unbalanced_parens(ito)
 
         while True:
             last_open_i, last_open_op = next(((i, operands[i]) for i in range(len(operands) - 1, -1, -1) if '(' in operands[i]), (None, None))
@@ -305,7 +319,7 @@ class EcfCombined(Ecf):
 
             next_closed_i, next_closed_op = next(((i, operands[i]) for i in range(last_open_i + 1, len(operands)) if ')' in operands[i]), (None, None))
             if next_closed_i is None:
-                raise ValueError(f'unbalanced opening parentheses found in {ito} at location {next_closed_i - ito.start}')
+                raise QueryErrors.unbalanced_parens(ito, next_closed_i - ito.start)
             next_closed_op, discard, operands[next_closed_i] = next_closed_op.partition(')')
 
             if next_closed_i - last_open_i == 1:  # don't need to combine a single filter, so just add any an post-parentheses ops back in
@@ -446,7 +460,8 @@ class EcfFilter(EcfCombined):
 
         if last is not None:
             op = ito.string[last.span(0)[1]:ito.stop]
-            if any(c != ')' for c in op.strip()):
+            if '(' in op:
+                raise QueryErrors.unbalanced_parens(ito)
                 raise ValueError(f'trailing, unbalanced operator found after filter \'{last.group(0)}\'')
             operands.append(op)
 

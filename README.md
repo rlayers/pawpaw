@@ -51,8 +51,8 @@ Pawpaw is a high performance text segmentation framework that allows you to quic
   - Search XML using both XPATH and the included, structured query language
 - Efficient pickling and JSON persistance
   - Security option enables persistance of index-only data, with refrence strings re-injected during de-serialziation 
-- Stable
-  - Over 2,500 unit tests and counting!
+- Stable & Defect Free
+  - Over 3,000 unit tests and counting!
 
 <div align="center">
   <a href="https://github.com/rlayers/pawpaw/tree/master/docs">Explore the docs</a>

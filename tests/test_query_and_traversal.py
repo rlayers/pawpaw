@@ -6,7 +6,7 @@ import pawpaw
 from tests.util import _TestIto, IntIto
 
 
-class TestItoQuery(_TestIto):
+class TestItoTraversal(_TestIto):
     @classmethod
     def count_descendants(cls, node: pawpaw.Types.C_ITO) -> int:
         rv = len(node.children)
@@ -20,7 +20,7 @@ class TestItoQuery(_TestIto):
         self.src = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')
         m = re.fullmatch(self.src)
-        
+
         self.root = Ito.from_match(m)
         self.desc = 'root'
         self.descendants_count = self.count_descendants(self.root)
@@ -32,14 +32,13 @@ class TestItoQuery(_TestIto):
             p = n.parent
             i = p.children.index(n)
             p.children[i] = repl
-        
+
         self.leaves = [d for d in self.root.walk_descendants() if len(d.children) == 0]
-        
+
         self.leaf = next(i for i in self.leaves if str(i.parent) == 'eleven' and str(i) == 'v')
-                                                                        
+
         self.descs = ['root', 'phrase', 'word', 'char']
 
-    # region TRAVERSAL
 
     def test_walk_descendants(self):
 
@@ -63,10 +62,8 @@ class TestItoQuery(_TestIto):
                     _reversed.reverse()
                     self.assertListEqual(forward, _reversed)
 
-    # endregion
 
-    # region QUERY
-
+class TestItoQuery(TestItoTraversal):
     # region axis
 
     def test_axis_root(self):
@@ -557,6 +554,23 @@ class TestItoQuery(_TestIto):
                     with self.assertRaises(ValueError):
                         node.find(path)
 
+    def test_ecf_not_outside_parens(self):
+        s = ' The quick brown fox '
+        root = Ito(s, 1, -1)
+        root.children.add(*root.str_split())
+
+        path_expected_words = {
+            '*[s:The] | [s:quick] | [s:brown]': ['The', 'quick', 'brown'],
+            '*([s:The] | [s:quick] | [s:brown])': ['The', 'quick', 'brown'],
+            '*~([s:The] | [s:quick] | [s:brown])': ['fox'],
+            '*[s:The] | ~([s:quick] | [s:brown])': ['The', 'fox'],
+        }
+
+        for path, expected in path_expected_words.items():
+            with self.subTest(root=root, path=path):
+                actual = [str(i) for i in root.find_all(path)]
+                self.assertListEqual(expected, actual)
+
     def test_ecf_unbalanced_parens(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for path in f'.([d:{node.desc}] & [d:{node.desc}]', \
@@ -568,13 +582,15 @@ class TestItoQuery(_TestIto):
                 f'.[d:{node.desc}] &) [d:{node.desc}]', \
                 f'.[d:{node.desc}] & [d:{node.desc}])', \
                 f'.(([d:{node.desc}] & [d:{node.desc}])', \
-                f'.([d:{node.desc}] & [d:{node.desc}]))':
+                f'.([d:{node.desc}] & [d:{node.desc}]))', \
+                f'.)[d:{node.desc}] & [d:{node.desc}](':
 
                 with self.subTest(node=node_type, path=path):
                     with self.assertRaises(ValueError) as cm:
                         node.find(path)
 
                     msg = str(cm.exception)
+                    print(msg)
                     self.assertTrue(all(w in msg for w in ['unbalanced', 'parentheses']))
 
     def test_ecf_logic_not(self):
@@ -593,22 +609,20 @@ class TestItoQuery(_TestIto):
                     self.assertEqual(expected, actual)
 
     def test_ecf_logic_precedence(self):
-        s = ' The quick brown fox. '
+        s = ' The quick brown fox '
         root = Ito(s, 1, -1)
         root.children.add(*root.str_split())
 
-        path_expected_counts = {
-            '*[s:The] | ~[s:quick] & [s:brown]': 2,
-            '*([s:The] | ~[s:quick]) & [s:brown]': 1,
-            '*[s:The,quick] | [s:fox] & ~[s:brown]': 2,
-            '*([s:The,quick] | [s:fox]) & ~[s:brown]': 3,
+        path_expected_words = {
+            '*[s:The] | ~[s:quick] & [s:brown]': ['The', 'brown'],
+            '*([s:The] | ~[s:quick]) & [s:brown]': ['brown'],
+            '*[s:The] & ~[s:The] | ~[s:quick]': ['The', 'brown', 'fox'],
+            '*[s:The] & (~[s:The] | ~[s:quick])': ['The'],
         }
 
-        for path, expected in path_expected_counts.items():
+        for path, expected in path_expected_words.items():
             with self.subTest(root=root, path=path):
-                actual = sum(1 for i in root.find_all(path))
-                self.assertEqual(expected, actual)
-
-    # endregion
+                actual = [str(i) for i in root.find_all(path)]
+                self.assertListEqual(expected, actual)
 
     # endregion

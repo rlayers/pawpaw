@@ -12,6 +12,7 @@ from pawpaw.arborform import Extract
 from pawpaw.xml import ito_descriptors
 import pawpaw
 
+
 # See 4 Qualified Names in https://www.w3.org/TR/xml-names/
 class QualifiedName(typing.NamedTuple):
     prefix: Types.C_ITO | None
@@ -37,6 +38,7 @@ class QualifiedName(typing.NamedTuple):
             return self.local_part.string
         else:
             return self.local_part.string[start:stop]
+
 
 # # Deals with ElementTree.Element tag and attrib keys
 class EtName(typing.NamedTuple):
@@ -68,10 +70,12 @@ class EtName(typing.NamedTuple):
         else:
             return self.name.string[start:stop]
 
+
 class XmlErrors:
     @classmethod
     def element_lacks_ito_attr(cls, name: str, value: typing.Any) -> ValueError:
         return ValueError(f'parameter \'{name}\' missing attr \'.ito\' - did you forget to use pawpaw.XmlParser?')
+
 
 class XmlHelper:
     @classmethod

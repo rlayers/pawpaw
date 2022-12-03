@@ -600,8 +600,8 @@ class TestItoQuery(_TestIto):
         path_expected_counts = {
             '*[s:The] | ~[s:quick] & [s:brown]': 2,
             '*([s:The] | ~[s:quick]) & [s:brown]': 1,
-            '*[s:brown] | [s:The] & ~[s:brown]': 1,
-            '*([s:brown] | [s:The]) & ~[s:brown]': 2,
+            '*[s:The,quick] | [s:fox] & ~[s:brown]': 2,
+            '*([s:The,quick] | [s:fox]) & ~[s:brown]': 3,
         }
 
         for path, expected in path_expected_counts.items():

@@ -523,12 +523,6 @@ class Phrase:
         self.axis = Axis(phrase)
         
         unesc_curl = next(pawpaw.find_unescaped(phrase, '{', start=len(self.axis.ito)), phrase.stop)
-        
-        filt_ito = phrase[len(self.axis.ito):unesc_curl].str_strip()
-        if len(filt_ito) == 0:
-            self.filter = EcfTautology()
-        else:
-            self.filter = EcfFilter(filt_ito)
 
         subq_ito = phrase[unesc_curl:].str_strip()
         if len(subq_ito) == 0:
@@ -538,6 +532,12 @@ class Phrase:
                 unesc_curl = i
             subq_ito = phrase[unesc_curl:].str_strip()
             self.subquery = EcfSubquery(subq_ito)
+
+        filt_ito = phrase[len(self.axis.ito):unesc_curl].str_strip()
+        if len(filt_ito) == 0:
+            self.filter = EcfTautology()
+        else:
+            self.filter = EcfFilter(filt_ito)
 
     def combined(self, ec: pawpaw.Types.C_EITO, values: pawpaw.Types.C_VALUES, predicates: pawpaw.Types.C_PREDICATES) -> bool:
         return self.filter.func(ec, values, predicates) and self.subquery.func(ec, values, predicates)

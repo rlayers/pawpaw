@@ -550,16 +550,20 @@ class TestItoQuery(TestItoTraversal):
 
     # region logical operators and combinatorics (EcfFilter)
 
-    def test_ecf_single_parens(self):
+    def test_ecf_simple_parens(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
-                path = f'.[d:{node.desc}]'
+            for count in range(0, 4):
+                path = f'.{"(" * count}[d:{node.desc}]{")" * count}'
                 with self.subTest(node=node_type, path=path):
                     expected = node
                     actual = node.find(path)
                     self.assertEqual(expected, actual)
 
-                path = f'.([d:{node.desc}])'
+        for node_type, node in {'word': next(d for d in self.root.walk_descendants() if d.desc == 'word')}.items():
+            for count in range(0, 4):
+                path = f'.{"(" * count}' + '{**[d:char]&[s:n]}' + ')' * count
                 with self.subTest(node=node_type, path=path):
+                    expected = node
                     actual = node.find(path)
                     self.assertEqual(expected, actual)
 

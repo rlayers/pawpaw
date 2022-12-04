@@ -520,12 +520,18 @@ class TestItoQuery(TestItoTraversal):
     def test_subquery_scalar(self):
         for node_type, node in {'root': self.root}.items():
             for order in '', '+', '-':
-                path = order + '**' + '[d:word]{*[d:char]&[s:e]}'  # words with 'e'
-                with self.subTest(node=node_type, order=order, path=path):
-                    step = -1 if order == '-' else 1
-                    expected = [*dict.fromkeys(leaf.parent for leaf in self.leaves[::step] if str(leaf) == 'e').keys()]
-                    actual = [*node.find_all(path)]
-                    self.assertListEqual(expected, actual)
+                for not_ in '', '~', '~~':
+                    path = order + '**' + '[d:word]' + not_ + '{*[d:char]&[s:e]}'  # words with 'e'
+                    with self.subTest(node=node_type, order=order, path=path):
+                        step = -1 if order == '-' else 1
+                        if not_.count('~') % 2 == 0:
+                            expected = [d for d in node.walk_descendants() if d.desc == 'word' and any('e' in str(dd) for dd in d.children)]
+                        else:
+                            expected = [d for d in node.walk_descendants() if d.desc == 'word' and not any('e' in str(dd) for dd in d.children)]
+                        if order == '-':
+                            expected.reverse()
+                        actual = [*node.find_all(path)]
+                        self.assertListEqual(expected, actual)
 
     def test_subquery_multiple(self):
         for node_type, node in {'root': self.root}.items():

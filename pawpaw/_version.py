@@ -24,7 +24,7 @@ class _Version(typing.NamedTuple):
         return f'{self.major}.{self.minor}.{self.micro}{self.pre_release}'
 
     @classmethod
-    def _from(cls, version: str):
+    def from_(cls, version: str):
         parts = version.split('.')
         if len(parts) == 4:
             pr = parts[-1]  # must have len > 2
@@ -37,4 +37,4 @@ class _Version(typing.NamedTuple):
         return cls(*mmm, pre_release)
 
 
-Version = _Version._from(__version__)
+Version = _Version.from_(__version__)

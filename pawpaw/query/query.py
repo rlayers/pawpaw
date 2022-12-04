@@ -515,7 +515,8 @@ class EcfSubquery(EcfCombined):
             operands.append(op)
 
         super().__init__(ito, subqueries, operands)
-        
+
+
 class Phrase:
     def __init__(self, phrase: pawpaw.Types.C_ITO):
         self.ito = phrase
@@ -529,11 +530,14 @@ class Phrase:
         else:
             self.filter = EcfFilter(filt_ito)
 
-        sq_ito = phrase[unesc_curl:].str_strip()
-        if len(sq_ito) == 0:
+        subq_ito = phrase[unesc_curl:].str_strip()
+        if len(subq_ito) == 0:
             self.subquery = EcfTautology()
         else:
-            self.subquery = EcfSubquery(sq_ito)
+            while str(self.ito[i := unesc_curl - 1]) in '~ (':
+                unesc_curl = i
+            subq_ito = phrase[unesc_curl:].str_strip()
+            self.subquery = EcfSubquery(subq_ito)
 
     def combined(self, ec: pawpaw.Types.C_EITO, values: pawpaw.Types.C_VALUES, predicates: pawpaw.Types.C_PREDICATES) -> bool:
         return self.filter.func(ec, values, predicates) and self.subquery.func(ec, values, predicates)

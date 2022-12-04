@@ -797,8 +797,8 @@ class Ito:
         """Combines Itos
 
         Args:
-            *itos: an arbitrarily ordered sequence of Itos that have identical values
-              for .string; overlaps are fine
+            itos: an iterator to an arbitrarily ordered sequence of Itos that have
+                identical values for .string; overlaps are fine
             desc: a descriptor for the resulting Ito
 
         Returns:

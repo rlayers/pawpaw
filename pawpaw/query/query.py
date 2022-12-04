@@ -288,7 +288,7 @@ class EcfCombined(Ecf):
             self,
             ito: pawpaw.Types.C_ITO,
             filters: typing.Sequence[pawpaw.Types.F_EITO_V_P_2_B],
-            operands: typing.Sequence[str]
+            operands: typing.Sequence[pawpaw.Types.C_ITO]
     ):
         self.ito = ito
         
@@ -296,34 +296,34 @@ class EcfCombined(Ecf):
             raise ValueError(f'empty filters list')
 
         if len(operands) != len(filters) + 1:
-            raise ValueError(f'count of operands ({len(operands)}) must be one more than count of filters ({len(filters)}')
+            raise ValueError(f'count of operands ({len(operands)}) must be one more than count of filters ({len(filters)})')
 
         for operand in operands:
-            for c in operand:
+            for c in str(operand):
                 if c not in OPERATORS.keys() and c not in ' ()':
                     raise ValueError(f'invalid character \'{c}\' found in operand \'{operand}\' in {ito}')
 
-        if sum(op.count('(') for op in operands) != sum(op.count(')') for op in operands):
+        if sum(op.str_count('(') for op in operands) != sum(op.str_count(')') for op in operands):
             raise QueryErrors.unbalanced_parens(ito)
 
         while True:
-            last_open_i, last_open_op = next(((i, operands[i]) for i in range(len(operands) - 1, -1, -1) if '(' in operands[i]), (None, None))
+            last_open_i, last_open_op = next(((i, operands[i]) for i in range(len(operands) - 1, -1, -1) if operands[i].str_find('(') > -1), (None, None))
 
             if last_open_i is None:
                 break
 
-            operands[last_open_i], discard, tmp = last_open_op.rpartition('(')
-            if ')' in tmp:
+            operands[last_open_i], discard, tmp = last_open_op.str_rpartition('(')
+            if tmp.str_find(')') > -1:
                 raise ValueError('empty parentheses found in \'{last_open_op}\' for expression \'{ito}\'')
             last_open_op = tmp
 
-            next_closed_i, next_closed_op = next(((i, operands[i]) for i in range(last_open_i + 1, len(operands)) if ')' in operands[i]), (None, None))
+            next_closed_i, next_closed_op = next(((i, operands[i]) for i in range(last_open_i + 1, len(operands)) if operands[i].str_find(')') > -1), (None, None))
             if next_closed_i is None:
-                raise QueryErrors.unbalanced_parens(ito, next_closed_i - ito.start)
-            next_closed_op, discard, operands[next_closed_i] = next_closed_op.partition(')')
+                raise QueryErrors.unbalanced_parens(ito)
+            next_closed_op, discard, operands[next_closed_i] = next_closed_op.str_partition(')')
 
-            if next_closed_i - last_open_i == 1:  # don't need to combine a single filter, so just add any an post-parentheses ops back in
-                operands[last_open_i] += last_open_op
+            if next_closed_i - last_open_i == 1:  # don't need to combine a single filter, so just add any post-parentheses ops back in
+                operands[last_open_i] = last_open_op
             else:
                 subf = EcfCombined(ito, filters[last_open_i:next_closed_i], [last_open_op, *operands[last_open_i + 1:next_closed_i], next_closed_op]).func
                 filters[last_open_i:next_closed_i] = [subf]
@@ -333,22 +333,22 @@ class EcfCombined(Ecf):
         self.operands = operands
 
     @classmethod
-    def _eval(self, operand: str, filter_: pawpaw.Types.F_EITO_V_P_2_B, ec, values, predicates):
+    def _eval(self, operand: pawpaw.Types.C_ITO, filter_: pawpaw.Types.F_EITO_V_P_2_B, ec, values, predicates):
         rv = filter_(ec, values, predicates)
 
-        if operand.count('~') & 1 == 1:  # bitwise op to determine if n is odd
+        if operand.str_count('~') & 1 == 1:  # bitwise op to determine if n is odd
             rv = not rv
         
         return rv
 
     @classmethod
-    def _highest_precedence_diadic(cls, ops: typing.List[str]) -> typing.Tuple[int, typing.Callable]:
+    def _highest_precedence_diadic(cls, ops: typing.List[pawpaw.Types.C_ITO]) -> typing.Tuple[int, typing.Callable]:
         for k, f in OPERATORS.items():
             if k == '~':
                 continue
 
             for i, op in enumerate(ops):
-                if k in op:
+                if k in str(op):
                     return i, f
 
     def func(self, ec: pawpaw.Types.C_EITO, values: pawpaw.Types.C_VALUES, predicates: pawpaw.Types.C_PREDICATES) -> bool:
@@ -438,7 +438,7 @@ class EcfFilter(EcfCombined):
 
     def __init__(self, ito: pawpaw.Types.C_ITO):
         filters: typing.List[pawpaw.Types.F_EITO_V_P_2_B] = []
-        operands: typing.List[str] = []
+        operands: typing.List[pawpaw.Types.F_EITO_V_P_2_B] = []
 
         if len([*ito.regex_finditer(self._re_open_bracket)]) != len([*ito.regex_finditer(self._re_close_bracket)]):
             raise ValueError(f'unbalanced brackets in filter(s) \'{ito}\'')
@@ -447,11 +447,12 @@ class EcfFilter(EcfCombined):
         for i, f in enumerate(ito.regex_finditer(self._re_balanced_splitter)):
             start = ito.start if last is None else last.span(0)[1]
             stop = f.span(0)[0]
-            op = ito.string[start:stop].strip()
+
+            op = pawpaw.Ito(ito.string, start, stop).str_strip()
             if i > 0 and len(op) == 0:
                 raise ValueError(f'missing operator between filters \'{last.group(0)}\' and \'{f.group(0)}\'')
-
             operands.append(op)
+
             m = self._re.fullmatch(f.group(0))
             if m is None:
                 raise ValueError(f'invalid filter \'{f.group(0)}\'')
@@ -459,8 +460,8 @@ class EcfFilter(EcfCombined):
             last = f
 
         if last is not None:
-            op = ito.string[last.span(0)[1]:ito.stop]
-            if '(' in op:
+            op = pawpaw.Ito(ito.string, last.span(0)[1], ito.stop)
+            if '(' in str(op):
                 raise QueryErrors.unbalanced_parens(ito, str(last.group(0)))
             operands.append(op)
 
@@ -484,36 +485,36 @@ class EcfSubquery(EcfCombined):
     
     def __init__(self, ito: pawpaw.Types.C_ITO):
         subqueries: typing.List[pawpaw.Types.F_EITO_V_P_2_B] = []
-        operands: typing.List[str] = []
+        operands: typing.List[pawpaw.Types.C_ITO] = []
 
         m = ito.regex_search(self._re)
         if m is None:
             raise ValueError(f'Invalid parameter \'subquery\' value: {ito}')
 
-        s_q_g = m.group('sq')
-        if len([*self._re_open_cur.finditer(s_q_g)]) != len([*self._re_close_cur.finditer(s_q_g)]):
-            raise ValueError(f'unbalanced curly braces in sub-query(ies) \'{s_q_g}\'')
-        sqs = [*self._re_balanced_splitter.finditer(s_q_g)]
-        last = None
-        for sq in sqs:
-            if last is not None:
-                start = last.span(0)[1]
-                stop = sq.span(0)[0]
-                op = s_q_g[start:stop].strip()
-                if len(op) == 0:
-                    raise ValueError(
-                        f'missing operator between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
-                elif op not in OPERATORS.keys():
-                    raise ValueError(
-                        f'invalid subquery operator \'{op}\' between subqueries \'{last.group(0)}\' and \'{sq.group(0)}\'')
-            subqueries.append(self._func(pawpaw.Ito.from_match(sq, 0)[1:-1]))
+        sqm = pawpaw.Ito.from_match_group(m, 'sq')
+        if sum(1 for i in sqm.regex_finditer(self._re_open_cur)) != sum(1 for i in sqm.regex_finditer(self._re_close_cur)):
+            raise ValueError(f'unbalanced curly braces in sub-query(ies) \'{sqm}\'')
+
+        last: regex.Match = None
+        for i, sq in enumerate(sqm.regex_finditer(self._re_balanced_splitter)):
+            start = ito.start if last is None else last.span(0)[1]
+            stop = sq.span(0)[0]
+
+            op = pawpaw.Ito(ito.string, start, stop).str_strip()
+            if i > 0 and len(op) == 0:
+                raise ValueError(f'missing operator between subqueries \'{last.group(0)}\' and \'{f.group(0)}\'')
+            operands.append(op)
+
+            subqueries.append(self._func(pawpaw.Ito.from_match(sq)[1:-1]))
             last = sq
 
-        operands.insert(0, '')
-        operands.append('')
-            
-        super().__init__(ito, subqueries, operands)
+        if last is not None:
+            op = pawpaw.Ito(ito.string, last.span(0)[1], ito.stop)
+            if '(' in str(op):
+                raise QueryErrors.unbalanced_parens(ito, str(last.group(0)))
+            operands.append(op)
 
+        super().__init__(ito, subqueries, operands)
         
 class Phrase:
     def __init__(self, phrase: pawpaw.Types.C_ITO):

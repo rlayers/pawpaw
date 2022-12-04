@@ -526,6 +526,19 @@ class TestItoQuery(TestItoTraversal):
                     expected = [*dict.fromkeys(leaf.parent for leaf in self.leaves[::step] if str(leaf) == 'e').keys()]
                     actual = [*node.find_all(path)]
                     self.assertListEqual(expected, actual)
+
+    def test_subquery_multiple(self):
+        for node_type, node in {'root': self.root}.items():
+            for order in '', '+', '-':
+                for words in [['nine'], ['nine', 'ten'], ['twelve', 'ten']]:
+                    subquery = ' | '.join('{.[s:' + w + ']}' for w in words)
+                    path = order + '**' + subquery
+                    with self.subTest(node=node_type, order=order, path=path):
+                        step = -1 if order == '-' else 1
+                        expected = [d for d in self.root.walk_descendants() if str(d) in words]
+                        expected = expected[::step]
+                        actual = [*node.find_all(path)]
+                        self.assertListEqual(expected, actual)
     
     # endregion
 

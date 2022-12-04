@@ -30,7 +30,7 @@ MUST_ESCAPE_CHARS = ('\\', '[', ']', '/', ',', '{', '}',)
 
 class QueryErrors:
     @classmethod
-    def unbalanced_parens(
+    def unbalanced_parentheses(
             cls,
             expression: pawpaw.Types.C_ITO | str,
             sub_region: pawpaw.Types.C_ITO | str | int = None) -> ValueError:
@@ -38,7 +38,19 @@ class QueryErrors:
         if isinstance(sub_region, int):
             msg += f' at location {sub_region}'
         elif isinstance(sub_region, (pawpaw.Ito, str)):
-            msg += f' in sub-region \'sub_region\''
+            msg += f' in sub-region \'{sub_region}\''
+        raise ValueError(msg)
+
+    @classmethod
+    def empty_parentheses(
+            cls,
+            expression: pawpaw.Types.C_ITO | str,
+            sub_region: pawpaw.Types.C_ITO | str | int = None) -> ValueError:
+        msg = f'empty parentheses in \'{expression}\''
+        if isinstance(sub_region, int):
+            msg += f' at location {sub_region}'
+        elif isinstance(sub_region, (pawpaw.Ito, str)):
+            msg += f' in sub-region \'{sub_region}\''
         raise ValueError(msg)
 
 
@@ -304,7 +316,7 @@ class EcfCombined(Ecf):
                     raise ValueError(f'invalid character \'{c}\' found in operand \'{operand}\' in {ito}')
 
         if sum(op.str_count('(') for op in operands) != sum(op.str_count(')') for op in operands):
-            raise QueryErrors.unbalanced_parens(ito)
+            raise QueryErrors.unbalanced_parentheses(ito)
 
         while True:
             last_open_i, last_open_op = next(((i, operands[i]) for i in range(len(operands) - 1, -1, -1) if operands[i].str_find('(') > -1), (None, None))
@@ -314,12 +326,12 @@ class EcfCombined(Ecf):
 
             operands[last_open_i], discard, tmp = last_open_op.str_rpartition('(')
             if tmp.str_find(')') > -1:
-                raise ValueError('empty parentheses found in \'{last_open_op}\' for expression \'{ito}\'')
+                raise QueryErrors.empty_parentheses(ito, last_open_op)
             last_open_op = tmp
 
             next_closed_i, next_closed_op = next(((i, operands[i]) for i in range(last_open_i + 1, len(operands)) if operands[i].str_find(')') > -1), (None, None))
             if next_closed_i is None:
-                raise QueryErrors.unbalanced_parens(ito)
+                raise QueryErrors.unbalanced_parentheses(ito)
             next_closed_op, discard, operands[next_closed_i] = next_closed_op.str_partition(')')
 
             if next_closed_i - last_open_i == 1:  # don't need to combine a single filter, so just add any post-parentheses ops back in
@@ -462,7 +474,7 @@ class EcfFilter(EcfCombined):
         if last is not None:
             op = pawpaw.Ito(ito.string, last.span(0)[1], ito.stop)
             if '(' in str(op):
-                raise QueryErrors.unbalanced_parens(ito, str(last.group(0)))
+                raise QueryErrors.empty_parentheses(ito, str(last.group(0)))
             operands.append(op)
 
         super().__init__(ito, filters, operands)
@@ -511,7 +523,7 @@ class EcfSubquery(EcfCombined):
         if last is not None:
             op = pawpaw.Ito(ito.string, last.span(0)[1], ito.stop)
             if '(' in str(op):
-                raise QueryErrors.unbalanced_parens(ito, str(last.group(0)))
+                raise QueryErrors.empty_parentheses(ito, str(last.group(0)))
             operands.append(op)
 
         super().__init__(ito, subqueries, operands)
@@ -528,7 +540,7 @@ class Phrase:
         if len(subq_ito) == 0:
             self.subquery = EcfTautology()
         else:
-            while str(self.ito[i := unesc_curl - 1]) in '~ (':
+            while str(self.ito[i := unesc_curl - 1]) in ''.join(OPERATORS.keys()) + '() ~':
                 unesc_curl = i
             subq_ito = phrase[unesc_curl:].str_strip()
             self.subquery = EcfSubquery(subq_ito)

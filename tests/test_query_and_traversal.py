@@ -545,7 +545,24 @@ class TestItoQuery(TestItoTraversal):
                         expected = expected[::step]
                         actual = [*node.find_all(path)]
                         self.assertListEqual(expected, actual)
-    
+
+    def test_subquery_empty(self):
+        for node_type, node in {'root': self.root}.items():
+            for path in '.{}', '.({})', '.{.} & {}':
+                with self.subTest(node=node_type, path=path):
+                    with self.assertRaises(ValueError) as cm:
+                        node.find(path)
+
+                    msg = str(cm.exception)
+                    print(msg)
+                    self.assertTrue(all(w in msg for w in ['path', 'empty']))
+
+    def test_subquery_identity(self):
+        for node_type, node in {'root': self.root}.items():
+            for path in '.{.}', '.({.})', '.({.} & {.})':
+                with self.subTest(node=node_type, path=path):
+                    self.assertEqual(node, node.find(path))
+
     # endregion
 
     # region logical operators and combinatorics (EcfFilter)
@@ -568,14 +585,20 @@ class TestItoQuery(TestItoTraversal):
                     self.assertEqual(expected, actual)
 
     def test_ecf_empty_parens(self):
-        for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
-            for path in f'.(()[d:{node.desc}] & [d:{node.desc}])', \
-                f'.([d:{node.desc}] & () & [d:{node.desc}])', \
-                f'.([d:{node.desc}] & [d:{node.desc}]())':
-
+        for node_type, node in {'root': self.root}.items():
+            for path in f'.(() & [d:root] & [d:root])', \
+                f'.([d:root] & () & [d:root])', \
+                f'.([d:root] & [d:root] & ())', \
+                '.(() & {.[d:root]} & {.[d:root]})', \
+                '.({.[d:root]} & () & {.[d:root]})', \
+                '.({.[d:root]} & {.[d:root]} & ())':
                 with self.subTest(node=node_type, path=path):
-                    with self.assertRaises(ValueError):
+                    with self.assertRaises(ValueError) as cm:
                         node.find(path)
+
+                    msg = str(cm.exception)
+                    print(msg)
+                    self.assertTrue(all(w in msg for w in ['empty parentheses']))
 
     def test_ecf_not_outside_parens(self):
         s = ' The quick brown fox '

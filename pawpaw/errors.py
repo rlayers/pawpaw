@@ -9,7 +9,7 @@ class Errors:
 
     @classmethod
     def parameter_neither_none_nor_empty(cls, name: str) -> ValueError:
-        return ValueError(f'parameter \'{name}\' can be neither None nor emtpy')
+        return ValueError(f'parameter \'{name}\' can be neither None nor empty')
 
     @classmethod
     def parameter_invalid_type(cls, name: str, value: typing.Any, *allowed: typing.Type) -> TypeError:

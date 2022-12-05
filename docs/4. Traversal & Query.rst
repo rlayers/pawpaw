@@ -1,116 +1,59 @@
-==========================
-Traversal, Search, & Query
-==========================
+=================
+Traversal & Query
+=================
 
 Introduction
 ============
-The ``Ito`` class features recursive storage of descendants to arbitrary depth, which allows it to
+Pawpaw's ``Ito`` class features recursive storage of descendants to arbitrary depth, which allows it to
 be used as a hierarchical data store.  Traversal down to child nodes is possible through the the
 ``.children`` property, while traversal upwards can be accomplished through the ``.parent`` property:
 
->>> import regex
->>> import pawpaw
->>> s = 'ten 10 eleven 11 twelve 12 '
->>> root = pawpaw.Ito(s)
->>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
->>> itor = pawpaw.arborform.Extract(re)
->>> root.children.add(*itor.traverse(pawpaw.Ito(s)))
->>> last_child = root.children[-1]
->>> str(last_child)
-'twelve 12 '
->>> parent = last_child.parent
->>> str(parent)
-'ten 10 eleven 11 twelve 12 '
+>>> from pawpaw import Ito
+>>> s = 'the quick brown fox'
+>>> re = regex.compile(r'(?:(?P<word>(?P<char>\w)+)\W*)*')
+>>> i = Ito.from_match(re.fullmatch(s))
+>>> last_child = i.children[-1]  # traverse down to child
+>>> str(last_child)  
+'fox'
+>>> str(last_child.parent)  # traverse up to parent
+'the quick brown fox'
 
-Manually traversing up and down an
+Pawpaw's ``Ito`` also allows you to traverse all descendants in at tree from a given node:
 
->>> import regex
->>> import pawpaw
->>> s = 'ten 10 eleven 11 twelve 12 '
->>> root = pawpaw.Ito(s)
->>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
->>> itor = pawpaw.arborform.Extract(re)
->>> root.children.add(*itor.traverse(pawpaw.Ito(s)))
->>> last_child = root.children[-1]
->>> str(last_child)
-'twelve 12 '
->>> parent = last_child.parent
->>> str(parent)
-'ten 10 eleven 11 twelve 12 '
+>>> print('|'.join(str(d) for d in i.walk_descendants()))
+the|t|h|e|quick|q|u|i|c|k|brown|b|r|o|w|n|fox|f|o|x
 
-Manually traversing up and down an
+Manually traversing an ``Ito`` the hierarchy is practical for small collections.  Larger collections,
+by contrast, can benefit from Pawpaw *plumule* queries.  Plumule is similar in syntax to
+`XPath <https://www.w3.org/TR/xpath/>` in syntax and usage.  For example:
 
->>> import regex
->>> import pawpaw
->>> s = 'ten 10 eleven 11 twelve 12 '
->>> root = pawpaw.Ito(s)
->>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
->>> itor = pawpaw.arborform.Extract(re)
->>> root.children.add(*itor.traverse(pawpaw.Ito(s)))
->>> last_child = root.children[-1]
->>> str(last_child)
-'twelve 12 '
->>> parent = last_child.parent
->>> str(parent)
-'ten 10 eleven 11 twelve 12 '
+>>> plumule_xpr = '*{*[s:o]}'  # words containing char 'o'
+>>> print([str(w) for w in i.find_all(plumule_xpr)])
+['brown', 'fox']
 
-Manually traversing up and down an
+Because Plumule queries are strings, they can be persisted and used against multiple trees.  Plumule
+queries are interpreted by the Pawpaw *radicle* query engine, which even allows you to pre-compile
+them for faster performance:
 
->>> import regex
->>> import pawpaw
->>> s = 'ten 10 eleven 11 twelve 12 '
->>> root = pawpaw.Ito(s)
->>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
->>> itor = pawpaw.arborform.Extract(re)
->>> root.children.add(*itor.traverse(pawpaw.Ito(s)))
->>> last_child = root.children[-1]
->>> str(last_child)
-'twelve 12 '
->>> parent = last_child.parent
->>> str(parent)
-'ten 10 eleven 11 twelve 12 '
+>>> query = pawpaw.query.compile(plumule_xpr)
+>>> print([str(w) for w in query.find_all(i)])
+['brown', 'fox']
 
-Manually traversing up and down an
+Plumule Syntax
+==============
 
->>> import regex
->>> import pawpaw
->>> s = 'ten 10 eleven 11 twelve 12 '
->>> root = pawpaw.Ito(s)
->>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
->>> itor = pawpaw.arborform.Extract(re)
->>> root.children.add(*itor.traverse(pawpaw.Ito(s)))
->>> last_child = root.children[-1]
->>> str(last_child)
-'twelve 12 '
->>> parent = last_child.parent
->>> str(parent)
-'ten 10 eleven 11 twelve 12 '
-
-Manually traversing up and down an ``Ito`` hierarchy is practical for small collections or over small
-numbers of nodes.  For large collections or more complex traversals, Pawpaw offers a fully
-functional, robust query language, which can also be used for search.  For example:
-
->>> query_str = '**[d:number]{*[s:2]}'  # descendant with .desc == 'number' having a child whose str == '2'
->>> result = root.find(query_str)
->>> str(result)
-'12'
-
-Query Syntax
-============
-
-Phrases
--------
-A query consists of one or more *phrases* separated by fore-slash characters::
+TODO: Short overview, e.g., a Plumule query consists of one or more *phrases* separated by fore-slash characters::
 
  query := phrase [/ phrase] [/ phrase] ...
 
-A phrase, in turn, consists of an *axis* along with an optional *filter* and *subquery* parts::
+Phrases
+-------
+A phrase consists of an *axis* along with an optional *filter* and *subquery* parts::
 
 phrase := axis [filter] [subquery]
 
 Axis
 ----
-
 An axis consists of an optional *order operator*, an *axis identifier*, and an optional *self option*: ::
 
  axis := [order_operator] axis_identifier [self_option]

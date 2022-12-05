@@ -5,21 +5,20 @@ import xml.etree.ElementTree as ET
 import xml.parsers.expat as expat
 
 import regex
-from pawpaw import Span, Ito
+from pawpaw import Span, Ito, xml
 from pawpaw.arborform import Extract
-import pawpaw.xml.ito_descriptors as ITO_DESCRIPTORS
 
         
 class XmlParser(ET.XMLParser):
-    _NAME = r'(?P<' + ITO_DESCRIPTORS.NAME + r'>[^ />=]+)'
-    _VALUE = r'="(?P<' + ITO_DESCRIPTORS.VALUE + r'>[^"]+)"'
+    _NAME = r'(?P<' + xml.descriptors.NAME + r'>[^ />=]+)'
+    _VALUE = r'="(?P<' + xml.descriptors.VALUE + r'>[^"]+)"'
     _NAME_VALUE = _NAME + _VALUE
 
-    _NS_NAME = r'(?:(?P<' + ITO_DESCRIPTORS.NAMESPACE + r'>[^: ]+):)?' + _NAME
+    _NS_NAME = r'(?:(?P<' + xml.descriptors.NAMESPACE + r'>[^: ]+):)?' + _NAME
     _NS_NAME_VALUE = _NS_NAME + _VALUE
 
-    _re_ns_tag = regex.compile(r'\<(?P<' + ITO_DESCRIPTORS.TAG + r'>' + _NS_NAME + r')', regex.DOTALL)
-    _re_attribute = regex.compile(r'(?P<' + ITO_DESCRIPTORS.ATTRIBUTE + r'>' + _NS_NAME_VALUE + r')', regex.DOTALL)
+    _re_ns_tag = regex.compile(r'\<(?P<' + xml.descriptors.TAG + r'>' + _NS_NAME + r')', regex.DOTALL)
+    _re_attribute = regex.compile(r'(?P<' + xml.descriptors.ATTRIBUTE + r'>' + _NS_NAME_VALUE + r')', regex.DOTALL)
 
     _itor_extract_tag = Extract(_re_ns_tag)
     _itor_extract_attributes = Extract(_re_attribute)
@@ -107,7 +106,7 @@ class XmlParser(ET.XMLParser):
             self._text,
             element._spans.char.start,
             self._text.index('>', element._spans.char.start + 1) + 1,
-            ITO_DESCRIPTORS.START_TAG)
+            xml.descriptors.START_TAG)
         start_tag.children.add(*self._itor_extract_tag.traverse(start_tag))
         start_tag.children.add(*self._itor_extract_attributes.traverse(start_tag))
 
@@ -116,20 +115,20 @@ class XmlParser(ET.XMLParser):
                 self._text,
                 element._spans.char.stop,
                 self._text.index('>', element._spans.char.stop + 1) + 1,
-                ITO_DESCRIPTORS.END_TAG)
+                xml.descriptors.END_TAG)
             end_index = end_tag.stop
         else:
             end_tag = None
             end_index = element._spans.char.stop
 
-        ito = Ito(self._text, start_tag.start, end_index, ITO_DESCRIPTORS.ELEMENT)
+        ito = Ito(self._text, start_tag.start, end_index, xml.descriptors.ELEMENT)
         ito.value_func = lambda i: element
 
         ito.children.add(start_tag)
         
         if element.text is not None:
             if not self.ignore_empties or not element.text.isspace():
-                text = Ito(self._text, start_tag.stop, start_tag.stop + len(element.text), ITO_DESCRIPTORS.TEXT)
+                text = Ito(self._text, start_tag.stop, start_tag.stop + len(element.text), xml.descriptors.TEXT)
                 ito.children.add(text)
 
         for child in element:
@@ -140,7 +139,7 @@ class XmlParser(ET.XMLParser):
             # (See https://docs.python.org/3/library/xml.etree.elementtree.html for definition of .tail attr.)
             if child.tail is not None:
                 if not self.ignore_empties or not child.tail.isspace():
-                    ito_text = Ito(self._text, child.ito.stop, child.ito.stop + len(child.tail), ITO_DESCRIPTORS.TEXT)
+                    ito_text = Ito(self._text, child.ito.stop, child.ito.stop + len(child.tail), xml.descriptors.TEXT)
                     ito.children.add(ito_text)
 
         if end_tag is not None:

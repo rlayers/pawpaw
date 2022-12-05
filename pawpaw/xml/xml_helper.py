@@ -6,11 +6,9 @@ import xml.etree.ElementTree as ET
 import typing
 
 import regex
-from pawpaw import Ito, Types
+from pawpaw import Ito, Types, query, xml
 from pawpaw.errors import Errors
 from pawpaw.arborform import Extract
-from pawpaw.xml import ito_descriptors
-import pawpaw
 
 
 # See 4 Qualified Names in https://www.w3.org/TR/xml-names/
@@ -74,7 +72,7 @@ class EtName(typing.NamedTuple):
 class XmlErrors:
     @classmethod
     def element_lacks_ito_attr(cls, name: str, value: typing.Any) -> ValueError:
-        return ValueError(f'parameter \'{name}\' missing attr \'.ito\' - did you forget to use pawpaw.XmlParser?')
+        return ValueError(f'parameter \'{name}\' missing attr \'.ito\' - did you forget to use pawpaw.xml.XmlParser?')
 
 
 class XmlHelper:
@@ -82,17 +80,17 @@ class XmlHelper:
     def get_qualified_name(cls, ito: Types.C_ITO) -> QualifiedName:
         if not isinstance(ito, Ito):
             raise Errors.parameter_invalid_type('ito', ito, Types.C_ITO)
-        elif ito.desc not in (ito_descriptors.START_TAG, ito_descriptors.ATTRIBUTE):
-            raise ValueError(f'parameter \'{ito}\' lacks children with descriptor \'{ito_descriptors.NAME}\' - did you forget to use pawpaw.XmlParser?')
+        elif ito.desc not in (xml.descriptors.START_TAG, xml.descriptors.ATTRIBUTE):
+            raise ValueError(f'parameter \'{ito}\' lacks children with descriptor \'{xml.descriptors.NAME}\' - did you forget to use pawpaw.xml.XmlParser?')
 
-        ns = ito.find(f'*[d:{ito_descriptors.NAMESPACE}]')
-        name = ito.find(f'*[d:{ito_descriptors.NAME}]')
+        ns = ito.find(f'*[d:{xml.descriptors.NAMESPACE}]')
+        name = ito.find(f'*[d:{xml.descriptors.NAME}]')
 
         return QualifiedName(ns, name)
 
     _re_xmlns = regex.compile(r'xmlns(?:\:.+)?', regex.DOTALL)
     _query_xmlns_predicates = {'is_xmlns': lambda ei: ei.ito.regex_fullmatch(XmlHelper._re_xmlns) is not None}
-    _query_xmlns = pawpaw.query.compile(f'*[d:{ito_descriptors.START_TAG}]/*[d:{ito_descriptors.ATTRIBUTE}]' + '{*[p:is_xmlns]}')
+    _query_xmlns = query.compile(f'*[d:{xml.descriptors.START_TAG}]/*[d:{xml.descriptors.ATTRIBUTE}]' + '{*[p:is_xmlns]}')
 
     @classmethod
     def get_xmlns(cls, element: ET.Element) -> typing.Dict[QualifiedName, Types.C_ITO]:
@@ -102,7 +100,7 @@ class XmlHelper:
             raise XmlErrors.element_lacks_ito_attr('ito', ito)
         
         return {
-            cls.get_qualified_name(xmlns): xmlns.find(f'*[d:{ito_descriptors.VALUE}]')
+            cls.get_qualified_name(xmlns): xmlns.find(f'*[d:{xml.descriptors.VALUE}]')
             for xmlns
             in cls._query_xmlns.find_all(element.ito, predicates=cls._query_xmlns_predicates)
         }
@@ -161,7 +159,7 @@ class XmlHelper:
         return tag[:i + 1] if i >= 0 else None
 
     @classmethod
-    def findall_descendants_by_local_name(cls, element: ET.Element, local_name: str) -> ET.Element | None:
+    def findall_descendants_by_local_name(cls, element: ET.Element, local_name: str) -> typing.Iterable[ET.Element]:
         if not isinstance(element, ET.Element):
             raise Errors.parameter_invalid_type('element', element, ET.Element)
 
@@ -209,7 +207,7 @@ class XmlHelper:
             if element.find(f'.[{predicate}]'):
                 return element
 
-            if (parent := element.ito.find(f'...[d:{ito_descriptors.ELEMENT}]')) is None:
+            if (parent := element.ito.find(f'...[d:{xml.descriptors.ELEMENT}]')) is None:
                 return None
             
             element = parent.value()

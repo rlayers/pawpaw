@@ -1,4 +1,4 @@
-from pawpaw.xml import ito_descriptors as ITO_DESCRIPTORS
+from pawpaw.xml import descriptors
 
 from .xml_helper import QualifiedName, EtName, XmlHelper
 del xml_helper

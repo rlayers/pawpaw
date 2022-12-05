@@ -42,23 +42,25 @@ them for faster performance:
 Plumule Syntax
 ==============
 
-TODO: Short overview, e.g., a Plumule query consists of one or more *phrases* separated by fore-slash characters::
+A Plumule query allows you to query for arbitrary nodes in an ``Ito`` Tree.  A query consists
+of one or more *phrases* separated by fore-slash characters::
 
  query := phrase [/ phrase] [/ phrase] ...
 
 Phrases
 -------
-A phrase consists of an *axis* along with an optional *filter* and *subquery* parts::
+A phrase consists of an *axis* along with an optional *filters* and *subqueries* parts::
 
-phrase := axis [filter] [subquery]
+phrase := axis [filters] [subqueries]
 
 Axis
 ----
-An axis consists of an optional *order operator*, an *axis identifier*, and an optional *self option*: ::
+
+An axis consists of an optional *order operator*, a required *axis identifier*, and an optional *self option*: ::
 
  axis := [order_operator] axis_identifier [self_option]
 
-An axis defines a traversal step.  For example, the axis identifier ``*`` indicates that traversal
+A Plumule axis defines a traversal step.  For example, the axis identifier ``*`` indicates that traversal
 should proceed to the children of the current node(s).  For a given node, an axis may yield zero,
 one, or more nodes, the order of which will always be from nearest to farthest from the current node.
 
@@ -125,15 +127,49 @@ Axis Identifiers:
 |            |                | and *excludes* ancestors & descendants                                 |
 +------------+----------------+------------------------------------------------------------------------+
 
+Filters
+-------
+
+A phrase filters expression defines what A filter only allows nodes matching a given criteria to pass through,
+and conists of one or more *filter* expressions separated by logical operators.  Parentheses may be used
+to group filter expressions when you need to override the default operator precedance:
+
+ filters := [not_operator] filter [ combining_operator [not_operator] filter ]...
+
+Operators
+^^^^^^^^^
+
+The not operator consists of the tilde character ('~'):
+
+  not_operator := '~'
+
+A combining operator consists of either a '&', '^', or '|' character:
+
+ combining_operator := '&, '^', or '|'
+ 
+The operators are listed below in order of precedence:
+
++-----------+------------+----------+
+| Operator  | Combining  | Meaning  |
++===========+============+==========+
+|  ``~``    |            |   NOT    |
++-----------+------------+----------+
+|  ``&``    | ✓          |   AND    |
++-----------+------------+----------+
+|  ``^``    | ✓          |   XOR    |
++-----------+------------+----------+
+|  ``|``    | ✓          |   OR     |
++-----------+------------+----------+
+
 Filter
-------
+^^^^^^
 
-A filter only allows nodes matching a given criteria to pass through.  The general form for a filter is:
+A filter consists key-value pair, surrounded by square brackets.  You can prefix a key with the not operator ('~'), which has the same effect as if it occurs immediately to the left of the opening bracket.
 
- filter := [~] [[~]key:value] ] | [&, ^, or |] [~] [[~]key:value] ] | ...
+ filter := '[' [NOT] key ':' value ']'
 
-A filter must include a key-value pair.  The key indicates a action to perform.  The axis nodes, along with the filter value,
-are used as parameters for this action.  Allowed keys are as follows:
+The filter key conists of a string that indicates what filtering action to perform on the current axis nodes.  The filter value
+provides additional data to the filtering action.  Allowable values for keys and values are as follows:
 
 +---------------------+------------------+------------------------------------------------------------------------+------------------+
 | Key                 | Alt Keys(s)      | Meaning                                                                | Example(s)       |
@@ -176,26 +212,7 @@ are used as parameters for this action.  Allowed keys are as follows:
 |                     |                  | ``.value()`` of the axis                                               |                  |
 +---------------------+------------------+------------------------------------------------------------------------+------------------+
 
-Each key-value pair can be optionally preceeded by a non-combining logical operator (NOT).  Adjacenet key-value pairs must be separated from one another by a combining logical operator (AND, XOR, or OR).
-
-Logical Operators (Listed in Order of Precedence)
-
-+------------+----------------+----------------+
-| Operator   | Meaning        | Combining      |
-+============+================+================+
-| ``~``      | NOT            |                |
-+------------+----------------+----------------+
-| ``&``      | AND            | ✓              |
-+------------+----------------+----------------+
-| ``^``      | XOR            | ✓              |
-+------------+----------------+----------------+
-| ``|``      | OR             | ✓              |
-+------------+----------------+----------------+
-
 Parentheses are allowed to perform logical grouping::
-
-
-
 
 TIPS & TRICKS
 =============

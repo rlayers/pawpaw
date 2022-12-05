@@ -161,6 +161,22 @@ class XmlHelper:
         return tag[:i + 1] if i >= 0 else None
 
     @classmethod
+    def findall_descendants_by_local_name(cls, element: ET.Element, local_name: str) -> ET.Element | None:
+        if not isinstance(element, ET.Element):
+            raise Errors.parameter_invalid_type('element', element, ET.Element)
+
+        if not isinstance(local_name, str):
+            raise Errors.parameter_invalid_type('local_name', local_name, str)
+
+        for e in element.findall('.//'):
+            if local_name == cls.get_local_name(e):
+                yield e
+
+    @classmethod
+    def find_descendant_by_local_name(cls, element: ET.Element, local_name: str) -> ET.Element | None:
+        return next(cls.findall_descendants_by_local_name(element, local_name), None)
+
+    @classmethod
     def reverse_find(cls, element: ET.Element, predicate: str) -> ET.Element | None:
         """ElementTree support for XPATH is limited, and the '..' operator will
         not traverse upwards beyond the node you being a .find or .find_all with.

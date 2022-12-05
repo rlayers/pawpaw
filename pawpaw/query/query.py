@@ -473,8 +473,6 @@ class EcfFilter(EcfCombined):
 
         if last is not None:
             op = pawpaw.Ito(ito.string, last.span(0)[1], ito.stop)
-            if '(' in str(op):
-                raise QueryErrors.empty_parentheses(ito, str(last.group(0)))
             operands.append(op)
 
         super().__init__(ito, filters, operands)
@@ -522,8 +520,6 @@ class EcfSubquery(EcfCombined):
 
         if last is not None:
             op = pawpaw.Ito(ito.string, last.span(0)[1], ito.stop)
-            if '(' in str(op):
-                raise QueryErrors.empty_parentheses(ito, str(last.group(0)))
             operands.append(op)
 
         super().__init__(ito, subqueries, operands)

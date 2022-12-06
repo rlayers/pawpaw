@@ -10,7 +10,7 @@ be used as a hierarchical data store.  Traversal down to child nodes is possible
 
 >>> from pawpaw import Ito
 >>> s = 'the quick brown fox'
->>> re = regex.compile(r'(?:(?P<word>(?P<char>\w)+)\W*)*')
+>>> re = regex.compile(r'(?P<word>(?P<char>\w)+\W*)*')
 >>> i = Ito.from_match(re.fullmatch(s))
 >>> last_child = i.children[-1]  # traverse down to child
 >>> str(last_child)  
@@ -77,7 +77,8 @@ the axis operator ``..`` indicates traversal to the parent node, however, if the
 a root, then there is no parent to traverse to.  The self option can be used to ensure that a
 traversal step will always return something.  Two possible values are allows:
 
-Self Option Values:
+Self Option Values
+^^^^^^^^^^^^^^^^^^
 
 ======  ====================================================
 Value   Description
@@ -90,8 +91,8 @@ Value   Description
 If a self option is supplied, the current node will always be returned first, unless
 the axis is reversed with the '-' operator.
 
-
-Axis Identifiers:
+Axis Identifiers
+^^^^^^^^^^^^^^^^
 
 +------------+----------------+------------------------------------------------------------------------+
 | Identifier | Meaning        | Description                                                            |
@@ -126,6 +127,16 @@ Axis Identifiers:
 | ``>>>``    | following      | Nodes that are *after* the current node, *includes* prior siblings     |
 |            |                | and *excludes* ancestors & descendants                                 |
 +------------+----------------+------------------------------------------------------------------------+
+
+Examples
+^^^^^^^^
+
+::
+
+ '*'    # all children; equivalent to iter(i.children)
+ '*/*'  # all grandchildren; equivalent to iter(gc for c in i.children for gc in c.children)
+ '../*' # all siblings and self: equivalent to i.parent.children
+ '>>/*' # children of all successive siblings
 
 Filters
 -------
@@ -175,7 +186,7 @@ provides additional data to the filtering action.  Allowable values for keys and
 | Key                 | Alt Keys(s)      | Meaning                                                                | Example(s)       |
 +=====================+==================+========================================================================+==================+
 | ``desc``            | ``d``            | One or more ``str`` values used to match againss ``.desc`` of axis;    | ::               |
-|                     |                  | values must be separated with commas                                   |                  |
+|                     |                  | values must be separated with commas, literal commas must be escaped   |                  |
 |                     |                  |                                                                        |  [d:number]      |
 |                     |                  |                                                                        |  [d:word,char]   |
 +---------------------+------------------+------------------------------------------------------------------------+------------------+
@@ -213,6 +224,14 @@ provides additional data to the filtering action.  Allowable values for keys and
 +---------------------+------------------+------------------------------------------------------------------------+------------------+
 
 Parentheses are allowed to perform logical grouping::
+
+
+Examples
+^^^^^^^^
+
+::
+
+ '*\[d:word,number]'  # all children having descriptor equal to 'word' or 'number'
 
 TIPS & TRICKS
 =============

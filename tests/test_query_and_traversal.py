@@ -381,6 +381,22 @@ class TestItoQuery(TestItoTraversal):
                 actual = [*node.find_all(path)]
                 self.assertSequenceEqual(expected, actual)
 
+    def test_filter_desc_with_emebdded_commas(self):
+        s = ' The quick brown fox '
+        root = Ito(s, 1, -1)
+        root.children.add(*root.str_split())
+        for i, c in enumerate(root.children):
+            c.desc = f'child,{i}'
+
+        for idxs in [[1], [1, 2]]:
+            descs = [pawpaw.query.escape(c.desc) for i, c in enumerate(root.children) if i in idxs]
+            desc = ','.join(descs)
+            path = f'*[d:{desc}]'
+            with self.subTest(path=path):
+                expected = [c for i, c in enumerate(root.children) if i in idxs]
+                actual = [*root.find_all(path)]
+                self.assertListEqual(expected, actual)
+
     # endregion
     
     # region filter string
@@ -402,6 +418,20 @@ class TestItoQuery(TestItoTraversal):
                 expected = [d for d in node.walk_descendants() if str(d) in strings]
                 actual = [*node.find_all(path)]
                 self.assertSequenceEqual(expected, actual)
+
+    def test_filter_string_with_emebdded_commas(self):
+        s = ' The quick brown fox '
+        root = Ito(s, 1, -1)
+        root.children.add(*root.str_split())
+
+        for idxs in [[1], [1, 2]]:
+            substrs = [pawpaw.query.escape(str(c)) for i, c in enumerate(root.children) if i in idxs]
+            substr = ','.join(substrs)
+            path = f'*[s:{substr}]'
+            with self.subTest(path=path):
+                expected = [c for i, c in enumerate(root.children) if i in idxs]
+                actual = [*root.find_all(path)]
+                self.assertListEqual(expected, actual)                
     
     # endregion
     

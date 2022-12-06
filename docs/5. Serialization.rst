@@ -5,34 +5,58 @@ SERIALIZATION
 Introduction
 ============
 
-Optimized json serialization is available... ``JsonEncoder``... (substrings share same string...):
+Serialization and deserialization of ``Ito`` hiearchies is easy to accomplish in Pawpaw, which offers native support for both:
 
+ * Pickling
+ * JSON
+
+In either case, support for any dynamically ascribed .value methods are not serializable\ [#]_\ .
+
+Pickling
+========
+
+
+>>> import pickle
+>>> s = 'See Jack run.'
+>>> i = Ito(s, desc='my desc')
+>>> i.children.add(*i.str_split())
+>>> pickle_data = pickle.dumps(i)
+>>> j = pickle.loads(pickle_data)
+>>> len(j.children)
+3
+
+JSON
+========
+
+Pawpaw offers two JSON serialization ecnoder options:
+
+1. Ito.JsonEncoder : _Does_ serialize .string
+2. Ito.JsonEncoderStringless : Does _not_ serialize .string
+
+Ito.JsonEncoder
+---------------
 
 >>> import json
->>> import regex
->>> from pawpaw import Ito
->>> s = 'Hello, world!'
->>> i = Ito(s)
->>> i.children.add(*i.split(regex.compile(r'\s')))
->>> json.dumps(i, cls=Ito.JsonEncoder)
-'{"__type__": "typing.Tuple[str, Ito]", "string": "Hello, world!", "ito": {"__type__": "Ito", "span": [0, 13], "desc": null, "children": [{"__type__": "Ito", "span": [0, 6], "desc": null, "children": []}, {"__type__": "Ito", "span": [7, 13], "desc": null, "children": []}]}}'
+>>> json_data = json.dumps(i, cls=Ito.JsonEncoder)
+>>> j = json.loads(json_data, object_hook=Ito.json_decoder)
+>>> len(j.children)
+3
 
-
->>> import json
->>> import regex
->>> from pawpaw import Ito
->>> s = 'Hello, world!'
->>> i = Ito(s)
->>> i.children.add(*i.split(regex.compile(r'\s')))
->>> json.dumps(i, cls=Ito.JsonEncoder)
-'{"__type__": "typing.Tuple[str, Ito]", "string": "Hello, world!", "ito": {"__type__": "Ito", "span": [0, 13], "desc": null, "children": [{"__type__": "Ito", "span": [0, 6], "desc": null, "children": []}, {"__type__": "Ito", "span": [7, 13], "desc": null, "children": []}]}}'
-
+Ito.JsonEncoderStringless
+-------------------------
 
 >>> import json
->>> import regex
->>> from pawpaw import Ito
->>> s = 'Hello, world!'
->>> i = Ito(s)
->>> i.children.add(*i.split(regex.compile(r'\s')))
->>> json.dumps(i, cls=Ito.JsonEncoder)
-'{"__type__": "typing.Tuple[str, Ito]", "string": "Hello, world!", "ito": {"__type__": "Ito", "span": [0, 13], "desc": null, "children": [{"__type__": "Ito", "span": [0, 6], "desc": null, "children": []}, {"__type__": "Ito", "span": [7, 13], "desc": null, "children": []}]}}'
+>>> json_data = json.dumps(i, cls=Ito.JsonEncoderStringless)
+>>> j = json.loads(json_data, object_hook=Ito.json_decoder_stringless)
+>>> j
+Ito('', 0, 13, 'my desc')
+>>> j._set_string(s)
+>>> j
+Ito('See Jack run.', 0, 13, 'my desc')
+
+----
+
+.. [#] The python pickle library supports neither lambdas nor methods not-defined at the top level of a module.  See `Python pickle docs
+<https://docs.python.org/3/library/pickle.html/>` for more info.
+
+pickling non-topdown functions Pickling an arbitrary python function is not always possible.  For example, A tree is an undirected graph in which any two vertices are connected by exactly one path.  An ``Ito`` is technically a *rooted tree*, where the root is the ``Ito`` and the branches and leaves its descendants.

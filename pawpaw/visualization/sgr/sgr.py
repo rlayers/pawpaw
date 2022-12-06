@@ -16,58 +16,79 @@ def encode(*n: int) -> str:
 RESET_ALL: str = encode(0)
 
     
-@dataclass
+@dataclass(frozen=True)
 class _Sgr:
     RESET : str
 
 
-@dataclass
-class Intensity(_Sgr):
+@dataclass(frozen=True)
+class _Intensity(_Sgr):
     BOLD : str = encode(1)
     DIM  : str = encode(2)
     RESET: str = encode(22)
 
 
-@dataclass
-class Italic(_Sgr):
+Intensity = _Intensity()
+
+
+@dataclass(frozen=True)
+class _Italic(_Sgr):
     ON   : str = encode(3)
     RESET: str = encode(23)
 
 
-@dataclass
-class Underline(_Sgr):
+Italic = _Italic()
+
+
+@dataclass(frozen=True)
+class _Underline(_Sgr):
     SINGLE: str = encode(4)
     DOUBLE: str = encode(21)
     RESET : str = encode(24)
 
 
-@dataclass
-class Blink(_Sgr):
+Underline = _Underline()
+
+
+@dataclass(frozen=True)
+class _Blink(_Sgr):
     SLOW : str = encode(5)
     RAPID: str = encode(6)
     RESET: str = encode(25)
 
 
-@dataclass
-class Invert(_Sgr):
+Blink = _Blink()
+
+
+@dataclass(frozen=True)
+class _Invert(_Sgr):
     ON   : str = encode(7)
     RESET: str = encode(27)
 
 
-@dataclass
-class Conceal(_Sgr):
+Invert = _Invert()
+
+
+@dataclass(frozen=True)
+class _Conceal(_Sgr):
     ON   : str = encode(8)
     RESET: str = encode(28)
 
 
-@dataclass
-class Strike(_Sgr):
+Conceal = _Conceal()
+
+
+@dataclass(frozen=True)
+class _Strike(_Sgr):
     SLOW : str = encode(9)
     RESET: str = encode(29)
 
 
-@dataclass
-class Font(_Sgr):
+Strike = _Strike()
+
+
+@dataclass(frozen=True)
+class _Font(_Sgr):
     ALT_1: str = encode(11)
     ALT_2: str = encode(12)
     ALT_3: str = encode(13)
@@ -78,6 +99,9 @@ class Font(_Sgr):
     ALT_8: str = encode(18)
     ALT_9: str = encode(19)
     RESET: str = encode(10)
+
+
+Font = _Font()
 
 
 @dataclass
@@ -101,24 +125,27 @@ class Colors:
         BRIGHT_CYAN   : int  = 66
         BRIGHT_WHITE  : int  = 67
 
+
     class Rgb(typing.NamedTuple):
         red: int
         green: int
         blue: int
 
-    class EightBit:
+
+    class EightBit(int):
         """
             0-  7:  standard colors (as in ESC [ 30–37 m)
             8- 15:  high intensity colors (as in ESC [ 90–97 m)
             16-231:  6 × 6 × 6 cube (216 colors): 16 + 36 × r + 6 × g + b (0 ≤ r, g, b ≤ 5)
             232-255:  grayscale from dark to light in 24 steps
         """
+        pass
 
 
 Color = Colors.Named | Colors.Rgb | Colors.EightBit
 
 
-@dataclass
+@dataclass(frozen=True)
 class Fore(_Sgr):
     _NAMED_OFFSET: int = 30
     _BY_IDX      : int = 38
@@ -141,7 +168,7 @@ class Fore(_Sgr):
         return self.value
 
 
-@dataclass
+@dataclass(frozen=True)
 class Back(Fore):
     _NAMED_OFFSET: int = Fore._NAMED_OFFSET + 10
     _BY_IDX      : int = Fore._BY_IDX + 10

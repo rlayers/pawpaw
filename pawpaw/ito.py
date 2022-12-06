@@ -448,19 +448,17 @@ class Ito:
 
     # region pickling
 
-    @classmethod
-    def pickle_loads(cls, pickle_str: str, ito_str: str) -> Ito:
-        rv = pickle.loads(pickle_str)
-        rv._string = ito_str
-        return rv
-
     def __getstate__(self):
-        state = self.__dict__.copy()
-        del state['_parent']
-        return state
+        return {
+            '_string': self._string,
+            '_span': self._span,
+            'desc': self.desc,
+            '_children': self._children,
+        }
 
     def __setstate__(self, state):
         self.__dict__.update(state)
+        self._value_func = None
         self._parent = None
         for child in self.children:
             child._parent = self

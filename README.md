@@ -76,16 +76,15 @@ You can use a regular expression for segmentation as follows:
 
  ```
  >>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)\s*)+')
->>> match = re.fullmatch(s)
  ```
  
-The resulting match can then be fed into **Pawpaw** as follows:
+You can then use this regex to feed **Pawpaw** as follows:
 
  ```
- >>> doc = Ito.from_match(match)
+ >>> doc = Ito.from_match(re.fullmatch(s))
  ```
 
-With this single line of code, Pawpaw generates a fully hierarchical, tree\ [#]_ of phrases, words, chars, numbers, and digits.  This tree can be traversed, and even searched using a powerful XPATH-like structured query language:
+With this single line of code, Pawpaw generates a fully hierarchical, tree of phrases, words, chars, numbers, and digits.  The tree can be traversed, and even searched using Pawpaw's *plumule*, a powerful XPATH-like structured query language:
 
  ```
  >>> print(*doc.find_all('**[d:dig]'), sep=', ')  # all digits
@@ -94,7 +93,7 @@ With this single line of code, Pawpaw generates a fully hierarchical, tree\ [#]_
 9, 13
  ```
 
-This example uses regular expressions as a source, however, Pawpaw is able to work with many other input types.  Pawpaw also includes a library of parser components that can be easily chained together to help you quickly develop large, sophisticated parsers.
+This example uses regular expressions as a source, however, Pawpaw is able to work with many other input types.  For example, you can use libraries such as [NLTK](https://www.nltk.org/) to grow Pawpaw trees, or, you can use Pawpaw's included library of parser components that easily chain together to enable the rapid development of large, sophisticated parsers.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

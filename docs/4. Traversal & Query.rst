@@ -231,8 +231,8 @@ Examples
 
 ::
 
- '*[d:word,number]'  # all children having descriptor equal to 'word' or 'number'
- '**[~d:word] | ([d:word] & [s:ten])'  # all descedndants with descriptor not 'word', or with descriptor 'word and substr 'ten'
+ '*[d:word,number]'  # all children having .desc equal to 'word' or 'number'
+ '**[~d:word] | ([d:word] & [s:ten])'  # all descedndants with .desc not 'word', or with .desc 'word and .__str__() 'ten'
 
 TIPS & TRICKS
 =============

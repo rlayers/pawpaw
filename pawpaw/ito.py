@@ -485,7 +485,7 @@ class Ito:
             }
 
     @classmethod
-    def json_decoder_stringless(cls, obj: typing.Dict) -> Types.C_ITO | typing.Dict:
+    def _json_decoder_stringless(cls, obj: typing.Dict) -> Types.C_ITO | typing.Dict:
         if (t := obj.get('__type__')) is not None and t == 'Ito':
             rv = cls('', desc=obj['desc'])
             rv._span = Span(*obj['span'])
@@ -495,6 +495,12 @@ class Ito:
             return obj
 
     @classmethod
+    def json_decode_stringless(cls, string: str, obj: typing.Dict) -> Types.C_ITO:
+        rv = json.loads(obj, object_hook=cls._json_decoder_stringless)
+        rv._set_string(string)
+        return rv
+
+    @classmethod
     def json_decoder(cls, obj: typing.Dict) -> Types.C_ITO | typing.Dict:
         if (t := obj.get('__type__')) is not None:
             if t == 'typing.Tuple[str, Ito]':
@@ -502,7 +508,7 @@ class Ito:
                 rv._string = obj['string']
                 return rv
             elif t == 'Ito':
-                return cls.json_decoder_stringless(obj)
+                return cls._json_decoder_stringless(obj)
         else:
             return obj
 

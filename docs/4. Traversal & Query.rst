@@ -243,9 +243,4 @@ A: Operators are not supported between the filter and subquery components of a q
 
 [my_filter]{my_subquery}  ->  {./[my_filter]} | {my_subquery}
 
-
-.. [#] The name "In Test Object" is historical, and dates back to earlier projects I developed.  I've chosen to keep this name because "Ito" makes for a short, convenient type name.
-
-.. [#] In Python, strings are also immutable.
-
-.. [#] Because a child ``Ito`` must be equal to or contained by a parent ``Ito``, this is a *tree* graph.
+----

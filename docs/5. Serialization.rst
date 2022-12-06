@@ -38,6 +38,8 @@ Ito.JsonEncoder
 
 >>> import json
 >>> json_data = json.dumps(i, cls=Ito.JsonEncoder)
+>>> s in json_data  # verify s is present in JSON
+True
 >>> j = json.loads(json_data, object_hook=Ito.json_decoder)
 >>> len(j.children)
 3
@@ -47,10 +49,9 @@ Ito.JsonEncoderStringless
 
 >>> import json
 >>> json_data = json.dumps(i, cls=Ito.JsonEncoderStringless)
->>> j = json.loads(json_data, object_hook=Ito.json_decoder_stringless)
->>> j
-Ito('', 0, 13, 'my desc')
->>> j._set_string(s)
+>>> s in json_data  # verify s not present in JSON
+False
+>>> j = Ito.json_decode_stringless(s, json_data)
 >>> j
 Ito('See Jack run.', 0, 13, 'my desc')
 
@@ -58,5 +59,3 @@ Ito('See Jack run.', 0, 13, 'my desc')
 
 .. [#] The python pickle library supports neither lambdas nor methods not-defined at the top level of a module.  See `Python pickle docs
 <https://docs.python.org/3/library/pickle.html/>` for more info.
-
-pickling non-topdown functions Pickling an arbitrary python function is not always possible.  For example, A tree is an undirected graph in which any two vertices are connected by exactly one path.  An ``Ito`` is technically a *rooted tree*, where the root is the ``Ito`` and the branches and leaves its descendants.

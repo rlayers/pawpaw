@@ -36,6 +36,10 @@ Pawpaw offers two JSON serialization ecnoder options:
 Ito.JsonEncoder
 ---------------
 
+For serialization that includes string data, use the normal the python json ``.dump(s)``
+and ``.load(s)`` methods, passing the ``Ito.JsonEncoder`` class and ``Ito.json_decoder``
+method to each respetively:
+
 >>> import json
 >>> json_data = json.dumps(i, cls=Ito.JsonEncoder)
 >>> s in json_data  # verify s is present in JSON
@@ -44,8 +48,16 @@ True
 >>> len(j.children)
 3
 
+The resulting output conserves memory by saving the string data for a hierarchy once,
+since a given ``Ito`` and its children all share the same value.
+
 Ito.JsonEncoderStringless
 -------------------------
+
+For stringless serilization, use the normal the python json ``.dump(s)``
+methods and passing the ``Ito.JsonEncoderStringless`` class to them.  For
+deserialization, use the static ``Ito.json_decode_stringless`` method, which
+has its inputs both the string and json data being de-serialized:
 
 >>> import json
 >>> json_data = json.dumps(i, cls=Ito.JsonEncoderStringless)

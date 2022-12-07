@@ -6,58 +6,72 @@ import regex
 import pawpaw
 from pawpaw import nuco
 
+# See https://www.unicode.org/Public/UNIDATA/NamesList.txt
 
-class UNICODE_CATEGORIES:
-    CONTROL = {
-        '\u0009': 'Tab',
-        '\u000A': 'Line feed',
-        '\u000C': 'Form feed',
-        '\u000D': 'Carriage return',
-    }
+unicode_controls = {
+    'CHARACTER TABULATION': '\u0009',
+    'LINE FEED':            '\u000A',
+    'FORM FEED':            '\u000C',
+    'CARRIAGE RETURN':      '\u000D',
+}
 
-    WHITE_SPACE = {
-        '\u0020': 'Space',
-        '\u00A0': 'No-break space',
-        '\u2000': 'En quad',
-        '\u2001': 'Em quad',
-        '\u2002': 'En space',
-        '\u2003': 'Em space',
-        '\u2004': 'Three-per-em space',
-        '\u2005': 'Four-per-em space',
-        '\u2006': 'Six-per-em space',
-        '\u2007': 'Figure space',
-        '\u2008': 'Punctuation space',
-        '\u2009': 'Thin space',
-        '\u200A': 'Hair space',
-        '\u200B': 'Zero width space',
-        '\u202F': 'Narrow no-break space',
-        '\u2020': 'Tag space',
-        '\u205F': 'Mathematical space',
-        '\u3000': 'Ideographic space',
-        '\uFEFF': 'Zero width no-break space',
-    }
+unicode_white_spaces = {
+    'SPACE':                        '\u0020',
+    'NO-BREAK SPACE':               '\u00A0',
 
+    'EN QUAD':                      '\u2000',
+    'EM QUAD':                      '\u2001',
+    'EN SPACE':                     '\u2002',
+    'EM SPACE':                     '\u2003',
+    'THREE-PER-EM SPACE':           '\u2004',
+    'FOUR-PER-EM SPACE':            '\u2005',
+    'SIX-PER-EM SPACE':             '\u2006',
+    'FIGURE SPACE':                 '\u2007',
+    'PUNCTUATION SPACE':            '\u2008',
+    'THIN SPACE':                   '\u2009',
+    'HAIR SPACE':                   '\u200A',
+    'ZERO WIDTH SPACE':             '\u200B',
 
-PAT_WHITESPACE = r'(?u)\s'    
+    'NARROW NO-BREAK SPACE':        '\u202F',
+    
+    'MEDIUM MATHEMATICAL SPACE':    '\u205F',
 
-iter_ws = itertools.chain(UNICODE_CATEGORIES.CONTROL.keys(), UNICODE_CATEGORIES.WHITE_SPACE.keys())
-PAT_WHITESPACE_EX = f'[{regex.escape("".join(iter_ws))}]'
-PAT_WHITESPACE_EX2 = f'(?u)[\s\u200B\u2020\uFEFF]'
+    'IDEOGRAPHIC SPACE':            '\u3000',
 
+    'ZERO WIDTH NO-BREAK SPACE':    '\uFEFF',
+}
 
-class RePatterns:
-    WHITESPACE = r'\s+'
-    WHITEPSACE_EX1 = '((?u)\s)'
-    WHITESPACE_EX2 = r'\p{IsWhiteSpace}'
+unicode_single_quote_marks = {
+    'APOSTROPHE':                                           '\u0027',
+    'GRAVE ACCENT':                                         '\u0060',
+    'ACUTE ACCENT':                                         '\u00B4',
 
-    regex = regex.compile(WHITESPACE)
+    'LEFT SINGLE QUOTATION MARK':                           '\u2018',
+    'RIGHT SINGLE QUOTATION MARK':                          '\u2019',
 
-    def test(self):
-        s = " \t\n\u00A0\u2002\u2003\u2006\u202F"
-        for pat in RePatterns.WHITESPACE, RePatterns.WHITEPSACE_EX1, RePatterns.WHITESPACE_EX2:
-            re = regex.compile(pat, regex.UNICODE)
-            matches = [*re.finditer(s)]
-            print(f'{pat}:\t{len(matches),}')
+    'SINGLE LOW-9 QUOTATION MARK':                          '\u201A',
+    'SINGLE HIGH-REVERSED-9 QUOTATION MARK':                '\u201B',
+
+    'HEAVY SINGLE TURNED COMMA QUOTATION MARK ORNAMENT':    '\u275B',
+    'HEAVY SINGLE COMMA QUOTATION MARK ORNAMENT':           '\u275C',
+
+    'HEAVY LOW SINGLE COMMA QUOTATION MARK ORNAMENT':       '\u275F',
+}
+
+unicode_double_quote_marks = {
+    'QUOTATION MARK':                                       '\u0022',
+
+    'LEFT DOUBLE QUOTATION MARK':                           '\u201C',
+    'RIGHT DOUBLE QUOTATION MARK':                          '\u201D',
+
+    'DOUBLE LOW-9 QUOTATION MARK':                          '\u201E',
+    'DOUBLE HIGH-REVERSED-9 QUOTATION MARK':                '\u201F',
+
+    'HEAVY DOUBLE TURNED COMMA QUOTATION MARK ORNAMENT':    '\u275D',
+    'HEAVY DOUBLE COMMA QUOTATION MARK ORNAMENT':           '\u275E',
+
+    'HEAVY LOW DOUBLE COMMA QUOTATION MARK ORNAMENT':       '\u2760',
+}
 
 
 class Number:
@@ -157,24 +171,25 @@ class Number:
     def re(self) -> regex.Pattern:
         return self._re
 
-    # endregion
-
 
 class SimpleNlp:
-    _eol_pat = '\r?\n'
+    _spaces_tab_line_feed = list(unicode_white_spaces.values())
+    _spaces_tab_line_feed.append(unicode_controls['CHARACTER TABULATION'])
+    _spaces_tab_line_feed.append(unicode_controls['LINE FEED'])
 
-    _paragraph_pat = r'(?:' + _eol_pat + r'){2,}\s*'
-    _paragraph_re = regex.compile(_paragraph_pat, regex.DOTALL)
+    _paragraph_pat = r'(?:\r?\n\L<s_t_lf>*){2,}'
+    _paragraph_re = regex.compile(_paragraph_pat, regex.DOTALL, s_t_lf=_spaces_tab_line_feed)
 
-    _sentence_terminator_pats = r'\.', r'\.{3}', r'\!+', r'\?'
-    _sentence_suffix_chars = '\'"[]()'
-    _sentence_suffix_pat = r'[' + ''.join(regex.escape(c) for c in _sentence_suffix_chars) + r']'
-    _sentence_re = regex.compile(r'(?<=\s*(?:' + '|'.join(_sentence_terminator_pats) + r')' + _sentence_suffix_pat + r'*)(?:\s+)', regex.DOTALL)
+    # sentence must end with a) period, b) elipses ('...' or '…'), or c) one or more '!' or '?', e.g. He said "What?!?"
+    _sentence_terminator_pats = r'\.', r'\.{3}', r'…', r'[\!\?]+'
 
-    _apostrophes = r'\'‛‵′’\u2018\u2018\u2019'
-    _apostrophe_pat = r'[' + '|'.join(regex.escape(c) for c in _apostrophes) + r']'
+    _sentence_suffix_chars = list(unicode_single_quote_marks.values())
+    _sentence_suffix_chars.extend(unicode_double_quote_marks.values())
+    _sentence_suffix_chars.extend(c for c in ')]}')
 
-    _word_pat = r'\w(?:(?:' + _apostrophe_pat + r'|-\s*)?\w)*'
+    _sentence_re = regex.compile(r'(?<=\s*(?:' + '|'.join(_sentence_terminator_pats) + r')\L<s_suf_c>*)(?:\s+)', regex.DOTALL, s_suf_c=_sentence_suffix_chars)
+
+    _word_pat = r'\w(?:(?:\L<sqs>|-\s*)?\w)*'
 
     def __init__(self, number: Number | None = None, chars: bool = False):
         super().__init__()
@@ -191,7 +206,7 @@ class SimpleNlp:
         paragraph.itor_children = sentence
 
         self._number = number |nuco| Number()
-        word_num_re = regex.compile(r'(?P<Number>' + self._number.num_pat + r')|(?P<Word>' + self._word_pat + r')', regex.DOTALL)
+        word_num_re = regex.compile(r'(?P<Number>' + self._number.num_pat + r')|(?P<Word>' + self._word_pat + r')', regex.DOTALL, sqs=list(unicode_single_quote_marks.values()))
 
         word_number = pawpaw.arborform.Extract(word_num_re)
         sentence.itor_children = word_number

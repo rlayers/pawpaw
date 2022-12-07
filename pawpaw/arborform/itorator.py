@@ -100,7 +100,7 @@ class Itorator(ABC):
         elif (parent := ito.parent) is not None:
             parent.children.remove(ito)  
   
-        iters: List[iter] = []
+        iters: typing.List[iter] = []
         for cur in curs:
             if parent is not None and cur.parent is not parent:
                 parent.children.add(cur)

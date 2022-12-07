@@ -97,7 +97,7 @@ class XmlHelper:
         if not isinstance(element, ET.Element):
             raise Errors.parameter_invalid_type('element', element, ET.Element)
         elif not hasattr(element, 'ito'):
-            raise XmlErrors.element_lacks_ito_attr('ito', ito)
+            raise XmlErrors.element_lacks_ito_attr('element', element)
         
         return {
             cls.get_qualified_name(xmlns): xmlns.find(f'*[d:{xml.descriptors.VALUE}]')
@@ -198,7 +198,7 @@ class XmlHelper:
         if not isinstance(element, ET.Element):
             raise Errors.parameter_invalid_type('element', element, ET.Element)
         elif not hasattr(element, 'ito'):
-            raise XmlErrors.element_lacks_ito_attr('ito', ito)
+            raise XmlErrors.element_lacks_ito_attr('element', element)
 
         if not isinstance(predicate, str):
             raise Errors.parameter_invalid_type('predicate', predicate, str)

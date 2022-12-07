@@ -1,7 +1,5 @@
-import random
 import typing
 
-import regex
 import pawpaw
 from pawpaw.visualization import sgr
 

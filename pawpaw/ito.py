@@ -495,8 +495,8 @@ class Ito:
             return obj
 
     @classmethod
-    def json_decode_stringless(cls, string: str, obj: typing.Dict) -> Types.C_ITO:
-        rv = json.loads(obj, object_hook=cls._json_decoder_stringless)
+    def json_decode_stringless(cls, string: str, json_data: str) -> Types.C_ITO:
+        rv = json.loads(json_data, object_hook=cls._json_decoder_stringless)
         rv._set_string(string)
         return rv
 
@@ -1364,7 +1364,7 @@ class Ito:
 
     def find(
             self,
-            path: pawpaw.Query.Path,
+            path: pawpaw.Types.C_PATH,
             values: typing.Dict[str, typing.Any] | None = None,
             predicates: typing.Dict[str, typing.Callable[[int, Types.C_ITO], bool]] | None = None
     ) -> Types.C_ITO | None:
@@ -1372,7 +1372,7 @@ class Ito:
 
     def find_all(
             self,
-            path: pawpaw.Query.Path,
+            path: pawpaw.Types.C_PATH,
             values: typing.Dict[str, typing.Any] | None = None,
             predicates: typing.Dict[str, typing.Callable[[int, Types.C_ITO], bool]] | None = None
     ) -> typing.Iterable[Types.C_ITO]:

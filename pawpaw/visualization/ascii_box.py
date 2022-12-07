@@ -121,7 +121,9 @@ class Corner:
             if v == (orientation, horizontal_style, vertical_style):
                 return k
         
-        raise ValueError(f'no character matches orientation {orientation}, horizontal_style {horizontal_style}, and vertical_style {vertical_style}')
+        raise ValueError(f'no character matches orientation {orientation},'
+                         f' horizontal_style {horizontal_style},'
+                         f' and vertical_style {vertical_style}')
 
     def __init__(self, horizontal_style: Style = Style(), vertical_style: Style = Style()):
         self._nw = self._find(self.Orientation.NW, horizontal_style, vertical_style)
@@ -158,13 +160,13 @@ class Box:
     def from_lines(self, *lines: str) -> typing.List[str]:
         max_line = max(len(line) for line in lines)
 
-        horiz = self.hz_side * (max_line + 2)
-        rv = [f'{self.corner.NW}{horiz}{self.corner.NE}']
+        hz = self.hz_side * (max_line + 2)
+        rv = [f'{self.corner.NW}{hz}{self.corner.NE}']
 
         for line in lines:
             rv.append(f'{self.vt_side} {line:^{max_line}} {self.vt_side}')
 
-        rv.append(f'{self.corner.SW}{horiz}{self.corner.SE}')
+        rv.append(f'{self.corner.SW}{hz}{self.corner.SE}')
 
         return rv
 

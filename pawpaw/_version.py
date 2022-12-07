@@ -6,6 +6,7 @@ __version__ = '1.0.0.a6'
 """The str literal that build, setup, documentation, and other tools typically want
 """
 
+
 class _PreRelease(typing.NamedTuple):
     kind: str  # 'a', 'b', or 'rc' : see https://peps.python.org/pep-0440/
     number: int
@@ -24,7 +25,7 @@ class _Version(typing.NamedTuple):
         return f'{self.major}.{self.minor}.{self.micro}{self.pre_release}'
 
     @classmethod
-    def from_(cls, version: str):
+    def from_(cls, version: str) -> _Version:
         parts = version.split('.')
         if len(parts) == 4:
             pr = parts[-1]  # must have len > 2

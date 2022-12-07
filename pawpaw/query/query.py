@@ -512,7 +512,7 @@ class EcfSubquery(EcfCombined):
 
             op = pawpaw.Ito(ito.string, start, stop).str_strip()
             if i > 0 and len(op) == 0:
-                raise ValueError(f'missing operator between subqueries \'{last.group(0)}\' and \'{f.group(0)}\'')
+                raise ValueError(f'missing operator between subqueries \'{last}\' and \'{sq}\'')
             operands.append(op)
 
             subqueries.append(self._func(pawpaw.Ito.from_match(sq)[1:-1]))

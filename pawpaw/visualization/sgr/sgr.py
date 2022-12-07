@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 import enum
 import typing
 
+from pawpaw import Errors
+
 
 """
 SGR (Select Graphic Rendition) - see https://en.wikipedia.org/wiki/ANSI_escape_code
@@ -160,12 +162,14 @@ class Fore(_Sgr):
             return encode(cls._BY_IDX, 2, *src)
         elif isinstance(src, Colors.EightBit):
             return encode(cls._BY_IDX, 5, src)
+        else:
+            raise Errors.parameter_invalid_type('src', src, Color)
         
     def __init__(self, src: Color):
-        self.value = self.from_color(src)
+        object.__setattr__(self, '_value', self.from_color(src))
         
     def __str__(self) -> str:
-        return self.value
+        return self._value
 
 
 @dataclass(frozen=True)

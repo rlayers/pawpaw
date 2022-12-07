@@ -204,7 +204,7 @@ class XmlHelper:
             raise Errors.parameter_invalid_type('predicate', predicate, str)
 
         while element is not None:
-            if element.find(f'.[{predicate}]'):
+            if element.find(f'.[{predicate}]') is not None:
                 return element
 
             if (parent := element.ito.find(f'...[d:{xml.descriptors.ELEMENT}]')) is None:

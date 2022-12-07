@@ -605,8 +605,8 @@ class Ito:
 
     _pat_format_int = r'(?P<dir>' + '|'.join(_format_int_directives) + r')' \
                       r'(?:\:' \
-                      r'(?:(?P<fill>.)(?P<align>[\<\>\=\^])?)?' \
-                      r'(?P<sign>[\+\- ])?' \
+                      r'(?:(?P<fill>.)(?P<align>[\<\>\=\^]))?' \
+                      r'(?P<sign>[\+\-])?' \
                       r'(?P<width>\d+)?' \
                       r'(?P<grouping>.)?' \
                       r')?'

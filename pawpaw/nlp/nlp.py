@@ -194,7 +194,7 @@ class SimpleNlp:
     def __init__(self, number: Number | None = None, chars: bool = False):
         super().__init__()
 
-        doc_trimmer = pawpaw.arborform.Wrap(lambda ito: [ito.str_strip()])
+        doc_trimmer = pawpaw.arborform.Wrap(lambda ito: [ito.str_strip(''.join(unicode_white_spaces.values()))])
 
         paragraph = pawpaw.arborform.Split(self._paragraph_re, desc='Paragraph')
         doc_trimmer.itor_next = paragraph

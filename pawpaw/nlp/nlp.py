@@ -199,7 +199,7 @@ class SimpleNlp:
         paragraph = pawpaw.arborform.Split(self._paragraph_re, desc='paragraph')
         doc_trimmer.itor_next = paragraph
 
-        para_trimmer = pawpaw.arborform.Wrap(lambda ito: [ito.str_strip()])
+        para_trimmer = pawpaw.arborform.Wrap(lambda ito: [ito.str_strip(''.join(unicode_white_spaces.values()))])
         paragraph.itor_next = para_trimmer
 
         sentence = pawpaw.arborform.Split(self._sentence_re, desc='sentence')
@@ -213,7 +213,7 @@ class SimpleNlp:
 
         if chars:
             char = pawpaw.arborform.Extract(regex.compile(r'(?P<char>\w)', regex.DOTALL))
-            word_number.itor_children = lambda ito: char if ito.desc == 'Word' else None
+            word_number.itor_children = lambda ito: char if ito.desc == 'word' else None
 
         self.itor = doc_trimmer
 

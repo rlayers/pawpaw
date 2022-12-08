@@ -50,30 +50,30 @@ class TestSimpleNlp(_TestIto):
         for name, data in {
             'One sentence': {
                 'Dick said, "Look, look up!"':
-                    {'Document': 1, 'Paragraph': 1, 'Sentence': 1, 'Word': 5, 'Number': 0}
+                    {'Document': 1, 'paragraph': 1, 'sentence': 1, 'word': 5, 'number': 0}
             },
 
             'One sentence with numbers': {
                 'Does this sentence have 6 or 8 words?':
-                    {'Document': 1, 'Paragraph': 1, 'Sentence': 1, 'Word': 6, 'Number': 2}
+                    {'Document': 1, 'paragraph': 1, 'sentence': 1, 'word': 6, 'number': 2}
 
             },
 
             'Two sentences': {
                 'Father said, "I want something."  "Oh, Father," said Sally.':
-                    {'Document': 1, 'Paragraph': 1, 'Sentence': 2, 'Word': 9, 'Number': 0}
+                    {'Document': 1, 'paragraph': 1, 'sentence': 2, 'word': 9, 'number': 0}
             },
 
             'Two paragraphs': {
                 '\tI am.  I was.\r\n\r\n\tI will be.\r\n\r\n':
-                    {'Document': 1, 'Paragraph': 2, 'Sentence': 3, 'Word': 7, 'Number': 0}
+                    {'Document': 1, 'paragraph': 2, 'sentence': 3, 'word': 7, 'number': 0}
             },
 
             'Moby Dick': {
                 """Call me Ishmael. Some years ago — never mind how long precisely — having
                 little or no money in my purse, and nothing particular to interest me on shore,
                 I thought I would sail about a little and see the watery part of the world.""":
-                    {'Document': 1, 'Paragraph': 1, 'Sentence': 2, 'Word': 43, 'Number': 0}
+                    {'Document': 1, 'paragraph': 1, 'sentence': 2, 'word': 43, 'number': 0}
             },
 
             'Poe': {
@@ -83,7 +83,7 @@ class TestSimpleNlp(_TestIto):
                 As of some one gently rapping, rapping at my chamber door.
                 “’Tis some visitor,” I muttered, “tapping at my chamber door—
                 Only this and nothing more.”""":
-                    {'Document': 1, 'Paragraph': 1, 'Sentence': 2, 'Word': 57, 'Number': 0}
+                    {'Document': 1, 'paragraph': 1, 'sentence': 2, 'word': 57, 'number': 0}
             }
         }.items():
             for text, counts in data.items():

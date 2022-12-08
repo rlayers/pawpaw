@@ -15,6 +15,20 @@ v_tree = pepo.Tree()
 v_xml = pepo.Xml()
 v_json = pepo.Json()
 
+
+import requests
+import pawpaw
+
+sleepy_hollow = 'https://www.gutenberg.org/ebooks/41.txt.utf-8'
+with requests.get(sleepy_hollow) as r:
+    root = pawpaw.nlp.SimpleNlp().from_text(r.text)
+for para in root.children[:10]:
+    print(pawpaw.visualization.pepo.Tree().dumps(para))
+exit(0)
+
+
+
+
 s = ' The quick brown fox. '
 i = Ito(s, 1, -1)
 i.children.add(*i.str_split())

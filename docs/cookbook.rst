@@ -1,13 +1,13 @@
-========================
-``ito-segment`` Cookbook
-========================
+===============
+Pawpaw Cookbook
+===============
 
-**********
+
 Extraction
-**********
+==========
 
 Extract all characters as ``str`` 
-=================================================
+---------------------------------
 
 ::
 
@@ -17,8 +17,8 @@ Extract all characters as ``str``
  >>> print(*(str(i)))  # So do this for an Ito
  a b c
 
-Extract all characters as ``Itos``
-=============================================
+Extract all characters as ``Ito``
+---------------------------------
 
 ::
 
@@ -27,8 +27,8 @@ Extract all characters as ``Itos``
  >>> [*i]
  [Ito(' abc ', 1, 2, None), Ito(' abc ', 2, 3, None), Ito(' abc ', 3, 4, None)]
 
-Add all characters as child ``Itos``
-====================================
+Add all characters as child ``Ito``
+-----------------------------------
 
 ::
 
@@ -40,15 +40,15 @@ Add all characters as child ``Itos``
 
 
 Create a char-extracting itorator
-=================================
+---------------------------------
 
 ::
 
- >>> chars = Wrap(lambda ito: iter(ito))  # 1. If you don't need to provide a desc
- >>> chars = Wrap(lambda ito: Ito.from_substrings(s, *ito, desc='char'))  # 2. If you want a desc
+ >>> char_itor = Wrap(lambda ito: iter(ito))  # 1. If you don't need a desc
+ >>> char_itor = Wrap(lambda ito: Ito.from_substrings(s, *ito, desc='char'))  # 2. If you need a desc
 
-Perform NLP extraction on some text
-===================================
+Perform NLP Extraction
+----------------------
 
 ::
 

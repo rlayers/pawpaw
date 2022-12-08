@@ -196,23 +196,23 @@ class SimpleNlp:
 
         doc_trimmer = pawpaw.arborform.Wrap(lambda ito: [ito.str_strip(''.join(unicode_white_spaces.values()))])
 
-        paragraph = pawpaw.arborform.Split(self._paragraph_re, desc='Paragraph')
+        paragraph = pawpaw.arborform.Split(self._paragraph_re, desc='paragraph')
         doc_trimmer.itor_next = paragraph
 
         para_trimmer = pawpaw.arborform.Wrap(lambda ito: [ito.str_strip()])
         paragraph.itor_next = para_trimmer
 
-        sentence = pawpaw.arborform.Split(self._sentence_re, desc='Sentence')
+        sentence = pawpaw.arborform.Split(self._sentence_re, desc='sentence')
         paragraph.itor_children = sentence
 
         self._number = number |nuco| Number()
-        word_num_re = regex.compile(r'(?P<Number>' + self._number.num_pat + r')|(?P<Word>' + self._word_pat + r')', regex.DOTALL, sqs=list(unicode_single_quote_marks.values()))
+        word_num_re = regex.compile(self._number.num_pat + r'|(?P<word>' + self._word_pat + r')', regex.DOTALL, sqs=list(unicode_single_quote_marks.values()))
 
         word_number = pawpaw.arborform.Extract(word_num_re)
         sentence.itor_children = word_number
 
         if chars:
-            char = pawpaw.arborform.Extract(regex.compile(r'(?P<Character>\w)', regex.DOTALL))
+            char = pawpaw.arborform.Extract(regex.compile(r'(?P<char>\w)', regex.DOTALL))
             word_number.itor_children = lambda ito: char if ito.desc == 'Word' else None
 
         self.itor = doc_trimmer

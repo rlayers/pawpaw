@@ -47,3 +47,33 @@ Create a char-extracting itorator
  >>> chars = Wrap(lambda ito: iter(ito))  # Use pawpaw.itorator.Wrap
  >>> chars = Wrap(lambda ito: Ito.from_substrings(s, *ito, desc='char'))  # If you want to supply a desc
  
+ 
+Do an NLP extraction on some text
+=================================
+
+::
+
+ >>> import requests
+ >>> import pawpaw
+ >>>
+ >>> sleepy_hollow = 'https://www.gutenberg.org/ebooks/41.txt.utf-8'
+ >>> with requests.get(sleepy_hollow) as r:
+ >>>     root = pawpaw.nlp.SimpleNlp().from_text(r.text)
+ >>> para = root.children[0]
+ >>> print(pawpaw.visualization.pepo.Tree().dumps(para))
+ (0, 81) 'Paragraph' : '\ufeffThe Project Gutenberg eBook of T…
+ └──(0, 81) 'Sentence' : '\ufeffThe Project Gutenberg eBook of T…
+    ├──(1, 4) 'Word' : 'The'
+    ├──(5, 12) 'Word' : 'Project'
+    ├──(13, 22) 'Word' : 'Gutenberg'
+    ├──(23, 28) 'Word' : 'eBook'
+    ├──(29, 31) 'Word' : 'of'
+    ├──(32, 35) 'Word' : 'The'
+    ├──(36, 42) 'Word' : 'Legend'
+    ├──(43, 45) 'Word' : 'of'
+    ├──(46, 52) 'Word' : 'Sleepy'
+    ├──(53, 59) 'Word' : 'Hollow'
+    ├──(61, 63) 'Word' : 'by'
+    ├──(64, 74) 'Word' : 'Washington'
+    └──(75, 81) 'Word' : 'Irving'
+ 

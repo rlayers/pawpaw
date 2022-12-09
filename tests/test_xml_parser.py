@@ -64,3 +64,8 @@ class TestXmlParser(_TestIto):
                 self.assertTrue(next_sibling is None or next_sibling.desc != xml.descriptors.TEXT)
             else:
                 self.assertEqual(descendant.tail, str(next_sibling))
+
+    def test_encoded_text(self)
+        # Ensure that encoded text (e.g., "&amp;") doesn't cause problems with span computations
+        # TODO : Create test
+        self.assertTrue(False)

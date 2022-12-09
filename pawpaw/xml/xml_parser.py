@@ -126,10 +126,8 @@ class XmlParser(ET.XMLParser):
 
         ito.children.add(start_tag)
         
-        if element.text is not None:
-            if not self.ignore_empties or not element.text.isspace():
-                text = Ito(self._text, start_tag.stop, start_tag.stop + len(element.text), xml.descriptors.TEXT)
-                ito.children.add(text)
+        # Note: Don't use len(element.text) or len(element.tail) to compute offsets: these values have been
+        # xml decoded and the offsets may not match the original input string.  
 
         for child in element:
             self._extract_itos(child)
@@ -139,8 +137,16 @@ class XmlParser(ET.XMLParser):
             # (See https://docs.python.org/3/library/xml.etree.elementtree.html for definition of .tail attr.)
             if child.tail is not None:
                 if not self.ignore_empties or not child.tail.isspace():
-                    ito_text = Ito(self._text, child.ito.stop, child.ito.stop + len(child.tail), xml.descriptors.TEXT)
+                    # Note: If a child has a tail, then there must be an end_tag for its parent
+                    ito_text = Ito(self._text, child.ito.stop, end_tag.start, xml.descriptors.TEXT)
                     ito.children.add(ito_text)
+
+        if element.text is not None:
+            if not self.ignore_empties or not element.text.isspace():
+                # Note: If an element has text, then there must be an end_tag
+                stop = element[0].ito.start if len(element) > 0 else end_tag.start
+                text = Ito(self._text, start_tag.stop, stop, xml.descriptors.TEXT)
+                ito.children.add(text)
 
         if end_tag is not None:
             ito.children.add(end_tag)

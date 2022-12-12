@@ -23,6 +23,9 @@ class XmlParser(ET.XMLParser):
     _itor_extract_tag = Extract(_re_ns_tag)
     _itor_extract_attributes = Extract(_re_attribute)
 
+    _re_comment = regex.compile(r'(?P<' + xml.descriptors.COMMENT + r'>\<\!\-\-(?P<' + xml.descriptors.VALUE + r'>.*?)\-\-\>)', regex.DOTALL)
+    _itor_extract_comments = Extract(_re_comment)
+
     class _Spans:
         line: Span | None = None
         column: Span | None = None
@@ -101,6 +104,8 @@ class XmlParser(ET.XMLParser):
         self._indexing_parser = self._InternalIndexingParser(data, self.encoding)
         super().feed(data)
 
+    text_comments = Extract
+
     def _extract_itos(self, element: ET.Element) -> None:
         start_tag = Ito(
             self._text,
@@ -139,6 +144,7 @@ class XmlParser(ET.XMLParser):
                 if not self.ignore_empties or not child.tail.isspace():
                     # Note: If a child has a tail, then there must be an end_tag for its parent
                     ito_text = Ito(self._text, child.ito.stop, end_tag.start, xml.descriptors.TEXT)
+                    ito_text.children.add(*self._itor_extract_comments.traverse(ito_text))
                     ito.children.add(ito_text)
 
         if element.text is not None:
@@ -146,6 +152,7 @@ class XmlParser(ET.XMLParser):
                 # Note: If an element has text, then there must be an end_tag
                 stop = element[0].ito.start if len(element) > 0 else end_tag.start
                 text = Ito(self._text, start_tag.stop, stop, xml.descriptors.TEXT)
+                text.children.add(*self._itor_extract_comments.traverse(text))
                 ito.children.add(text)
 
         if end_tag is not None:

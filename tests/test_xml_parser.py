@@ -2,8 +2,9 @@ import sys
 # Force Python XML parser, not faster C accelerators because we can't hook the C implementation (3.x hack)
 sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
+import html
 
-import pawpaw.xml as xml
+from pawpaw import Ito, Span, xml
 from tests.util import _TestIto, XML_TEST_SAMPLES
 
 
@@ -14,7 +15,7 @@ class TestXmlParser(_TestIto):
                 root_e = ET.fromstring(sample.xml, parser=xml.XmlParser())
                 self.assertTrue(hasattr(root_e, 'ito'))
 
-                root_i: pawpaw.Ito = root_e.ito
+                root_i: Ito = root_e.ito
                 self.assertEqual(xml.descriptors.ELEMENT, root_i.desc)
 
                 self.assertIs(root_e, root_i.value())
@@ -45,7 +46,7 @@ class TestXmlParser(_TestIto):
             with self.subTest(xml_source=sample.source):
                 root_e = ET.fromstring(sample.xml, parser=xml.XmlParser())
 
-                root_i: pawpaw.Ito = root_e.ito
+                root_i: Ito = root_e.ito
                 self.assertIsNotNone(root_i)
                 self.assertIs(root_e, root_i.value())
 
@@ -65,7 +66,40 @@ class TestXmlParser(_TestIto):
             else:
                 self.assertEqual(descendant.tail, str(next_sibling))
 
-    def test_encoded_text(self)
+    def test_xml_entity_references(self):
+        # Ensure that entity references (e.g., "&amp;") don't cause issues with span computations and Ito construction
+        sample = \
+"""<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+    beans &amp; franks
+    <math>1 &lt; 2</math>
+    <music type="R&amp;B" />
+    Q&amp;A
+</nodes>"""
+        root = ET.fromstring(sample, parser=xml.XmlParser())
+
+        # First make sure our xml looks correct with de-escaped references for its text & tails
+        self.assertEqual(root.text.strip(), html.unescape('beans &amp; franks'))
+        self.assertEqual(root[0].text, html.unescape('1 &lt; 2'))
+        self.assertEqual(root[-1].attrib['type'], html.unescape('R&amp;B'))
+        self.assertEqual(root[-1].tail.strip(), html.unescape('Q&amp;A'))
+
+        # Now compare html escaped xml text & tails to corresponding Itos
+        self.assertEqual(html.escape(root.text), root.ito.find(f'*[d:{xml.descriptors.TEXT}]').__str__())
+        self.assertEqual(html.escape(root[0].text), root[0].ito.find(f'*[d:{xml.descriptors.TEXT}]').__str__())
+        self.assertEqual(html.escape(root[-1].attrib['type']), root[-1].ito.find(f'**[d:{xml.descriptors.ATTRIBUTE}]/*[d:{xml.descriptors.VALUE}]').__str__())
+        self.assertEqual(html.escape(root[-1].tail), root.ito.find(f'-*[d:{xml.descriptors.TEXT}]').__str__())
+
+    def test_xml_comments(self):
         # Ensure that encoded text (e.g., "&amp;") doesn't cause problems with span computations
-        # TODO : Create test
-        self.assertTrue(False)
+        comment = '<!--Here is a comment-->'
+        text = 'Here is some text'
+        sample = '<?xml version="1.0" encoding="UTF-8"?><a>' + comment + text + '</a>'
+
+        # root = ET.fromstring(sample, parser=ET.XMLParser(target=ET.TreeBuilder(insert_comments=True)))
+        root = ET.fromstring(sample, parser=xml.XmlParser())
+        self.assertEqual(root.text, text)
+
+        text_ito = root.ito.find(f'*[d:{xml.descriptors.TEXT}]')
+        self.assertIsNotNone(text_ito)
+        self.assertEqual(comment + text, str(text_ito))

@@ -180,6 +180,118 @@ class SimpleNlp:
     _paragraph_pat = r'(?:\r?\n\L<s_t_lf>*){2,}'
     _paragraph_re = regex.compile(_paragraph_pat, regex.DOTALL, s_t_lf=_spaces_tab_line_feed)
 
+    # Common abbreviations that are typically followed by a digit and/or uppercase letter as identifier
+    _skip_abbrs_1 = [
+        'c.',     # circa
+        'ca.',    # circa
+        'ed.',    # edition
+        'illus.', # circa
+        'no.',    # number
+        'p.',     # page
+        'pp.',    # pages
+        'ver.',   # version
+        'vol.',   # volume
+    ]
+
+    # Common abbreviations that are typically not sentence boundaries, even when followed by uppercase words
+    _skip_abbrs_1 = [
+        'Ald.',     # Alderman
+        'Dr.',      # Doctor
+        'ed.',      # editor
+        'e.g.',     # exempli gratia
+        'Fr.',      # Father
+        'Gov.',     # Governor
+        'Hon.',     # Honorable (sometimes Rt. Hon. for Right Honorable)
+        'ibid.',    # ibidem
+        'i.e.',     # ed est
+        'illus.',   # illustrated by
+        'Messrs.',  # plural of Mr.
+        'Mr.',      # Mister
+        'Mmes.',    # Missus
+        'Mrs.',     # plural of Mrs.
+        'Ms.',      # Miss
+        'Msgr.',    # Monsignor  
+        'pub.',     # published by / publisher
+        'pseud.',   # pseudonym
+        'Pres.',    # President
+        'Prof.',    # Professor
+        'qtd.',     # quoted in
+        'Rep.',     # Representative
+        'Rev.',     # Reverend
+        'Sen.',     # Senator
+        'St.',      # Saint
+        'vis.',     # videlicet
+        'vs.',      # versus
+    ]
+
+    # See: https://www.va.gov/vetsinworkplace/docs/em_rank.html
+
+    _mil_officer_abbr = [
+        # O1
+        '2lc.',     # Second Lieutenant
+
+        # O2
+        '1lc.',     # First Lieutenant
+        'Lt.',     # Lieutenant 
+
+        # O3
+        'Cpt.',    # Captain
+
+        # O4
+        'Maj.',    # Major
+
+        # O5
+        'Ltc.',    # Lieutenant Colonel
+
+        # O6
+        'Col.',    # Colonel
+
+        # O7
+        'Bg.',     # Brigadier General
+
+        # O8
+        'Mg.',     # Major General
+
+        # O9
+        'Ltg.',    # Lieutenant General
+
+        # O10
+        'Gen.',    # General
+    ]
+
+    _mil_enlisted_abbr = [
+        # E1
+        'Pvt.',   # Private
+
+        # E2
+        'pv2.',   # Private 2
+
+        # E3
+        'Pfc.',   # Private First Class
+
+        # E3
+        'Spc.',   # Specialist
+        'Cpl.',   # Corporal
+
+        # E5
+        'Sgt.',   # Sergeant
+
+        # E6
+        'Ssg.',   # Staff Sergeant
+
+        # E7
+        'Sfc.',   # Sergeant First Class
+
+        # E8
+        'Msg.',   # Master Sergeant
+        '1sg.',   # First Sergeant
+
+        # E9
+        'Sgm.',   # Sergeant Major
+        'Csm.',   # Command Major
+        'Sma.',   # Sergeant Major of the Army
+    ]
+
     # sentence must end with a) period, b) elipses ('...' or '…'), or c) one or more '!' or '?', e.g. He said "What?!?"
     _sentence_terminator_pats = r'\.', r'\.{3,}', r'…', r'[\!\?]+'
 

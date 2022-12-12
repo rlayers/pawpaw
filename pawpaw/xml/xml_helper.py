@@ -159,7 +159,7 @@ class XmlHelper:
         return tag[:i + 1] if i >= 0 else None
 
     @classmethod
-    def findall_descendants_by_local_name(cls, element: ET.Element, local_name: str) -> typing.Iterable[ET.Element]:
+    def find_all_descendants_by_local_name(cls, element: ET.Element, local_name: str) -> typing.Iterable[ET.Element]:
         if not isinstance(element, ET.Element):
             raise Errors.parameter_invalid_type('element', element, ET.Element)
 

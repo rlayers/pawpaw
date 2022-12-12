@@ -1,0 +1,57 @@
+===
+XML
+===
+
+Introduction
+============
+
+Pawpaw provides offers enhanced XML processing capabilities in its ``xml`` namespace.  Functionality is present in two main classes:
+
+* ``XmlParser``
+* ``XmlHelper``
+
+XmlParser
+=========
+
+Pawpaw's ``XmlParser`` is a drop-in replacement for Python's ``ElementTree.XmlParser``.  Both return identical graphs of ``Element``
+objects, however, the ``Element`` objects produced by the Pawpaw parser are decorated with an additional ``.ito`` attribute that
+returns a corresponding ``Ito`` corresponding to the substring the ``Element`` was extracted from.  These ``Ito`` objects, in turn, have
+their ``.value`` method overriden to return their associated ``Element`` objects.  All of the ``Ito`` objects are fully hierarchical
+with one another back to the topmost (root) node of the overall XML document, and have children corresponding to tags, attributes,
+and text.
+
+Using the PawPaw parser results in two, parallel datastructures that are cross-linked to each other at every element.  This allows
+you to use *either* data structure where convenient.  You can even swtich back and forth as needed.
+
+>>> root.find('*').ito.find(f'*[d:{xml.descriptors.TEXT}]')  # Get untransformed text of element
+
+* ElementTree.XmlParser is transformational
+ - xmlns attriutes removed
+ - Namespace values for entity tags and attribute names replaced
+ - Entity references converted to characters
+ - Comments processing instructions removed[#]_
+
+a graph of
+Element objects as  decorated with an .ito attribute, which returns a corresponding Ito segment.  These Ito objects, in turn, have
+their .value method overriden to return their associated Element objects.  The resulting data structure has a 
+
+With Pawpaw, you can process XML in
+the same way you have been doing with ElementTree, however, you are 
+
+beyond Python's default handlers.  ThesePawpaw enhances Python XML processing  provides several features to enhance Python XML processing.
+
+XML Processing
+Features a drop-in replacement for ElementTree.XmlParser
+Full text indexes for all Elements, Attributes, Tags, Text, etc.
+Search XML using both XPATH and the included, structured query language
+
+In order to fully describe a substring, a segment requires a reference string.  In other words, both a ``Span`` and ``str`` are required, which is represented in Pawpaw via the *In Text Object*\ [#]_, implemented as class ``Ito``.
+
+
+
+
+----
+
+.. [#] As of Python 3.8, you can pass a reference to a ``TreeBuilder`` to ``ElementTree.XmlParser`` to define how you want comments and processing
+instructions handled.  However, this behavior results in additional ``Element`` objects containing the comments and/or processing instructions, which
+results in an awkward tree structure that has less correspondance to the underlying XML document

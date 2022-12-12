@@ -107,7 +107,7 @@ Font = _Font()
 
 
 @dataclass
-class Colors:
+class _Colors:
     class Named(enum.IntEnum):
         BLACK  : int = 0
         RED    : int = 1
@@ -142,6 +142,9 @@ class Colors:
             232-255:  grayscale from dark to light in 24 steps
         """
         pass
+
+
+Colors = _Colors()
 
 
 Color = Colors.Named | Colors.Rgb | Colors.EightBit

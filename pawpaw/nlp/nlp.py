@@ -181,13 +181,13 @@ class SimpleNlp:
     _paragraph_re = regex.compile(_paragraph_pat, regex.DOTALL, s_t_lf=_spaces_tab_line_feed)
 
     # sentence must end with a) period, b) elipses ('...' or '…'), or c) one or more '!' or '?', e.g. He said "What?!?"
-    _sentence_terminator_pats = r'\.', r'\.{3}', r'…', r'[\!\?]+'
+    _sentence_terminator_pats = r'\.', r'\.{3,}', r'…', r'[\!\?]+'
 
     _sentence_suffix_chars = list(unicode_single_quote_marks.values())
     _sentence_suffix_chars.extend(unicode_double_quote_marks.values())
     _sentence_suffix_chars.extend(c for c in ')]}')
 
-    _sentence_re = regex.compile(r'(?<=\s*(?:' + '|'.join(_sentence_terminator_pats) + r')\L<s_suf_c>*)(?:\s+)', regex.DOTALL, s_suf_c=_sentence_suffix_chars)
+    _sentence_re = regex.compile(r'(?<=\w(?:' + '|'.join(_sentence_terminator_pats) + r')\L<s_suf_c>*)(?:\s{2,}|\s(?=$|[A-Z]))', regex.DOTALL, s_suf_c=_sentence_suffix_chars)
 
     _word_pat = r'\w(?:(?:\L<sqs>|-\s*)?\w)*'
 

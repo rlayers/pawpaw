@@ -243,8 +243,15 @@ class Extract(Itorator):
                  desc_func: Types.F_ITO_M_GK_2_DESC = lambda ito, match, group: group,
                  group_filter: collections.abc.Container[str] | Types.F_ITO_M_GK_2_B | None = None):
         super().__init__()
+        if not isinstance(re, regex.Pattern):
+            raise Errors.parameter_invalid_type('re', re, regex.Pattern)
         self.re = re
+        if limit is not None and not not isinstance(limit, int):
+            raise Errors.parameter_invalid_type('limit', limit, int)
         self.limit = limit
+        if not Types.is_callable(desc_func, Types.)
+        if not isinstance(desc_func, Types.F_ITO_M_GK_2_DESC):
+            raise Errors.parameter_invalid_type('desc_func', desc_func, Types.F_ITO_M_GK_2_DESC)
         self.desc_func = desc_func
         self.group_filter = group_filter
 

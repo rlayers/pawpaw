@@ -48,7 +48,21 @@ Search XML using both XPATH and the included, structured query language
 In order to fully describe a substring, a segment requires a reference string.  In other words, both a ``Span`` and ``str`` are required, which is represented in Pawpaw via the *In Text Object*\ [#]_, implemented as class ``Ito``.
 
 
+XmlHelper
+=========
 
+Pawpaw's ``XmlHelper`` offers a variety of useful methods for working with Element data.
+
+* ``get_qualified_name``
+* ``get_xmlns``
+* ``get_prefix_map`` : Builds a prefix dict suitable for passing to ET methods such as Element.find('foo:goo', prefix_map); keys & values are suitable for passing to xml.etree.ElementTree.register_namespace``, ``.find``, or ``.findall methods``
+* ``get_default_namespace``
+* ``get_element_text_if_found``
+* ``get_local_name``
+* ``get_namespace``
+* ``find_all_descendants_by_local_name``
+* ``find_descendant_by_local_name``
+* ``reverse_find``
 
 ----
 

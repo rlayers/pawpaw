@@ -172,7 +172,7 @@ class XmlHelper:
 
     @classmethod
     def find_descendant_by_local_name(cls, element: ET.Element, local_name: str) -> ET.Element | None:
-        return next(cls.findall_descendants_by_local_name(element, local_name), None)
+        return next(cls.find_all_descendants_by_local_name(element, local_name), None)
 
     @classmethod
     def reverse_find(cls, element: ET.Element, predicate: str) -> ET.Element | None:

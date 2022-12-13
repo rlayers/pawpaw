@@ -172,16 +172,24 @@ class Number:
         return self._re
 
 
-class SimpleNlp:
-    _spaces_tab_line_feed = list(unicode_white_spaces.values())
-    _spaces_tab_line_feed.append(unicode_controls['CHARACTER TABULATION'])
-    _spaces_tab_line_feed.append(unicode_controls['LINE FEED'])
+class Sentence:
+    _prefix_chars = list(unicode_single_quote_marks.values())
+    _prefix_chars.extend(unicode_double_quote_marks.values())
+    _prefix_chars.extend(c for c in '([{')
 
-    _paragraph_pat = r'(?:\r?\n\L<s_t_lf>*){2,}'
-    _paragraph_re = regex.compile(_paragraph_pat, regex.DOTALL, s_t_lf=_spaces_tab_line_feed)
+    _terminators = [
+        r'\.',     # Full stop
+        r'\.{3,}', # Elipses; three periods
+        r'…',      # Elipses char
+        r'[\!\?]+' # Exclamation & Question mark(s)
+    ]
 
-    # Common abbreviations that are typically followed by a digit and/or uppercase letter as identifier
-    _skip_abbrs_1 = [
+    _suffix_chars = list(unicode_single_quote_marks.values())
+    _suffix_chars.extend(unicode_double_quote_marks.values())
+    _suffix_chars.extend(c for c in ')]}')
+
+    # Common abbrs that are typically followed by a digit
+    _numeric_abbrs = [
         'c.',     # circa
         'ca.',    # circa
         'ed.',    # edition
@@ -190,11 +198,11 @@ class SimpleNlp:
         'p.',     # page
         'pp.',    # pages
         'ver.',   # version
-        'vol.',   # volume
+        'vol.',   # volume        
     ]
 
-    # Common abbreviations that are typically not sentence boundaries, even when followed by uppercase words
-    _skip_abbrs_1 = [
+    # Common abbrs that are typically not sentence boundaries, even when followed by uppercase
+    _ignore_abbrs = [
         'Ald.',     # Alderman
         'Dr.',      # Doctor
         'ed.',      # editor
@@ -211,6 +219,7 @@ class SimpleNlp:
         'Mrs.',     # plural of Mrs.
         'Ms.',      # Miss
         'Msgr.',    # Monsignor  
+        'Mt.',      # Mount / Mountain
         'pub.',     # published by / publisher
         'pseud.',   # pseudonym
         'Pres.',    # President
@@ -224,82 +233,73 @@ class SimpleNlp:
         'vs.',      # versus
     ]
 
-    # See: https://www.va.gov/vetsinworkplace/docs/em_rank.html
-
-    _mil_officer_abbr = [
-        # O1
-        '2lc.',     # Second Lieutenant
-
-        # O2
-        '1lc.',     # First Lieutenant
-        'Lt.',     # Lieutenant 
-
-        # O3
-        'Cpt.',    # Captain
-
-        # O4
-        'Maj.',    # Major
-
-        # O5
-        'Ltc.',    # Lieutenant Colonel
-
-        # O6
-        'Col.',    # Colonel
-
-        # O7
-        'Bg.',     # Brigadier General
-
-        # O8
-        'Mg.',     # Major General
-
-        # O9
-        'Ltg.',    # Lieutenant General
-
-        # O10
-        'Gen.',    # General
+    # Military officer abbrs: see https://pavilion.dinfos.edu/Article/Article/2205094/military-rank-abbreviations/
+    _mil_officer_abbrs = [
+        'Lt.',        # Lieutenant 
+        'Lt. j.g.',   # Lieutenant Junior Grade
+        'Capt.',      # Captain
+        'Cpt.',       # Captain
+        'Maj.',       # Major
+        'Lt. Cmdr.',  # Lieutenant Commander
+        'Lt. Col.',   # Lieutenant Colonel
+        'Cmdr.',      # Commander
+        'Col.',       # Colonel
+        'Brig. Gen.', # Brigadier General
+        'Maj. Gen.',  # Major General
+        'Lt. Gen.',   # Lieutenant General
+        'Gen.',       # General
+        'Adm.',       # Admiral
     ]
 
-    _mil_enlisted_abbr = [
+    # Military enlisted abbrs: see https://pavilion.dinfos.edu/Article/Article/2205094/military-rank-abbreviations/
+    _mil_enlisted_abbrs = [
         # E1
-        'Pvt.',   # Private
-
-        # E2
-        'pv2.',   # Private 2
-
-        # E3
-        'Pfc.',   # Private First Class
-
-        # E3
-        'Spc.',   # Specialist
-        'Cpl.',   # Corporal
-
-        # E5
-        'Sgt.',   # Sergeant
-
-        # E6
-        'Ssg.',   # Staff Sergeant
-
-        # E7
-        'Sfc.',   # Sergeant First Class
-
-        # E8
-        'Msg.',   # Master Sergeant
-        '1sg.',   # First Sergeant
-
-        # E9
-        'Sgm.',   # Sergeant Major
-        'Csm.',   # Command Major
-        'Sma.',   # Sergeant Major of the Army
+        'Pvt.',     # Private
+        'Pfc.',     # Private First Class
+        'Spc.',     # Specialist
+        'Cpl.',     # Corporal
+        'Sgt.',     # Sergeant
+        'Sgt. Maj.' # Sergeant Major
     ]
 
-    # sentence must end with a) period, b) elipses ('...' or '…'), or c) one or more '!' or '?', e.g. He said "What?!?"
-    _sentence_terminator_pats = r'\.', r'\.{3,}', r'…', r'[\!\?]+'
+    _ignores = _ignore_abbrs
+    _ignores.extend(_mil_officer_abbrs)
+    _ignores.extend(_mil_enlisted_abbrs)
 
-    _sentence_suffix_chars = list(unicode_single_quote_marks.values())
-    _sentence_suffix_chars.extend(unicode_double_quote_marks.values())
-    _sentence_suffix_chars.extend(c for c in ')]}')
+    _sen_ws = ['\r\n', '\n']
+    _sen_ws.extend(unicode_white_spaces.values())
 
-    _sentence_re = regex.compile(r'(?<=\w(?:' + '|'.join(_sentence_terminator_pats) + r')\L<s_suf_c>*)(?:\s{2,}|\s(?=$|[A-Z]))', regex.DOTALL, s_suf_c=_sentence_suffix_chars)
+    _exceptions = [
+        r'(?<!\L<ignores>)',                                            # Ignores 
+        r'(?<![A-Z][a-z]+\L<sen_ws>[A-Z]\.(?=\L<sen_ws>[A-Z][a-z]+))',  # Common human name pattern
+        r'(?<!U\.S\.(?=\L<sen_ws>Government))',                         # "U.S. Government"
+    ]
+
+    p1 = r'(?<=\L<sen_suf>)\L<sen_ws>+'
+    p2 = r'\L<sen_ws>{2,}'
+    p3 = r''.join(_exceptions) + r'\L<sen_ws>(?=$|\L<sen_pre>*[A-Z])'
+
+    combined = '|'.join(f'(?:{pat})' for pat in (p2, p3))
+
+    _re = regex.compile(r'(?<=\w(' + '|'.join(_terminators) + r'))(?:' + combined + r')',
+        regex.DOTALL,
+        # sen_suf=_suffix_chars,
+        sen_ws=_sen_ws,
+        ignores=_ignores,
+        sen_pre=_prefix_chars
+    )
+
+    @property
+    def re(self) -> regex.Pattern:
+        return self._re    
+
+class SimpleNlp:
+    _spaces_tab_line_feed = list(unicode_white_spaces.values())
+    _spaces_tab_line_feed.append(unicode_controls['CHARACTER TABULATION'])
+    _spaces_tab_line_feed.append(unicode_controls['LINE FEED'])
+
+    _paragraph_pat = r'(?:\r?\n\L<s_t_lf>*){2,}'
+    _paragraph_re = regex.compile(_paragraph_pat, regex.DOTALL, s_t_lf=_spaces_tab_line_feed)
 
     _word_pat = r'\w(?:(?:\L<sqs>|-\s*)?\w)*'
 
@@ -314,7 +314,7 @@ class SimpleNlp:
         para_trimmer = pawpaw.arborform.Wrap(lambda ito: [ito.str_strip(''.join(unicode_white_spaces.values()))])
         paragraph.itor_next = para_trimmer
 
-        sentence = pawpaw.arborform.Split(self._sentence_re, desc='sentence')
+        sentence = pawpaw.arborform.Split(Sentence().re, desc='sentence')
         paragraph.itor_children = sentence
 
         self._number = number |nuco| Number()

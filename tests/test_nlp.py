@@ -1,3 +1,6 @@
+import typing
+from dataclasses import dataclass
+
 import pawpaw
 from tests.util import _TestIto, IntIto
 
@@ -43,7 +46,144 @@ class TestNumber(_TestIto):
                 with self.assertRaises((ValueError, TypeError)):
                     pawpaw.nlp.Number(thousands_sep=sep)
 
-          
+
+class TestSentence(_TestIto):
+    @dataclass
+    class _TestData:
+        description: str
+        text: str
+        expected: typing.List[str]
+
+    def setUp(self) -> None:
+        self.test_data: typing.List[TestSentence._TestData] = [
+            TestSentence._TestData(
+                'EOF',
+                'Yes.',
+                [
+                    'Yes.',
+                ]
+            ),
+            TestSentence._TestData(
+                'Two whitespace',
+                'The king was John I.  Henry was his son.',
+                [
+                    'The king was John I.',
+                    'Henry was his son.',
+                ]
+            ),
+            TestSentence._TestData(
+                'Period (Full stop)',
+                'Mary spake. Then John',
+                [
+                    'Mary spake.',
+                    'Then John'
+                ]
+            ),
+            TestSentence._TestData(
+                'Question mark',
+                'What day is it? Tuesday.',
+                [
+                    'What day is it?',
+                    'Tuesday.',
+                ]
+            ),
+            TestSentence._TestData(
+                'Exclamation mark',
+                'Wait! I want to come.',
+                [
+                    'Wait!',
+                    'I want to come.',
+                ]
+            ),
+            TestSentence._TestData(
+                'Multiple EOS delimiters',
+                'Wait... how can that be?!? Tell me!! Why is this so hard!?!',
+                [
+                    'Wait... how can that be?!?',
+                    'Tell me!!',
+                    'Why is this so hard!?!',
+                ]
+            ),
+            TestSentence._TestData(
+                'Sentence starts with number',
+                'He lived a long life. 100 years approximately.',
+                [
+                    'He lived a long life.',
+                    '100 years approximately.',
+                ]
+            ),
+            TestSentence._TestData(
+                'Number following numeric abbreviation.',
+                'Hippocrates was born c. 460 bce.  See pp. 431 in your history book for details.',
+                [
+                    'Hippocrates was born c. 460 bce.',
+                    'See pp. 431 in your history book for details.',
+                ]
+            ),
+            TestSentence._TestData(
+                'Numbers with decimals',
+                'The plane landed 1.5 south of the airport; approximately 32.2540° N, 110.9742°.',
+                [
+                    'The plane landed 1.5 south of the airport; approximately 32.2540° N, 110.9742°.',
+                ]
+            ),
+            TestSentence._TestData(
+                'URLs',
+                'https://github.com/rlayers/pawpaw is home to interesting software.',
+                [
+                    'https://github.com/rlayers/pawpaw is home to interesting software.',
+                ]
+            ),
+            TestSentence._TestData(
+                'Mid-sentence abbreviations',
+                'Jane et. al. worked for Smith & Co. last year.',
+                [
+                    'Jane et. al. worked for Smith & Co. last year.',
+                ]
+            ),
+            TestSentence._TestData(
+                'Possessive abbreviations',
+                'Martin Luther King Jr.\'s legacy endures.',
+                [
+                    'Martin Luther King Jr.\'s legacy endures.',
+                ]
+            ),         
+            TestSentence._TestData(
+                'Exclusion abbreviations.',
+                'Dr. Francis, brother of Prof.\nMustard, and Brig. Gen. Adams hiked together near Mt. Rainer.',
+                [
+                    'Dr. Francis, brother of Prof.\nMustard, and Brig. Gen. Adams hiked together near Mt. Rainer.',
+                ]
+            ),
+            TestSentence._TestData(
+                'High frequency start words',
+                'Ok, Mr. There is no Dr. What shall we do?',
+                [
+                    'Ok, Mr.',
+                    'There is no Dr.',
+                    'What shall we do?',
+                ]
+            ),
+            TestSentence._TestData(
+                'U.S. Government',
+                'The U.S. Government decided against action.',
+                [
+                    'The U.S. Government decided against action.',
+                ]
+            ),            
+        ]
+
+    def test_all(self):
+        sbd = pawpaw.arborform.Split(pawpaw.nlp.Sentence().re, desc='sentence')
+
+        for td in self.test_data:
+            with self.subTest(description=td.description, text=td.text):
+                text = pawpaw.Ito(td.text)
+                expected = [*pawpaw.Ito.from_substrings(text, td.expected, 'sentence')]
+                actual = [*sbd.traverse(text)]
+                self.assertListEqual(expected, actual)
+
+
 class TestSimpleNlp(_TestIto):
     def test_from_text(self):
         nlp = pawpaw.nlp.SimpleNlp()

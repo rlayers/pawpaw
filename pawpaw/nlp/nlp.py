@@ -172,6 +172,27 @@ class Number:
         return self._re
 
 
+class List:
+    """
+    quantifier patterns
+        \d+  :
+        §{1,2}  :  Section (Silcrow) : "16 U.S.C. § 580(p)",  "§§ 13–21"
+        [A-Z]{1,2}  :
+        [MDCLXVI]+  : Latin numerals (could be case insensitive - but should all be same case)
+
+    prefix patterns:
+        •  : Before quantifier
+
+    suffix patterns
+        -
+        .
+        :
+        .)
+       
+    """
+
+    pass
+
 class Sentence:
     _prefix_chars = list(unicode_single_quote_marks.values())
     _prefix_chars.extend(unicode_double_quote_marks.values())
@@ -187,6 +208,22 @@ class Sentence:
     _suffix_chars = list(unicode_single_quote_marks.values())
     _suffix_chars.extend(unicode_double_quote_marks.values())
     _suffix_chars.extend(c for c in ')]}')
+
+    # Words that start sentences with high frequency
+    _hf_start_words = [
+        'A',
+        'How',
+        'In',
+        'It',
+        'The',
+        'There',
+        'This',
+        'What',
+        'When',
+        'Where',
+        'Who',
+        'Why',
+    ]
 
     # Common abbrs that are typically followed by a digit
     _numeric_abbrs = [
@@ -204,7 +241,9 @@ class Sentence:
     # Common abbrs that are typically not sentence boundaries, even when followed by uppercase
     _ignore_abbrs = [
         'Ald.',     # Alderman
+        'Asst.',    # Assistent
         'Dr.',      # Doctor
+        'Drs.',     # Doctors
         'ed.',      # editor
         'e.g.',     # exempli gratia
         'Fr.',      # Father
@@ -213,9 +252,11 @@ class Sentence:
         'ibid.',    # ibidem
         'i.e.',     # ed est
         'illus.',   # illustrated by
+        'Insp.',    # Inspector
         'Messrs.',  # plural of Mr.
-        'Mr.',      # Mister
+        'Mlle.',    # Mademoiselle
         'Mmes.',    # Missus
+        'Mr.',      # Mister
         'Mrs.',     # plural of Mrs.
         'Ms.',      # Miss
         'Msgr.',    # Monsignor  
@@ -226,40 +267,36 @@ class Sentence:
         'Prof.',    # Professor
         'qtd.',     # quoted in
         'Rep.',     # Representative
+        'Reps.',    # Representatives
         'Rev.',     # Reverend
         'Sen.',     # Senator
+        'Sens.',    # Senators
         'St.',      # Saint
         'vis.',     # videlicet
+        'v.',       # versus
         'vs.',      # versus
     ]
 
     # Military officer abbrs: see https://pavilion.dinfos.edu/Article/Article/2205094/military-rank-abbreviations/
     _mil_officer_abbrs = [
         'Lt.',         # Lieutenant
-        'Lt. j.g.',    # Lieutenant Junior Grade
         'Capt.',       # Captain
         'Cpt.',        # Captain
         'Maj.',        # Major
-        'Lt. Cmdr.',   # Lieutenant Commander
-        'Lt. Col.',    # Lieutenant Colonel
         'Cmdr.',       # Commander
         'Col.',        # Colonel
-        'Brig. Gen.',  # Brigadier General
-        'Maj. Gen.',   # Major General
-        'Lt. Gen.',    # Lieutenant General
+        'Brig.',       # Brigadier (as in Brigadier General)
         'Gen.',        # General
         'Adm.',        # Admiral
     ]
 
     # Military enlisted abbrs: see https://pavilion.dinfos.edu/Article/Article/2205094/military-rank-abbreviations/
     _mil_enlisted_abbrs = [
-        # E1
         'Pvt.',      # Private
         'Pfc.',      # Private First Class
         'Spc.',      # Specialist
         'Cpl.',      # Corporal
         'Sgt.',      # Sergeant
-        'Sgt. Maj.'  # Sergeant Major
     ]
 
     _ignores = _ignore_abbrs
@@ -271,28 +308,44 @@ class Sentence:
 
     _exceptions = [
         r'(?<!\L<ignores>)',                                            # Ignores 
+        r'(?<!\L<num_abbrs>(?=\L<sen_ws>\d))',                          # Numeric abbr followed by a digit
         r'(?<![A-Z][a-z]+\L<sen_ws>[A-Z]\.(?=\L<sen_ws>[A-Z][a-z]+))',  # Common human name pattern
         r'(?<!U\.S\.(?=\L<sen_ws>Government))',                         # "U.S. Government"
     ]
 
-    p1 = r'(?<=\L<sen_suf>)\L<sen_ws>+'
-    p2 = r'\L<sen_suf>*\L<sen_ws>{2,}'
-    p3 = r''.join(_exceptions) + r'\L<sen_ws>(?=$|\L<sen_pre>*[A-Z])'
+    _rules = [
+        # End of document
+        r'\L<sen_ws>*$',
 
-    combined = '|'.join(f'(?:{pat})' for pat in (p2, p3))
+        # Suffix
+        # r'(?<=\L<sen_suf>+)\L<sen_ws>*',
+        
+        # Two or more whitespace
+        r'\L<sen_ws>{2,}',
+        
+        # High frequency sentence start word
+        r'\L<sen_ws>(?=\L<sen_pre>*\L<hf_starts>\L<sen_ws>)',
+        
+        # Catch all with exceptions
+        r''.join(_exceptions) + r'\L<sen_ws>(?=\L<sen_pre>*[A-Z\d])',
+    ]
+
+    combined = '|'.join(f'(?:{r})' for r in _rules)
 
     _re = regex.compile(
-        r'(?<=\w(' + '|'.join(_terminators) + r'))(?:' + combined + r')',
+        r'(?<=\w(' + '|'.join(_terminators) + r')\L<sen_suf>*)(?:' + combined + r')',
         regex.DOTALL,
         sen_suf=_suffix_chars,
         sen_ws=_sen_ws,
+        sen_pre=_prefix_chars,
+        hf_starts=_hf_start_words,
+        num_abrs=_numeric_abbrs,
         ignores=_ignores,
-        sen_pre=_prefix_chars
     )
 
     @property
     def re(self) -> regex.Pattern:
-        return self._re    
+        return self._re
 
 
 class SimpleNlp:

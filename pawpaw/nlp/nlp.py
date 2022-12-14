@@ -178,10 +178,10 @@ class Sentence:
     _prefix_chars.extend(c for c in '([{')
 
     _terminators = [
-        r'\.',     # Full stop
-        r'\.{3,}', # Elipses; three periods
-        r'…',      # Elipses char
-        r'[\!\?]+' # Exclamation & Question mark(s)
+        r'\.',      # Full stop
+        r'\.{3,}',  # Ellipses; three periods
+        r'…',       # Ellipses char
+        r'[\!\?]+'  # Exclamation & Question mark(s)
     ]
 
     _suffix_chars = list(unicode_single_quote_marks.values())
@@ -190,15 +190,15 @@ class Sentence:
 
     # Common abbrs that are typically followed by a digit
     _numeric_abbrs = [
-        'c.',     # circa
-        'ca.',    # circa
-        'ed.',    # edition
-        'illus.', # circa
-        'no.',    # number
-        'p.',     # page
-        'pp.',    # pages
-        'ver.',   # version
-        'vol.',   # volume        
+        'c.',      # circa
+        'ca.',     # circa
+        'ed.',     # edition
+        'illus.',  # circa
+        'no.',     # number
+        'p.',      # page
+        'pp.',     # pages
+        'ver.',    # version
+        'vol.',    # volume
     ]
 
     # Common abbrs that are typically not sentence boundaries, even when followed by uppercase
@@ -235,31 +235,31 @@ class Sentence:
 
     # Military officer abbrs: see https://pavilion.dinfos.edu/Article/Article/2205094/military-rank-abbreviations/
     _mil_officer_abbrs = [
-        'Lt.',        # Lieutenant 
-        'Lt. j.g.',   # Lieutenant Junior Grade
-        'Capt.',      # Captain
-        'Cpt.',       # Captain
-        'Maj.',       # Major
-        'Lt. Cmdr.',  # Lieutenant Commander
-        'Lt. Col.',   # Lieutenant Colonel
-        'Cmdr.',      # Commander
-        'Col.',       # Colonel
-        'Brig. Gen.', # Brigadier General
-        'Maj. Gen.',  # Major General
-        'Lt. Gen.',   # Lieutenant General
-        'Gen.',       # General
-        'Adm.',       # Admiral
+        'Lt.',         # Lieutenant
+        'Lt. j.g.',    # Lieutenant Junior Grade
+        'Capt.',       # Captain
+        'Cpt.',        # Captain
+        'Maj.',        # Major
+        'Lt. Cmdr.',   # Lieutenant Commander
+        'Lt. Col.',    # Lieutenant Colonel
+        'Cmdr.',       # Commander
+        'Col.',        # Colonel
+        'Brig. Gen.',  # Brigadier General
+        'Maj. Gen.',   # Major General
+        'Lt. Gen.',    # Lieutenant General
+        'Gen.',        # General
+        'Adm.',        # Admiral
     ]
 
     # Military enlisted abbrs: see https://pavilion.dinfos.edu/Article/Article/2205094/military-rank-abbreviations/
     _mil_enlisted_abbrs = [
         # E1
-        'Pvt.',     # Private
-        'Pfc.',     # Private First Class
-        'Spc.',     # Specialist
-        'Cpl.',     # Corporal
-        'Sgt.',     # Sergeant
-        'Sgt. Maj.' # Sergeant Major
+        'Pvt.',      # Private
+        'Pfc.',      # Private First Class
+        'Spc.',      # Specialist
+        'Cpl.',      # Corporal
+        'Sgt.',      # Sergeant
+        'Sgt. Maj.'  # Sergeant Major
     ]
 
     _ignores = _ignore_abbrs
@@ -281,7 +281,8 @@ class Sentence:
 
     combined = '|'.join(f'(?:{pat})' for pat in (p2, p3))
 
-    _re = regex.compile(r'(?<=\w(' + '|'.join(_terminators) + r'))(?:' + combined + r')',
+    _re = regex.compile(
+        r'(?<=\w(' + '|'.join(_terminators) + r'))(?:' + combined + r')',
         regex.DOTALL,
         sen_suf=_suffix_chars,
         sen_ws=_sen_ws,
@@ -292,6 +293,7 @@ class Sentence:
     @property
     def re(self) -> regex.Pattern:
         return self._re    
+
 
 class SimpleNlp:
     _spaces_tab_line_feed = list(unicode_white_spaces.values())

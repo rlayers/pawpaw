@@ -276,14 +276,14 @@ class Sentence:
     ]
 
     p1 = r'(?<=\L<sen_suf>)\L<sen_ws>+'
-    p2 = r'\L<sen_ws>{2,}'
+    p2 = r'\L<sen_suf>*\L<sen_ws>{2,}'
     p3 = r''.join(_exceptions) + r'\L<sen_ws>(?=$|\L<sen_pre>*[A-Z])'
 
     combined = '|'.join(f'(?:{pat})' for pat in (p2, p3))
 
     _re = regex.compile(r'(?<=\w(' + '|'.join(_terminators) + r'))(?:' + combined + r')',
         regex.DOTALL,
-        # sen_suf=_suffix_chars,
+        sen_suf=_suffix_chars,
         sen_ws=_sen_ws,
         ignores=_ignores,
         sen_pre=_prefix_chars

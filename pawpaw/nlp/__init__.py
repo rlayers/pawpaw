@@ -1,1 +1,1 @@
-from .nlp import Number, SimpleNlp
+from .nlp import Number, Sentence, SimpleNlp

@@ -1,5 +1,5 @@
 import sys
-# Force Python XML parser, not faster C accelerators, because we can't hook the C implementation (3.x hack)
+# Force Python XML parser, not faster C versio so that we can hook methods
 sys.modules['_elementtree'] = None
 import abc
 import json

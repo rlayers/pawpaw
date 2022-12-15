@@ -36,6 +36,10 @@ import section before any references are made to ``xml.ElementTree``:
 >>> # Force Python XML parser, not faster C version so that we can hook methods
 >>> sys.modules['_elementtree'] = None
 
+.. warning::
+    This is warning text. Use a warning for information the user must
+    understand to avoid negative consequences.
+
 From here, using Pawpaw's XmlParser is straightforward:
 
 >>> import xml.etree.ElementTree as ET
@@ -71,10 +75,21 @@ Note that XmlParsers are *transformational*, i.e., the resulting Element objects
  - Entity references converted to characters, e.g. '&amp;' -> '&'
  - Comments and processing instructions removed[#]_ e.g. 'Robson Jorge &amp; Lincoln Olivetti <!-- 1982, Vinyl -->' -> 'Robson Jorge &amp; Lincoln Olivetti'
 
-Most of the type, these types of transformations are exactly what you need.  However, in some cases you may need access to the original underlying text
-(or even just the offsets.)  This is where Pawpaw comes in...
+Most of the time, these types of transformations are exactly what you need.  However, in some cases you may need access to the original underlying text
+(or even just the offsets.)  This is where Pawpaw comes in.  For example, let's say you need to access the xml comment:
 
-
+>>> child = root[0]  # First and only child
+>>>
+>>> child.text  # Element.text has entities converted and comments stripped
+'\n        Robson Jorge & Lincoln Olivetti \n    '
+>>>
+>>> i = child.ito.find(f'*[d:{xml.descriptors.TEXT}]')  # Plumule query to find element's text
+>>> str(i)  # Show text as it appears in actual xml
+'\n        Robson Jorge &amp; Lincoln Olivetti <!-- 1982, Vinyl -->\n    '
+>>>
+>>> c = i.find(f'*[d:{xml.descriptors.COMMENT}]')  # Get comment
+>>> f'{c:%span %substr!r}  # Display comment (show span and substr repr)
+"(223, 242) '<!-- 1982 Vinyl -->'"
 
 XmlHelper
 =========

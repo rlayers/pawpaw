@@ -25,27 +25,55 @@ you to use *either* data structure where convenient.  You can even swtich back a
 
 >>> root.find('*').ito.find(f'*[d:{xml.descriptors.TEXT}]')  # Get untransformed text of element
 
-* ElementTree.XmlParser is transformational
+Usage
+-----
+
+Pawpaw's ``XmlParser`` dervies from ``xml.ElementTree.XmlParser``, which by default, uses a C implementation.  However, in order to hook
+certain methods, the Python implementation must be used instead.  This can be achieved by adding the following statements to you
+import section before any references are made to ``xml.ElementTree``:
+
+>>> import sys
+>>> # Force Python XML parser, not faster C version so that we can hook methods
+>>> sys.modules['_elementtree'] = None
+
+From here, using Pawpaw's XmlParser is straightforward:
+
+>>> import xml.etree.ElementTree as ET
+>>> from pawpaw import xml
+>>> 
+>>> text = """<?xml version="1.0"?>
+>>> <music xmlns:mb="http://musicbrainz.org/ns/mmd-1.0#" xmlns="http://mymusic.org/xml/">
+>>>     <album genre="R&amp;B" mb:id="123-456-789-0">
+>>>         Robson Jorge &amp; Lincoln Olivetti <!-- 1982, Vinyl -->
+>>>     </album>
+>>> </music>"""
+>>> 
+>>> root = ET.fromstring(text, parser=xml.XmlParser())
+
+At this point root is a *normal* ``ElementTree.Element``:
+
+>>> f'{type(root)=}'
+"type(root)=<class 'xml.etree.ElementTree.Element'>"
+>>> f'{root=}'
+"root=<Element '{http://www.musicforall.org/xml/}music' at 0x151d9f9c820>"
+
+And it also has an additional ``.ito`` attribute[#]_:
+
+>>> from pawpaw.visualization import pepo
+>>> print(pepo.Tree().dumps(root.ito))
+XXXXXXXX
+XXXXXXXX
+XXXXXXXX
+
+Note that XmlParsers are *transformational*, i.e., the resulting Element objects have text that may be altered from the original, underlying xml:
  - xmlns attriutes removed
- - Namespace values for entity tags and attribute names replaced
- - Entity references converted to characters
- - Comments processing instructions removed[#]_
+ - Namespace keys for entity tags and attribute names replaced with full-namespace values, e.g., 'mb:id' -> '{http://musicbrainz.org/ns/mmd-1.0#}id'
+ - Entity references converted to characters, e.g. '&amp;' -> '&'
+ - Comments and processing instructions removed[#]_ e.g. 'Robson Jorge &amp; Lincoln Olivetti <!-- 1982, Vinyl -->' -> 'Robson Jorge &amp; Lincoln Olivetti'
 
-a graph of
-Element objects as  decorated with an .ito attribute, which returns a corresponding Ito segment.  These Ito objects, in turn, have
-their .value method overriden to return their associated Element objects.  The resulting data structure has a 
+Most of the type, these types of transformations are exactly what you need.  However, in some cases you may need access to the original underlying text
+(or even just the offsets.)  This is where Pawpaw comes in...
 
-With Pawpaw, you can process XML in
-the same way you have been doing with ElementTree, however, you are 
-
-beyond Python's default handlers.  ThesePawpaw enhances Python XML processing  provides several features to enhance Python XML processing.
-
-XML Processing
-Features a drop-in replacement for ElementTree.XmlParser
-Full text indexes for all Elements, Attributes, Tags, Text, etc.
-Search XML using both XPATH and the included, structured query language
-
-In order to fully describe a substring, a segment requires a reference string.  In other words, both a ``Span`` and ``str`` are required, which is represented in Pawpaw via the *In Text Object*\ [#]_, implemented as class ``Ito``.
 
 
 XmlHelper
@@ -65,6 +93,8 @@ Pawpaw's ``XmlHelper`` offers a variety of useful methods for working with Eleme
 * ``reverse_find``
 
 ----
+
+.. [#] If this format string looks strange to you, note that as of Python 3.8, format strings support `self-documenting expressions <https://docs.python.org/3/whatsnew/3.8.html#f-strings-support-for-self-documenting-expressions-and-debugging>`_.
 
 .. [#] As of Python 3.8, you can pass a reference to a ``TreeBuilder`` to ``ElementTree.XmlParser`` to define how you want comments and processing
 instructions handled.  However, this behavior results in additional ``Element`` objects containing the comments and/or processing instructions, which

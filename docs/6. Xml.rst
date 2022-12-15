@@ -69,11 +69,40 @@ XXXXXXXX
 XXXXXXXX
 XXXXXXXX
 
+The descriptors for the Ito tree are defined in pawpaw.xml.descriptors:
+
+ ATTRIBUTE: str = 'attribute'
+ COMMENT: str = 'comment'
+ ELEMENT: str = 'element'
+ END_TAG: str = 'end_tag'
+ NAME: str = 'name'
+ NAMESPACE: str = 'namespace'
+ START_TAG: str = 'start_tag'
+ TAG: str = 'tag'
+ TEXT: str = 'text'
+ VALUE: str = 'value'
+
+You can use the literals or constants in your code.
+
+>>> str(root.ito.find('*[d:end_tag]'))
+'</music>'
+>>> str(root.ito.find(f'*[d:{xml.descriptors.END_TAG}]'))
+'</music>'
+
 Note that XmlParsers are *transformational*, i.e., the resulting Element objects have text that may be altered from the original, underlying xml:
- - xmlns attriutes removed
- - Namespace keys for entity tags and attribute names replaced with full-namespace values, e.g., 'mb:id' -> '{http://musicbrainz.org/ns/mmd-1.0#}id'
- - Entity references converted to characters, e.g. '&amp;' -> '&'
- - Comments and processing instructions removed[#]_ e.g. 'Robson Jorge &amp; Lincoln Olivetti <!-- 1982, Vinyl -->' -> 'Robson Jorge &amp; Lincoln Olivetti'
+
+* xmlns attributes are removed
+* Namespace keys for entity tags & attribute names are replaced with full-namespace values
+ 
+ * 'mb:id' -> '{http://musicbrainz.org/ns/mmd-1.0#}id'
+ 
+* Entity references converted to characters
+ 
+ * '&amp;' -> '&'
+ 
+* Comments and processing instructions removed[#]_
+ 
+ * 'Robson Jorge &amp; Lincoln Olivetti <!-- 1982, Vinyl -->' -> 'Robson Jorge &amp; Lincoln Olivetti'
 
 Most of the time, these types of transformations are exactly what you need.  However, in some cases you may need access to the original underlying text
 (or even just the offsets.)  This is where Pawpaw comes in.  For example, let's say you need to access the xml comment:

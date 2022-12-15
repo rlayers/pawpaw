@@ -1,6 +1,6 @@
 from __future__ import annotations
 import sys
-# Force Python XML parser, not faster C versio so that we can hook methods
+# Force Python XML parser, not faster C version so that we can hook methods
 sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 import typing

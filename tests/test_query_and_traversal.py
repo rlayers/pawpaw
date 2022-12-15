@@ -381,12 +381,12 @@ class TestItoQuery(TestItoTraversal):
                 actual = [*node.find_all(path)]
                 self.assertSequenceEqual(expected, actual)
 
-    def test_filter_desc_with_emebdded_commas(self):
+    def test_filter_desc_with_emebdded_special_chars(self):
         s = ' The quick brown fox '
         root = Ito(s, 1, -1)
         root.children.add(*root.str_split())
         for i, c in enumerate(root.children):
-            c.desc = f'child,{i}'
+            c.desc = f'{i}child: [note...]'  # Comma, space, brackets, etc.
 
         for idxs in [[1], [1, 2]]:
             descs = [pawpaw.query.escape(c.desc) for i, c in enumerate(root.children) if i in idxs]

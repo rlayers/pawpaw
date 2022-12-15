@@ -176,12 +176,37 @@ class Table:
     """
     Style 1: md style
 
-    | XXX | YYY |
-    | --- | --- |
-    | a1a | b1b |
-    | a2a | b2b |
+    | A | B | C |
+    |---|:-:|--:|
+    | a | b | c |
+    | d | e | f |
 
-    Style 2: rst simple
+    Style 2: Misc ASCII
+
+    +───+───+───+
+    | A | B | C |
+    +───+───+───+
+    | a | b | c |
+    | d | e | f |
+    +───+───+───+
+
+    +---+---+---+
+    | A | B | C |
+    +---+---+---+
+    | a | b | c |
+    +---+---+---+
+    | d | e | f |
+    +---+---+---+
+
+    ╔═══╦═══╦═══╗
+    ║ A ║ B ║ C ║
+    ╠═══╬═══╬═══╣
+    ║ a ║ b ║ c ║
+    ╠═══╬═══╬═══╣
+    ║ d ║ e ║ f ║
+    ╚═══╩═══╩═══╝    
+
+    Style 3a: rst  Simple
 
     =====  =====  ======
        Inputs     Output
@@ -194,7 +219,7 @@ class Table:
     True   True   True
     =====  =====  ======
 
-    Style 3: rst Grid
+    Style 3b: rst Grid
 
     +------------+------------+-----------+
     | Header 1   | Header 2   | Header 3  |
@@ -207,6 +232,32 @@ class Table:
     +------------+ span rows. | - contain |
     | body row 4 |            | - blocks. |
     +------------+------------+-----------+
+
+    Style 4: Ascii doc
+
+    [cols="e,m,^,>s",width="25%"]
+    |============================
+    |1 >s|2 |3 |4
+    ^|5 2.2+^.^|6 .3+<.>m|7
+    ^|8
+    |9 2+>|10
+    |============================
+
+    Style 5: [Unamed]
+
+    -----+-----+-----
+      A  |  B  |  C
+    -----+-----+-----      
+     aaa | bbb | ccc
+    -----+-----+-----      
+
+    Style 6: Tabbed
+
+    A\tB\tC
+    a\tb\tc
+
+
+
 
     """
 

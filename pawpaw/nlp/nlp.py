@@ -431,7 +431,7 @@ class Sentence:
         sen_ws=_sen_ws,
         sen_pre=_prefix_chars,
         hf_starts=_hf_start_words,
-        num_abrs=_numeric_abbrs,
+        num_abbrs=_numeric_abbrs,
         ignores=_ignores,
     )
 

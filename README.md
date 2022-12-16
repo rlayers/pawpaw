@@ -81,7 +81,7 @@ You can use a regular expression for segmentation as follows:
  >>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)\s*)+')
  ```
  
-You can then use this regex to feed **Pawpaw** as follows:
+You can then use this regex to feed **Pawpaw**:
 
  ```
  >>> doc = Ito.from_match(re.fullmatch(s))

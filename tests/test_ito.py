@@ -324,8 +324,6 @@ class TestIto(_TestIto):
         s = ' Two\twords '
         i = Ito(s, 1, -1, 'my_desc')
 
-        # Need tests to check values for directive, width, & conv; don't allow empty str for suffix
-
         for directive in 'string', 'substr':
             for conversion in '', 'r':
                 for width in 0, 1, 2, 3, 5, 10:
@@ -339,14 +337,16 @@ class TestIto(_TestIto):
                             if conversion == 'r':
                                 expected = repr(expected)
 
-                            if len(expected) < width or suffix == '':
-                                expected = format(expected, str(width))
-                            elif (len_suf := len(suffix)) >= width:
-                                expected = suffix[len_suf - width:]
-                            else:
-                                expected = expected[:width - len_suf] + suffix
+                            if len(expected) > width:
+                                if (len_suf := len(suffix)) >= width:
+                                    expected = suffix[len_suf - width:]
+                                else:
+                                    expected = expected[:width - len_suf] + suffix
 
-                            actual = format(i, f'%{directive}{"!" + conversion if conversion != "" else ""}:{width}{suffix}')
+                            f = f'%{directive}' \
+                                f'{"!" + conversion if conversion != "" else ""}' \
+                                f'{width}{suffix}'
+                            actual = format(i, f)
                             self.assertEqual(expected, actual)
 
     # endregion

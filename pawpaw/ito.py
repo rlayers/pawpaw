@@ -601,20 +601,26 @@ class Ito:
     _format_str_directives = ['desc', 'string', 'substr', 'value']
     _pat_format_zero_whitespace = r'(?P<zws> )'
 
-    # %directive[:[[fill]align][sign][#][0][width][grouping_option][.precision][type]]}
+    """ Python 3.11 format spec mini language is:
+    
+    [[fill]align][sign][z][#][0][width][grouping_option][.precision][type]
+    
+    See https://docs.python.org/3/library/string.html?highlight=fill%20align%20sign%20width#format-specification-mini-language"""
 
     _pat_format_int = r'(?P<dir>' + '|'.join(_format_int_directives) + r')' \
                       r'(?:\:' \
-                      r'(?:(?P<fill>.)(?P<align>[\<\>\=\^]))?' \
+                      r'(?:(?P<fill>.)?(?P<align>[\<\>\=\^]))?' \
                       r'(?P<sign>[\+\-])?' \
+                      r'(?P<hash>#)?' \
+                      r'(?P<zero>0)?' \
                       r'(?P<width>\d+)?' \
-                      r'(?P<grouping>.)?' \
+                      r'(?P<grouping_option>[_,])?' \
+                      r'(?P<type>[bcdeEfFgGnosxX%])?' \
                       r')?'
     _pat_format_str = r'(?P<dir>' + '|'.join(_format_str_directives) + r')' \
                       r'(?:\!(?P<conv>[ars]))?' \
                       r'(?:\:' \
-                      r'(?:(?P<fill>.)(?P<align>\<\>\^))?' \
-                      r'(?P<width>\d+)?' \
+                      r'(?P<width>\d+)' \
                       r'(?P<absufx>.+)?' \
                       r')?'
     _pat_format = '|'.join([_pat_format_zero_whitespace, _pat_format_int, _pat_format_str])
@@ -622,58 +628,6 @@ class Ito:
     _re_format = regex.compile(_pat_format, regex.DOTALL)
 
     def __format__(self, format_spec: str) -> str:
-        """
-            int format: %directive[:[[fill]align][sign][width][grouping_option]]}
-
-            str_format: %directive[!conversion][:[[fill]align][width[,abbr_suffix]]
-
-            int Directives
-            --------------
-            span : as tuple, e.g. '(2, 3)'
-            start : as format(start, 'n')
-            stop : as format(stop, 'n')
-
-            str Directives
-            --------------
-            string
-            desc
-            substr: ito.__str__()
-            value: str(.value())
-
-            Conversion
-            ----------
-            a: ascii
-            r: repr
-            s: str (default)
-
-            Fill
-            ----
-            a char to be used as full for min-width, default is ' '
-
-            Align
-            -----
-            < : left align, default
-            = : center align
-            > : right align
-
-            Width
-            -----
-            any positive integer
-
-            Abbr Suffix
-            -----------
-            a str of zero or more characters; can't start with a digit (for same reason
-            regular python format string grouping-option can't be a digit - it gets merged
-            into width)
-
-            present: width treated as max-width
-            absent: width treated as min-width
-
-            Grouping Option
-            ---------------
-            passed to numeric formatter
-        """
-
         if format_spec is None or format_spec == '':
             return str(self)
 
@@ -700,7 +654,7 @@ class Ito:
 
             directive = m.group('dir')
             if directive in self._format_int_directives:
-                fstr = m.group(0)[m.span('dir')[1] + 1:]
+                fstr = format_spec[m.span('dir')[1] + 1:m.span(0)[1]]
                 if directive == 'span':
                     start = format(self.start, fstr)
                     stop = format(self.stop, fstr)
@@ -727,19 +681,12 @@ class Ito:
                         sub = repr(sub)
 
                 if (width := m.group('width')) is not None:
-                    if (absufx := m.group('absufx')) is None:
-                        start = (m.span('dir')[1] + 1) if conv is None else (m.span('conv')[1] + 1)
-                        fstr = m.group(0)[start:]
-                        sub = format(sub, fstr)
-                    elif (width := int(width)) >= len(sub):
-                        start = (m.span('dir')[1] + 1) if conv is None else (m.span('conv')[1] + 1)
-                        stop = m.span('width')[1]
-                        fstr = m.group(0)[start:stop]
-                        sub = format(sub, fstr)
-                    elif (len_suf := len(absufx)) >= width:
-                        sub = absufx[len_suf - width:]
-                    else:
-                        sub = sub[:width - len_suf] + absufx
+                    if (width := int(width)) < len(sub):
+                        absufx = m.group('absufx') |nuco| ''
+                        if (len_suf := len(absufx)) >= width:
+                            sub = absufx[len_suf - width:]
+                        else:
+                            sub = sub[:width - len_suf] + absufx
             else:
                 raise ValueError(f'unknown format directive \'%{directive}\'')
 

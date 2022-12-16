@@ -147,6 +147,18 @@ class Desc(Itorator):
         return ito,
 
 
+class Group(Itorator):
+    """
+    Used to wrap complex Itorator chains in order to have a single Itorator with clear entry & exit points
+    """
+    def __init__(self, start: Itorator):
+        super().__init__()
+        self.start = start
+
+    def _iter(self, ito: Types.C_ITO) -> Types.C_SQ_ITOS:
+        return [*self.start.Traverse(ito)]
+
+
 class Split(Itorator):
     @enum.unique
     class BoundaryRetention(enum.Enum):

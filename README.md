@@ -96,7 +96,7 @@ With this single line of code, Pawpaw generates a fully hierarchical, tree of ph
 9, 13
  ```
 
-This example uses regular expressions as a source, however, Pawpaw is able to work with many other input types.  For example, you can use libraries such as [NLTK](https://www.nltk.org/) to grow Pawpaw trees, or, you can use Pawpaw's included library of parser components that easily chain together to enable the rapid development of large, sophisticated parsers.
+This example uses regular expressions as a source, however, Pawpaw is able to work with many other input types.  For example, you can use libraries such as [NLTK](https://www.nltk.org/) to grow Pawpaw trees, or, you can use Pawpaw's included parser framework to build your own sophisticated parsers quickly and easily.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

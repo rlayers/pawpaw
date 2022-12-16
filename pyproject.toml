@@ -14,7 +14,7 @@ requires-python = ">=3.10"
 license = "MIT"
 license-files = { paths = ["LICENSE"] }
 dependencies = [
-  "regex >= 2022.7.9",
+  "regex>=2022.7.9",
 ]
 keywords = [
   "nlp",

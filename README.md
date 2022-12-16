@@ -26,33 +26,36 @@
 
 <img align="right" width="30%" height="30%" alt="Botanical Drawing: Asimina triloba: the American papaw" src="https://raw.githubusercontent.com/rlayers/pawpaw/master/images/pawpaw.png"> 
 
-Pawpaw is a high performance text segmentation framework that allows you to quickly create parsers whose outputs are tree graphs.  The resulting parse trees can be serialized, traversed, and searched using a powerful structured query language.
+Pawpaw is a high performance text segmentation framework.  Segments are organized into tree graphs that can be serialized, traversed, and searched using a powerful structured query language.  Pawpaw also features a framework for quickly and easily building complex, pipelined parsers.
 
 - Indexed str and substr representation
   - Efficient memory utilization
   - Fast processing
   - Pythonic relative indexing and slicing
   - Runtime & polymorphic value extraction
+  - Tree graphs for all indexed text
+- Search and Query
+  - Search trees using plumule: a powerful structured query language similar to XPATH
+  - Combined multiple axes, filters, and subqueries sequentially and recursively to any depth
+  - Optionally pre-compile queries for increased performance
 - Rules Pipelining Engine
   - Develop complex lexical parsers with just a few lines of code
   - Quickly and easily convert unstructured text into structured, indexed, & searchable tree graphs
   - Pre-process text for downstream NLP/AI/ML consumers
-- Search and Query
-  - Hierarchical data structure for all indexed text
-  - Search using extensive structured query language
-  - Optionally pre-compile queries for reuse to improvement performance
-<!--
-  - Pawpaw's query engine, **radicle**, allows you to rapidly find and extract data using plumule expressions - a query language similar to XPath.
-  - XQuery (supported by XPath) is a query language for XML to extract data, similar to the role of SQL for databases, or SPARQL for the Semantic Web.
-  -->
 - XML Processing
   - Features a drop-in replacement for ElementTree.XmlParser
   - Full text indexes for all Elements, Attributes, Tags, Text, etc. 
-  - Search XML using both XPATH and the included, structured query language
+  - Extract *both* ElementTree and Pawpaw datastructures in one go
+    - The ElementTree and Pawpaw structures are cross-linked at each ELement
+    - Search the resulting XML using both XPATH and Plumule
+    - Access the raw XML corresponding to ElementTree elements, attributes, text, etc.
+- NLP Support:
+  - Pawpaw is ideal for both a) *preprocessing* unstructured text for downstream NLP consumption and b) *storing and searching* NLP generated content
+  - Works with [NLTK](https://www.nltk.org/)
 - Efficient pickling and JSON persistance
   - Security option enables persistance of index-only data, with refrence strings re-injected during de-serialziation 
 - Stable & Defect Free
-  - Over 3,000 unit tests and counting!
+  - Over 3,100 unit tests and counting!
 
 <div align="center">
   <a href="https://github.com/rlayers/pawpaw/tree/master/docs">Explore the docs</a>

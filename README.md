@@ -71,25 +71,25 @@ Pawpaw is a high performance text segmentation framework.  Segments are organize
 
 Pawpaw has extensive features and capabilities you can read about in the [Docs](/Docs).  As a quick example, say you have some text that would like to perform nlp-like segmentation on. 
 
- ```
+ ```python
  >>> s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
  ```
 
 You can use a regular expression for segmentation as follows:
 
- ```
+ ```python
  >>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)\s*)+')
  ```
  
 You can then use this regex to feed **Pawpaw**:
 
- ```
+ ```python
  >>> doc = Ito.from_match(re.fullmatch(s))
  ```
 
 With this single line of code, Pawpaw generates a fully hierarchical, tree of phrases, words, chars, numbers, and digits.  The tree can be traversed, and even searched using Pawpaw's *plumule*, a powerful XPATH-like structured query language:
 
- ```
+ ```python
  >>> print(*doc.find_all('**[d:dig]'), sep=', ')  # all digits
 9, 1, 0, 1, 1, 1, 2, 1, 3
  >>> print(*doc.find_all('**[d:num]{</*[s:i]}'), sep=', ')  # all numbers with 'i' in their name
@@ -146,7 +146,7 @@ There are lots of ways to install Pawpaw:
 
 Open a python prompt and type:
 
-  ```
+  ```python
   >>> from pawpaw import Ito
   >>> Ito('Hello, World!')
   Ito('Hello, World!', 0, 13, None)
@@ -157,16 +157,28 @@ If your last line looks like this, you are up and running with Pawpaw!
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-<!-- ROADMAP -->
-<!--
-## Roadmap
+<!-- HISTORY & ROADMAP -->
+## History & Roadmap
 
-- [ ] Feature 1
-- [ ] Feature 2
-- [ ] Feature 3
-    - [ ] Nested Feature
+Pawpaw is a rewrite of *desponia*, a now-deprecated Python 2.x segmentation framework that was itself based on a prior framework called *Ito*.  Currently in alpha, many components and features are production ready.  However, documentation is still being written and some newer features are still undergoing work.  A rough outline of what components are production ready is as follows
 
-See the [open issues](issues) for a full list of proposed features (and known issues).
+- [x] arborform
+- [x] core (Span & Ito)
+  - [x] itorator
+  - [x] postorator
+- [ ] documentation & examples
+- [x] query
+  - [x] radicle query engine
+  - [x] plumule
+- [ ] NLP
+- [ ] visualization
+  - [ ] ascibox
+  - [x] highlighter
+  - [ ] pepo
+  - [x] sgr
+- [ ] xml
+  - [ ] XmlHelper
+  - [x] XmlParser
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 -->
@@ -197,6 +209,14 @@ Robert L. Ayers:&nbsp;&nbsp;<a alt="e-mail" href="email@a.nov.guy@gmail.com">a.n
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+
+<!-- REFERENCES -->
+## References
+
+* [Matthew Barnett's regex](https://github.com/mrabarnett/mrab-regex)
+* [NLTK](https://www.nltk.org/)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
 <!-- MARKDOWN LINKS & IMAGES -->

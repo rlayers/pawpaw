@@ -345,7 +345,7 @@ class TestIto(_TestIto):
 
                             f = f'%{directive}' \
                                 f'{"!" + conversion if conversion != "" else ""}' \
-                                f'{width}{suffix}'
+                                f':{width}{suffix}'
                             actual = format(i, f)
                             self.assertEqual(expected, actual)
 

@@ -55,7 +55,7 @@ Pawpaw is a high performance text segmentation framework.  Segments are organize
 - Efficient pickling and JSON persistance
   - Security option enables persistance of index-only data, with refrence strings re-injected during de-serialziation 
 - Stable & Defect Free
-  - Over 3,100 unit tests and counting!
+  - Over 3,250 unit tests and counting!
 
 <div align="center">
   <a href="https://github.com/rlayers/pawpaw/tree/master/docs">Explore the docs</a>

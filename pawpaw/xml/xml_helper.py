@@ -83,8 +83,8 @@ class XmlHelper:
         elif ito.desc not in (xml.descriptors.START_TAG, xml.descriptors.ATTRIBUTE):
             raise ValueError(f'parameter \'{ito}\' lacks children with descriptor \'{xml.descriptors.NAME}\' - did you forget to use pawpaw.xml.XmlParser?')
 
-        ns = ito.find(f'*[d:{xml.descriptors.NAMESPACE}]')
-        name = ito.find(f'*[d:{xml.descriptors.NAME}]')
+        ns = ito.find(f'**[d:{xml.descriptors.NAMESPACE}]')
+        name = ito.find(f'**[d:{xml.descriptors.NAME}]')
 
         return QualifiedName(ns, name)
 

@@ -3,28 +3,30 @@ import sys
 sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 import xml.parsers.expat as expat
+import itertools
 
 import regex
-from pawpaw import Span, Ito, xml
+from pawpaw import Span, Ito, xml, Types
 from pawpaw.arborform import Extract
 
         
 class XmlParser(ET.XMLParser):
+    _NAMESPACE = r'(?P<' + xml.descriptors.NAMESPACE + r'>[^ :]+):'
     _NAME = r'(?P<' + xml.descriptors.NAME + r'>[^ />=]+)'
+    _TAG = r'(?P<' + xml.descriptors.TAG + r'>(?:' + _NAMESPACE + r')?' + _NAME + r')'
+
     _VALUE = r'="(?P<' + xml.descriptors.VALUE + r'>[^"]+)"'
-    _NAME_VALUE = _NAME + _VALUE
+    _TAG_VALUE = _TAG + _VALUE
 
-    _NS_NAME = r'(?:(?P<' + xml.descriptors.NAMESPACE + r'>[^: ]+):)?' + _NAME
-    _NS_NAME_VALUE = _NS_NAME + _VALUE
+    _ATTRIBUTE = r'(?P<' + xml.descriptors.ATTRIBUTE + r'>' + _TAG_VALUE + r')'
 
-    _re_ns_tag = regex.compile(r'\<(?P<' + xml.descriptors.TAG + r'>' + _NS_NAME + r')', regex.DOTALL)
-    _re_attribute = regex.compile(r'(?P<' + xml.descriptors.ATTRIBUTE + r'>' + _NS_NAME_VALUE + r')', regex.DOTALL)
+    _itor_extract_tag = Extract(regex.compile(r'\<[\/\?]?' + _TAG, regex.DOTALL))
+    _itor_extract_attributes = Extract(regex.compile(_ATTRIBUTE, regex.DOTALL))
 
-    _itor_extract_tag = Extract(_re_ns_tag)
-    _itor_extract_attributes = Extract(_re_attribute)
+    _PI = r'(?P<' + xml.descriptors.PI + r'>\<\?(?P<' + xml.descriptors.VALUE + r'>.*?)\?\>)'
+    _COMMENT = r'(?P<' + xml.descriptors.COMMENT + r'>\<\!\-\-(?P<' + xml.descriptors.VALUE + r'>.*?)\-\-\>)'
 
-    _re_comment = regex.compile(r'(?P<' + xml.descriptors.COMMENT + r'>\<\!\-\-(?P<' + xml.descriptors.VALUE + r'>.*?)\-\-\>)', regex.DOTALL)
-    _itor_extract_comments = Extract(_re_comment)
+    _itor_extract_pi_comments = Extract(regex.compile('|'.join((_PI, _COMMENT)), regex.DOTALL))
 
     class _Spans:
         line: Span | None = None
@@ -106,14 +108,24 @@ class XmlParser(ET.XMLParser):
 
     text_comments = Extract
 
+    def _find_text(self, start: int, stop: int) -> Types.C_ITO | None:
+        rv = Ito(self._text, start, stop, xml.descriptors.TEXT)
+        if len(rv) > 0 and not (self.ignore_empties and rv.str_isspace()):
+            rv.children.add(*self._itor_extract_pi_comments.traverse(rv))
+            return rv
+
     def _extract_itos(self, element: ET.Element) -> None:
         start_tag = Ito(
             self._text,
             element._spans.char.start,
             self._text.index('>', element._spans.char.start + 1) + 1,
             xml.descriptors.START_TAG)
-        start_tag.children.add(*self._itor_extract_tag.traverse(start_tag))
-        start_tag.children.add(*self._itor_extract_attributes.traverse(start_tag))
+        for c in itertools.chain(self._itor_extract_tag.traverse(start_tag), self._itor_extract_attributes.traverse(start_tag)):
+            start_tag.children.add(c)
+
+        for tag in start_tag.find_all('**[d:' + xml.descriptors.TAG + ']'):
+            qn = xml.QualifiedName.from_src(tag)
+            tag.value_func = lambda i: qn
 
         if (element._spans.char.stop + 2) < len(self._text) and self._text[element._spans.char.stop:element._spans.char.stop + 2] == '</':
             end_tag = Ito(
@@ -121,6 +133,9 @@ class XmlParser(ET.XMLParser):
                 element._spans.char.stop,
                 self._text.index('>', element._spans.char.stop + 1) + 1,
                 xml.descriptors.END_TAG)
+            for c in self._itor_extract_tag.traverse(end_tag):
+                c.value_func = lambda i: xml.QualifiedName.from_src(c)
+                end_tag.children.add(c)
             end_index = end_tag.stop
         else:
             end_tag = None
@@ -131,31 +146,32 @@ class XmlParser(ET.XMLParser):
 
         ito.children.add(start_tag)
         
-        # Note: Don't use len(element.text) or len(element.tail) to compute offsets: these values have been
-        # xml decoded and the offsets may not match the original input string.  
+        # Note: Don't use element.text or element.tail here because these values:
+        #   a) are absent for whitespace-only strs
+        #   b) get html-decoded (to change entity references) and resulting offsets may not match original string
+        #   c) could contain pi and comments
+        # See https://docs.python.org/3/library/xml.etree.elementtree.html for definition of .text and .tail
 
+        last_child: ET.Element = None        
         for child in element:
             self._extract_itos(child)
             ito.children.add(child.ito)
 
-            # Add child element's .tail to parent element's children
-            # (See https://docs.python.org/3/library/xml.etree.elementtree.html for definition of .tail attr.)
-            if child.tail is not None:
-                if not self.ignore_empties or not child.tail.isspace():
-                    # Note: If a child has a tail, then there must be an end_tag for its parent
-                    ito_text = Ito(self._text, child.ito.stop, end_tag.start, xml.descriptors.TEXT)
-                    ito_text.children.add(*self._itor_extract_comments.traverse(ito_text))
-                    ito.children.add(ito_text)
+            if last_child is not None:
+                if (t := self._find_text(last_child.ito.stop, child.ito.start)) is not None:
+                    ito.children.add(t)
 
-        if element.text is not None:
-            if not self.ignore_empties or not element.text.isspace():
-                # Note: If an element has text, then there must be an end_tag
-                stop = element[0].ito.start if len(element) > 0 else end_tag.start
-                text = Ito(self._text, start_tag.stop, stop, xml.descriptors.TEXT)
-                text.children.add(*self._itor_extract_comments.traverse(text))
-                ito.children.add(text)
+            last_child = child
+
+        if last_child is not None:
+            if (t := self._find_text(last_child.ito.stop, end_tag.start)) is not None:
+                ito.children.add(t)
 
         if end_tag is not None:
+            stop = element[0].ito.start if len(element) > 0 else end_tag.start
+            if (t := self._find_text(start_tag.stop, stop)) is not None:
+                ito.children.add(t)
+
             ito.children.add(end_tag)
 
         element.ito = ito

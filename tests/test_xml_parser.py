@@ -30,16 +30,14 @@ class TestXmlParser(_TestIto):
 
                 for attr in start_tag.find_all(f'**[d:' + xml.descriptors.ATTRIBUTE + ']'):
                     if attr is not None:
-                        eq_idx = attr.str_index('=')
-                        if attr.str_find(':', end=eq_idx) < 0:
-                            self.assertEqual(2, len(attr.children))
-                            self.assertEqual(xml.descriptors.NAME, attr.children[0].desc)
-                            self.assertEqual(xml.descriptors.VALUE, attr.children[1].desc)
-                        else:
-                            self.assertEqual(3, len(attr.children))
-                            self.assertEqual(xml.descriptors.NAMESPACE, attr.children[0].desc)
-                            self.assertEqual(xml.descriptors.NAME, attr.children[1].desc)
-                            self.assertEqual(xml.descriptors.VALUE, attr.children[2].desc)
+                        expected = [xml.descriptors.TAG, xml.descriptors.VALUE]
+                        self.assertListEqual(expected, [i.desc for i in attr.children])
+
+                        expected = [xml.descriptors.NAME]
+                        tag = attr.children[0]
+                        if tag.str_find(':') >= 0:
+                            expected.insert(0, xml.descriptors.NAMESPACE)
+                        self.assertListEqual(expected, [i.desc for i in tag.children])
 
     def test_hiearchical(self):
         for sample in XML_TEST_SAMPLES:

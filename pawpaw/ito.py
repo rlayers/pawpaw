@@ -843,13 +843,13 @@ class Ito:
                 break
             span = Span(*m.span(0))
             stop = span.stop if keep_seps else span.start
-            yield self.clone(i, stop, desc)
+            yield self.clone(i, stop, desc, False)
             i = span.stop
 
         if i < self.stop:
-            yield self.clone(i, desc=desc)
+            yield self.clone(i, desc=desc, clone_children=False)
         elif i == self.stop:
-            yield self.clone(i, i, desc)
+            yield self.clone(i, i, desc, False)
 
     def split(
             self,
@@ -1089,7 +1089,7 @@ class Ito:
         while i < self.stop and f_c_in(i):
             i += 1
         
-        return self if i == self.start else self.clone(i)
+        return self if i == self.start else self.clone(i, clone_children=False)
 
     def str_rstrip(self, chars: str | None = None) -> Types.C_ITO:
         f_c_in = self.__f_c_in(chars)
@@ -1097,7 +1097,7 @@ class Ito:
         while i >= 0 and f_c_in(i):
             i -= 1
 
-        return self if i == self.stop - 1 else self.clone(stop=i + 1)
+        return self if i == self.stop - 1 else self.clone(stop=i + 1, clone_children=False)
 
     def str_strip(self, chars: str | None = None) -> Types.C_ITO:
         return self.str_lstrip(chars).str_rstrip(chars)
@@ -1118,7 +1118,7 @@ class Ito:
             else:
                 j = i + self.start
                 k = j + len(sep)
-                return self.clone(stop=j), self.clone(j, k), self.clone(k)
+                return self.clone(stop=j, clone_children=False), self.clone(j, k, clone_children=False), self.clone(k, clone_children=False)
 
     def str_rpartition(self, sep) -> typing.Tuple[Types.C_ITO, Types.C_ITO, Types.C_ITO]:
         if sep is None:
@@ -1132,7 +1132,7 @@ class Ito:
             else:
                 j = i + self.start
                 k = j + len(sep)
-                return self.clone(stop=j), self.clone(j, k), self.clone(k)
+                return self.clone(stop=j, clone_children=False), self.clone(j, k, clone_children=False), self.clone(k, clone_children=False)
 
     def _nearest_non_ws_sub(self, start: int, reverse: bool = False) -> Types.C_ITO | None:
         start += self.start
@@ -1146,9 +1146,9 @@ class Ito:
 
         def from_idxs():
             if step == 1:
-                return self.clone(non_ws_i, i)
+                return self.clone(non_ws_i, i, clone_children=False)
             else:
-                return self.clone(i + 1, non_ws_i + 1)
+                return self.clone(i + 1, non_ws_i + 1, clone_children=False)
 
         non_ws_i: start
         in_ws = True
@@ -1182,7 +1182,7 @@ class Ito:
 
             if maxsplit == 0:
                 head_stop = self.stop if len(rv) == 0 else rv[0].start
-                head = self.clone(stop=head_stop).str_rstrip()
+                head = self.clone(stop=head_stop, clone_children=False).str_rstrip()
                 if len(head) > 0:
                     rv.insert(0, head)
             return rv
@@ -1200,14 +1200,14 @@ class Ito:
             rv: typing.List[Types.C_ITO] = []
             i = self.stop
             while (j := self._string.rfind(sep, self.start, i)) >= 0 and maxsplit != 0:
-                rv.insert(0, self.clone(j + len(sep), i))
+                rv.insert(0, self.clone(j + len(sep), i, clone_children=False))
                 i = j
                 maxsplit -= 1
 
             if len(rv) == 0:
                 rv.append(self)
             else:
-                rv.insert(0, self if i == self.stop else self.clone(stop=i))
+                rv.insert(0, self if i == self.stop else self.clone(stop=i, clone_children=False))
 
             return rv
 
@@ -1225,7 +1225,7 @@ class Ito:
 
             if maxsplit == 0:
                 tail_start = self.start if len(rv) == 0 else rv[-1].stop
-                tail = self.clone(tail_start).str_lstrip()
+                tail = self.clone(tail_start, clone_children=False).str_lstrip()
                 if len(tail) > 0:
                     rv.append(tail)
             return rv
@@ -1243,14 +1243,14 @@ class Ito:
             rv: typing.List[Types.C_ITO] = []
             i = self.start
             while (j := self._string.find(sep, i, self.stop)) >= 0 and maxsplit != 0:
-                rv.append(self.clone(i, j))
+                rv.append(self.clone(i, j, clone_children=False))
                 i = j + len(sep)
                 maxsplit -= 1
 
             if len(rv) == 0:
                 rv.append(self)
             else:
-                rv.append(self if i == self.start else self.clone(i))
+                rv.append(self if i == self.start else self.clone(i, clone_children=False))
 
             return rv
 

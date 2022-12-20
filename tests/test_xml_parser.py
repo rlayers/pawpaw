@@ -10,8 +10,8 @@ from tests.util import _TestIto, XML_TEST_SAMPLES
 
 class TestXmlParser(_TestIto):
     def test_basic(self):
-        for sample in XML_TEST_SAMPLES:
-            with self.subTest(xml_source=sample.source):
+        for sample_index, sample in enumerate(XML_TEST_SAMPLES):
+            with self.subTest(xml_sample_index=sample_index):
                 root_e = ET.fromstring(sample.xml, parser=xml.XmlParser())
                 self.assertTrue(hasattr(root_e, 'ito'))
 
@@ -21,8 +21,8 @@ class TestXmlParser(_TestIto):
                 self.assertIs(root_e, root_i.value())
 
     def test_namespace(self):
-        for sample in XML_TEST_SAMPLES:
-            with self.subTest(xml_source=sample.source):
+        for sample_index, sample in enumerate(XML_TEST_SAMPLES):
+            with self.subTest(xml_sample_index=sample_index):
                 root_e = ET.fromstring(sample.xml, parser=xml.XmlParser())
 
                 start_tag = root_e.ito.find(f'**[d:' + xml.descriptors.START_TAG + ']')
@@ -40,8 +40,8 @@ class TestXmlParser(_TestIto):
                         self.assertListEqual(expected, [i.desc for i in tag.children])
 
     def test_hiearchical(self):
-        for sample in XML_TEST_SAMPLES:
-            with self.subTest(xml_source=sample.source):
+        for sample_index, sample in enumerate(XML_TEST_SAMPLES):
+            with self.subTest(xml_sample_index=sample_index):
                 root_e = ET.fromstring(sample.xml, parser=xml.XmlParser())
 
                 root_i: Ito = root_e.ito
@@ -52,6 +52,18 @@ class TestXmlParser(_TestIto):
                     child_i = child_e.ito
                     self.assertIsNotNone(child_i)
                     self.assertIs(child_e, child_i.value())
+
+    def test_values(self):
+        for sample_index, sample in enumerate(XML_TEST_SAMPLES):
+            with self.subTest(xml_sample_index=sample_index):
+                root = ET.fromstring(sample.xml, parser=xml.XmlParser()).ito
+                for ito in root.find_all('**!![d:' + ','.join((xml.descriptors.ELEMENT, xml.descriptors.TAG)) + ']'):
+                    desc = ito.desc
+                    with self.subTest(ito_desc=desc, ito_span=ito.span):
+                        if desc == xml.descriptors.ELEMENT:
+                            self.assertIsInstance(ito.value(), ET.Element)
+                        elif desc == xml.descriptors.TAG:
+                            self.assertIsInstance(ito.value(), xml.QualifiedName)
 
     def test_tails(self):
         # xml fragment taken from https://docs.python.org/3/library/xml.etree.elementtree.html

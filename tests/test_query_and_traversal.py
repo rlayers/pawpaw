@@ -576,6 +576,23 @@ class TestItoQuery(TestItoTraversal):
                         actual = [*node.find_all(path)]
                         self.assertListEqual(expected, actual)
 
+    def test_subquery_grouped(self):
+        for node_type, node in {'root': self.root}.items():
+            for order in '', '+', '-':
+                for subquery in (
+                    '({.[~s:nine]} | {.[s:nine]}) & {*[s:v]}',
+                    '(({.[~s:nine]} | {.[s:nine]}) & {*[s:v]})',
+                    '{*[s:v]} & ({.[~s:nine]} | {.[s:nine]})',
+                    '({*[s:v]} & ({.[~s:nine]} | {.[s:nine]}))',
+                ):
+                    path = f'{order}**[d:word]{subquery}'
+                    with self.subTest(node=node_type, order=order, path=path):
+                        step = -1 if order == '-' else 1
+                        expected = [d for d in self.root.walk_descendants() if d.desc == 'word' and any(str(c) == 'v' for c in d.children)]
+                        expected = expected[::step]
+                        actual = [*node.find_all(path)]
+                        self.assertListEqual(expected, actual)
+
     def test_subquery_empty(self):
         for node_type, node in {'root': self.root}.items():
             for path in '.{}', '.({})', '.{.} & {}':

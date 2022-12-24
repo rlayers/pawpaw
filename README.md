@@ -121,7 +121,8 @@ You can then use this regex to feed **Pawpaw**:
 With this single line of code, Pawpaw generates a fully hierarchical, tree of phrases, words, chars, numbers, and digits.  You can visualize the tree:
 
 ```python
->>> print(pawpaw.visualization.pepo.Tree().dumps(doc))
+>>> tree_vis = pawpaw.visualization.pepo.Tree()
+>>> print(tree_vis.dumps(doc))
 (0, 45) '0' : 'nine 9 ten 10 eleven 11 TWELVE 12 thir…
 ├──(0, 7) 'phrase' : 'nine 9 '
 │  ├──(0, 4) 'word' : 'nine'

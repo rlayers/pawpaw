@@ -14,19 +14,11 @@
 
 <!-- 533E30  D2AC70  E4D1AE  517D3D  90C246 -->
 
-<!-- <span>
-  <h1 align="top">
-  Pawpaw
-  <img align="bottom" src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=800&duration=2000&pause=3000&color=533E30&vCenter=true&width=375&height=25&lines=High+Performance+Text+Segmentation">
-  </h1>
-</span> -->
-
-
 # Pawpaw  [![High Performance Text Processing & Segmentation Framework][byline-img]][repo]
 
-<img align="right" width="30%" height="30%" alt="Botanical Drawing: Asimina triloba: the American papaw" src="https://raw.githubusercontent.com/rlayers/pawpaw/master/images/pawpaw.png"> 
+Pawpaw is a high performance text segmentation framework.  Segments are captured and organized in tree graphs that can be serialized, traversed, and searched using a plumule: a powerful structured query language.  Pawpaw also features a rule pipelining engine, which allows you to build complex, pipelined parsers quickly, with just a few lines of code.
 
-Pawpaw is a high performance text segmentation framework.  Segments are organized into tree graphs that can be serialized, traversed, and searched using a powerful structured query language.  Pawpaw also features a framework for quickly and easily building complex, pipelined parsers.
+<img align="right" width="30%" height="30%" alt="Botanical Drawing: Asimina triloba: the American papaw" src="https://raw.githubusercontent.com/rlayers/pawpaw/master/images/pawpaw.png"> 
 
 - Indexed str and substr representation
   - Efficient memory utilization
@@ -51,7 +43,7 @@ Pawpaw is a high performance text segmentation framework.  Segments are organize
     - Access the raw XML corresponding to ElementTree elements, attributes, text, etc.
 - NLP Support:
   - Pawpaw is ideal for both a) *preprocessing* unstructured text for downstream NLP consumption and b) *storing and searching* NLP generated content
-  - Works with [NLTK](https://www.nltk.org/)
+  - Works with other libraries, such as [NLTK](https://www.nltk.org/)
 - Efficient pickling and JSON persistance
   - Security option enables persistance of index-only data, with refrence strings re-injected during de-serialziation 
 - Stable & Defect Free
@@ -65,6 +57,47 @@ Pawpaw is a high performance text segmentation framework.  Segments are organize
   <a href="https://github.com/rlayers/pawpaw/tree/master/pawpaw">Explore the code</a>
 </div>
 <br />
+
+<!-- TREE GRAPH -->
+
+## Example
+
+With Pawpaw, you can take flat text that looks like this:
+
+```
+ARTICLE I
+Section 1: Congress
+All legislative Powers herein granted shall be vested in a Congress of the United States,
+which shall consist of a Senate and House of Representatives.
+
+Section 2: The House of Representatives
+The House of Representatives shall be composed of Members chosen every second Year by the
+People of the several States, and the Electors in each State shall have the Qualifications
+requisite for Electors of the most numerous Branch of the State Legislature.
+```
+
+and quickly and easily builder a parser (or use your own) to produce a tree graph that look like this:
+
+```mermaid
+graph TD;
+    A1["[article]<br/>#quot;ARTICLE I#quot;"]-->Sc1["[section]<br/>#quot;Section 1<br/>#quot;"];
+    Sc1-->Sn1["[sentence]<br/>#quot;All legislative Powers...#quot;"]
+    Sn1-->W1_1["[word]<br/>#quot;All#quot;"]
+    Sn1-->W1_2["[word]<br/>#quot;legislative#quot;"]
+    Sn1-->W1_3["[word]<br/>#quot;Powers#quot;"]
+    
+    A1["[article]<br/>#quot;Article I#quot;"]-->Sc2["[section]<br/>#quot;Section 2<br/>#quot;"];
+    Sc2-->Sn2["[sentence]<br/>#quot;The House of...#quot;"]
+    Sn2-->W2_1["[word]<br/>#quot;The#quot;"]
+    Sn2-->W2_2["[word]<br/>#quot;House#quot;"]
+    Sn2-->W2_3["[word]<br/>#quot;of#quot;"]
+```
+
+which can then search using a structured query statement like this:
+
+ ```python
+ '**[d:section]{**[d:word] & [lcs:citizen,court]}'  # All sections having either the word 'citizen' or 'court'
+ ```
 
 <!-- USAGE EXAMPLES -->
 ## Usage

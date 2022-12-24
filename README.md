@@ -16,7 +16,7 @@
 
 # Pawpaw  [![High Performance Text Processing & Segmentation Framework][byline-img]][repo]
 
-Pawpaw is a high performance text segmentation framework.  Segments are captured and organized in tree graphs that can be serialized, traversed, and searched using a plumule: a powerful structured query language.  Pawpaw also features a rule pipelining engine, which allows you to build complex, pipelined parsers quickly, with just a few lines of code.
+Pawpaw is a high performance text segmentation framework.  Segments are organized into tree graphs that can be serialized, traversed, and searched using a powerful structured query language.  Pawpaw also features a framework for quickly and easily building complex, pipelined parsers.
 
 <img align="right" width="30%" height="30%" alt="Botanical Drawing: Asimina triloba: the American papaw" src="https://raw.githubusercontent.com/rlayers/pawpaw/master/images/pawpaw.png"> 
 
@@ -56,10 +56,8 @@ Pawpaw is a high performance text segmentation framework.  Segments are captured
   &nbsp;&nbsp;•&nbsp;&nbsp;
   <a href="https://github.com/rlayers/pawpaw/tree/master/pawpaw">Explore the code</a>
 </div>
-<br />
 
-<!-- TREE GRAPH -->
-
+<!-- EXAMPLE -->
 ## Example
 
 With Pawpaw, you can take flat text that looks like this:
@@ -117,10 +115,68 @@ You can use a regular expression for segmentation as follows:
 You can then use this regex to feed **Pawpaw**:
 
  ```python
- >>> doc = Ito.from_match(re.fullmatch(s))
+ >>> doc = pawpaw.Ito.from_match(re.fullmatch(s))
  ```
 
-With this single line of code, Pawpaw generates a fully hierarchical, tree of phrases, words, chars, numbers, and digits.  The tree can be traversed, and even searched using Pawpaw's *plumule*, a powerful XPATH-like structured query language:
+With this single line of code, Pawpaw generates a fully hierarchical, tree of phrases, words, chars, numbers, and digits.  You can visualize the tree:
+
+```python
+>>> print(pawpaw.visualization.pepo.Tree().dumps(doc))
+(0, 45) '0' : 'nine 9 ten 10 eleven 11 TWELVE 12 thir…
+├──(0, 7) 'phrase' : 'nine 9 '
+│  ├──(0, 4) 'word' : 'nine'
+│  │  ├──(0, 1) 'char' : 'n'
+│  │  ├──(1, 2) 'char' : 'i'
+│  │  ├──(2, 3) 'char' : 'n'
+│  │  └──(3, 4) 'char' : 'e'
+│  └──(5, 6) 'number' : '9'
+│     └──(5, 6) 'digit' : '9'
+├──(7, 14) 'phrase' : 'ten 10 '
+│  ├──(7, 10) 'word' : 'ten'
+│  │  ├──(7, 8) 'char' : 't'
+│  │  ├──(8, 9) 'char' : 'e'
+│  │  └──(9, 10) 'char' : 'n'
+│  └──(11, 13) 'number' : '10'
+│     ├──(11, 12) 'digit' : '1'
+│     └──(12, 13) 'digit' : '0'
+├──(14, 24) 'phrase' : 'eleven 11 '
+│  ├──(14, 20) 'word' : 'eleven'
+│  │  ├──(14, 15) 'char' : 'e'
+│  │  ├──(15, 16) 'char' : 'l'
+│  │  ├──(16, 17) 'char' : 'e'
+│  │  ├──(17, 18) 'char' : 'v'
+│  │  ├──(18, 19) 'char' : 'e'
+│  │  └──(19, 20) 'char' : 'n'
+│  └──(21, 23) 'number' : '11'
+│     ├──(21, 22) 'digit' : '1'
+│     └──(22, 23) 'digit' : '1'
+├──(24, 34) 'phrase' : 'TWELVE 12 '
+│  ├──(24, 30) 'word' : 'TWELVE'
+│  │  ├──(24, 25) 'char' : 'T'
+│  │  ├──(25, 26) 'char' : 'W'
+│  │  ├──(26, 27) 'char' : 'E'
+│  │  ├──(27, 28) 'char' : 'L'
+│  │  ├──(28, 29) 'char' : 'V'
+│  │  └──(29, 30) 'char' : 'E'
+│  └──(31, 33) 'number' : '12'
+│     ├──(31, 32) 'digit' : '1'
+│     └──(32, 33) 'digit' : '2'
+└──(34, 45) 'phrase' : 'thirteen 13'
+   ├──(34, 42) 'word' : 'thirteen'
+   │  ├──(34, 35) 'char' : 't'
+   │  ├──(35, 36) 'char' : 'h'
+   │  ├──(36, 37) 'char' : 'i'
+   │  ├──(37, 38) 'char' : 'r'
+   │  ├──(38, 39) 'char' : 't'
+   │  ├──(39, 40) 'char' : 'e'
+   │  ├──(40, 41) 'char' : 'e'
+   │  └──(41, 42) 'char' : 'n'
+   └──(43, 45) 'number' : '13'
+      ├──(43, 44) 'digit' : '1'
+      └──(44, 45) 'digit' : '3'
+```
+ 
+And you can search the tree using Pawpaw's *plumule*, a powerful XPATH-like structured query language:
 
  ```python
  >>> print(*doc.find_all('**[d:dig]'), sep=', ')  # all digits

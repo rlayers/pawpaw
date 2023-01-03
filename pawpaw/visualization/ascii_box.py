@@ -6,6 +6,7 @@ from pawpaw import Errors
 
 # See https://en.wikipedia.org/wiki/Box-drawing_character
 
+
 @dataclass(frozen=True)
 class Style:
     class Weight(Enum):
@@ -19,8 +20,13 @@ class Style:
         TRIPLE_DASH = auto()
         QUADRUPLE_DASH = auto()
 
+    class Path(Enum):
+        STRAIGHT = auto()
+        ARC = auto()
+
     weight: Weight = Weight.LIGHT
     count: Count = Count.SINGLE
+    path: Path = Path.STRAIGHT
 
 
 class Side:
@@ -89,6 +95,7 @@ class Corner:
         '╓': (Orientation.NW, Style(), Style(count=Style.Count.PARALLEL)),
         '╒': (Orientation.NW, Style(count=Style.Count.PARALLEL), Style()),
         '╔': (Orientation.NW, Style(count=Style.Count.PARALLEL), Style(count=Style.Count.PARALLEL)),
+        '╭': (Orientation.NW, Style(path=Style.path.ARC), Style(path=Style.path.ARC)),
 
         '┐': (Orientation.NE, Style(), Style()),
         '┒': (Orientation.NE, Style(), Style(Style.Weight.HEAVY)),
@@ -97,6 +104,7 @@ class Corner:
         '╖': (Orientation.NE, Style(), Style(count=Style.Count.PARALLEL)),
         '╕': (Orientation.NE, Style(count=Style.Count.PARALLEL), Style()),
         '╗': (Orientation.NE, Style(count=Style.Count.PARALLEL), Style(count=Style.Count.PARALLEL)),
+        '╮': (Orientation.NE, Style(path=Style.path.ARC), Style(path=Style.path.ARC)),
 
         '└': (Orientation.SW, Style(), Style()),
         '┖': (Orientation.SW, Style(), Style(Style.Weight.HEAVY)),
@@ -105,6 +113,7 @@ class Corner:
         '╙': (Orientation.SW, Style(), Style(count=Style.Count.PARALLEL)),
         '╘': (Orientation.SW, Style(count=Style.Count.PARALLEL), Style()),
         '╚': (Orientation.SW, Style(count=Style.Count.PARALLEL), Style(count=Style.Count.PARALLEL)),
+        '╰': (Orientation.SW, Style(path=Style.path.ARC), Style(path=Style.path.ARC)),
 
         '┘': (Orientation.SE, Style(), Style()),
         '┚': (Orientation.SE, Style(), Style(Style.Weight.HEAVY)),
@@ -113,6 +122,7 @@ class Corner:
         '╜': (Orientation.SE, Style(), Style(count=Style.Count.PARALLEL)),
         '╛': (Orientation.SE, Style(count=Style.Count.PARALLEL), Style()),
         '╝': (Orientation.SE, Style(count=Style.Count.PARALLEL), Style(count=Style.Count.PARALLEL)),
+        '╯': (Orientation.SE, Style(path=Style.path.ARC), Style(path=Style.path.ARC)),
     }
 
     @classmethod
@@ -121,9 +131,8 @@ class Corner:
             if v == (orientation, horizontal_style, vertical_style):
                 return k
         
-        raise ValueError(f'no character matches orientation {orientation},'
-                         f' horizontal_style {horizontal_style},'
-                         f' and vertical_style {vertical_style}')
+        raise ValueError(f'no character matches orientation {orientation}, horizontal_style {horizontal_style}, ' /
+                         'and vertical_style {vertical_style}')
 
     def __init__(self, horizontal_style: Style = Style(), vertical_style: Style = Style()):
         self._nw = self._find(self.Orientation.NW, horizontal_style, vertical_style)
@@ -160,15 +169,62 @@ class Box:
     def from_lines(self, *lines: str) -> typing.List[str]:
         max_line = max(len(line) for line in lines)
 
-        hz = self.hz_side * (max_line + 2)
-        rv = [f'{self.corner.NW}{hz}{self.corner.NE}']
+        horiz = self.hz_side * (max_line + 2)
+        rv = [f'{self.corner.NW}{horiz}{self.corner.NE}']
 
         for line in lines:
             rv.append(f'{self.vt_side} {line:^{max_line}} {self.vt_side}')
 
-        rv.append(f'{self.corner.SW}{hz}{self.corner.SE}')
+        rv.append(f'{self.corner.SW}{horiz}{self.corner.SE}')
 
         return rv
 
     def from_text(self, text: str) -> typing.List[str]:
         return self.from_lines(*text.splitlines())
+
+
+class BoxEx:
+    def __init__(
+            self,
+            nw_corner : Corner,
+            top: Side,
+            ne_corner: Corner,
+            left: Side,
+            right: Side,
+            sw_corner: Corner,
+            bottom: Side,
+            se_corner: Corner):
+        self.nw = nw_corner
+        self.top = top
+        self.ne = ne_corner
+        self.left = left
+        self.right = right
+        self.sw = sw_corner
+        self.bottom = bottom
+        self.se = se_corner
+
+    def from_lines(self, *lines: str) -> typing.List[str]:
+        max_line = max(len(line) for line in lines)
+
+        top = self.top * (max_line + 2)
+        rv = [f'{self.nw}{top}{self.ne}']
+
+        for line in lines:
+            rv.append(f'{self.left} {line:^{max_line}} {self.right}')
+
+        bottom = self.bottom * (max_line + 2)
+        rv.append(f'{self.sw}{bottom}{self.se}')
+
+        return rv
+
+    def from_text(self, text: str) -> typing.List[str]:
+        return self.from_lines(*text.splitlines())
+
+
+class BoxSymmetric(BoxEx):
+    def __init__(self, corner_style: Style):
+        corner = Corner(corner_style, corner_style)
+        side = Side(Style(corner_style.weight, corner_style.count))
+        super().__init__(corner.NW, side.HORIZONTAL, corner.NE,
+                         side.VERTICAL, side.VERTICAL,
+                         corner.SW, side.HORIZONTAL, corner.SE)

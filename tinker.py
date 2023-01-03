@@ -1,5 +1,5 @@
 import sys
-# Force Python XML parser, not faster C version so that we can hook methods
+# Force Python XML parser, not faster C accelerators because we can't hook the C implementation (3.x hack)
 sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
@@ -10,63 +10,18 @@ from pawpaw import Ito
 from pawpaw.visualization import sgr, Highlighter, pepo
 
 
-import xml.etree.ElementTree as ET
-from pawpaw import xml
-text = """<?xml version="1.0"?>
-<music xmlns:mb="http://musicbrainz.org/ns/mmd-1.0#" xmlns="http://mymusic.org/xml/">
-    <?display table-view?>
-    <album genre="R&amp;B" mb:id="123-456-789-0">
-        Robson Jorge &amp; Lincoln Olivetti <!-- 1982, Vinyl -->
-    </album>
-</music>"""
-root = ET.fromstring(text, parser=xml.XmlParser())
-print(f'{type(root)=}')
-print()
-
-from pawpaw.visualization import pepo
-print(pepo.Tree().dumps(root.ito))
-exit(0)
-
-
-
 v_compact = pepo.Compact()
 v_tree = pepo.Tree()
 v_xml = pepo.Xml()
 v_json = pepo.Json()
 
 
-import requests
-import pawpaw
-
-sleepy_hollow = 'https://www.gutenberg.org/ebooks/41.txt.utf-8'
-with requests.get(sleepy_hollow) as r:
-    root = pawpaw.nlp.SimpleNlp().from_text(r.text)
-for para in root.children[-10:]:
-    print(pawpaw.visualization.pepo.Tree().dumps(para))
-exit(0)
-
-
-
-
-s = ' The quick brown fox. '
-i = Ito(s, 1, -1)
-i.children.add(*i.str_split())
-# for c in i.children:
-#     c.children.add(*c)
-
-for result in i.find_all('*([s:The] | ~[s:quick]) & [s:brown]'):
-    print(v_compact.dumps(result))
-exit(0)
-
-# TODO: Make query tests for:
-# even/odd '~'
-# precedence
-# parens: '*([s:The] | ~[s:quick]) & [s:brown]' versus '*[s:The] | (~[s:quick]) & [s:brown])'
-# ensure '~' in 'A & (~(B | C))' is considered against (B | C), not against B
-
 import pawpaw.visualization.ascii_box as box
 
 boxer = box.Box(vertical_style=box.Style(count=box.Style.Count.PARALLEL))
+boxer = pawpaw.visualization.ascii_box.BoxSymmetric(
+    box.Style(path=box.Style.Path.ARC)
+)
 for line in boxer.from_text('The quick\nbrown fox\njumped over the lazy\ndogs.'):
     print(line)
 

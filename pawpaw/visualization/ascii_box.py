@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, auto
 import typing
@@ -161,29 +162,6 @@ class Corner:
 
 
 class Box:
-    def __init__(self, horizontal_style: Style = Style(), vertical_style: Style = Style()):
-        self.hz_side = Side(horizontal_style).HORIZONTAL
-        self.vt_side = Side(vertical_style).VERTICAL        
-        self.corner = Corner(horizontal_style, vertical_style)
-
-    def from_lines(self, *lines: str) -> typing.List[str]:
-        max_line = max(len(line) for line in lines)
-
-        horiz = self.hz_side * (max_line + 2)
-        rv = [f'{self.corner.NW}{horiz}{self.corner.NE}']
-
-        for line in lines:
-            rv.append(f'{self.vt_side} {line:^{max_line}} {self.vt_side}')
-
-        rv.append(f'{self.corner.SW}{horiz}{self.corner.SE}')
-
-        return rv
-
-    def from_text(self, text: str) -> typing.List[str]:
-        return self.from_lines(*text.splitlines())
-
-
-class BoxEx:
     def __init__(
             self,
             nw_corner : Corner,
@@ -221,10 +199,19 @@ class BoxEx:
         return self.from_lines(*text.splitlines())
 
 
-class BoxSymmetric(BoxEx):
-    def __init__(self, corner_style: Style):
-        corner = Corner(corner_style, corner_style)
-        side = Side(Style(corner_style.weight, corner_style.count))
-        super().__init__(corner.NW, side.HORIZONTAL, corner.NE,
-                         side.VERTICAL, side.VERTICAL,
-                         corner.SW, side.HORIZONTAL, corner.SE)
+def from_corner_symmetric(
+        corner_style: Style
+) -> Box:
+    corner = Corner(corner_style, corner_style)
+    side = Side(Style(corner_style.weight, corner_style.count))
+    return Box(corner.NW, side.HORIZONTAL, corner.NE,
+               side.VERTICAL, side.VERTICAL,
+               corner.SW, side.HORIZONTAL, corner.SE)
+
+
+def from_diagonal_corners(
+        corner_1: Corner,
+        corner_2: Corner
+) -> Box:
+    # TODO : Corners can be NW/SE or SW/NE
+    pass

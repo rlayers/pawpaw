@@ -18,8 +18,7 @@ v_json = pepo.Json()
 
 import pawpaw.visualization.ascii_box as box
 
-boxer = box.Box(vertical_style=box.Style(count=box.Style.Count.PARALLEL))
-boxer = pawpaw.visualization.ascii_box.BoxSymmetric(
+boxer = pawpaw.visualization.ascii_box.from_corner_symmetric(
     box.Style(path=box.Style.Path.ARC)
 )
 for line in boxer.from_text('The quick\nbrown fox\njumped over the lazy\ndogs.'):

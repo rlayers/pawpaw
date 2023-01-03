@@ -214,4 +214,4 @@ def from_diagonal_corners(
         corner_2: Corner
 ) -> Box:
     # TODO : Corners can be NW/SE or SW/NE
-    pass
+    return None

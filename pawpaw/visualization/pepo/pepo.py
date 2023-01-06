@@ -60,10 +60,10 @@ class Compact(_PepoFstr):
 
 
 class Tree(_PepoFstr):
-    HORZ = ascii_box.Side().HORIZONTAL
-    VERT = ascii_box.Side().VERTICAL
-    TEE = '├'
-    ELBOW = ascii_box.Corner().SW
+    HORZ = ascii_box.BoxDrawingChar.from_char('─')
+    VERT = ascii_box.BoxDrawingChar.from_char('│')
+    TEE = ascii_box.BoxDrawingChar.from_char('├')
+    ELBOW = ascii_box.BoxDrawingChar.from_char('└')
 
     def __init__(self, indent: str = '  ', children: bool = True):
         super().__init__(indent, children, '%span \'%desc\' : %substr!r:40…')

@@ -3,12 +3,23 @@ from dataclasses import dataclass
 from enum import Enum, auto
 import typing
 
-from pawpaw import Errors
+from pawpaw import Errors, Ito, Types
 
-# See https://en.wikipedia.org/wiki/Box-drawing_character
+# See 
+# 1. https://en.wikipedia.org/wiki/Box-drawing_character
+# 2. https://www.unicode.org/charts/PDF/U2500.pdf
 
+class Direction(Enum):
+    NW = auto()
+    N = auto()
+    NE = auto()
+    E = auto()
+    W = auto()
+    SW = auto()
+    S = auto()
+    SE = auto()
 
-@dataclass(frozen=True)
+@dataclass(frozen=True)    
 class Style:
     class Weight(Enum):
         LIGHT = auto()
@@ -16,202 +27,301 @@ class Style:
 
     class Count(Enum):
         SINGLE = auto()
-        PARALLEL = auto()
-        DOUBLE_DASH = auto()
-        TRIPLE_DASH = auto()
-        QUADRUPLE_DASH = auto()
+        DOUBLE = auto()
+
+    class Dash(Enum):
+        NONE = auto()
+        DOUBLE = auto()
+        TRIPLE = auto()
+        QUADRUPLE = auto()
 
     class Path(Enum):
-        STRAIGHT = auto()
+        LINE_SEGMENT = auto()
         ARC = auto()
 
     weight: Weight = Weight.LIGHT
     count: Count = Count.SINGLE
-    path: Path = Path.STRAIGHT
+    dash: Dash = Dash.NONE
+    path: Path = Path.LINE_SEGMENT
 
 
-class Side:
-    class Orientation(Enum):
-        HORIZONTAL = auto()
-        VERTICAL = auto()
+@dataclass
+class DirectionStyle:
+    direction: Direction
+    style: Style
 
-    _characters: typing.Dict[str, typing.Tuple[Orientation, Style]] = {
-        '─': (Orientation.HORIZONTAL, Style()),
-        '━': (Orientation.HORIZONTAL, Style(Style.Weight.HEAVY)),
-        '═': (Orientation.HORIZONTAL, Style(count=Style.Count.PARALLEL)),
-        '╌': (Orientation.HORIZONTAL, Style(count=Style.Count.DOUBLE_DASH)),
-        '╍': (Orientation.HORIZONTAL, Style(Style.Weight.HEAVY, Style.Count.DOUBLE_DASH)),
-        '┈': (Orientation.HORIZONTAL, Style(count=Style.Count.TRIPLE_DASH)),
-        '┉': (Orientation.HORIZONTAL, Style(Style.Weight.HEAVY, Style.Count.TRIPLE_DASH)),
-        '┄': (Orientation.HORIZONTAL, Style(count=Style.Count.QUADRUPLE_DASH)),
-        '┅': (Orientation.HORIZONTAL, Style(Style.Weight.HEAVY, Style.Count.QUADRUPLE_DASH)),
 
-        '│': (Orientation.VERTICAL, Style()),
-        '┃': (Orientation.VERTICAL, Style(Style.Weight.HEAVY)),
-        '║': (Orientation.VERTICAL, Style(count=Style.Count.PARALLEL)),
-        '╎': (Orientation.VERTICAL, Style(count=Style.Count.DOUBLE_DASH)),
-        '╏': (Orientation.VERTICAL, Style(Style.Weight.HEAVY, Style.Count.DOUBLE_DASH)),
-        '┊': (Orientation.VERTICAL, Style(count=Style.Count.TRIPLE_DASH)),
-        '┋': (Orientation.VERTICAL, Style(Style.Weight.HEAVY, Style.Count.TRIPLE_DASH)),
-        '┆': (Orientation.VERTICAL, Style(count=Style.Count.QUADRUPLE_DASH)),
-        '┇': (Orientation.VERTICAL, Style(Style.Weight.HEAVY, Style.Count.QUADRUPLE_DASH)),
-    }
+class BoxDrawingChar:
+    _instances: typing.List[BoxDrawingChar] = []
 
     @classmethod
-    def _find(cls, orientation: Orientation, style: Style = Style()) -> str:
-        for k, v in cls._characters.items():
-            if v == (orientation, style):
-                return k
-        
-        raise ValueError(f'no character matches orientation {orientation} and style {style}')
-
-    def __init__(self, style: Style = Style()):
-        self._horizontal = self._find(self.Orientation.HORIZONTAL, style)
-        self._vertical = self._find(self.Orientation.VERTICAL, style)
-
-    def __getitem__(self, key: Orientation) -> str:
-        return getattr(self, key.name)
-
-    @property
-    def HORIZONTAL(self) -> str:
-        return self._horizontal
-
-    @property
-    def VERTICAL(self) -> str:
-        return self._vertical
-
-
-class Corner:
-    class Orientation(Enum):
-        NW = auto()
-        NE = auto()
-        SW = auto()
-        SE = auto()
-
-    _characters: typing.Dict[str, typing.Tuple[Orientation, Style]] = {
-        '┌': (Orientation.NW, Style(), Style()),
-        '┎': (Orientation.NW, Style(), Style(Style.Weight.HEAVY)),
-        '┍': (Orientation.NW, Style(Style.Weight.HEAVY), Style()),
-        '┏': (Orientation.NW, Style(Style.Weight.HEAVY), Style(Style.Weight.HEAVY)),
-        '╓': (Orientation.NW, Style(), Style(count=Style.Count.PARALLEL)),
-        '╒': (Orientation.NW, Style(count=Style.Count.PARALLEL), Style()),
-        '╔': (Orientation.NW, Style(count=Style.Count.PARALLEL), Style(count=Style.Count.PARALLEL)),
-        '╭': (Orientation.NW, Style(path=Style.path.ARC), Style(path=Style.path.ARC)),
-
-        '┐': (Orientation.NE, Style(), Style()),
-        '┒': (Orientation.NE, Style(), Style(Style.Weight.HEAVY)),
-        '┑': (Orientation.NE, Style(Style.Weight.HEAVY), Style()),
-        '┓': (Orientation.NE, Style(Style.Weight.HEAVY), Style(Style.Weight.HEAVY)),
-        '╖': (Orientation.NE, Style(), Style(count=Style.Count.PARALLEL)),
-        '╕': (Orientation.NE, Style(count=Style.Count.PARALLEL), Style()),
-        '╗': (Orientation.NE, Style(count=Style.Count.PARALLEL), Style(count=Style.Count.PARALLEL)),
-        '╮': (Orientation.NE, Style(path=Style.path.ARC), Style(path=Style.path.ARC)),
-
-        '└': (Orientation.SW, Style(), Style()),
-        '┖': (Orientation.SW, Style(), Style(Style.Weight.HEAVY)),
-        '┕': (Orientation.SW, Style(Style.Weight.HEAVY), Style()),
-        '┗': (Orientation.SW, Style(Style.Weight.HEAVY), Style(Style.Weight.HEAVY)),
-        '╙': (Orientation.SW, Style(), Style(count=Style.Count.PARALLEL)),
-        '╘': (Orientation.SW, Style(count=Style.Count.PARALLEL), Style()),
-        '╚': (Orientation.SW, Style(count=Style.Count.PARALLEL), Style(count=Style.Count.PARALLEL)),
-        '╰': (Orientation.SW, Style(path=Style.path.ARC), Style(path=Style.path.ARC)),
-
-        '┘': (Orientation.SE, Style(), Style()),
-        '┚': (Orientation.SE, Style(), Style(Style.Weight.HEAVY)),
-        '┙': (Orientation.SE, Style(Style.Weight.HEAVY), Style()),
-        '┛': (Orientation.SE, Style(Style.Weight.HEAVY), Style(Style.Weight.HEAVY)),
-        '╜': (Orientation.SE, Style(), Style(count=Style.Count.PARALLEL)),
-        '╛': (Orientation.SE, Style(count=Style.Count.PARALLEL), Style()),
-        '╝': (Orientation.SE, Style(count=Style.Count.PARALLEL), Style(count=Style.Count.PARALLEL)),
-        '╯': (Orientation.SE, Style(path=Style.path.ARC), Style(path=Style.path.ARC)),
-    }
+    def _sort(cls, *direction_styles: DirectionStyle) -> typing.Tuple[DirectionStyle]:
+        return tuple(sorted(direction_styles, key=lambda ds: ds.direction.value))
 
     @classmethod
-    def _find(cls, orientation: Orientation, horizontal_style: Style, vertical_style: Style) -> str:
-        for k, v in cls._characters.items():
-            if v == (orientation, horizontal_style, vertical_style):
-                return k
-        
-        raise ValueError(f'no character matches orientation {orientation}, horizontal_style {horizontal_style}, ' /
-                         'and vertical_style {vertical_style}')
+    def from_char(cls, char: str) -> BoxDrawingChar:
+        if (rv := next(filter(lambda bdc: bdc._char == char, cls._instances), None)) is None:
+            raise ValueError('parameter \'char\' is not a box-drawing character')
+        return rv
 
-    def __init__(self, horizontal_style: Style = Style(), vertical_style: Style = Style()):
-        self._nw = self._find(self.Orientation.NW, horizontal_style, vertical_style)
-        self._ne = self._find(self.Orientation.NE, horizontal_style, vertical_style)
-        self._sw = self._find(self.Orientation.SW, horizontal_style, vertical_style)
-        self._se = self._find(self.Orientation.SE, horizontal_style, vertical_style)
+    @classmethod
+    def from_name(cls, name: str) -> BoxDrawingChar:
+        if (rv := next(filter(lambda bdc: bdc._name == name, cls._instances), None)) is None:
+            raise ValueError('no box-drawing character matches {name}')
+        return rv
 
-    def __getitem__(self, key: Orientation) -> str:
-        return getattr(self, key.name)
+    @classmethod
+    def from_direction_styles(cls, *direction_styles: DirectionStyle) -> BoxDrawingChar:
+        sorted_dss = cls._sort(*direction_styles)
 
-    @property
-    def NW(self) -> str:
-        return self._nw
+        for instance in filter(lambda i: len(i._direction_styles) == len(direction_styles), cls._instances):
+            if all(s1 == s2 for s1, s2 in zip(sorted_dss, instance._direction_styles)):
+                return instance
 
-    @property
-    def NE(self) -> str:
-        return self._ne
+            raise ValueError(f'no box-drawing character matches {direction_styles}')
 
-    @property
-    def SW(self) -> str:
-        return self._sw
+    def __init__(self, char: str, name: str, *direction_styles: DirectionStyle):
+        self._char: str = char
+        self._name: str = name
+        self._direction_styles: typing.Tuple[DirectionStyle] = self._sort(*direction_styles)
 
     @property
-    def SE(self) -> str:
-        return self._se
+    def char(self) -> str:
+        return self._char
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def direction_styles(self) -> str:
+        return self._direction_styles
+
+    def __str__(self):
+        return self._char
 
 
-class Box:
+BoxDrawingChar._instances.extend(
+    (
+        BoxDrawingChar(
+            '╴',
+            'BOX DRAWINGS LIGHT LEFT',
+            DirectionStyle(Direction.W, Style()),
+        ),
+        BoxDrawingChar(
+            '╵',
+            'BOX DRAWINGS LIGHT UP',
+            DirectionStyle(Direction.N, Style()),
+        ),
+        BoxDrawingChar(
+            '╶',
+            'BOX DRAWINGS LIGHT RIGHT',
+            DirectionStyle(Direction.E, Style()),
+        ),
+        BoxDrawingChar(
+            '╷',
+            'BOX DRAWINGS LIGHT DOWN',
+            DirectionStyle(Direction.S, Style()),
+        ),
+
+        BoxDrawingChar(
+            '─',
+            'BOX DRAWINGS LIGHT HORIZONTAL',
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style()),
+        ),
+
+        BoxDrawingChar(
+            '│',
+            'BOX DRAWINGS LIGHT VERTICAL',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+
+        BoxDrawingChar(
+            '└',
+            'BOX DRAWINGS LIGHT UP AND RIGHT',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.E, Style()),
+        ),
+
+        BoxDrawingChar(
+            '┌',
+            'BOX DRAWINGS LIGHT DOWN AND RIGHT',
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+
+        BoxDrawingChar(
+            '╭',
+            'BOX DRAWINGS LIGHT ARC DOWN AND RIGHT',
+            DirectionStyle(Direction.E, Style(path=Style.Path.ARC)),
+            DirectionStyle(Direction.S, Style(path=Style.Path.ARC)),
+        ),        
+
+        BoxDrawingChar(
+            '├',
+            'BOX DRAWINGS LIGHT VERTICAL AND RIGHT',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+
+        BoxDrawingChar(
+            '┼',
+            'BOX DRAWINGS LIGHT VERTICAL AND HORIZONTAL',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+    )
+)
+
+class Boxer:
     def __init__(
-            self,
-            nw_corner : Corner,
-            top: Side,
-            ne_corner: Corner,
-            left: Side,
-            right: Side,
-            sw_corner: Corner,
-            bottom: Side,
-            se_corner: Corner):
-        self.nw = nw_corner
-        self.top = top
-        self.ne = ne_corner
-        self.left = left
-        self.right = right
-        self.sw = sw_corner
-        self.bottom = bottom
-        self.se = se_corner
+        self,
+        nw: BoxDrawingChar | str,
+        n: BoxDrawingChar | str,
+        ne: BoxDrawingChar | str,
+        w: BoxDrawingChar | str,
+        e: BoxDrawingChar | str,
+        sw: BoxDrawingChar | str,
+        s: BoxDrawingChar | str,
+        se: BoxDrawingChar | str
+    ):
+        if not (isinstance(nw, BoxDrawingChar) or isinstance(nw, str)):
+            raise Errors.parameter_invalid_type('nw', nw, BoxDrawingChar, str)
+        self.nw = nw
 
-    def from_lines(self, *lines: str) -> typing.List[str]:
+        if not (isinstance(n, BoxDrawingChar) or isinstance(n, str)):
+            raise Errors.parameter_invalid_type('n', n, BoxDrawingChar, str)
+        self.n = n
+
+        if not (isinstance(ne, BoxDrawingChar) or isinstance(ne, str)):
+            raise Errors.parameter_invalid_type('ne', ne, BoxDrawingChar, str)
+        self.ne = ne
+
+        if not (isinstance(w, BoxDrawingChar) or isinstance(w, str)):
+            raise Errors.parameter_invalid_type('w', w, BoxDrawingChar, str)
+        self.w = w
+
+        if not (isinstance(e, BoxDrawingChar) or isinstance(e, str)):
+            raise Errors.parameter_invalid_type('e', e, BoxDrawingChar, str)
+        self.e = e
+
+        if not (isinstance(sw, BoxDrawingChar) or isinstance(sw, str)):
+            raise Errors.parameter_invalid_type('sw', sw, BoxDrawingChar, str)
+        self.sw = sw
+
+        if not (isinstance(s, BoxDrawingChar) or isinstance(s, str)):
+            raise Errors.parameter_invalid_type('s', s, BoxDrawingChar, str)
+        self.s = s
+
+        if not (isinstance(se, BoxDrawingChar) or isinstance(se, str)):
+            raise Errors.parameter_invalid_type('se', se, BoxDrawingChar, str)
+        self.se = se
+
+    def _from_lines(self, *lines: Types.C_ITO) -> typing.List[str]:
         max_line = max(len(line) for line in lines)
 
-        top = self.top * (max_line + 2)
-        rv = [f'{self.nw}{top}{self.ne}']
+        rv = [f'{self.nw}{self.n * (max_line + 2)}{self.ne}']
 
         for line in lines:
-            rv.append(f'{self.left} {line:^{max_line}} {self.right}')
+            rv.append(f'{self.w} {line:^{max_line}} {self.e}')
 
-        bottom = self.bottom * (max_line + 2)
-        rv.append(f'{self.sw}{bottom}{self.se}')
+        rv.append(f'{self.sw}{self.s * (max_line + 2)}{self.se}')
 
         return rv
 
-    def from_text(self, text: str) -> typing.List[str]:
-        return self.from_lines(*text.splitlines())
+    def from_srcs(self, *srcs: Types.C_ITO | str) -> typing.List[str]:
+        lines: typing.List[Types.C_ITO] = []
+        for src in srcs:
+            if isinstance(src, str):
+                src = Ito(src)
+            elif not isinstance(src, Types.C_ITO):
+                raise Errors.parameter_invalid_type('srcs', src, ITO, str)
+            lines.extend(src.str_splitlines())
 
+        return self._from_lines(*lines)
 
-def from_corner_symmetric(
-        corner_style: Style
-) -> Box:
-    corner = Corner(corner_style, corner_style)
-    side = Side(Style(corner_style.weight, corner_style.count))
-    return Box(corner.NW, side.HORIZONTAL, corner.NE,
-               side.VERTICAL, side.VERTICAL,
-               corner.SW, side.HORIZONTAL, corner.SE)
+def from_corners(
+    upper_left: BoxDrawingChar | typing.Tuple[Style, Style] | None = None,
+    upper_right: BoxDrawingChar | typing.Tuple[Style, Style] | None = None,
+    lower_left: BoxDrawingChar | typing.Tuple[Style, Style] | None = None,
+    lower_right: BoxDrawingChar | typing.Tuple[Style, Style] | None = None
+) -> Boxer:
+    if all(c is None for c in (upper_left, upper_right, lower_left, lower_right)):
+        raise ValueError('At least one corner is required')
 
+    if isinstance(upper_left, typing.Tuple(Style, Style)):
+        upper_left = BoxDrawingChar.from_direction_styles(DirectionStyle(Direction.E, upper_left[0]), DirectionStyle(Direction.S, upper_left[1]))
+    elif isinstance(upper_left, BoxDrawingChar):
+        if not (len(upper_left.direction_styles) == 2 and upper_left.direction_styles[0].direction == Direction.E and upper_left.direction_styles[1].direction == Direction.S):
+            raise ValueError('parameter \'upper_left\' is not an upper left corner')
+    elif upper_left is not None:
+        raise Errors.parameter_invalid_type('upper_left', upper_left, BoxDrawingChar, typing.Tuple[Style, Style], None)
 
-def from_diagonal_corners(
-        corner_1: Corner,
-        corner_2: Corner
-) -> Box:
-    # TODO : Corners can be NW/SE or SW/NE
-    return None
+    if isinstance(upper_right, typing.Tuple(Style, Style)):
+        upper_right = BoxDrawingChar.from_direction_styles(DirectionStyle(Direction.W, upper_right[0]), DirectionStyle(Direction.S, upper_right[1]))
+    elif isinstance(upper_right, BoxDrawingChar):
+        if not (len(upper_right.direction_styles) == 2 and upper_right.direction_styles[0].direction == Direction.W and upper_right.direction_styles[1].direction == Direction.S):
+            raise ValueError('parameter \'upper_right\' is not an upper right corner')
+    elif upper_right is not None:
+        raise Errors.parameter_invalid_type('upper_right', upper_right, BoxDrawingChar, typing.Tuple[Style, Style], None)
+
+    if isinstance(lower_left, typing.Tuple(Style, Style)):
+        lower_left = BoxDrawingChar.from_direction_styles(DirectionStyle(Direction.N, lower_left[0]), DirectionStyle(Direction.E, lower_left[1]))
+    elif isinstance(lower_left, BoxDrawingChar):
+        if not (len(lower_left.direction_styles) == 2 and lower_left.direction_styles[0].direction == Direction.N and lower_left.direction_styles[1].direction == Direction.E):
+            raise ValueError('parameter \'lower_left\' is not a lower left corner')
+    elif lower_left is not None:
+        raise Errors.parameter_invalid_type('lower_left', lower_left, BoxDrawingChar, typing.Tuple[Style, Style], None)
+
+    if isinstance(lower_right, typing.Tuple(Style, Style)):
+        lower_right = BoxDrawingChar.from_direction_styles(DirectionStyle(Direction.N, lower_right[0]), DirectionStyle(Direction.W, lower_right[1]))
+    elif isinstance(lower_right, BoxDrawingChar):
+        if not (len(lower_right.direction_styles) == 2 and lower_right.direction_styles[0].direction == Direction.N and lower_right.direction_styles[1].direction == Direction.W):
+            raise ValueError('parameter \'lower_right\' is not a lower right corner')
+    elif lower_right is not None:
+        raise Errors.parameter_invalid_type('lower_right', lower_right, BoxDrawingChar, typing.Tuple[Style, Style], None)
+
+    corners = [upper_left, upper_right, lower_left, lower_right]
+
+    def prior_idx(i: int) -> int:
+        return (i + 3) % 4
+    
+    def next_idx(i: int) -> int:
+        return (i + 1) % 4
+
+    NW, NE, SE, SW = (0, 1, 2, 3)
+
+    def build_corner(i: int) -> Corner:
+        prior = corners[prior_idx(i)]
+        next_ = corners[next_idx(i)]
+        if prior is None:
+            if i == NW:
+                ds1, ds2 = DirectionStyle(Direction.E, next(lambda ds: ds.direction == Direction.W, next_.direction_styles))
+            elif i == NE:
+                ds1, ds2 = DirectionStyle(Direction.S, next(lambda ds: ds.direction == Direction.N, next_.direction_styles))
+            elif i == SE:
+                ds1, ds2 = DirectionStyle(Direction.W, next(lambda ds: ds.direction == Direction.E, next_.direction_styles))
+            else:  # SW:
+                ds1, ds2 = DirectionStyle(Direction.N, next(lambda ds: ds.direction == Direction.S, next_.direction_styles))
+        elif next is None:
+            pass
+        else:
+            pass
+
+        return BoxDrawingChar.from_direction_styles(ds1, ds2)
+
+    for i in filter(lambda i: corners[i] is None, range(4)):
+        corners[i] = build_corner(i)
+
+    top, left, right, bottom = ''  # TODO: Find matches
+
+    return Boxer(
+        corners[NW], top, corners[NE],
+        left, right,
+        corners[SW], bottom, corners[NE]
+    )

@@ -18,6 +18,28 @@ v_json = pepo.Json()
 
 import pawpaw.visualization.ascii_box as box
 
+# Test 1 = get from_char
+c = '─'
+bdc = box.BoxDrawingChar.from_char(c)
+print(bdc)
+
+# Test 2 = get from_name
+n = 'BOX DRAWINGS LIGHT HORIZONTAL'
+bdc = box.BoxDrawingChar.from_name(n)
+print(bdc)
+
+# Test 3 = get from_direction_styles with ordered direction styles
+ds1 = box.DirectionStyle(box.Direction.W, box.StyleEx())
+ds2 = box.DirectionStyle(box.Direction.E, box.StyleEx())
+bdc = box.BoxDrawingChar.from_direction_styles(ds1, ds2)
+print(bdc)
+
+# Test 4 = get from_direction_styles with mis-ordered direction styles
+bdc = box.BoxDrawingChar.from_direction_styles(ds2, ds1)
+print(bdc)
+
+exit(0)
+
 boxer = pawpaw.visualization.ascii_box.from_corner_symmetric(
     box.Style(path=box.Style.Path.ARC)
 )

@@ -364,7 +364,7 @@ BoxDrawingChar._instances.extend(
             '┧',
             'BOX DRAWINGS DOWN HEAVY AND LEFT UP LIGHT',
             DirectionStyle(Direction.N, Style()),
-            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style()),
             DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
         ),
         BoxDrawingChar(
@@ -708,14 +708,14 @@ BoxDrawingChar._instances.extend(
         BoxDrawingChar(
             '╖',
             'BOX DRAWINGS DOWN DOUBLE AND LEFT SINGLE',
-            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.W, Style()),
             DirectionStyle(Direction.S, Style(count=Style.Count.DOUBLE)),
         ),
         BoxDrawingChar(
             '╗',
             'BOX DRAWINGS DOUBLE DOWN AND LEFT',
             DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
-            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.S, Style(count=Style.Count.DOUBLE)),
         ),
         BoxDrawingChar(
             '╘',

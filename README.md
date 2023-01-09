@@ -103,7 +103,7 @@ graph TD;
 You can then search your tree using plumule: a powerful structured query language:
 
  ```python
- '**[d:section]{**[d:word] & [lcs:power,right]}'  # All sections having either the word 'power' or 'right'
+ '**[d:section]{**[d:word] & [lcs:power,right]}'  # Find sections that contain words 'power' or 'right'
  ```
 
 Try out [this demo](docs/demos/us_constitution) yourself, which shows how easy it is to parse, visualize, and query the US Constitution using Pawpaw.

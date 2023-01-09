@@ -29,8 +29,8 @@ bdc = box.BoxDrawingChar.from_name(n)
 print(bdc)
 
 # Test 3 = get from_direction_styles with ordered direction styles
-ds1 = box.DirectionStyle(box.Direction.W, box.StyleEx())
-ds2 = box.DirectionStyle(box.Direction.E, box.StyleEx())
+ds1 = box.DirectionStyle(box.Direction.W, box.Style())
+ds2 = box.DirectionStyle(box.Direction.E, box.Style())
 bdc = box.BoxDrawingChar.from_direction_styles(ds1, ds2)
 print(bdc)
 
@@ -38,9 +38,16 @@ print(bdc)
 bdc = box.BoxDrawingChar.from_direction_styles(ds2, ds1)
 print(bdc)
 
+# Test 10 = get from single corner
+bdc = box.BoxDrawingChar.from_char('└')
+bdc = box.BoxDrawingChar.from_char('┑')
+boxer = box.from_corners(bdc)
+for line in boxer.from_srcs('Hello, world!'):
+    print(line)
 exit(0)
 
 boxer = pawpaw.visualization.ascii_box.from_corner_symmetric(
+    # box.Style(path=box.Style.Path.ARC)
     box.Style(path=box.Style.Path.ARC)
 )
 for line in boxer.from_text('The quick\nbrown fox\njumped over the lazy\ndogs.'):

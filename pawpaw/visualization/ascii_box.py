@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 import typing
 
-from pawpaw import Errors, Ito, Types
+from pawpaw import Errors, Ito, Types, nuco
 
 # See 
 # 1. https://en.wikipedia.org/wiki/Box-drawing_character
@@ -78,7 +78,7 @@ class BoxDrawingChar:
             if all(s1 == s2 for s1, s2 in zip(sorted_dss, instance._direction_styles)):
                 return instance
 
-            raise ValueError(f'no box-drawing character matches {direction_styles}')
+        raise ValueError(f'no box-drawing character matches {direction_styles}')
 
     def __init__(self, char: str, name: str, *direction_styles: DirectionStyle):
         self._char: str = char
@@ -103,6 +103,269 @@ class BoxDrawingChar:
 
 BoxDrawingChar._instances.extend(
     (
+        #region Light and heavy solid lines
+
+        BoxDrawingChar(
+            '─',
+            'BOX DRAWINGS LIGHT HORIZONTAL',
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style()),
+        ),
+        BoxDrawingChar(
+            '━',
+            'BOX DRAWINGS HEAVY HORIZONTAL',
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '│',
+            'BOX DRAWINGS LIGHT VERTICAL',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┃',
+            'BOX DRAWINGS HEAVY VERTICAL',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+
+        #endregion
+
+        #region Light and heavy dashed lines
+
+        BoxDrawingChar(
+            '╌',
+            'BOX DRAWINGS LIGHT DOUBLE DASH',
+            DirectionStyle(Direction.W, Style(dash=Style.Dash.DOUBLE)),
+            DirectionStyle(Direction.E, Style(dash=Style.Dash.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╍',
+            'BOX DRAWINGS HEAVY DOUBLE DASH',
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.DOUBLE)),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╎',
+            'BOX DRAWINGS LIGHT DOUBLE DASH VERTICAL',
+            DirectionStyle(Direction.N, Style(dash=Style.Dash.DOUBLE)),
+            DirectionStyle(Direction.S, Style(dash=Style.Dash.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╏',
+            'BOX DRAWINGS HEAVY DOUBLE DASH',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.DOUBLE)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.DOUBLE)),
+        ),
+
+        BoxDrawingChar(
+            '┄',
+            'BOX DRAWINGS LIGHT TRIPLE DASH',
+            DirectionStyle(Direction.W, Style(dash=Style.Dash.TRIPLE)),
+            DirectionStyle(Direction.E, Style(dash=Style.Dash.TRIPLE)),
+        ),
+        BoxDrawingChar(
+            '┅',
+            'BOX DRAWINGS HEAVY TRIPLE DASH',
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.TRIPLE)),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.TRIPLE)),
+        ),
+        BoxDrawingChar(
+            '┆',
+            'BOX DRAWINGS LIGHT TRIPLE DASH VERTICAL',
+            DirectionStyle(Direction.N, Style(dash=Style.Dash.TRIPLE)),
+            DirectionStyle(Direction.S, Style(dash=Style.Dash.TRIPLE)),
+        ),
+        BoxDrawingChar(
+            '┇',
+            'BOX DRAWINGS HEAVY TRIPLE DASH',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.TRIPLE)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.TRIPLE)),
+        ),
+
+        BoxDrawingChar(
+            '┈',
+            'BOX DRAWINGS LIGHT QUADRUPLE DASH',
+            DirectionStyle(Direction.W, Style(dash=Style.Dash.QUADRUPLE)),
+            DirectionStyle(Direction.E, Style(dash=Style.Dash.QUADRUPLE)),
+        ),
+        BoxDrawingChar(
+            '┉',
+            'BOX DRAWINGS HEAVY QUADRUPLE DASH',
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.QUADRUPLE)),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.QUADRUPLE)),
+        ),
+        BoxDrawingChar(
+            '┊',
+            'BOX DRAWINGS LIGHT QUADRUPLE DASH VERTICAL',
+            DirectionStyle(Direction.N, Style(dash=Style.Dash.QUADRUPLE)),
+            DirectionStyle(Direction.S, Style(dash=Style.Dash.QUADRUPLE)),
+        ),
+        BoxDrawingChar(
+            '┋',
+            'BOX DRAWINGS HEAVY QUADRUPLE DASH',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.QUADRUPLE)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.QUADRUPLE)),
+        ),
+
+        #endregion
+
+        #region Double lines
+
+        BoxDrawingChar(
+            '═',
+            'BOX DRAWINGS DOUBLE HORIZONTAL',
+            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '║',
+            'BOX DRAWINGS DOUBLE VERTICAL',
+            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE, weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE, weight=Style.Weight.HEAVY)),
+        ),
+
+        #endregion
+
+        #region Light and heavy line box components
+
+        BoxDrawingChar(
+            '┌',
+            'BOX DRAWINGS LIGHT DOWN AND RIGHT',
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┍',
+            'BOX DRAWINGS DOWN LIGHT AND RIGHT HEAVY',
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┎',
+            'BOX DRAWINGS DOWN HEAVY AND RIGHT LIGHT',
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┏',
+            'BOX DRAWINGS HEAVY DOWN AND RIGHT',
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+
+        BoxDrawingChar(
+            '┐',
+            'BOX DRAWINGS LIGHT DOWN AND LEFT',
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┑',
+            'BOX DRAWINGS DOWN LIGHT AND LEFT HEAVY',
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┒',
+            'BOX DRAWINGS DOWN HEAVY AND LEFT LIGHT',
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┓',
+            'BOX DRAWINGS HEAVY DOWN AND LEFT',
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+
+        BoxDrawingChar(
+            '└',
+            'BOX DRAWINGS LIGHT UP AND RIGHT',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.E, Style()),
+        ),
+        BoxDrawingChar(
+            '┕',
+            'BOX DRAWINGS UP LIGHT AND RIGHT HEAVY',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┖',
+            'BOX DRAWINGS UP HEAVY AND RIGHT LIGHT',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style()),
+        ),
+        BoxDrawingChar(
+            '┗',
+            'BOX DRAWINGS HEAVY UP AND RIGHT',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+        ),
+
+        BoxDrawingChar(
+            '┘',
+            'BOX DRAWINGS LIGHT UP AND LEFT',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style()),
+        ),
+        BoxDrawingChar(
+            '┙',
+            'BOX DRAWINGS UP LIGHT AND LEFT HEAVY',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┚',
+            'BOX DRAWINGS UP HEAVY AND LEFT LIGHT',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style()),
+        ),
+        BoxDrawingChar(
+            '┛',
+            'BOX DRAWINGS HEAVY UP AND LEFT',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+        ),
+
+        #endregion
+
+        # region Character cell arcs
+
+        BoxDrawingChar(
+            '╭',
+            'BOX DRAWINGS LIGHT ARC DOWN AND RIGHT',
+            DirectionStyle(Direction.E, Style(path=Style.Path.ARC)),
+            DirectionStyle(Direction.S, Style(path=Style.Path.ARC)),
+        ),
+
+        BoxDrawingChar(
+            '╮',
+            'BOX DRAWINGS LIGHT ARC DOWN AND LEFT',
+            DirectionStyle(Direction.W, Style(path=Style.Path.ARC)),
+            DirectionStyle(Direction.S, Style(path=Style.Path.ARC)),
+        ),
+
+        BoxDrawingChar(
+            '╯',
+            'BOX DRAWINGS LIGHT ARC UP AND LEFT',
+            DirectionStyle(Direction.N, Style(path=Style.Path.ARC)),
+            DirectionStyle(Direction.W, Style(path=Style.Path.ARC)),
+        ),
+
+        BoxDrawingChar(
+            '╰',
+            'BOX DRAWINGS LIGHT ARC UP AND RIGHT',
+            DirectionStyle(Direction.N, Style(path=Style.Path.ARC)),
+            DirectionStyle(Direction.E, Style(path=Style.Path.ARC)),
+        ),
+
+        #endregion
+
+        # region Light and heavy half lines
+
         BoxDrawingChar(
             '╴',
             'BOX DRAWINGS LIGHT LEFT',
@@ -125,39 +388,56 @@ BoxDrawingChar._instances.extend(
         ),
 
         BoxDrawingChar(
-            '─',
-            'BOX DRAWINGS LIGHT HORIZONTAL',
+            '╸',
+            'BOX DRAWINGS HEAVY LEFT',
             DirectionStyle(Direction.W, Style()),
+        ),
+        BoxDrawingChar(
+            '╹',
+            'BOX DRAWINGS HEAVY UP',
+            DirectionStyle(Direction.N, Style()),
+        ),
+        BoxDrawingChar(
+            '╺',
+            'BOX DRAWINGS HEAVY RIGHT',
             DirectionStyle(Direction.E, Style()),
         ),
-
         BoxDrawingChar(
-            '│',
-            'BOX DRAWINGS LIGHT VERTICAL',
-            DirectionStyle(Direction.N, Style()),
+            '╻',
+            'BOX DRAWINGS HEAVY DOWN',
             DirectionStyle(Direction.S, Style()),
         ),
 
-        BoxDrawingChar(
-            '└',
-            'BOX DRAWINGS LIGHT UP AND RIGHT',
-            DirectionStyle(Direction.N, Style()),
-            DirectionStyle(Direction.E, Style()),
-        ),
+        # endregion
+
+        #region Mixed light and heavy lines
 
         BoxDrawingChar(
-            '┌',
-            'BOX DRAWINGS LIGHT DOWN AND RIGHT',
+            '╼',
+            'BOX DRAWINGS LIGHT LEFT AND HEAVY',
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '╽',
+            'BOX DRAWINGS LIGHT UP AND HEAVY DOWN',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '╾',
+            'BOX DRAWINGS HEAVY LEFT AND LIGHT',
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
             DirectionStyle(Direction.E, Style()),
+        ),
+        BoxDrawingChar(
+            '╿',
+            'BOX DRAWINGS HEAVY UP AND LIGHT DOWN',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
             DirectionStyle(Direction.S, Style()),
         ),
 
-        BoxDrawingChar(
-            '╭',
-            'BOX DRAWINGS LIGHT ARC DOWN AND RIGHT',
-            DirectionStyle(Direction.E, Style(path=Style.Path.ARC)),
-            DirectionStyle(Direction.S, Style(path=Style.Path.ARC)),
-        ),        
+        # endregion
 
         BoxDrawingChar(
             '├',
@@ -225,12 +505,12 @@ class Boxer:
     def _from_lines(self, *lines: Types.C_ITO) -> typing.List[str]:
         max_line = max(len(line) for line in lines)
 
-        rv = [f'{self.nw}{self.n * (max_line + 2)}{self.ne}']
+        rv = [f'{self.nw}{str(self.n) * (max_line + 2)}{self.ne}']
 
         for line in lines:
-            rv.append(f'{self.w} {line:^{max_line}} {self.e}')
+            rv.append(f'{self.w} {str(line):^{max_line}} {self.e}')
 
-        rv.append(f'{self.sw}{self.s * (max_line + 2)}{self.se}')
+        rv.append(f'{self.sw}{str(self.s) * (max_line + 2)}{self.se}')
 
         return rv
 
@@ -245,48 +525,37 @@ class Boxer:
 
         return self._from_lines(*lines)
 
-def from_corners(
-    upper_left: BoxDrawingChar | typing.Tuple[Style, Style] | None = None,
-    upper_right: BoxDrawingChar | typing.Tuple[Style, Style] | None = None,
-    lower_left: BoxDrawingChar | typing.Tuple[Style, Style] | None = None,
-    lower_right: BoxDrawingChar | typing.Tuple[Style, Style] | None = None
-) -> Boxer:
-    if all(c is None for c in (upper_left, upper_right, lower_left, lower_right)):
-        raise ValueError('At least one corner is required')
 
-    if isinstance(upper_left, typing.Tuple(Style, Style)):
-        upper_left = BoxDrawingChar.from_direction_styles(DirectionStyle(Direction.E, upper_left[0]), DirectionStyle(Direction.S, upper_left[1]))
-    elif isinstance(upper_left, BoxDrawingChar):
-        if not (len(upper_left.direction_styles) == 2 and upper_left.direction_styles[0].direction == Direction.E and upper_left.direction_styles[1].direction == Direction.S):
-            raise ValueError('parameter \'upper_left\' is not an upper left corner')
-    elif upper_left is not None:
-        raise Errors.parameter_invalid_type('upper_left', upper_left, BoxDrawingChar, typing.Tuple[Style, Style], None)
+def from_corners(*corners: BoxDrawingChar) -> Boxer:
+    if len(corners) == 0:
+        raise ValueError('at least one corner is required')
+    elif len(corners) > 4:
+        raise ValueError('more than four corners were supplied')
 
-    if isinstance(upper_right, typing.Tuple(Style, Style)):
-        upper_right = BoxDrawingChar.from_direction_styles(DirectionStyle(Direction.W, upper_right[0]), DirectionStyle(Direction.S, upper_right[1]))
-    elif isinstance(upper_right, BoxDrawingChar):
-        if not (len(upper_right.direction_styles) == 2 and upper_right.direction_styles[0].direction == Direction.W and upper_right.direction_styles[1].direction == Direction.S):
-            raise ValueError('parameter \'upper_right\' is not an upper right corner')
-    elif upper_right is not None:
-        raise Errors.parameter_invalid_type('upper_right', upper_right, BoxDrawingChar, typing.Tuple[Style, Style], None)
+    NW, NE, SE, SW = (0, 1, 2, 3)
 
-    if isinstance(lower_left, typing.Tuple(Style, Style)):
-        lower_left = BoxDrawingChar.from_direction_styles(DirectionStyle(Direction.N, lower_left[0]), DirectionStyle(Direction.E, lower_left[1]))
-    elif isinstance(lower_left, BoxDrawingChar):
-        if not (len(lower_left.direction_styles) == 2 and lower_left.direction_styles[0].direction == Direction.N and lower_left.direction_styles[1].direction == Direction.E):
-            raise ValueError('parameter \'lower_left\' is not a lower left corner')
-    elif lower_left is not None:
-        raise Errors.parameter_invalid_type('lower_left', lower_left, BoxDrawingChar, typing.Tuple[Style, Style], None)
+    def corner_index(corner: BoxDrawingChar) -> int | None:
+        if corner.direction_styles[0].direction == Direction.N:
+            if corner.direction_styles[1].direction == Direction.E:
+                return SW
+            elif corner.direction_styles[1].direction == Direction.W:
+                return SE
+        else:
+            if corner.direction_styles[0].direction == Direction.E:
+                return NW
+            elif corner.direction_styles[0].direction == Direction.W:
+                return NE
 
-    if isinstance(lower_right, typing.Tuple(Style, Style)):
-        lower_right = BoxDrawingChar.from_direction_styles(DirectionStyle(Direction.N, lower_right[0]), DirectionStyle(Direction.W, lower_right[1]))
-    elif isinstance(lower_right, BoxDrawingChar):
-        if not (len(lower_right.direction_styles) == 2 and lower_right.direction_styles[0].direction == Direction.N and lower_right.direction_styles[1].direction == Direction.W):
-            raise ValueError('parameter \'lower_right\' is not a lower right corner')
-    elif lower_right is not None:
-        raise Errors.parameter_invalid_type('lower_right', lower_right, BoxDrawingChar, typing.Tuple[Style, Style], None)
+        return None
 
-    corners = [upper_left, upper_right, lower_left, lower_right]
+    tmp: typing.List[BoxDrawingChar] = [None, None, None, None]
+    for corner in corners:
+        i = corner_index(corner)
+        if i is None:
+            raise ValueError(f'\'{corner}\' is not a box drawing character corner')
+        else:
+            tmp[i] = corner
+    corners = tmp
 
     def prior_idx(i: int) -> int:
         return (i + 3) % 4
@@ -294,34 +563,54 @@ def from_corners(
     def next_idx(i: int) -> int:
         return (i + 1) % 4
 
-    NW, NE, SE, SW = (0, 1, 2, 3)
+    start = next(i for i in range(4) if corners[i] is not None)
+    start = next_idx(start)
+    for j in range(3):
+        i = (start + j) % 4
 
-    def build_corner(i: int) -> Corner:
+        if corners[i] is not None:
+            continue
+
         prior = corners[prior_idx(i)]
         next_ = corners[next_idx(i)]
-        if prior is None:
-            if i == NW:
-                ds1, ds2 = DirectionStyle(Direction.E, next(lambda ds: ds.direction == Direction.W, next_.direction_styles))
-            elif i == NE:
-                ds1, ds2 = DirectionStyle(Direction.S, next(lambda ds: ds.direction == Direction.N, next_.direction_styles))
-            elif i == SE:
-                ds1, ds2 = DirectionStyle(Direction.W, next(lambda ds: ds.direction == Direction.E, next_.direction_styles))
-            else:  # SW:
-                ds1, ds2 = DirectionStyle(Direction.N, next(lambda ds: ds.direction == Direction.S, next_.direction_styles))
-        elif next is None:
-            pass
-        else:
-            pass
 
-        return BoxDrawingChar.from_direction_styles(ds1, ds2)
+        if i == NW:
+            ds1 = DirectionStyle(Direction.S, prior.direction_styles[0].style)
+            style = prior.direction_styles[1].style if next_ is None else next_.direction_styles[0].style
+            ds2 = DirectionStyle(Direction.E, style)
+        elif i == NE:
+            ds1 = DirectionStyle(Direction.W, prior.direction_styles[0].style)
+            style = prior.direction_styles[0].style if next_ is None else next_.direction_styles[0].style
+            ds2 = DirectionStyle(Direction.S, style)
+        elif i == SE:
+            ds1 = DirectionStyle(Direction.N, prior.direction_styles[1].style)
+            style = prior.direction_styles[0].style if next_ is None else next_.direction_styles[1].style
+            ds2 = DirectionStyle(Direction.W, style)
+        else:  # SW:
+            ds1 = DirectionStyle(Direction.E, prior.direction_styles[1].style)
+            style = prior.direction_styles[1].style if next_ is None else next_.direction_styles[1].style
+            ds2 = DirectionStyle(Direction.N, style)
 
-    for i in filter(lambda i: corners[i] is None, range(4)):
-        corners[i] = build_corner(i)
+        corners[i] = BoxDrawingChar.from_direction_styles(ds1, ds2)
 
-    top, left, right, bottom = ''  # TODO: Find matches
+    ds1 = DirectionStyle(Direction.W, corners[NW].direction_styles[0].style)
+    ds2 = DirectionStyle(Direction.E, corners[NE].direction_styles[0].style)
+    top = BoxDrawingChar.from_direction_styles(ds1, ds2)
+
+    ds1 = DirectionStyle(Direction.N, corners[NW].direction_styles[1].style)
+    ds2 = DirectionStyle(Direction.S, corners[SW].direction_styles[0].style)
+    left = BoxDrawingChar.from_direction_styles(ds1, ds2)
+
+    ds1 = DirectionStyle(Direction.N, corners[NE].direction_styles[1].style)
+    ds2 = DirectionStyle(Direction.S, corners[SE].direction_styles[0].style)
+    right = BoxDrawingChar.from_direction_styles(ds1, ds2)
+
+    ds1 = DirectionStyle(Direction.W, corners[SW].direction_styles[1].style)
+    ds2 = DirectionStyle(Direction.E, corners[SE].direction_styles[1].style)
+    bottom = BoxDrawingChar.from_direction_styles(ds1, ds2)
 
     return Boxer(
         corners[NW], top, corners[NE],
         left, right,
-        corners[SW], bottom, corners[NE]
+        corners[SW], bottom, corners[SE]
     )

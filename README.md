@@ -60,7 +60,7 @@ Pawpaw is a high performance text segmentation framework.  Segments are organize
 <!-- EXAMPLE -->
 ## Example
 
-With Pawpaw, you can take flat text that looks like this:
+With Pawpaw, you can start with flattened text like this: 
 
 ```
 ARTICLE I
@@ -74,28 +74,39 @@ People of the several States, and the Electors in each State shall have the Qual
 requisite for Electors of the most numerous Branch of the State Legislature.
 ```
 
-and quickly and easily builder a parser (or use your own) to produce a tree graph that look like this:
+and quickly and easily produce a tree that look like this:
 
 ```mermaid
 graph TD;
-    A1["[article]<br/>#quot;ARTICLE I#quot;"]-->Sc1["[section]<br/>#quot;Section 1<br/>#quot;"];
-    Sc1-->Sn1["[sentence]<br/>#quot;All legislative Powers...#quot;"]
-    Sn1-->W1_1["[word]<br/>#quot;All#quot;"]
-    Sn1-->W1_2["[word]<br/>#quot;legislative#quot;"]
-    Sn1-->W1_3["[word]<br/>#quot;Powers#quot;"]
+    A1["[article]<br/>#quot;ARTICLE I…#quot;"]-->A1_k["[key]<br/>#quot;I#quot;"];
+    A1-->Sc1["[section]<br/>#quot;Section 1…#quot;"];
+    Sc1-->Sc1_k["[key]<br/>#quot;1#quot;"]
+    Sc1-->Sc1_p1["[paragraph]<br/>#quot;All legislative Powers…#quot;"]
+    Sc1_p1-->Sc1_p1_s1["[sentence]<br/>#quot;All legislative Powers…#quot;"]
+    Sc1_p1_s1-->Sc1_p1_s1_w1["[word]<br/>#quot;All#quot;"]
+    Sc1_p1_s1-->Sc1_p1_s1_w2["[word]<br/>#quot;legislative#quot;"]
+    Sc1_p1_s1-->Sc1_p1_s1_w3["[word]<br/>#quot;Powers#quot;"]
     
-    A1["[article]<br/>#quot;Article I#quot;"]-->Sc2["[section]<br/>#quot;Section 2<br/>#quot;"];
-    Sc2-->Sn2["[sentence]<br/>#quot;The House of...#quot;"]
-    Sn2-->W2_1["[word]<br/>#quot;The#quot;"]
-    Sn2-->W2_2["[word]<br/>#quot;House#quot;"]
-    Sn2-->W2_3["[word]<br/>#quot;of#quot;"]
+    A1-->Sc2["[section]<br/>#quot;Section 2#quot;"];
+    Sc2-->Sc2_k["[key]<br/>#quot;2#quot;"]
+    Sc2-->Sc2_p1["[paragraph]<br/>#quot;The House of…#quot;"]
+    Sc2_p1---->Sc2_p1_s1["[sentence]<br/>#quot;The House of…#quot;"]
+    Sc2_p1_s1-->Sc2_p1_s1_w1["[word]<br/>#quot;The#quot;"]
+    Sc2_p1_s1-->Sc2_p1_s1_w2["[word]<br/>#quot;House#quot;"]
+    Sc2_p1_s1-->Sc2_p1_s1_w3["[word]<br/>#quot;of#quot;"]
+    Sc2_p1---->Sc2_p1_s2["[sentence]<br/>#quot;No Person shall…#quot;"]
+    Sc2_p1_s2-->Sc2_p1_s2_w1["[word]<br/>#quot;No#quot;"]
+    Sc2_p1_s2-->Sc2_p1_s2_w2["[word]<br/>#quot;Person#quot;"]
+    Sc2_p1_s2-->Sc2_p1_s2_w3["[word]<br/>#quot;shall#quot;"]
 ```
 
-which can then search using a structured query statement like this:
+You can then search your tree using plumule: a powerful structured query language:
 
  ```python
  '**[d:section]{**[d:word] & [lcs:citizen,court]}'  # All sections having either the word 'citizen' or 'court'
  ```
+
+Try out [this demo](docs/demos/us_constitution) yourself, which shows how easy it is to parse, visualize, and query the US Constitution using Pawpaw.
 
 <!-- USAGE EXAMPLES -->
 ## Usage

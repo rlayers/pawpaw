@@ -135,39 +135,14 @@ BoxDrawingChar._instances.extend(
         #region Light and heavy dashed lines
 
         BoxDrawingChar(
-            '╌',
-            'BOX DRAWINGS LIGHT DOUBLE DASH',
-            DirectionStyle(Direction.W, Style(dash=Style.Dash.DOUBLE)),
-            DirectionStyle(Direction.E, Style(dash=Style.Dash.DOUBLE)),
-        ),
-        BoxDrawingChar(
-            '╍',
-            'BOX DRAWINGS HEAVY DOUBLE DASH',
-            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.DOUBLE)),
-            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.DOUBLE)),
-        ),
-        BoxDrawingChar(
-            '╎',
-            'BOX DRAWINGS LIGHT DOUBLE DASH VERTICAL',
-            DirectionStyle(Direction.N, Style(dash=Style.Dash.DOUBLE)),
-            DirectionStyle(Direction.S, Style(dash=Style.Dash.DOUBLE)),
-        ),
-        BoxDrawingChar(
-            '╏',
-            'BOX DRAWINGS HEAVY DOUBLE DASH',
-            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.DOUBLE)),
-            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.DOUBLE)),
-        ),
-
-        BoxDrawingChar(
             '┄',
-            'BOX DRAWINGS LIGHT TRIPLE DASH',
+            'BOX DRAWINGS LIGHT TRIPLE DASH HORIZONTAL',
             DirectionStyle(Direction.W, Style(dash=Style.Dash.TRIPLE)),
             DirectionStyle(Direction.E, Style(dash=Style.Dash.TRIPLE)),
         ),
         BoxDrawingChar(
             '┅',
-            'BOX DRAWINGS HEAVY TRIPLE DASH',
+            'BOX DRAWINGS HEAVY TRIPLE DASH HORIZONTAL',
             DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.TRIPLE)),
             DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.TRIPLE)),
         ),
@@ -179,20 +154,19 @@ BoxDrawingChar._instances.extend(
         ),
         BoxDrawingChar(
             '┇',
-            'BOX DRAWINGS HEAVY TRIPLE DASH',
+            'BOX DRAWINGS HEAVY TRIPLE DASH VERTICAL',
             DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.TRIPLE)),
             DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.TRIPLE)),
         ),
-
         BoxDrawingChar(
             '┈',
-            'BOX DRAWINGS LIGHT QUADRUPLE DASH',
+            'BOX DRAWINGS LIGHT QUADRUPLE DASH HORIZONTAL',
             DirectionStyle(Direction.W, Style(dash=Style.Dash.QUADRUPLE)),
             DirectionStyle(Direction.E, Style(dash=Style.Dash.QUADRUPLE)),
         ),
         BoxDrawingChar(
             '┉',
-            'BOX DRAWINGS HEAVY QUADRUPLE DASH',
+            'BOX DRAWINGS HEAVY QUADRUPLE DASH HORIZONTAL',
             DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.QUADRUPLE)),
             DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.QUADRUPLE)),
         ),
@@ -204,26 +178,9 @@ BoxDrawingChar._instances.extend(
         ),
         BoxDrawingChar(
             '┋',
-            'BOX DRAWINGS HEAVY QUADRUPLE DASH',
+            'BOX DRAWINGS HEAVY QUADRUPLE DASH VERTICAL',
             DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.QUADRUPLE)),
             DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.QUADRUPLE)),
-        ),
-
-        #endregion
-
-        #region Double lines
-
-        BoxDrawingChar(
-            '═',
-            'BOX DRAWINGS DOUBLE HORIZONTAL',
-            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
-            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
-        ),
-        BoxDrawingChar(
-            '║',
-            'BOX DRAWINGS DOUBLE VERTICAL',
-            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE, weight=Style.Weight.HEAVY)),
-            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE, weight=Style.Weight.HEAVY)),
         ),
 
         #endregion
@@ -254,7 +211,6 @@ BoxDrawingChar._instances.extend(
             DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
             DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
         ),
-
         BoxDrawingChar(
             '┐',
             'BOX DRAWINGS LIGHT DOWN AND LEFT',
@@ -279,7 +235,6 @@ BoxDrawingChar._instances.extend(
             DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
             DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
         ),
-
         BoxDrawingChar(
             '└',
             'BOX DRAWINGS LIGHT UP AND RIGHT',
@@ -304,7 +259,6 @@ BoxDrawingChar._instances.extend(
             DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
             DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
         ),
-
         BoxDrawingChar(
             '┘',
             'BOX DRAWINGS LIGHT UP AND LEFT',
@@ -329,10 +283,588 @@ BoxDrawingChar._instances.extend(
             DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
             DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
         ),
+        BoxDrawingChar(
+            '├',
+            'BOX DRAWINGS LIGHT VERTICAL AND RIGHT',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┝',
+            'BOX DRAWINGS VERTICAL LIGHT AND RIGHT HEAVY',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┞',
+            'BOX DRAWINGS UP HEAVY AND RIGHT DOWN LIGHT',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┟',
+            'BOX DRAWINGS DOWN HEAVY AND RIGHT UP LIGHT',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┠',
+            'BOX DRAWINGS VERTICAL HEAVY AND RIGHT LIGHT',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┡',
+            'BOX DRAWINGS DOWN LIGHT AND RIGHT UP HEAVY',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┢',
+            'BOX DRAWINGS UP LIGHT AND RIGHT DOWN HEAVY',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┣',
+            'BOX DRAWINGS HEAVY VERTICAL AND RIGHT',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┤',
+            'BOX DRAWINGS LIGHT VERTICAL AND LEFT',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┥',
+            'BOX DRAWINGS VERTICAL LIGHT AND LEFT HEAVY',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┦',
+            'BOX DRAWINGS UP HEAVY AND LEFT DOWN LIGHT',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┧',
+            'BOX DRAWINGS DOWN HEAVY AND LEFT UP LIGHT',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┨',
+            'BOX DRAWINGS VERTICAL HEAVY AND LEFT LIGHT',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┩',
+            'BOX DRAWINGS DOWN LIGHT AND LEFT UP HEAVY',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┪',
+            'BOX DRAWINGS UP LIGHT AND LEFT DOWN HEAVY',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┫',
+            'BOX DRAWINGS HEAVY VERTICAL AND LEFT',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┬',
+            'BOX DRAWINGS LIGHT DOWN AND HORIZONTAL',
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┭',
+            'BOX DRAWINGS LEFT HEAVY AND RIGHT DOWN LIGHT',
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┮',
+            'BOX DRAWINGS RIGHT HEAVY AND LEFT DOWN LIGHT',
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┯',
+            'BOX DRAWINGS DOWN LIGHT AND HORIZONTAL HEAVY',
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┰',
+            'BOX DRAWINGS DOWN HEAVY AND HORIZONTAL LIGHT',
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┱',
+            'BOX DRAWINGS RIGHT LIGHT AND LEFT DOWN HEAVY',
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┲',
+            'BOX DRAWINGS LEFT LIGHT AND RIGHT DOWN HEAVY',
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┳',
+            'BOX DRAWINGS HEAVY DOWN AND HORIZONTAL',
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┴',
+            'BOX DRAWINGS LIGHT UP AND HORIZONTAL',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style()),
+        ),
+        BoxDrawingChar(
+            '┵',
+            'BOX DRAWINGS LEFT HEAVY AND RIGHT UP LIGHT',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style()),
+        ),
+        BoxDrawingChar(
+            '┶',
+            'BOX DRAWINGS RIGHT HEAVY AND LEFT UP LIGHT',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┷',
+            'BOX DRAWINGS UP LIGHT AND HORIZONTAL HEAVY',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┸',
+            'BOX DRAWINGS UP HEAVY AND HORIZONTAL LIGHT',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style()),
+        ),
+        BoxDrawingChar(
+            '┹',
+            'BOX DRAWINGS RIGHT LIGHT AND LEFT UP HEAVY',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style()),
+        ),
+        BoxDrawingChar(
+            '┺',
+            'BOX DRAWINGS LEFT LIGHT AND RIGHT UP HEAVY',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┻',
+            'BOX DRAWINGS HEAVY UP AND HORIZONTAL',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '┼',
+            'BOX DRAWINGS LIGHT VERTICAL AND HORIZONTAL',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┽',
+            'BOX DRAWINGS LEFT HEAVY AND RIGHT VERTICAL LIGHT',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┾',
+            'BOX DRAWINGS RIGHT HEAVY AND LEFT VERTICAL LIGHT',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '┿',
+            'BOX DRAWINGS VERTICAL LIGHT AND HORIZONTAL HEAVY',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '╀',
+            'BOX DRAWINGS UP HEAVY AND DOWN HORIZONTAL LIGHT',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '╁',
+            'BOX DRAWINGS DOWN HEAVY AND UP HORIZONTAL LIGHT',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '╂',
+            'BOX DRAWINGS VERTICAL HEAVY AND HORIZONTAL LIGHT',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '╃',
+            'BOX DRAWINGS LEFT UP HEAVY AND RIGHT DOWN LIGHT',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '╄',
+            'BOX DRAWINGS RIGHT UP HEAVY AND LEFT DOWN LIGHT',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '╅',
+            'BOX DRAWINGS LEFT DOWN HEAVY AND RIGHT UP LIGHT',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '╆',
+            'BOX DRAWINGS RIGHT DOWN HEAVY AND LEFT UP LIGHT',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '╇',
+            'BOX DRAWINGS DOWN LIGHT AND UP HORIZONTAL HEAVY',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '╈',
+            'BOX DRAWINGS UP LIGHT AND DOWN HORIZONTAL HEAVY',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '╉',
+            'BOX DRAWINGS RIGHT LIGHT AND LEFT VERTICAL HEAVY',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '╊',
+            'BOX DRAWINGS LEFT LIGHT AND RIGHT VERTICAL HEAVY',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
+        BoxDrawingChar(
+            '╋',
+            'BOX DRAWINGS HEAVY VERTICAL AND HORIZONTAL',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
+        ),
 
         #endregion
 
-        # region Character cell arcs
+        #region Light and heavy dashed lines
+
+        BoxDrawingChar(
+            '╌',
+            'BOX DRAWINGS LIGHT DOUBLE DASH HORIZONTAL',
+            DirectionStyle(Direction.W, Style(dash=Style.Dash.DOUBLE)),
+            DirectionStyle(Direction.E, Style(dash=Style.Dash.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╍',
+            'BOX DRAWINGS HEAVY DOUBLE DASH HORIZONTAL',
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.DOUBLE)),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╎',
+            'BOX DRAWINGS LIGHT DOUBLE DASH VERTICAL',
+            DirectionStyle(Direction.N, Style(dash=Style.Dash.DOUBLE)),
+            DirectionStyle(Direction.S, Style(dash=Style.Dash.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╏',
+            'BOX DRAWINGS HEAVY DOUBLE DASH VERTICAL',
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.DOUBLE)),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY, dash=Style.Dash.DOUBLE)),
+        ),
+
+        #endregion
+
+        #region Light and double line box components
+
+        BoxDrawingChar(
+            '═',
+            'BOX DRAWINGS DOUBLE HORIZONTAL',
+            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '║',
+            'BOX DRAWINGS DOUBLE VERTICAL',
+            DirectionStyle(Direction.N, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.S, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╒',
+            'BOX DRAWINGS DOWN SINGLE AND RIGHT DOUBLE',
+            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '╓',
+            'BOX DRAWINGS DOWN DOUBLE AND RIGHT SINGLE',
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╔',
+            'BOX DRAWINGS DOUBLE DOWN AND RIGHT',
+            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.S, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╕',
+            'BOX DRAWINGS DOWN SINGLE AND LEFT DOUBLE',
+            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '╖',
+            'BOX DRAWINGS DOWN DOUBLE AND LEFT SINGLE',
+            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.S, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╗',
+            'BOX DRAWINGS DOUBLE DOWN AND LEFT',
+            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╘',
+            'BOX DRAWINGS UP SINGLE AND RIGHT DOUBLE',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╙',
+            'BOX DRAWINGS UP DOUBLE AND RIGHT SINGLE',
+            DirectionStyle(Direction.N, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.E, Style()),
+        ),
+        BoxDrawingChar(
+            '╚',
+            'BOX DRAWINGS DOUBLE UP AND RIGHT',
+            DirectionStyle(Direction.N, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╛',
+            'BOX DRAWINGS UP SINGLE AND LEFT DOUBLE',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╜',
+            'BOX DRAWINGS UP DOUBLE AND LEFT SINGLE',
+            DirectionStyle(Direction.N, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.W, Style()),
+        ),
+        BoxDrawingChar(
+            '╝',
+            'BOX DRAWINGS DOUBLE UP AND LEFT',
+            DirectionStyle(Direction.N, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╞',
+            'BOX DRAWINGS VERTICAL SINGLE AND RIGHT DOUBLE',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '╟',
+            'BOX DRAWINGS VERTICAL DOUBLE AND RIGHT SINGLE',
+            DirectionStyle(Direction.N, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╠',
+            'BOX DRAWINGS DOUBLE VERTICAL AND RIGHT',
+            DirectionStyle(Direction.N, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.S, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╡',
+            'BOX DRAWINGS VERTICAL SINGLE AND LEFT DOUBLE',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '╢',
+            'BOX DRAWINGS VERTICAL DOUBLE AND LEFT SINGLE',
+            DirectionStyle(Direction.N, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.S, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╣',
+            'BOX DRAWINGS DOUBLE VERTICAL AND LEFT',
+            DirectionStyle(Direction.N, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.S, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╤',
+            'BOX DRAWINGS DOWN SINGLE AND HORIZONTAL DOUBLE',
+            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '╥',
+            'BOX DRAWINGS DOWN DOUBLE AND HORIZONTAL SINGLE',
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╦',
+            'BOX DRAWINGS DOUBLE DOWN AND HORIZONTAL',
+            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.S, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╧',
+            'BOX DRAWINGS UP SINGLE AND HORIZONTAL DOUBLE',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╨',
+            'BOX DRAWINGS UP DOUBLE AND HORIZONTAL SINGLE',
+            DirectionStyle(Direction.N, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style()),
+        ),
+        BoxDrawingChar(
+            '╩',
+            'BOX DRAWINGS DOUBLE UP AND HORIZONTAL',
+            DirectionStyle(Direction.N, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╪',
+            'BOX DRAWINGS VERTICAL SINGLE AND HORIZONTAL DOUBLE',
+            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.S, Style()),
+        ),
+        BoxDrawingChar(
+            '╫',
+            'BOX DRAWINGS VERTICAL DOUBLE AND HORIZONTAL SINGLE',
+            DirectionStyle(Direction.N, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.S, Style(count=Style.Count.DOUBLE)),
+        ),
+        BoxDrawingChar(
+            '╬',
+            'BOX DRAWINGS DOUBLE VERTICAL AND HORIZONTAL',
+            DirectionStyle(Direction.N, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.W, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.E, Style(count=Style.Count.DOUBLE)),
+            DirectionStyle(Direction.S, Style(count=Style.Count.DOUBLE)),
+        ),
+
+        #endregion
+
+        #region Character cell arcs
 
         BoxDrawingChar(
             '╭',
@@ -340,21 +872,18 @@ BoxDrawingChar._instances.extend(
             DirectionStyle(Direction.E, Style(path=Style.Path.ARC)),
             DirectionStyle(Direction.S, Style(path=Style.Path.ARC)),
         ),
-
         BoxDrawingChar(
             '╮',
             'BOX DRAWINGS LIGHT ARC DOWN AND LEFT',
             DirectionStyle(Direction.W, Style(path=Style.Path.ARC)),
             DirectionStyle(Direction.S, Style(path=Style.Path.ARC)),
         ),
-
         BoxDrawingChar(
             '╯',
             'BOX DRAWINGS LIGHT ARC UP AND LEFT',
             DirectionStyle(Direction.N, Style(path=Style.Path.ARC)),
             DirectionStyle(Direction.W, Style(path=Style.Path.ARC)),
         ),
-
         BoxDrawingChar(
             '╰',
             'BOX DRAWINGS LIGHT ARC UP AND RIGHT',
@@ -364,7 +893,32 @@ BoxDrawingChar._instances.extend(
 
         #endregion
 
-        # region Light and heavy half lines
+        #region Character cell diagonals
+
+        BoxDrawingChar(
+            '╱',
+            'BOX DRAWINGS LIGHT DIAGONAL UPPER RIGHT TO LOWER LEFT',
+            DirectionStyle(Direction.NE, Style()),
+            DirectionStyle(Direction.SW, Style()),
+        ),
+        BoxDrawingChar(
+            '╲',
+            'BOX DRAWINGS LIGHT DIAGONAL UPPER LEFT TO LOWER RIGHT',
+            DirectionStyle(Direction.NW, Style()),
+            DirectionStyle(Direction.SE, Style()),
+        ),
+        BoxDrawingChar(
+            '╳',
+            'BOX DRAWINGS LIGHT DIAGONAL CROSS',
+            DirectionStyle(Direction.NW, Style()),
+            DirectionStyle(Direction.NE, Style()),
+            DirectionStyle(Direction.SW, Style()),
+            DirectionStyle(Direction.SE, Style()),
+        ),
+
+        #endregion
+
+        #region Light and heavy half lines
 
         BoxDrawingChar(
             '╴',
@@ -386,35 +940,34 @@ BoxDrawingChar._instances.extend(
             'BOX DRAWINGS LIGHT DOWN',
             DirectionStyle(Direction.S, Style()),
         ),
-
         BoxDrawingChar(
             '╸',
             'BOX DRAWINGS HEAVY LEFT',
-            DirectionStyle(Direction.W, Style()),
+            DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
         ),
         BoxDrawingChar(
             '╹',
             'BOX DRAWINGS HEAVY UP',
-            DirectionStyle(Direction.N, Style()),
+            DirectionStyle(Direction.N, Style(weight=Style.Weight.HEAVY)),
         ),
         BoxDrawingChar(
             '╺',
             'BOX DRAWINGS HEAVY RIGHT',
-            DirectionStyle(Direction.E, Style()),
+            DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
         ),
         BoxDrawingChar(
             '╻',
             'BOX DRAWINGS HEAVY DOWN',
-            DirectionStyle(Direction.S, Style()),
+            DirectionStyle(Direction.S, Style(weight=Style.Weight.HEAVY)),
         ),
 
-        # endregion
+        #endregion
 
         #region Mixed light and heavy lines
 
         BoxDrawingChar(
             '╼',
-            'BOX DRAWINGS LIGHT LEFT AND HEAVY',
+            'BOX DRAWINGS LIGHT LEFT AND HEAVY RIGHT',
             DirectionStyle(Direction.W, Style()),
             DirectionStyle(Direction.E, Style(weight=Style.Weight.HEAVY)),
         ),
@@ -426,7 +979,7 @@ BoxDrawingChar._instances.extend(
         ),
         BoxDrawingChar(
             '╾',
-            'BOX DRAWINGS HEAVY LEFT AND LIGHT',
+            'BOX DRAWINGS HEAVY LEFT AND LIGHT RIGHT',
             DirectionStyle(Direction.W, Style(weight=Style.Weight.HEAVY)),
             DirectionStyle(Direction.E, Style()),
         ),
@@ -437,24 +990,7 @@ BoxDrawingChar._instances.extend(
             DirectionStyle(Direction.S, Style()),
         ),
 
-        # endregion
-
-        BoxDrawingChar(
-            '├',
-            'BOX DRAWINGS LIGHT VERTICAL AND RIGHT',
-            DirectionStyle(Direction.N, Style()),
-            DirectionStyle(Direction.E, Style()),
-            DirectionStyle(Direction.S, Style()),
-        ),
-
-        BoxDrawingChar(
-            '┼',
-            'BOX DRAWINGS LIGHT VERTICAL AND HORIZONTAL',
-            DirectionStyle(Direction.N, Style()),
-            DirectionStyle(Direction.E, Style()),
-            DirectionStyle(Direction.W, Style()),
-            DirectionStyle(Direction.S, Style()),
-        ),
+        #endregion
     )
 )
 

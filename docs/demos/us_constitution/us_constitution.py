@@ -54,8 +54,8 @@ print(tree_vis.dumps(i))
 
 # Query
 print(f'\nQUERY:\n')
-print(f'\tGoal: Find sections that contain words \'person\' or \'state\'\n')
-query = '**[d:section]{**[d:Word]^[lcs:person,state]}'
+print(f'\tGoal: Find sections containing words \'power\' or \'right\'\n')
+query = '**[d:section]{**[d:word] & [lcs:power,right]}'
 print(f'\tPlumule Query: {query}\n')
 print(f'\tResults:\n')
 for i, section in enumerate(i.find_all(query)):

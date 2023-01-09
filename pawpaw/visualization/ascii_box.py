@@ -71,14 +71,41 @@ class BoxDrawingChar:
         return rv
 
     @classmethod
-    def from_direction_styles(cls, *direction_styles: DirectionStyle) -> BoxDrawingChar:
+    def _distance(cls, candidate: BoxDrawingChar, *target_direction_styles: DirectionStyle) -> int:
+        rv = 0
+        for ds_target in target_direction_styles:
+            if (ds_candidate := next((ds for ds in candidate.direction_styles if ds.direction == ds_target.direction), None)) is None:
+                rv += 4
+            else:
+                if ds_target.style.weight != ds_candidate.style.weight:
+                    rv += 1
+                if ds_target.style.count != ds_candidate.style.count:
+                    rv += 1
+                if ds_target.style.dash != ds_candidate.style.dash:
+                    rv += 1
+                if ds_target.style.path != ds_candidate.style.path:
+                    rv += 1
+        
+        return rv
+
+    @classmethod
+    def from_direction_styles(cls, *direction_styles: DirectionStyle, fuzzy: bool = False) -> BoxDrawingChar:
         sorted_dss = cls._sort(*direction_styles)
-
+        best_score: int = -1
+        best_bdc: BoxDrawingChar
         for instance in filter(lambda i: len(i._direction_styles) == len(direction_styles), cls._instances):
-            if all(s1 == s2 for s1, s2 in zip(sorted_dss, instance._direction_styles)):
-                return instance
+            d = cls._distance(instance, *direction_styles)
+            if fuzzy:
+                if best_score == -1 or d < best_score:
+                    best_score, best_bdc = d, instance
+            else:
+                if d == 0:
+                    return instance
 
-        raise ValueError(f'no box-drawing character matches {direction_styles}')
+        if fuzzy:
+            return best_bdc
+        else:
+            raise ValueError(f'no box-drawing character matches {direction_styles}')
 
     def __init__(self, char: str, name: str, *direction_styles: DirectionStyle):
         self._char: str = char
@@ -994,6 +1021,7 @@ BoxDrawingChar._instances.extend(
     )
 )
 
+
 class Boxer:
     def __init__(
         self,
@@ -1071,12 +1099,15 @@ def from_corners(*corners: BoxDrawingChar) -> Boxer:
     NW, NE, SE, SW = (0, 1, 2, 3)
 
     def corner_index(corner: BoxDrawingChar) -> int | None:
+        if len(corner.direction_styles) != 2:
+            return None
+
         if corner.direction_styles[0].direction == Direction.N:
             if corner.direction_styles[1].direction == Direction.E:
                 return SW
             elif corner.direction_styles[1].direction == Direction.W:
                 return SE
-        else:
+        elif corner.direction_styles[1].direction == Direction.S:
             if corner.direction_styles[0].direction == Direction.E:
                 return NW
             elif corner.direction_styles[0].direction == Direction.W:
@@ -1127,23 +1158,23 @@ def from_corners(*corners: BoxDrawingChar) -> Boxer:
             style = prior.direction_styles[1].style if next_ is None else next_.direction_styles[1].style
             ds2 = DirectionStyle(Direction.N, style)
 
-        corners[i] = BoxDrawingChar.from_direction_styles(ds1, ds2)
+        corners[i] = BoxDrawingChar.from_direction_styles(ds1, ds2, fuzzy=True)
 
     ds1 = DirectionStyle(Direction.W, corners[NW].direction_styles[0].style)
     ds2 = DirectionStyle(Direction.E, corners[NE].direction_styles[0].style)
-    top = BoxDrawingChar.from_direction_styles(ds1, ds2)
+    top = BoxDrawingChar.from_direction_styles(ds1, ds2, fuzzy=True)
 
     ds1 = DirectionStyle(Direction.N, corners[NW].direction_styles[1].style)
     ds2 = DirectionStyle(Direction.S, corners[SW].direction_styles[0].style)
-    left = BoxDrawingChar.from_direction_styles(ds1, ds2)
+    left = BoxDrawingChar.from_direction_styles(ds1, ds2, fuzzy=True)
 
     ds1 = DirectionStyle(Direction.N, corners[NE].direction_styles[1].style)
     ds2 = DirectionStyle(Direction.S, corners[SE].direction_styles[0].style)
-    right = BoxDrawingChar.from_direction_styles(ds1, ds2)
+    right = BoxDrawingChar.from_direction_styles(ds1, ds2, fuzzy=True)
 
     ds1 = DirectionStyle(Direction.W, corners[SW].direction_styles[1].style)
     ds2 = DirectionStyle(Direction.E, corners[SE].direction_styles[1].style)
-    bottom = BoxDrawingChar.from_direction_styles(ds1, ds2)
+    bottom = BoxDrawingChar.from_direction_styles(ds1, ds2, fuzzy=True)
 
     return Boxer(
         corners[NW], top, corners[NE],

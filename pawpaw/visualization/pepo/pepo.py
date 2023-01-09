@@ -73,7 +73,7 @@ class Tree(_PepoFstr):
         for child in ito.children[:-1]:
             fs.write(f'{prefix}'
                      f'{self.TEE}'
-                     f'{self.HORZ * len(self.indent)}'
+                     f'{self.HORZ.char * len(self.indent)}'
                      f'{child:{self.fstr}}'
                      f'{self.linesep}')
             self._dump_children(fs, child, prefix + f'{self.VERT}{self.indent}')
@@ -82,7 +82,7 @@ class Tree(_PepoFstr):
             child = ito.children[-1]
             fs.write(f'{prefix}'
                      f'{self.ELBOW}'
-                     f'{self.HORZ * len(self.indent)}'
+                     f'{self.HORZ.char * len(self.indent)}'
                      f'{child:{self.fstr}}'
                      f'{self.linesep}')
             self._dump_children(fs, child, prefix + f' {self.indent}')

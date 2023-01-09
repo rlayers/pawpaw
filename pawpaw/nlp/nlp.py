@@ -453,8 +453,6 @@ class SimpleNlp:
     def __init__(self, number: Number | None = None, chars: bool = False):
         super().__init__()
 
-        doc_trimmer = pawpaw.arborform.Wrap(lambda ito: [ito.str_strip(''.join(unicode_white_spaces.values()))])
-
         paragraph = pawpaw.arborform.Split(self._paragraph_re, desc='paragraph')
         doc_trimmer.itor_next = paragraph
 
@@ -474,7 +472,7 @@ class SimpleNlp:
             char = pawpaw.arborform.Extract(regex.compile(r'(?P<char>\w)', regex.DOTALL))
             word_number.itor_children = lambda ito: char if ito.desc == 'word' else None
 
-        self.itor = doc_trimmer
+        self.itor = paragraph
 
     @property
     def number(self) -> Number:

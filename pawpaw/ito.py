@@ -197,6 +197,9 @@ class Ito:
         elif not isinstance(match, regex.Match):
             raise Errors.parameter_invalid_type('match', match, regex.Match)
 
+        if 0 in exclude_keys:
+            raise ValueError('group key 0 cannot be excluded')
+
         # Include all named keys, unless in exclude_keys or same group excluded by index
         gn_spans: typing.Dict[Types.C_GK, typing.List[typing.Tuple[int]]] = {
             k: match.spans(k)

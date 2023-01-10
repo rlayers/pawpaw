@@ -30,8 +30,11 @@ class TestAsciiBoxDrawing(_TestIto):
         for bdc in box.BoxDrawingChar.from_char('╭',),:  # box.BoxDrawingChar._instances:
             with self.subTest(box_drawing_char=bdc):
                 if self.is_corner(bdc):
+                    boxer = box.from_corners(bdc.char)
                     boxer = box.from_corners(bdc)
                 else:
+                    with self.assertRaises(ValueError):
+                        boxer = box.from_corners(bdc.char)
                     with self.assertRaises(ValueError):
                         boxer = box.from_corners(bdc)
 

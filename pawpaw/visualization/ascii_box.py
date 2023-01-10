@@ -1090,7 +1090,7 @@ class Boxer:
         return self._from_lines(*lines)
 
 
-def from_corners(*corners: BoxDrawingChar) -> Boxer:
+def from_corners(*corners: str | BoxDrawingChar) -> Boxer:
     if len(corners) == 0:
         raise ValueError('at least one corner is required')
     elif len(corners) > 4:
@@ -1117,6 +1117,10 @@ def from_corners(*corners: BoxDrawingChar) -> Boxer:
 
     tmp: typing.List[BoxDrawingChar] = [None, None, None, None]
     for corner in corners:
+        if isinstance(corner, str):
+            corner = BoxDrawingChar.from_char(corner)
+        elif not isinstance(corner, BoxDrawingChar):
+            raise Errors.parameter_invalid_type('corner', corner, str, BoxDrawingChar)
         i = corner_index(corner)
         if i is None:
             raise ValueError(f'\'{corner}\' is not a box drawing character corner')

@@ -212,40 +212,42 @@ with pip or conda.
 
 ### Installation Options
 
-There are lots of ways to install Pawpaw:
+There are lots of ways to install Pawpaw.  Versioned instances that have passed all automated tests are available from [PyPI](https://pypi.org/):
 
 1. Install with pip from PyPI:  
    ```
    pip install pawpaw
    ```
    
-2. Install with pip from GitHub:
-   ```
-   pip install git+https://github.com/rlayers/pawpaw.git
-   ```
-
-3. Install with conda from PyPI:
+2. Install with conda from PyPI:
    ```
    conda activate myenv
    conda install git pip
    pip install pawpaw
    ```
 
-4. Install with conda from GitHub:
+Alternatively, you can pull from the main branch at GitHub.  This ensure you have the latest code, however, the main branch can potentially have internal inconsistencies and/or failed tests:
+
+1. Install with pip from GitHub:
+   ```
+   pip install git+https://github.com/rlayers/pawpaw.git
+   ```
+
+2. Install with conda from GitHub:
    ```
    conda activate myenv
    conda install git pip
    pip install git+https://github.com/rlayers/pawpaw.git
    ```
 
-5. Clone the repo with git from GitHub:
+3. Clone the repo with git from GitHub:
    ```
    git clone https://github.com/rlayers/pawpaw
    ```
    
-### Verify
+### Verify Installation
 
-Open a python prompt and type:
+Whichever way you fetch Pawpaw, you can easily verify it's installed correctly.  Just open Python prompt and type:
 
   ```python
   >>> from pawpaw import Ito

@@ -14,7 +14,7 @@
 
 <!-- 533E30  D2AC70  E4D1AE  517D3D  90C246 -->
 
-# Pawpaw  [![High Performance Text Processing & Segmentation Framework][byline-img]][repo]
+# Pawpaw  [![High Performance Text Segmentation, Parsing, & Query][byline-img]][repo]
 
 Pawpaw is a high performance text segmentation framework.  Segments are organized into tree graphs that can be serialized, traversed, and searched using a powerful structured query language.  Pawpaw also features a framework for quickly and easily building complex, pipelined parsers.
 
@@ -333,7 +333,7 @@ Robert L. Ayers:&nbsp;&nbsp;<a alt="e-mail" href="email@a.nov.guy@gmail.com">a.n
 
 [repo]: https://github.com/rlayers/pawpaw
 
-[byline-img]: https://img.shields.io/badge/-High%20Performance%20Text%20Segmentation%20Framework-FFFFFF
+[byline-img]: https://img.shields.io/badge/-High%20Performance%20Text%20Segmentation%2C%20Parsing%2C%20%26%20Query-FFFFFF
 
 [byline2-img]: https://readme-typing-svg.demolab.com?font=Fira+Code&weight=800&duration=500&pause=1500&color=533E30&vCenter=true&width=375&height=25&lines=High+Performance+Text+Segmentation
 

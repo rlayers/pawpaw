@@ -55,7 +55,7 @@ class Compact(_PepoFstr):
     def dump(self, fs: typing.IO, *itos: pawpaw.Types.C_ITO) -> None:
         for ei in (pawpaw.Types.C_EITO(i, ito) for i, ito in enumerate(itos, start=1)):
             if not isinstance(ei.ito, pawpaw.Ito):
-                raise pawpaw.Errors.parameter_invalid_type('*itos', *itos, pawpaw.Ito)
+                raise pawpaw.Errors.parameter_invalid_type('*itos', ei.ito, pawpaw.Ito)
             self._dump(fs, ei)
 
 
@@ -90,7 +90,7 @@ class Tree(_PepoFstr):
     def dump(self, fs: typing.IO, *itos: pawpaw.Types.C_ITO) -> None:
         for ito in itos:
             if not isinstance(ito, pawpaw.Ito):
-                raise pawpaw.Errors.parameter_invalid_type('*itos', *itos, pawpaw.Ito)
+                raise pawpaw.Errors.parameter_invalid_type('*itos', ito, pawpaw.Ito)
             fs.write(f'{ito:{self.fstr}}{self.linesep}')
             self._dump_children(fs, ito)
 
@@ -128,7 +128,7 @@ class Xml(Pepo):
         fs.write(f'<itos>{self.linesep}')
         for ito in itos:
             if not isinstance(ito, pawpaw.Ito):
-                raise pawpaw.Errors.parameter_invalid_type('*itos', *itos, pawpaw.Ito)
+                raise pawpaw.Errors.parameter_invalid_type('*itos', ito, pawpaw.Ito)
             self._dump(fs, pawpaw.Types.C_EITO(0, ito), 1)
         fs.write(f'<itos>{self.linesep}')
 
@@ -179,7 +179,7 @@ class Json(Pepo):
         comma_needed = False
         for ito in itos:
             if not isinstance(ito, pawpaw.Ito):
-                raise pawpaw.Errors.parameter_invalid_type('*itos', *itos, pawpaw.Ito)
+                raise pawpaw.Errors.parameter_invalid_type('*itos', ito, pawpaw.Ito)
             if comma_needed:
                 fs.write(',')
             fs.write(self.linesep)

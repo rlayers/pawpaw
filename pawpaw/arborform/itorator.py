@@ -114,8 +114,12 @@ class Itorator(ABC):
     def traverse(self, ito: Types.C_ITO) -> Types.C_IT_ITOS:
         yield from self._traverse(ito.clone())
 
+    @classmethod
+    def from_func(cls, f: Types.F_ITO_2_SQ_ITOS):
+        return _WrappedItorator(f)
 
-class Wrap(Itorator):
+
+class _WrappedItorator(Itorator):
     def __init__(self, f: Types.F_ITO_2_SQ_ITOS):
         super().__init__()
         self.__f = f

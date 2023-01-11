@@ -44,8 +44,8 @@ Create a char-extracting itorator
 
 ::
 
- >>> char_itor = Wrap(lambda ito: iter(ito))  # 1. If you don't need a desc
- >>> char_itor = Wrap(lambda ito: Ito.from_substrings(s, *ito, desc='char'))  # 2. If you need a desc
+ >>> char_itor = Itorator.from_func(lambda ito: iter(ito))  # 1. If you don't need a desc
+ >>> char_itor = Itorator.from_func(lambda ito: Ito.from_substrings(s, *ito, desc='char'))  # 2. If you need a desc
 
 Perform NLP Extraction
 ----------------------

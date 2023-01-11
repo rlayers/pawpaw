@@ -3,7 +3,7 @@ from itertools import tee
 import regex
 from pawpaw import Ito, Types
 from pawpaw.arborform import Split
-from pawpaw.arborform.postorator import Wrap
+from pawpaw.arborform.postorator import Postorator
 from tests.util import _TestIto
 
 
@@ -21,7 +21,7 @@ class TestPostorator(_TestIto):
         for s in 'One', 'One Two', 'One Two Three', 'One Two Three Four':
             itos = Ito(s).str_split()
             with self.subTest(string=s, itos=itos, desc=self.post_desc):
-                wrapped = Wrap(self.simple)
+                wrapped = Postorator.from_func(self.simple)
                 expected = [Types.C_BITO(False, i) for i in itos]
                 expected.append(Types.C_BITO(True, Ito(s, desc=self.post_desc)))
                 actual = [*wrapped.traverse(itos)]
@@ -35,7 +35,7 @@ class TestPostorator(_TestIto):
             rv = [*splitter.traverse(root)]
             self.assertListEqual(root.str_split(), rv)
 
-            splitter.postorator = Wrap(self.simple)
+            splitter.postorator = Postorator.from_func(self.simple)
             expected = [Ito(s, desc=self.post_desc)]
             actual = [*splitter.traverse(root)]
             self.assertListEqual(expected, actual)

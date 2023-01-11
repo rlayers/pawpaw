@@ -1,6 +1,6 @@
 import regex
 from pawpaw import Ito, Types
-from pawpaw.arborform import Reflect, Wrap
+from pawpaw.arborform import Itorator, Reflect
 from tests.util import _TestIto
 
 
@@ -38,7 +38,7 @@ class TestItorator(_TestIto):
 
         reflect = Reflect()
         desc = 'x'
-        reflect.itor_next = Wrap(lambda ito: (ito.clone(desc=desc),))
+        reflect.itor_next = Itorator.from_func(lambda ito: (ito.clone(desc=desc),))
         rv = [*reflect.traverse(root)]
             
         self.assertEqual(1, len(rv))
@@ -53,7 +53,7 @@ class TestItorator(_TestIto):
 
         reflect = Reflect()
         desc = 'x'
-        reflect.itor_children = Wrap(lambda ito: tuple(ito.clone(i, i+1, desc) for i, c in enumerate(s)))
+        reflect.itor_children = Itorator.from_func(lambda ito: tuple(ito.clone(i, i+1, desc) for i, c in enumerate(s)))
         rv = [*reflect.traverse(root)]
             
         self.assertEqual(1, len(rv))
@@ -68,9 +68,9 @@ class TestItorator(_TestIto):
         d_changed = 'changed'
 
         reflect = Reflect()
-        make_chars = Wrap(lambda ito: tuple(ito.clone(i, i+1, 'char') for i in range(*ito.span)))
+        make_chars = Itorator.from_func(lambda ito: tuple(ito.clone(i, i+1, 'char') for i in range(*ito.span)))
         reflect.itor_children = make_chars
-        rename = Wrap(lambda ito: tuple(ito.clone(desc=d_changed) if i.parent is not None else i for i in [ito]))
+        rename = Itorator.from_func(lambda ito: tuple(ito.clone(desc=d_changed) if i.parent is not None else i for i in [ito]))
         make_chars.itor_next = rename
         rv = [*reflect.traverse(root)]
             
@@ -86,10 +86,10 @@ class TestItorator(_TestIto):
 
         reflect = Reflect()
 
-        word_splitter = Wrap(lambda ito: ito.str_split())
+        word_splitter = Itorator.from_func(lambda ito: ito.str_split())
         reflect.itor_next = word_splitter
 
-        char_splitter = Wrap(lambda ito: [*ito])
+        char_splitter = Itorator.from_func(lambda ito: [*ito])
 
         def simple_join(itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
             window = list(itos)
@@ -146,30 +146,30 @@ class TestItorator(_TestIto):
         root = Ito(s, desc='root')
         
         func = lambda ito: [*ito.split(regex.compile(r'\-'), desc='phrase')]
-        splt_space = Wrap(func)
+        splt_space = Itorator.from_func(func)
         
         func = lambda ito: [ito.str_strip()]
-        stripper = Wrap(func)
+        stripper = Itorator.from_func(func)
         splt_space.itor_children = stripper
         
         func = lambda ito: [*ito.split(regex.compile(r'(?<=[A-Za-z])(?=\d)'))]
-        splt_alpha_num = Wrap(func)
+        splt_alpha_num = Itorator.from_func(func)
         stripper.itor_children = splt_alpha_num
         
         func = lambda ito: [ito.clone(desc='numeric' if str(ito).isnumeric() else 'alpha')]
-        namer = Wrap(func)
+        namer = Itorator.from_func(func)
         splt_alpha_num.itor_next = namer
         
         func = lambda ito: [*ito.split(regex.compile(r'(?<=\d)(?=\d)'), desc='digit')]
-        splt_digits = Wrap(func)
+        splt_digits = Itorator.from_func(func)
         
         func = lambda ito: [*ito.split(regex.compile(r'(?<=[A-Z])(?=[a-z])'), desc='upper or lower')]
-        splt_case = Wrap(func)
+        splt_case = Itorator.from_func(func)
         
         namer.itor_children = lambda ito: splt_digits if ito.desc == 'numeric' else splt_case
         
         func = lambda ito: [ito.clone(i, i + 1, desc='char') for i in range(ito.start, ito.stop)]
-        splt_chars = Wrap(func)
+        splt_chars = Itorator.from_func(func)
         splt_case.itor_children = splt_chars
         
         root.children.add(*splt_space.traverse(root))

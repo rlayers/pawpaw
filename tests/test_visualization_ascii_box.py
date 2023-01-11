@@ -10,7 +10,7 @@ class TestAsciiBoxDrawing(_TestIto):
         self.assertEqual(len(box.BoxDrawingChar._instances), len(chars))
 
     def test_direction_styles_unique(self):
-        dss = set(c.direction_styles for c in box.BoxDrawingChar._instances)
+        dss = set((ds.direction, ds.style.weight, ds.style.count, ds.style.dash, ds.style.path) for c in box.BoxDrawingChar._instances for ds in c.direction_styles)
         self.assertEqual(len(box.BoxDrawingChar._instances), len(dss))
 
     @classmethod

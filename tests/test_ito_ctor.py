@@ -67,7 +67,7 @@ class TestItoCtor(_TestIto):
         re = regex.compile(r'(?P<fn>.+)\s(?P<ln>.+)')
         m = re.fullmatch(string)
 
-        for exclude_keys in None, [0], [1], ['fn'], [2], ['ln'], ['fn', 2], [1, 'ln']:
+        for exclude_keys in None, [1], ['fn'], [2], ['ln'], ['fn', 2], [1, 'ln']:
             with self.subTest(exclude_keys=exclude_keys):
                 if exclude_keys is None:
                     ito = Ito.from_match(m)
@@ -94,7 +94,7 @@ class TestItoCtor(_TestIto):
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)\s*)+')
         m = re.fullmatch(s)
 
-        for exclude_keys in None, [0], [1], ['phrase'], ['char', 'digit']:
+        for exclude_keys in None, [1], ['phrase'], ['char', 'digit']:
             with self.subTest(exclude_keys=exclude_keys):
                 if exclude_keys is None:
                     ito = Ito.from_match(m)

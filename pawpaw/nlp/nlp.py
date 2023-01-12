@@ -455,7 +455,7 @@ class SimpleNlp:
 
         paragraph = pawpaw.arborform.Split(self._paragraph_re, desc='paragraph')
 
-        para_trimmer = pawpaw.arborform.Itorator.from_func(lambda ito: [ito.str_strip(''.join(unicode_white_spaces.values()))])
+        para_trimmer = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.str_strip(''.join(unicode_white_spaces.values()))])
         paragraph.itor_next = para_trimmer
 
         sentence = pawpaw.arborform.Split(Sentence().re, desc='sentence')

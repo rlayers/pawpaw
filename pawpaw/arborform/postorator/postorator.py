@@ -10,8 +10,8 @@ class Postorator(ABC):
         ...
 
     @classmethod
-    def from_func(cls, f: Types.F_ITOS_2_BITOS):
-        return _WrappedPostorator(f)
+    def wrap(cls, func: Types.F_ITOS_2_BITOS):
+        return _WrappedPostorator(func)
 
 
 class _WrappedPostorator(Postorator):

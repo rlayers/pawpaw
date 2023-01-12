@@ -21,7 +21,7 @@ class TestPostorator(_TestIto):
         for s in 'One', 'One Two', 'One Two Three', 'One Two Three Four':
             itos = Ito(s).str_split()
             with self.subTest(string=s, itos=itos, desc=self.post_desc):
-                wrapped = Postorator.from_func(self.simple)
+                wrapped = Postorator.wrap(self.simple)
                 expected = [Types.C_BITO(False, i) for i in itos]
                 expected.append(Types.C_BITO(True, Ito(s, desc=self.post_desc)))
                 actual = [*wrapped.traverse(itos)]
@@ -35,7 +35,7 @@ class TestPostorator(_TestIto):
             rv = [*splitter.traverse(root)]
             self.assertListEqual(root.str_split(), rv)
 
-            splitter.postorator = Postorator.from_func(self.simple)
+            splitter.postorator = Postorator.wrap(self.simple)
             expected = [Ito(s, desc=self.post_desc)]
             actual = [*splitter.traverse(root)]
             self.assertListEqual(expected, actual)

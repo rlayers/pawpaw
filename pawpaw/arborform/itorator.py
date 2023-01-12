@@ -115,8 +115,14 @@ class Itorator(ABC):
         yield from self._traverse(ito.clone())
 
     @classmethod
-    def from_func(cls, f: Types.F_ITO_2_SQ_ITOS):
-        return _WrappedItorator(f)
+    def wrap(cls, src: Itorator | Types.F_ITO_2_SQ_ITOS):
+        if isinstance(src, Itorator):
+            return _WrappedItorator(src.traverse)
+        
+        if Types.is_callable(src, Types.F_ITO_2_SQ_ITOS):
+            return _WrappedItorator(src)
+
+        raise Errors.parameter_invalid_type('src', src, Types.F_ITO_2_SQ_ITOS, Itorator)
 
 
 class _WrappedItorator(Itorator):
@@ -149,18 +155,6 @@ class Desc(Itorator):
     def _iter(self, ito: Types.C_ITO) -> Types.C_SQ_ITOS:
         ito.desc = self._desc_func(ito)
         return ito,
-
-
-class Group(Itorator):
-    """
-    Used to wrap complex Itorator chains in order to have a single Itorator with clear entry & exit points
-    """
-    def __init__(self, start: Itorator):
-        super().__init__()
-        self.start = start
-
-    def _iter(self, ito: Types.C_ITO) -> Types.C_SQ_ITOS:
-        return [*self.start.Traverse(ito)]
 
 
 class Split(Itorator):

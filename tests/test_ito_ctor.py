@@ -89,6 +89,32 @@ class TestItoCtor(_TestIto):
                         k = int(k)
                     self.assertEqual(m.group(k), str(i))
 
+    def test_from_re(self):
+        s = 'the quick brown fox'
+
+        re = 'abc'
+        with self.subTest(re='abc'):
+            with self.assertRaises(TypeError):
+                actual = [*Ito.from_re(re, s)]
+
+        re = regex.compile(r'(?<word>\w+)')
+        with self.subTest(re=re, limit=None):
+            expected = [*Ito.from_substrings(s, s.split(), '0')]
+            for e in expected:
+                e.children.add(e.clone(desc='word'))
+            actual = [*Ito.from_re(re, s)]
+            self.assertListEqual(expected, actual)
+            for e, a in zip(expected, actual):
+                self.assertListEqual(list(e.children), list(a.children))
+
+        limit = 2
+        with self.subTest(re=re, limit=limit):
+            expected = expected[:limit]
+            actual = [*Ito.from_re(re, s, limit=limit)]
+            self.assertListEqual(expected, actual)
+            for e, a in zip(expected, actual):
+                self.assertListEqual(list(e.children), list(a.children))
+
     def test_from_match_complex(self):
         s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)\s*)+')

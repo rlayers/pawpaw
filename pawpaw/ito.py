@@ -275,10 +275,13 @@ class Ito:
             cls,
             re: regex.Pattern,
             src: str | Types.C_ITO,
-            desc_func: Types.F_ITO_M_GK_2_DESC = lambda ito, match, group: group,
-            group_filter: typing.Iterable[str] | typing.Callable[[regex.Match, str], bool] | None = None,
+            *exclude_keys: Types.C_GK,
+            desc: str | Types.F_M_GK_2_DESC = lambda m, gk: str(gk),
             limit: int | None = None,
     ) -> typing.Iterable[Types.C_ITO]:
+        if not isinstance(re, regex.Pattern):
+            raise Errors.parameter_invalid_type('re', re, regex.Pattern)
+
         if isinstance(src, str):
             s = src
             span = Span.from_indices(s)
@@ -287,8 +290,9 @@ class Ito:
             span = src.span
         else:
             raise Errors.parameter_invalid_type('src', src, str, Ito)
+
         for count, m in enumerate(re.finditer(s, *span), 1):
-            yield from cls.from_match_ex(m, desc_func, group_filter)
+            yield cls.from_match(m, *exclude_keys, desc=desc)
             if limit is not None and count >= limit:
                 break
 

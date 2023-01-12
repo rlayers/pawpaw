@@ -65,7 +65,14 @@ class Types:
         origin = typing.get_origin(annotation)
         if origin is types.UnionType:
             return _type in typing.get_args(annotation)
-        elif issubclass(_type, annotation):
+
+        if isinstance(_type, typing.TypeVar):
+            if getattr(typing, 'reveal_type', None) is None:  # Python < 3.11 check
+                return True  # Can't reveal type in < 3.11 versions
+
+            _type = typing.reveal_type(_type)
+
+        if issubclass(_type, annotation):
             return True
 
         return False

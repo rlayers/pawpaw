@@ -1,4 +1,3 @@
-from .itorator import Itorator, Reflect, Desc, Split, Extract
-del itorator
+from pawpaw.arborform.itorator import *
 
-import pawpaw.arborform.postorator
+from pawpaw.arborform.postorator import *

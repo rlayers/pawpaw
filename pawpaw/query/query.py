@@ -18,8 +18,12 @@ OPERATORS = {
 
 FILTER_KEYS = {
     'desc': {'desc', 'd'},
-    'string': {'string', 's'},
-    'string-casefold': {'string-casefold', 'scf', 'lcs'},
+    'str': {'string', 's'},
+    'str-casefold': {'str-casefold', 'scf', 'lcs'},
+    'str-casefold-ew': {'str-casefold-ew', 'scfew', 'lcsew'},
+    'str-casefold-sw': {'str-casefold-sw', 'scfsw', 'lcssw'},
+    'str-ew': {'str-ew', 'sew'},
+    'str-sw': {'str-sw', 'ssw'},
     'index': {'index', 'i'},
     'predicate': {'predicate', 'p'},
     'value': {'value', 'v'}
@@ -394,13 +398,13 @@ class EcfFilter(EcfCombined):
             else:
                 return lambda ec, values, predicates: ec.ito.desc in [descape(s) for s in pawpaw.split_unescaped(value, ',')]
 
-        if key in FILTER_KEYS['string']:
+        if key in FILTER_KEYS['str']:
             if not_ == '~':
                 return lambda ec, values, predicates: str(ec.ito) not in [descape(s) for s in pawpaw.split_unescaped(value, ',')]
             else:
                 return lambda ec, values, predicates: str(ec.ito) in [descape(s) for s in pawpaw.split_unescaped(value, ',')]
 
-        if key in FILTER_KEYS['string-casefold']:
+        if key in FILTER_KEYS['str-casefold']:
             if not_ == '~':
                 return lambda ec, values, predicates: str(ec.ito).casefold() not in [
                     descape(s).casefold() for s in pawpaw.split_unescaped(value.casefold(), ',')
@@ -409,6 +413,30 @@ class EcfFilter(EcfCombined):
                 return lambda ec, values, predicates: str(ec.ito).casefold() in [
                     descape(s).casefold() for s in pawpaw.split_unescaped(value.casefold(), ',')
                 ]
+
+        if key in FILTER_KEYS['str-casefold-ew']:
+            if not_ == '~':
+                return lambda ec, values, predicates: all(not str(ec.ito).casefold().endswith(descape(s).casefold()) for s in pawpaw.split_unescaped(value.casefold(), ','))
+            else:
+                return lambda ec, values, predicates: any(str(ec.ito).casefold().endswith(descape(s).casefold()) for s in pawpaw.split_unescaped(value.casefold(), ','))
+
+        if key in FILTER_KEYS['str-casefold-sw']:
+            if not_ == '~':
+                return lambda ec, values, predicates: all(not str(ec.ito).casefold().startswith(descape(s).casefold()) for s in pawpaw.split_unescaped(value.casefold(), ','))
+            else:
+                return lambda ec, values, predicates: any(str(ec.ito).casefold().startswith(descape(s).casefold()) for s in pawpaw.split_unescaped(value.casefold(), ','))
+
+        if key in FILTER_KEYS['str-ew']:
+            if not_ == '~':
+                return lambda ec, values, predicates: all(not ec.ito.str_endswith(descape(s)) for s in pawpaw.split_unescaped(value, ','))
+            else:
+                return lambda ec, values, predicates: any(ec.ito.str_endswith(descape(s)) for s in pawpaw.split_unescaped(value, ','))
+
+        if key in FILTER_KEYS['str-sw']:
+            if not_ == '~':
+                return lambda ec, values, predicates: all(not ec.ito.str_startswith(descape(s)) for s in pawpaw.split_unescaped(value, ','))
+            else:
+                return lambda ec, values, predicates: any(ec.ito.str_startswith(descape(s)) for s in pawpaw.split_unescaped(value, ','))
 
         if key in FILTER_KEYS['index']:
             ints: typing.Set[int] = set()

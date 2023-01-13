@@ -1,3 +1,4 @@
+import itertools
 import typing
 
 import regex
@@ -17,7 +18,7 @@ class TestItoTraversal(_TestIto):
     def setUp(self) -> None:
         super().setUp()
 
-        self.src = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
+        self.src = 'nine 9 TEN 10 eleven 11 TWELVE 12 thirteen 13'
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')
         m = re.fullmatch(self.src)
 
@@ -64,6 +65,14 @@ class TestItoTraversal(_TestIto):
 
 
 class TestItoQuery(TestItoTraversal):
+    #region declarations
+
+    def test_filter_keys_unique(self):
+        fks = [*itertools.chain(*pawpaw.query.FILTER_KEYS.values())]
+        self.assertSequenceEqual(list(dict.fromkeys(fks)), fks)
+
+    #endregion
+
     # region axis
 
     def test_axis_root(self):
@@ -403,7 +412,7 @@ class TestItoQuery(TestItoTraversal):
     
     def test_filter_string_scalar(self):
         for node_type, node in {'root': self.root}.items():
-            for s in 'ten', 'eleven', 'twelve':
+            for s in 'TEN', 'eleven', 'twelve':
                 path = f'**[s:{pawpaw.query.escape(s)}]'
                 with self.subTest(node=node_type, path=path):
                     expected = [d for d in node.walk_descendants() if str(d) == s]
@@ -412,7 +421,7 @@ class TestItoQuery(TestItoTraversal):
     
     def test_filter_string_multiple(self):
         for node_type, node in {'root': self.root}.items():
-            strings = 'ten', 'eleven', 'twelve'
+            strings = 'TEN', 'eleven', 'twelve'
             path = f'**[s:{",".join(pawpaw.query.escape(s) for s in strings)}]'
             with self.subTest(node=node_type, path=path):
                 expected = [d for d in node.walk_descendants() if str(d) in strings]
@@ -458,9 +467,113 @@ class TestItoQuery(TestItoTraversal):
                         expected = [d for d in node.walk_descendants() if str(d).casefold() in [s.casefold() for s in cfs]]
                         actual = [*node.find_all(path)]
                         self.assertSequenceEqual(expected, actual)
+
+    # endregion
+       
+    # region filter string casefold endswith
+                           
+    def test_filter_string_casefold_endswith_scalar(self):
+        for node_type, node in {'root': self.root}.items():
+            for s in 'x', 'n', 'N', 'e':
+                for case_func in str.upper, str.casefold, str.lower:
+                    s = case_func(s)
+                    path = f'**[scfew:{pawpaw.query.escape(s)}]'
+                    with self.subTest(node=node_type, path=path):
+                        expected = [d for d in node.walk_descendants() if str(d).casefold().endswith(s.casefold())]
+                        actual = [*node.find_all(path)]
+                        self.assertSequenceEqual(expected, actual)
     
+    def test_filter_string_casefold_endswith_multiple(self):
+        for node_type, node in {'root': self.root}.items():
+            basis = 'x', 'N', 'e'
+            for case_func in str.upper, str.casefold, str.lower:
+                cfs = [case_func(s) for s in basis]
+                path = f'**[scfew:{",".join(pawpaw.query.escape(s) for s in cfs)}]'
+                with self.subTest(node=node_type, path=path):
+                        expected = [d for d in node.walk_descendants() if any(str(d).casefold().endswith(s.casefold()) for s in cfs)]
+                        actual = [*node.find_all(path)]
+                        self.assertSequenceEqual(expected, actual)  
+
+    # endregion
+    
+    # region filter string casefold startswith
+                           
+    def test_filter_string_casefold_startswith_scalar(self):
+        for node_type, node in {'root': self.root}.items():
+            for s in 'x', 'n', 't':
+                for case_func in str.upper, str.casefold, str.lower:
+                    s = case_func(s)
+                    path = f'**[scfsw:{pawpaw.query.escape(s)}]'
+                    with self.subTest(node=node_type, path=path):
+                        expected = [d for d in node.walk_descendants() if str(d).casefold().startswith(s.casefold())]
+                        actual = [*node.find_all(path)]
+                        self.assertSequenceEqual(expected, actual)
+    
+    def test_filter_string_casefold_startswith_multiple(self):
+        for node_type, node in {'root': self.root}.items():
+            basis = 'x', 'n', 't'
+            for case_func in str.upper, str.casefold, str.lower:
+                cfs = [case_func(s) for s in basis]
+                path = f'**[scfsw:{",".join(pawpaw.query.escape(s) for s in cfs)}]'
+                with self.subTest(node=node_type, path=path):
+                        expected = [d for d in node.walk_descendants() if any(str(d).casefold().startswith(s.casefold()) for s in cfs)]
+                        actual = [*node.find_all(path)]
+                        self.assertSequenceEqual(expected, actual)  
+
     # endregion
 
+    # region filter string endswith
+                           
+    def test_filter_string_endswith_scalar(self):
+        for node_type, node in {'root': self.root}.items():
+            for s in 'x', 'n', 'N', 'e':
+                for case_func in str.upper, str.casefold, str.lower:
+                    s = case_func(s)
+                    path = f'**[sew:{pawpaw.query.escape(s)}]'
+                    with self.subTest(node=node_type, path=path):
+                        expected = [d for d in node.walk_descendants() if str(d).endswith(s)]
+                        actual = [*node.find_all(path)]
+                        self.assertSequenceEqual(expected, actual)
+    
+    def test_filter_string_endswith_multiple(self):
+        for node_type, node in {'root': self.root}.items():
+            basis = 'x', 'N', 'e'
+            for case_func in str.upper, str.casefold, str.lower:
+                cfs = [case_func(s) for s in basis]
+                path = f'**[sew:{",".join(pawpaw.query.escape(s) for s in cfs)}]'
+                with self.subTest(node=node_type, path=path):
+                        expected = [d for d in node.walk_descendants() if any(str(d).endswith(s) for s in cfs)]
+                        actual = [*node.find_all(path)]
+                        self.assertSequenceEqual(expected, actual)  
+
+    # endregion
+    
+    # region filter string startswith
+                           
+    def test_filter_string_startswith_scalar(self):
+        for node_type, node in {'root': self.root}.items():
+            for s in 'x', 'n', 't':
+                for case_func in str.upper, str.casefold, str.lower:
+                    s = case_func(s)
+                    path = f'**[ssw:{pawpaw.query.escape(s)}]'
+                    with self.subTest(node=node_type, path=path):
+                        expected = [d for d in node.walk_descendants() if str(d).startswith(s)]
+                        actual = [*node.find_all(path)]
+                        self.assertSequenceEqual(expected, actual)
+    
+    def test_filter_string_startswith_multiple(self):
+        for node_type, node in {'root': self.root}.items():
+            basis = 'x', 'n', 't'
+            for case_func in str.upper, str.casefold, str.lower:
+                cfs = [case_func(s) for s in basis]
+                path = f'**[ssw:{",".join(pawpaw.query.escape(s) for s in cfs)}]'
+                with self.subTest(node=node_type, path=path):
+                        expected = [d for d in node.walk_descendants() if any(str(d).startswith(s) for s in cfs)]
+                        actual = [*node.find_all(path)]
+                        self.assertSequenceEqual(expected, actual)  
+
+    # endregion    
+    
     # region filter index
                 
     def test_filter_index_scalar(self):
@@ -566,7 +679,7 @@ class TestItoQuery(TestItoTraversal):
     def test_subquery_multiple(self):
         for node_type, node in {'root': self.root}.items():
             for order in '', '+', '-':
-                for words in [['nine'], ['nine', 'ten'], ['twelve', 'ten']]:
+                for words in [['nine'], ['nine', 'TEN'], ['twelve', 'TEN']]:
                     subquery = ' | '.join('{.[s:' + w + ']}' for w in words)
                     path = order + '**' + subquery
                     with self.subTest(node=node_type, order=order, path=path):

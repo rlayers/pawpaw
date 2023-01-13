@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum, auto
+import itertools
 import typing
 
 from pawpaw import Errors, Ito, Types, nuco
@@ -10,14 +11,14 @@ from pawpaw import Errors, Ito, Types, nuco
 # 2. https://www.unicode.org/charts/PDF/U2500.pdf
 
 class Direction(Enum):
-    NW = auto()
-    N = auto()
-    NE = auto()
-    E = auto()
-    W = auto()
-    SW = auto()
-    S = auto()
-    SE = auto()
+    N  = 0
+    NE = 1
+    E  = 2
+    SE = 3
+    S  = 4
+    SW = 5
+    W  = 6
+    NW = 7
 
 @dataclass(frozen=True)    
 class Style:
@@ -1185,3 +1186,80 @@ def from_corners(*corners: str | BoxDrawingChar) -> Boxer:
         left, right,
         corners[SW], bottom, corners[SE]
     )
+
+def _get_direction_styles(bdc: BoxDrawingChar, *directions: Direction) -> typing.Tuple[DirectionStyle]:
+    return tuple(
+        next(filter(lambda ds: ds.direction == d, bdc.direction_styles), None)
+        for d
+        in directions
+    )
+
+def _prior_idx(i: int, count: int) -> int:
+    return (i + count - 1) % count
+
+def _next_idx(i: int, count: int) -> int:
+    return (i + 1) % count
+
+def _rotate_direction(degrees: int, direction: Direction):
+    r = (degrees // 90) * 2
+    dirs = [*Direction]
+    i = direction.value
+    return dirs[(i + r) % 8]    
+
+def _rotate_direction_styles(degrees: int, *direction_styles: DirectionStyles) -> typing.Tuple[DirectionStyle]:
+    return tuple(DirectionStyle(_rotate_direction(degrees, ds.direction), ds.style) for ds in direction_styles)
+
+def from_sides(
+    n: str | BoxDrawingChar | None = None,
+    w: str | BoxDrawingChar | None = None,
+    e: str | BoxDrawingChar | None = None,
+    s: str | BoxDrawingChar | None = None
+    ) -> Boxer:
+    sides = [[Direction.N, n], [Direction.E, e], [Direction.S, s], [Direction.W, w]]
+
+    if all(s[1] is None for s in sides):
+        raise ValueError('at least one side is required')
+
+    for d, v in sides:
+        if isinstance(v, str):
+            side = BoxDrawingChar.from_char(v)
+        elif not (isinstance(v, BoxDrawingChar) or v is None):
+            raise Errors.parameter_invalid_type(d.name.lower(), v, str, BoxDrawingChar, None)
+
+    for name, bdc in filter(lambda dv: dv[0] in (Direction.N, Direction.S) and dv[1] is not None, sides):
+        if any(ds is None for ds in _get_direction_styles(bdc, Direction.W, Direction.E)):
+            raise ValueError(f'parameter {name} lacks Direction.W and Direction.E')
+            
+    for name, bdc in filter(lambda dv: dv[0] in (Direction.W, Direction.E) and dv[1] is not None, sides):            
+        if any(ds is None for ds in _get_direction_styles(bdc, Direction.N, Direction.S)):
+            raise ValueError(f'parameter {name} lacks Direction.N and Direction.S')
+
+    start = next(i for i in range(4) if sides[i][1] is not None)
+
+    for r in range(0, 3):
+        i = start + r
+
+        d, bdc = sides[i]
+        if bdc is not None:
+            continue
+
+        prior = sides[_prior_idx(i, 4)][1]
+        next_ = sides[_next_idx(i, 4)][1]
+
+        if d == Direction.N:
+            ds1 = _get_direction_styles(prior, Direction.N)
+            ds2 = _get_direction_styles(prior, Direction.N) if next_ is None else _get_direction_styles(next_, Direction.N)
+        elif d == Direction.E:
+            ds1 = _get_direction_styles(prior, Direction.E)
+            ds2 = _get_direction_styles(prior, Direction.E) if next_ is None else _get_direction_styles(next_, Direction.E)
+        elif d == Direction.S:
+            ds1 = _get_direction_styles(prior, Direction.S)
+            ds2 = _get_direction_styles(prior, Direction.S) if next_ is None else _get_direction_styles(next_, Direction.S)
+        else:  # W:
+            ds1 = _get_direction_styles(prior, Direction.W)
+            ds2 = _get_direction_styles(prior, Direction.W) if next_ is None else _get_direction_styles(next_, Direction.W)
+
+        ds1 = _rotate_direction_styles(90, *ds1)
+        ds2 = _rotate_direction_styles(90, *ds2)
+
+        sides[i][1] = BoxDrawingChar.from_direction_styles(*itertools.chain(ds1, ds2), fuzzy=True) 

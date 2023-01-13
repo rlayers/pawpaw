@@ -1,13 +1,10 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-import collections.abc
-import enum
 import itertools
 import types
 import typing
 
-import regex
-from pawpaw import Types, Errors, Ito, Span
+from pawpaw import Types, Errors
 from pawpaw.arborform.postorator.postorator import Postorator
 
 

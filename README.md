@@ -226,7 +226,7 @@ There are lots of ways to install Pawpaw.  Versioned instances that have passed 
    pip install pawpaw
    ```
 
-Alternatively, you can pull from the main branch at GitHub.  This ensure you have the latest code, however, the main branch can potentially have internal inconsistencies and/or failed tests:
+Alternatively, you can pull from the main branch at GitHub.  This will ensure that you have the latest code, however, the main branch can potentially have internal inconsistencies and/or failed tests:
 
 1. Install with pip from GitHub:
    ```
@@ -247,7 +247,7 @@ Alternatively, you can pull from the main branch at GitHub.  This ensure you hav
    
 ### Verify Installation
 
-Whichever way you fetch Pawpaw, you can easily verify it's installed correctly.  Just open Python prompt and type:
+Whichever way you fetch Pawpaw, you can easily verify that it is installed correctly.  Just open Python prompt and type:
 
   ```python
   >>> from pawpaw import Ito

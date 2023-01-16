@@ -18,6 +18,58 @@ v_json = pepo.Json()
 
 import pawpaw.visualization.ascii_box as box
 
+# Box tests:
+
+c = '─'
+bdc = box.BoxDrawingChar.from_char(c)
+boxer = box.from_sides(bdc)
+for line in boxer.from_srcs('Hello, world!'):
+    print(line)
+
+print()
+
+c = '╍'
+bdc = box.BoxDrawingChar.from_char(c)
+boxer = box.from_sides(s=bdc)
+for line in boxer.from_srcs('Hello, world!'):
+    print(line)
+
+print()
+
+c = '║'
+bdc = box.BoxDrawingChar.from_char(c)
+boxer = box.from_sides(w=bdc)
+for line in boxer.from_srcs('Hello, world!'):
+    print(line)
+
+print()
+
+c = '╬'
+bdc = box.BoxDrawingChar.from_char(c)
+boxer = box.from_sides(w=bdc)
+for line in boxer.from_srcs('Hello, world!'):
+    print(line)
+
+print()
+
+boxer = box.from_sides(n=box.BoxDrawingChar.from_char('─'), w=box.BoxDrawingChar.from_char('║'))
+for line in boxer.from_srcs('Hello, world!'):
+    print(line)
+
+print()
+
+c = '╬'
+bdc = box.BoxDrawingChar.from_char(c)
+boxer = box.from_corners_ex(bdc)
+for line in boxer.from_srcs('Hello, world!'):
+    print(line)
+
+
+print()
+
+exit(0)
+
+
 # Test 1 = get from_char
 c = '─'
 bdc = box.BoxDrawingChar.from_char(c)

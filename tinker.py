@@ -60,10 +60,23 @@ print()
 
 c = '╬'
 bdc = box.BoxDrawingChar.from_char(c)
-boxer = box.from_corners_ex(bdc)
+boxer = box.from_corners(bdc)
 for line in boxer.from_srcs('Hello, world!'):
     print(line)
 
+print()
+
+c = '┞'
+bdc = box.BoxDrawingChar.from_char(c)
+boxer = box.from_corners(bdc)
+for line in boxer.from_srcs('Hello, world!'):
+    print(line)
+
+print()
+
+boxer = box.from_corners(box.BoxDrawingChar.from_char('╬'), box.BoxDrawingChar.from_char('╯'))
+for line in boxer.from_srcs('Hello, world!'):
+    print(line)
 
 print()
 

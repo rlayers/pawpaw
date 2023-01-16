@@ -23,10 +23,44 @@ import pawpaw.visualization.ascii_box as box
 c = '─'
 bdc = box.BoxDrawingChar.from_char(c)
 boxer = box.from_sides(bdc)
+for line in boxer.from_srcs('Baby!'):
+    print(line)
+
+print()
+
+c = '┃'
+bdc = box.BoxDrawingChar.from_char(c)
+boxer = box.from_sides(e=bdc)
+for line in boxer.from_srcs('Baby!'):
+    print(line)
+
+print()
+
+boxer = box.from_sides(n=box.BoxDrawingChar.from_char('┄'), s=box.BoxDrawingChar.from_char('═'))
+for line in boxer.from_srcs('Baby!'):
+    print(line)
+
+print()
+
+boxer = box.from_sides(n=box.BoxDrawingChar.from_char('┄'), s=box.BoxDrawingChar.from_char('═'))
+for line in boxer.from_srcs('Baby!'):
+    print(line)
+
+print()
+
+boxer = box.from_corners(box.BoxDrawingChar.from_char('╞'))
 for line in boxer.from_srcs('Hello, world!'):
     print(line)
 
 print()
+
+boxer = box.from_corners(box.BoxDrawingChar.from_char('╯'), box.BoxDrawingChar.from_char('╞'))
+for line in boxer.from_srcs('Hello, world!'):
+    print(line)
+
+print()
+
+exit(0)
 
 c = '╍'
 bdc = box.BoxDrawingChar.from_char(c)
@@ -74,14 +108,20 @@ for line in boxer.from_srcs('Hello, world!'):
 
 print()
 
+boxer = box.from_corners(box.BoxDrawingChar.from_char('╬'))
+for line in boxer.from_srcs('Hello, world!'):
+    print(line)
+
+print()
+
 boxer = box.from_corners(box.BoxDrawingChar.from_char('╬'), box.BoxDrawingChar.from_char('╯'))
 for line in boxer.from_srcs('Hello, world!'):
     print(line)
 
 print()
 
-exit(0)
 
+exit(0)
 
 # Test 1 = get from_char
 c = '─'

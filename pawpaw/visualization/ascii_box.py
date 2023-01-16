@@ -1230,6 +1230,9 @@ def from_corners(*corners: str | BoxDrawingChar) -> Boxer:
             best_permutation = p
             best_score = score
 
+    if best_score != best_possible:
+        raise ValueError('the corners provided could not all be mapped to a box corner - are there duplicates present?')
+
     for i, j in enumerate(best_permutation):
         tmp[j][1] = corners[i]
 

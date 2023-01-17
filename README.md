@@ -72,32 +72,47 @@ Section 2: The House of Representatives
 The House of Representatives shall be composed of Members chosen every second Year by the
 People of the several States, and the Electors in each State shall have the Qualifications
 requisite for Electors of the most numerous Branch of the State Legislature.
+
+No Person shall be a Representative who shall not have attained to the Age of twenty five
+Years, and been seven Years a Citizen of the United States, and who shall not, when elected,
+be an Inhabitant of that State in which he shall be chosen.
 ```
 
 and quickly and easily produce a tree that look like this:
 
 ```mermaid
 graph TD;
-    A1["[article]<br/>#quot;ARTICLE I…#quot;"]-->A1_k["[key]<br/>#quot;I#quot;"];
-    A1-->Sc1["[section]<br/>#quot;Section 1…#quot;"];
-    Sc1-->Sc1_k["[key]<br/>#quot;1#quot;"]
-    Sc1-->Sc1_p1["[paragraph]<br/>#quot;All legislative Powers…#quot;"]
-    Sc1_p1-->Sc1_p1_s1["[sentence]<br/>#quot;All legislative Powers…#quot;"]
-    Sc1_p1_s1-->Sc1_p1_s1_w1["[word]<br/>#quot;All#quot;"]
-    Sc1_p1_s1-->Sc1_p1_s1_w2["[word]<br/>#quot;legislative#quot;"]
-    Sc1_p1_s1-->Sc1_p1_s1_w3["[word]<br/>#quot;Powers#quot;"]
+    A1["[article]<br/>#quot;ARTICLE I…#quot;"]:::article --> A1_k["[key]<br/>#quot;I#quot;"]:::article;
+    A1-->Sc1["[section]<br/>#quot;Section 1…#quot;"]:::section;
+    Sc1-->Sc1_k["[key]<br/>#quot;1#quot;"]:::section
+    Sc1-->Sc1_p1["[paragraph]<br/>#quot;All legislative Powers…#quot;"]:::paragraph
+    Sc1_p1-->Sc1_p1_s1["[sentence]<br/>#quot;All legislative Powers…#quot;"]:::sentence
+    Sc1_p1_s1-->Sc1_p1_s1_w1["[word]<br/>#quot;All#quot;"]:::word
+    Sc1_p1_s1-->Sc1_p1_s1_w2["[word]<br/>#quot;legislative#quot;"]:::word
+    Sc1_p1_s1-->Sc1_p1_s1_w3["[word]<br/>#quot;Powers#quot;"]:::word
+    Sc1_p1_s1-->Sc1_p1_s1_w4["..."]:::ellipsis
     
-    A1-->Sc2["[section]<br/>#quot;Section 2#quot;"];
-    Sc2-->Sc2_k["[key]<br/>#quot;2#quot;"]
-    Sc2-->Sc2_p1["[paragraph]<br/>#quot;The House of…#quot;"]
-    Sc2_p1---->Sc2_p1_s1["[sentence]<br/>#quot;The House of…#quot;"]
-    Sc2_p1_s1-->Sc2_p1_s1_w1["[word]<br/>#quot;The#quot;"]
-    Sc2_p1_s1-->Sc2_p1_s1_w2["[word]<br/>#quot;House#quot;"]
-    Sc2_p1_s1-->Sc2_p1_s1_w3["[word]<br/>#quot;of#quot;"]
-    Sc2_p1---->Sc2_p1_s2["[sentence]<br/>#quot;No Person shall…#quot;"]
-    Sc2_p1_s2-->Sc2_p1_s2_w1["[word]<br/>#quot;No#quot;"]
-    Sc2_p1_s2-->Sc2_p1_s2_w2["[word]<br/>#quot;Person#quot;"]
-    Sc2_p1_s2-->Sc2_p1_s2_w3["[word]<br/>#quot;shall#quot;"]
+    A1-->Sc2["[section]<br/>#quot;Section 2#quot;"]:::section;
+    Sc2-->Sc2_k["[key]<br/>#quot;2#quot;"]:::section
+    Sc2-->Sc2_p1["[paragraph]<br/>#quot;The House of…#quot;"]:::paragraph
+    Sc2_p1---->Sc2_p1_s1["[sentence]<br/>#quot;The House of…#quot;"]:::sentence
+    Sc2_p1_s1-->Sc2_p1_s1_w1["[word]<br/>#quot;The#quot;"]:::word
+    Sc2_p1_s1-->Sc2_p1_s1_w2["[word]<br/>#quot;House#quot;"]:::word
+    Sc2_p1_s1-->Sc2_p1_s1_w3["[word]<br/>#quot;of#quot;"]:::word
+    Sc2_p1_s1-->Sc2_p1_s1_w4["..."]:::ellipsis
+    Sc2_p1---->Sc2_p1_s2["[sentence]<br/>#quot;No Person shall…#quot;"]:::sentence
+    Sc2_p1_s2-->Sc2_p1_s2_w1["[word]<br/>#quot;No#quot;"]:::word
+    Sc2_p1_s2-->Sc2_p1_s2_w2["[word]<br/>#quot;Person#quot;"]:::word
+    Sc2_p1_s2-->Sc2_p1_s2_w3["[word]<br/>#quot;shall#quot;"]:::word
+    Sc2_p1_s2-->Sc2_p1_s2_w4["..."]:::ellipsis
+    
+    classDef article fill:#533E30,stroke:#000000,color:#FFFFFF;
+    classDef key fill:#533E30,stroke:#000000,color:#FFFFFF;
+    classDef section fill:#D2AC70,stroke:#000000,color:#000000;
+    classDef paragraph fill:#E4D1AE,stroke:#000000,color:#000000;
+    classDef sentence fill:#517D3D,stroke:#000000,color:#FFFFFF;
+    classDef word fill:#90C246,stroke:#000000,color:#FFFFFF;
+    classDef ellipsis fill:#FFFFFF,stroke:#FFFFFF,color:#000000;
 ```
 
 You can then search your tree using plumule: a powerful structured query language:

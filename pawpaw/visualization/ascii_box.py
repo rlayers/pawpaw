@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from enum import Enum, auto
+from enum import Enum, IntEnum, auto, unique
 import itertools
 import typing
 
@@ -10,24 +10,31 @@ from pawpaw import Errors, Ito, Types, nuco
 # 1. https://en.wikipedia.org/wiki/Box-drawing_character
 # 2. https://www.unicode.org/charts/PDF/U2500.pdf
 
-class Direction(Enum):
-    N  = 0
-    NE = 1
-    E  = 2
-    SE = 3
-    S  = 4
-    SW = 5
-    W  = 6
-    NW = 7
+@unique
+class Direction(IntEnum):
+    N  = 0 * 45
+    NE = 1 * 45
+    E  = 2 * 45
+    SE = 3 * 45
+    S  = 4 * 45
+    SW = 5 * 45
+    W  = 6 * 45
+    NW = 7 * 45
+
+    @classmethod
+    def from_degrees(cls, degrees: int) -> Direction:
+        degrees %= 360
+        it = iter(cls)
+        for r in range(0, degrees // 45 + 1):
+            rv = next(it)
+        return rv
 
     def rotate(self, degrees: int) -> Direction:
-        directions = [*Direction]
-        dir_count = len(directions)
-        min_increment = 360 // dir_count
-        if (rotate_amount := degrees // min_increment) == 0:
-            return self
-        i = (self.value + rotate_amount) % dir_count
-        return directions[i]
+        return self.from_degrees(self.value + degrees)
+
+    def reflect(self, surface: Direction) -> Direction:
+        delta = surface.value - self.value
+        return self.rotate(delta * 2)
 
 
 @dataclass(frozen=True)    
@@ -63,6 +70,9 @@ class DirectionStyle:
 
     def rotate(self, degrees: int) -> DirectionStyle:
         return DirectionStyle(self.direction.rotate(degrees), self.style)
+
+    def reflect(self, surface: Direction) -> DirectionStyle:
+        return DirectionStyle(self.direction.reflect(surface), self.style)
 
 
 class BoxDrawingChar:
@@ -142,6 +152,10 @@ class BoxDrawingChar:
 
     def rotate(self, degrees: int) -> BoxDrawingChar:
         dss = [ds.rotate(degrees) for ds in self._direction_styles]
+        return self.from_direction_styles(*dss, fuzzy=True)
+
+    def reflect(self, surface: Direction) -> BoxDrawingChar:
+        dss = [ds.reflect(surface) for ds in self._direction_styles]
         return self.from_direction_styles(*dss, fuzzy=True)
 
 
@@ -1042,6 +1056,7 @@ BoxDrawingChar._instances.extend(
 
 #endregion
 
+
 class Boxer:
     def __init__(
         self,
@@ -1148,7 +1163,8 @@ def from_sides(
         for i in range(3):
             prior_idx = (first_index + i) % 4
             cur_idx = (prior_idx + 1) % 4
-            sides[cur_idx][1] = sides[prior_idx][1].rotate(90)
+            # sides[cur_idx][1] = sides[prior_idx][1].rotate(90)
+            sides[cur_idx][1] = sides[prior_idx][1].reflect(sides[prior_idx][0].rotate(45))
 
     else:
         for name, bdc in filter(lambda dv: dv[0] in (Direction.N, Direction.S) and dv[1] is not None, sides):
@@ -1241,7 +1257,8 @@ def from_corners(*corners: str | BoxDrawingChar) -> Boxer:
         for i in range(3):
             prior_idx = (first_index + i) % 4
             cur_idx = (prior_idx + 1) % 4
-            tmp[cur_idx][1] = tmp[prior_idx][1].rotate(90)
+            # tmp[cur_idx][1] = tmp[prior_idx][1].rotate(90)
+            tmp[cur_idx][1] = tmp[prior_idx][1].reflect(tmp[prior_idx][0][1])
     else:
         for i in range(3):
             prior_idx = (first_index + i) % 4
@@ -1287,135 +1304,3 @@ def from_corners(*corners: str | BoxDrawingChar) -> Boxer:
         sides[3], sides[1],
         tmp[3][1], sides[2], tmp[2][1]
     )
-
-    #
-    #
-    # scores = {i: len(_get_direction_styles(corner, *t[0]) for i, t in enumerate(t tmp.keys()))}
-    #
-    # scores: typing.Dict[int, {int: int}] = {i: [] for i in range(4)}
-    #
-    #
-    # def corner_index(corner: BoxDrawingChar) -> int | None:
-    #     for i, directions in enumerate(t[0] for t in tmp):
-    #         score = len(_get_direction_styles(corner, *directions))
-    #         if score > 0:
-    #             scores[i].append(i: score)
-    #         if _get_direction_styles(corner, *dsv[0]) > 0:
-    #             scores[]
-    #
-    #     if len(corner.direction_styles) != 2:
-    #         return None
-    #
-    #     if corner.direction_styles[0].direction == Direction.N:
-    #         if corner.direction_styles[1].direction == Direction.E:
-    #             return SW
-    #         elif corner.direction_styles[1].direction == Direction.W:
-    #             return SE
-    #     elif corner.direction_styles[1].direction == Direction.S:
-    #         if corner.direction_styles[0].direction == Direction.E:
-    #             return NW
-    #         elif corner.direction_styles[0].direction == Direction.W:
-    #             return NE
-    #
-    # for corner in corners:
-    #     if isinstance(corner, str):
-    #         corner = BoxDrawingChar.from_char(corner)
-    #     elif not isinstance(corner, BoxDrawingChar):
-    #         raise Errors.parameter_invalid_type('corner', corner, str, BoxDrawingChar)
-    #     i = corner_index(corner)
-    #     if i is None:
-    #         raise ValueError(f'\'{corner}\' is not a box drawing character corner')
-    #     else:
-    #         tmp[i] = corner
-    #
-    # first_index = next(c for c in corners, i for i in range(4) if sides[i][1] is not None)
-    # if first_index is None:
-    #     raise ValueError('at least one side is required')
-    #
-    # def corner_index(corner: BoxDrawingChar) -> int | None:
-    #     if len(corner.direction_styles) != 2:
-    #         return None
-    #
-    #     if corner.direction_styles[0].direction == Direction.N:
-    #         if corner.direction_styles[1].direction == Direction.E:
-    #             return SW
-    #         elif corner.direction_styles[1].direction == Direction.W:
-    #             return SE
-    #     elif corner.direction_styles[1].direction == Direction.S:
-    #         if corner.direction_styles[0].direction == Direction.E:
-    #             return NW
-    #         elif corner.direction_styles[0].direction == Direction.W:
-    #             return NE
-    #
-    #     return None
-    #
-    # tmp: typing.List[BoxDrawingChar] = [None, None, None, None]
-    # for corner in corners:
-    #     if isinstance(corner, str):
-    #         corner = BoxDrawingChar.from_char(corner)
-    #     elif not isinstance(corner, BoxDrawingChar):
-    #         raise Errors.parameter_invalid_type('corner', corner, str, BoxDrawingChar)
-    #     i = corner_index(corner)
-    #     if i is None:
-    #         raise ValueError(f'\'{corner}\' is not a box drawing character corner')
-    #     else:
-    #         tmp[i] = corner
-    # corners = tmp
-    #
-    # def prior_idx(i: int) -> int:
-    #     return (i + 3) % 4
-    #
-    # def next_idx(i: int) -> int:
-    #     return (i + 1) % 4
-    #
-    # start = next(i for i in range(4) if corners[i] is not None)
-    # start = next_idx(start)
-    # for j in range(3):
-    #     i = (start + j) % 4
-    #
-    #     if corners[i] is not None:
-    #         continue
-    #
-    #     prior = corners[prior_idx(i)]
-    #     next_ = corners[next_idx(i)]
-    #
-    #     if i == NW:
-    #         ds1 = DirectionStyle(Direction.S, prior.direction_styles[0].style)
-    #         style = prior.direction_styles[1].style if next_ is None else next_.direction_styles[0].style
-    #         ds2 = DirectionStyle(Direction.E, style)
-    #     elif i == NE:
-    #         ds1 = DirectionStyle(Direction.W, prior.direction_styles[0].style)
-    #         style = prior.direction_styles[0].style if next_ is None else next_.direction_styles[0].style
-    #         ds2 = DirectionStyle(Direction.S, style)
-    #     elif i == SE:
-    #         ds1 = DirectionStyle(Direction.N, prior.direction_styles[1].style)
-    #         style = prior.direction_styles[0].style if next_ is None else next_.direction_styles[1].style
-    #         ds2 = DirectionStyle(Direction.W, style)
-    #     else:  # SW:
-    #         ds1 = DirectionStyle(Direction.E, prior.direction_styles[1].style)
-    #         style = prior.direction_styles[1].style if next_ is None else next_.direction_styles[1].style
-    #         ds2 = DirectionStyle(Direction.N, style)
-    #
-    #     corners[i] = BoxDrawingChar.from_direction_styles(ds1, ds2, fuzzy=True)
-    #
-    # ds1 = DirectionStyle(Direction.W, corners[NW].direction_styles[0].style)
-    # ds2 = DirectionStyle(Direction.E, corners[NE].direction_styles[0].style)
-    # top = BoxDrawingChar.from_direction_styles(ds1, ds2, fuzzy=True)
-    #
-    # ds1 = DirectionStyle(Direction.N, corners[NW].direction_styles[1].style)
-    # ds2 = DirectionStyle(Direction.S, corners[SW].direction_styles[0].style)
-    # left = BoxDrawingChar.from_direction_styles(ds1, ds2, fuzzy=True)
-    #
-    # ds1 = DirectionStyle(Direction.N, corners[NE].direction_styles[1].style)
-    # ds2 = DirectionStyle(Direction.S, corners[SE].direction_styles[0].style)
-    # right = BoxDrawingChar.from_direction_styles(ds1, ds2, fuzzy=True)
-    #
-    # ds1 = DirectionStyle(Direction.W, corners[SW].direction_styles[1].style)
-    # ds2 = DirectionStyle(Direction.E, corners[SE].direction_styles[1].style)
-    # bottom = BoxDrawingChar.from_direction_styles(ds1, ds2, fuzzy=True)
-    #
-    # return Boxer(
-    #     corners[NW], top, corners[NE],
-    #     left, right,
-    #     corners[SW], bottom, corners[SE]
-    # )

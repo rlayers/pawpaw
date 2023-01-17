@@ -1,10 +1,87 @@
+import typing
+
 import pawpaw
 import pawpaw.visualization.ascii_box as box
-
 from tests.util import _TestIto
+
+directions: typing.List[box.Direction] = [
+    box.Direction.N,
+    box.Direction.NE,
+    box.Direction.E,
+    box.Direction.SE,
+    box.Direction.S,
+    box.Direction.SW,
+    box.Direction.W,
+    box.Direction.NW,
+]
+
+class TestDirection(_TestIto):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.directions = directions
+
+    def test_values(self):
+        for i, d in enumerate(self.directions):
+            with self.subTest(direction=d):
+                self.assertEqual(i * 45, d.value)
+
+    def test_from_degrees(self):
+        for direction in self.directions:
+            for degrees in -720, -360, 0, 1, 44, 360, 720:
+                with self.subTest(direction=direction, degrees=degrees):
+                    self.assertEqual(direction, direction.rotate(degrees))
+
+            for degrees in -1, 45:
+                with self.subTest(direction=direction, degrees=degrees):
+                    self.assertNotEqual(direction, direction.rotate(degrees))
+
+    def test_rotate(self):
+        for i, direction in enumerate(self.directions):
+            for degrees in range(0, 360 + 45, 45):
+                with self.subTest(direction=direction, degrees=degrees):
+                    self.assertEqual(
+                        box.Direction.from_degrees(direction.value + degrees),
+                        direction.rotate(degrees)
+                    )
+
+    def test_reflect(self):
+        for direction in self.directions:
+            for surface in direction, direction.rotate(180):
+                with self.subTest(direction=direction, surface=surface):
+                    self.assertEqual(direction, direction.reflect(surface))
+
+            for surface in direction.rotate(90), direction.rotate(-90):
+                with self.subTest(direction=direction, surface=surface):
+                    self.assertEqual(direction.rotate(180), direction.reflect(surface))
+
+            for delta in 45, -45:
+                surface = direction.rotate(delta)
+                with self.subTest(direction=direction, surface=surface):
+                    rot = 90 if delta > 0 else -90
+                    self.assertEqual(direction.rotate(rot), direction.reflect(surface))
+
+            for delta in 135, -135:
+                surface = direction.rotate(delta)
+                with self.subTest(direction=direction, surface=surface):
+                    rot = -90 if delta > 0 else 90
+                    self.assertEqual(direction.rotate(rot), direction.reflect(surface))
 
 
 class TestAsciiBoxDrawing(_TestIto):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.directions = directions
+
+        rotations = [
+            ['┃', '━', '┃', '━'],
+            ['┍', '┒', '┙', '┖'],
+            ['┡', '┲', '┪', '┹'],
+            ['╔', '╗', '╝', '╚'],
+        ]
+        cls.ninety_degree_rotatations: typing.List[typing.List[box.BoxDrawingChar]] = [
+            [box.BoxDrawingChar.from_char(c) for c in rots] for rots in rotations
+        ]
+
     def test_chars_unique(self):
         chars = set(c.char for c in box.BoxDrawingChar._instances)
         self.assertEqual(len(box.BoxDrawingChar._instances), len(chars))
@@ -55,3 +132,10 @@ class TestAsciiBoxDrawing(_TestIto):
                     self.assertEqual(output_corners[1], lines[0][-1])
                     self.assertEqual(output_corners[2], lines[-1][0])
                     self.assertEqual(output_corners[3], lines[-1][-1])
+
+    def test_rotate(self):
+        for rots in self.ninety_degree_rotatations:
+            for i, bdc in enumerate(rots):
+                with self.subTest(box_drawing_char=bdc):
+                    j = (i + 1) % 4
+                    self.assertEqual(rots[j], bdc.rotate(90))

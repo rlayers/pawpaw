@@ -86,7 +86,7 @@ graph TD;
   A1--->Sc1["[section]<br/>#quot;Section 1…#quot;"]:::light_brown;
   Sc1-->Sc1_k["[key]<br/>#quot;1#quot;"]:::light_brown
   Sc1--->Sc1_p1["[paragraph]<br/>#quot;All legislative Powers…#quot;"]:::peach
-  Sc1_p1-->Sc1_p1_s1["[sentence]<br/>#quot;All legislative Powers…#quot;"]:::sentence
+  Sc1_p1-->Sc1_p1_s1["[sentence]<br/>#quot;All legislative Powers…#quot;"]:::dark_green
   Sc1_p1_s1-->Sc1_p1_s1_w1["[word]<br/>#quot;All#quot;"]:::light_green
   Sc1_p1_s1-->Sc1_p1_s1_w2["[word]<br/>#quot;legislative#quot;"]:::light_green
   Sc1_p1_s1-->Sc1_p1_s1_w3["[word]<br/>#quot;Powers#quot;"]:::light_green
@@ -95,13 +95,13 @@ graph TD;
   A1--->Sc2["[section]<br/>#quot;Section 2#quot;"]:::light_brown;
   Sc2-->Sc2_k["[key]<br/>#quot;2#quot;"]:::light_brown
   Sc2--->Sc2_p1["[paragraph]<br/>#quot;The House of…#quot;"]:::peach
-  Sc2_p1---->Sc2_p1_s1["[sentence]<br/>#quot;The House of…#quot;"]:::sentence
+  Sc2_p1---->Sc2_p1_s1["[sentence]<br/>#quot;The House of…#quot;"]:::dark_green
   Sc2_p1_s1-->Sc2_p1_s1_w1["[word]<br/>#quot;The#quot;"]:::light_green
   Sc2_p1_s1-->Sc2_p1_s1_w2["[word]<br/>#quot;House#quot;"]:::light_green
   Sc2_p1_s1-->Sc2_p1_s1_w3["[word]<br/>#quot;of#quot;"]:::light_green
   Sc2_p1_s1-->Sc2_p1_s1_w4["..."]:::ellipsis
   Sc2--->Sc2_p2["[paragraph]<br/>#quot;No Person shall…#quot;"]:::peach
-  Sc2_p2---->Sc2_p2_s1["[sentence]<br/>#quot;No Person shall…#quot;"]:::sentence
+  Sc2_p2---->Sc2_p2_s1["[sentence]<br/>#quot;No Person shall…#quot;"]:::dark_green
   Sc2_p2_s1-->Sc2_p2_s1_w1["[word]<br/>#quot;No#quot;"]:::light_green
   Sc2_p2_s1-->Sc2_p2_s1_w2["[word]<br/>#quot;Person#quot;"]:::light_green
   Sc2_p2_s1-->Sc2_p2_s1_w3["[word]<br/>#quot;shall#quot;"]:::light_green

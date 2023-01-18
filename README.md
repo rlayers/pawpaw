@@ -82,39 +82,38 @@ and quickly and easily produce a tree that look like this:
 
 ```mermaid
 graph TD;
-    A1["[article]<br/>#quot;ARTICLE I…#quot;"]:::article --> A1_k["[key]<br/>#quot;I#quot;"]:::article;
-    A1--->Sc1["[section]<br/>#quot;Section 1…#quot;"]:::section;
-    Sc1-->Sc1_k["[key]<br/>#quot;1#quot;"]:::section
-    Sc1--->Sc1_p1["[paragraph]<br/>#quot;All legislative Powers…#quot;"]:::paragraph
-    Sc1_p1-->Sc1_p1_s1["[sentence]<br/>#quot;All legislative Powers…#quot;"]:::sentence
-    Sc1_p1_s1-->Sc1_p1_s1_w1["[word]<br/>#quot;All#quot;"]:::word
-    Sc1_p1_s1-->Sc1_p1_s1_w2["[word]<br/>#quot;legislative#quot;"]:::word
-    Sc1_p1_s1-->Sc1_p1_s1_w3["[word]<br/>#quot;Powers#quot;"]:::word
-    Sc1_p1_s1-->Sc1_p1_s1_w4["..."]:::ellipsis
-    
-    A1--->Sc2["[section]<br/>#quot;Section 2#quot;"]:::section;
-    Sc2-->Sc2_k["[key]<br/>#quot;2#quot;"]:::section
-    Sc2--->Sc2_p1["[paragraph]<br/>#quot;The House of…#quot;"]:::paragraph
-    Sc2_p1---->Sc2_p1_s1["[sentence]<br/>#quot;The House of…#quot;"]:::sentence
-    Sc2_p1_s1-->Sc2_p1_s1_w1["[word]<br/>#quot;The#quot;"]:::word
-    Sc2_p1_s1-->Sc2_p1_s1_w2["[word]<br/>#quot;House#quot;"]:::word
-    Sc2_p1_s1-->Sc2_p1_s1_w3["[word]<br/>#quot;of#quot;"]:::word
-    Sc2_p1_s1-->Sc2_p1_s1_w4["..."]:::ellipsis
-    Sc2--->Sc2_p2["[paragraph]<br/>#quot;No Person shall…#quot;"]:::paragraph
-    Sc2_p2---->Sc2_p2_s1["[sentence]<br/>#quot;No Person shall…#quot;"]:::sentence
-    Sc2_p2_s1-->Sc2_p2_s1_w1["[word]<br/>#quot;No#quot;"]:::word
-    Sc2_p2_s1-->Sc2_p2_s1_w2["[word]<br/>#quot;Person#quot;"]:::word
-    Sc2_p2_s1-->Sc2_p2_s1_w3["[word]<br/>#quot;shall#quot;"]:::word
-    Sc2_p2_s1-->Sc2_p2_s1_w4["..."]:::ellipsis
-    
-    
-    classDef article fill:#533E30,stroke:#000000,color:#FFFFFF;
-    classDef key fill:#533E30,stroke:#000000,color:#FFFFFF;
-    classDef section fill:#D2AC70,stroke:#000000,color:#000000;
-    classDef paragraph fill:#E4D1AE,stroke:#000000,color:#000000;
-    classDef sentence fill:#517D3D,stroke:#000000,color:#FFFFFF;
-    classDef word fill:#90C246,stroke:#000000,color:#FFFFFF;
-    classDef ellipsis fill:#FFFFFF,stroke:#FFFFFF,color:#000000;
+  A1["[article]<br/>#quot;ARTICLE I…#quot;"]:::dark_brown --> A1_k["[key]<br/>#quot;I#quot;"]:::dark_brown;
+  A1--->Sc1["[section]<br/>#quot;Section 1…#quot;"]:::light_brown;
+  Sc1-->Sc1_k["[key]<br/>#quot;1#quot;"]:::light_brown
+  Sc1--->Sc1_p1["[paragraph]<br/>#quot;All legislative Powers…#quot;"]:::peach
+  Sc1_p1-->Sc1_p1_s1["[sentence]<br/>#quot;All legislative Powers…#quot;"]:::sentence
+  Sc1_p1_s1-->Sc1_p1_s1_w1["[word]<br/>#quot;All#quot;"]:::light_green
+  Sc1_p1_s1-->Sc1_p1_s1_w2["[word]<br/>#quot;legislative#quot;"]:::light_green
+  Sc1_p1_s1-->Sc1_p1_s1_w3["[word]<br/>#quot;Powers#quot;"]:::light_green
+  Sc1_p1_s1-->Sc1_p1_s1_w4["..."]:::ellipsis
+
+  A1--->Sc2["[section]<br/>#quot;Section 2#quot;"]:::light_brown;
+  Sc2-->Sc2_k["[key]<br/>#quot;2#quot;"]:::light_brown
+  Sc2--->Sc2_p1["[paragraph]<br/>#quot;The House of…#quot;"]:::peach
+  Sc2_p1---->Sc2_p1_s1["[sentence]<br/>#quot;The House of…#quot;"]:::sentence
+  Sc2_p1_s1-->Sc2_p1_s1_w1["[word]<br/>#quot;The#quot;"]:::light_green
+  Sc2_p1_s1-->Sc2_p1_s1_w2["[word]<br/>#quot;House#quot;"]:::light_green
+  Sc2_p1_s1-->Sc2_p1_s1_w3["[word]<br/>#quot;of#quot;"]:::light_green
+  Sc2_p1_s1-->Sc2_p1_s1_w4["..."]:::ellipsis
+  Sc2--->Sc2_p2["[paragraph]<br/>#quot;No Person shall…#quot;"]:::peach
+  Sc2_p2---->Sc2_p2_s1["[sentence]<br/>#quot;No Person shall…#quot;"]:::sentence
+  Sc2_p2_s1-->Sc2_p2_s1_w1["[word]<br/>#quot;No#quot;"]:::light_green
+  Sc2_p2_s1-->Sc2_p2_s1_w2["[word]<br/>#quot;Person#quot;"]:::light_green
+  Sc2_p2_s1-->Sc2_p2_s1_w3["[word]<br/>#quot;shall#quot;"]:::light_green
+  Sc2_p2_s1-->Sc2_p2_s1_w4["..."]:::ellipsis
+
+  classDef dark_brown fill:#533E30,stroke:#000000,color:#FFFFFF;
+  classDef light_brown fill:#D2AC70,stroke:#000000,color:#000000;
+  classDef peach fill:#E4D1AE,stroke:#000000,color:#000000;
+  classDef dark_green fill:#517D3D,stroke:#000000,color:#FFFFFF;
+  classDef light_green fill:#90C246,stroke:#000000,color:#FFFFFF;
+
+  classDef ellipsis fill:#FFFFFF,stroke:#FFFFFF,color:#000000;
 ```
 
 You can then search your tree using plumule: a powerful structured query language:

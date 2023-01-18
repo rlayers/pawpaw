@@ -177,7 +177,7 @@ class XmlHelper:
     @classmethod
     def reverse_find(cls, element: ET.Element, predicate: str) -> ET.Element | None:
         """ElementTree support for XPATH is limited, and the '..' operator will
-        not traverse upwards beyond the node you being a .find or .find_all with.
+        not traverse upwards beyond the node you issued a .find or .find_all with.
         This method applies an XPATH predicate to the current node, and returns if
         it passes.  If it fails, it uses the .ito to traverse UP to the parent,
         and repeates the process.

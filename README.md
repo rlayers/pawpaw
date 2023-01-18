@@ -36,13 +36,9 @@ Pawpaw is a high performance text segmentation framework.  Segments are organize
   - Pre-process text for downstream NLP/AI/ML consumers
 - XML Processing
   - Features a drop-in replacement for ElementTree.XmlParser
-  - Full text indexes for all Elements, Attributes, Tags, Text, etc. 
-  - Extract *both* ElementTree and Pawpaw datastructures in one go
-    - Access fully indexed segments corresponding the actual XML elements, attributes, text, etc. within the source text
-    - Search the resulting XML using both XPATH and plumule
-    - Element and Pawpaw trees are cross-linked at multiple nodes
-      - Effortlessly switch back and forth as needed
-      - Traversal and query actions can incorporate *both* trees for advanced techniques not available to either structure alone
+  - Full text indices for all elements, attributes, tags, text, etc.
+  - Search the resulting XML using either XPATH and/or plumule
+  - Extract *both* ElementTree and Pawpaw datastructures in one go; with cross-linked nodes between trees
 - NLP Support:
   - Pawpaw is ideal for both a) *preprocessing* unstructured text for downstream NLP consumption and b) *storing and searching* NLP generated content
   - Works with other libraries, such as [NLTK](https://www.nltk.org/)

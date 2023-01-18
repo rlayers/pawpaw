@@ -126,6 +126,7 @@ class XmlParser(ET.XMLParser):
         attrs = [*self._itor_extract_attributes.traverse(start_tag)]
         if len(attrs) > 0:
             attrs_parent = Ito.join(*attrs, desc=xml.descriptors.ATTRIBUTES)
+            attrs_parent.value_func = lambda ito: element.attrib
             attrs_parent.children.add(*attrs)
             start_tag.children.add(attrs_parent)
 

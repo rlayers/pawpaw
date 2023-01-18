@@ -3,6 +3,7 @@ import sys
 sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 import html
+import itertools
 
 from pawpaw import Ito, Span, xml
 from tests.util import _TestIto, XML_TEST_SAMPLES
@@ -13,12 +14,27 @@ class TestXmlParser(_TestIto):
         for sample_index, sample in enumerate(XML_TEST_SAMPLES):
             with self.subTest(xml_sample_index=sample_index):
                 root_e = ET.fromstring(sample.xml, parser=xml.XmlParser())
-                self.assertTrue(hasattr(root_e, 'ito'))
+                for e in itertools.chain([root_e], root_e.iterfind('**')):
+                    with self.subTest(element=e):
+                        self.assertTrue(hasattr(e, 'ito'))
+                        i = e.ito
+                        self.assertEqual(xml.descriptors.ELEMENT, i.desc)
+                        self.assertIs(e, i.value())
 
-                root_i: Ito = root_e.ito
-                self.assertEqual(xml.descriptors.ELEMENT, root_i.desc)
-
-                self.assertIs(root_e, root_i.value())
+    def test_attributes(self):
+        for sample_index, sample in enumerate(XML_TEST_SAMPLES):
+            with self.subTest(xml_sample_index=sample_index):
+                root_e = ET.fromstring(sample.xml, parser=xml.XmlParser())
+                for e in itertools.chain([root_e], root_e.iterfind('**')):
+                    with self.subTest(element=e):
+                        i = e.ito.find(f'*[d:{xml.descriptors.START_TAG}]/*[d:{xml.descriptors.ATTRIBUTES}]')
+                        if i is None:
+                            self.assertEqual(0, len(e.attrib.keys()))
+                        else:
+                            self.assertIs(e.attrib, i.value())
+                            xmlns_attrs = xml.XmlHelper.get_xmlns(e)
+                            non_xmlns_attrs_count = len(i.children) - len(xmlns_attrs.keys())
+                            self.assertEqual(len(e.attrib.keys()), non_xmlns_attrs_count)
 
     def test_namespace(self):
         for sample_index, sample in enumerate(XML_TEST_SAMPLES):

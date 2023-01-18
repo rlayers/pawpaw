@@ -1324,14 +1324,6 @@ class Ito:
 
     # region query
 
-    def find(
-            self,
-            path: pawpaw.Types.C_PATH,
-            values: typing.Dict[str, typing.Any] | None = None,
-            predicates: typing.Dict[str, typing.Callable[[int, Types.C_ITO], bool]] | None = None
-    ) -> Types.C_ITO | None:
-        return pawpaw.query.find(path, self, values, predicates)
-
     def find_all(
             self,
             path: pawpaw.Types.C_PATH,
@@ -1339,6 +1331,14 @@ class Ito:
             predicates: typing.Dict[str, typing.Callable[[int, Types.C_ITO], bool]] | None = None
     ) -> typing.Iterable[Types.C_ITO]:
         yield from pawpaw.query.find_all(path, self, values, predicates)
+
+    def find(
+            self,
+            path: pawpaw.Types.C_PATH,
+            values: typing.Dict[str, typing.Any] | None = None,
+            predicates: typing.Dict[str, typing.Callable[[int, Types.C_ITO], bool]] | None = None
+    ) -> Types.C_ITO | None:
+        return pawpaw.query.find(path, self, values, predicates)
 
     # endregion
 

@@ -676,6 +676,14 @@ class Query:
             cur = phrase.find_all(cur, values, predicates)
         yield from cur
 
+    def find(
+        self,
+        ito: pawpaw.Types.C_ITO,
+        values: pawpaw.Types.C_VALUES = None,
+        predicates: pawpaw.Types.C_PREDICATES = None
+    ) -> pawpaw.Types.C_ITO | None:
+        return next(self.find_all(ito, values, predicates), None)
+
 
 def compile(path: pawpaw.Types.C_PATH) -> Query:
     return Query(path)

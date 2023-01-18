@@ -90,7 +90,7 @@ class XmlHelper:
 
     _re_xmlns = regex.compile(r'xmlns(?:\:.+)?', regex.DOTALL)
     _query_xmlns_predicates = {'is_xmlns': lambda ei: ei.ito.regex_fullmatch(XmlHelper._re_xmlns) is not None}
-    _query_xmlns = query.compile(f'*[d:{xml.descriptors.START_TAG}]/*[d:{xml.descriptors.ATTRIBUTE}]' + '{*[p:is_xmlns]}')
+    _query_xmlns = query.compile(f'*[d:{xml.descriptors.START_TAG}]/*[d:{xml.descriptors.ATTRIBUTES}]/*[d:{xml.descriptors.ATTRIBUTE}]' + '{*[p:is_xmlns]}')
 
     @classmethod
     def get_xmlns(cls, element: ET.Element) -> typing.Dict[QualifiedName, Types.C_ITO]:

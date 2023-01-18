@@ -758,24 +758,25 @@ class Ito:
         return rv
 
     @classmethod
-    def join(cls, itos: Types.C_IT_ITOS, desc: str | None = None) -> Types.C_ITO:
+    def join(cls, *itos: Types.C_ITO, desc: str | None = None) -> Types.C_ITO:
         """Combines Itos
 
         Args:
-            itos: an iterator to an arbitrarily ordered sequence of Itos that have
+            *itos: one or more, arbitrarily ordered Itos that have
                 identical values for .string; overlaps are fine
             desc: a descriptor for the resulting Ito
 
         Returns:
             An Ito whose .span matches the min .start and max .stop of the
-            input sequence
+            input sequence, and whose .children is empty (i.e., *itos are
+            NOT added as children to the return value)
         """
         _iter = iter(itos)
         try:
             ito = next(_iter)
         except StopIteration:
-            raise ValueError(f'parameter \'itos\' is empty')
-            
+            raise ValueError(f'parameter \'*itos\' lacks any items')
+
         string = ito._string
         start = ito.start
         stop = ito.stop

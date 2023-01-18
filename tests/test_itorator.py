@@ -128,7 +128,7 @@ class TestItorator(_TestIto):
         def simple_join(itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
             window = list(itos)
             yield from (Types.C_BITO(False, i) for i in window)
-            yield Types.C_BITO(True, Ito.join(window))
+            yield Types.C_BITO(True, Ito.join(*window))
 
         with self.subTest(chain_length=1, scenario='itor_next'):
             rv = [*reflect.traverse(root)]

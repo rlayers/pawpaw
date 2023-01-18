@@ -373,7 +373,7 @@ class TestIto(_TestIto):
         joined_desc = 'joined'
         children = [*Ito.from_substrings(s, s.split(), desc='children')]
 
-        joined = Ito.join(children, desc=joined_desc)
+        joined = Ito.join(*children, desc=joined_desc)
         self.assertTrue(all(joined is not child for child in children))
         self.assertEqual(s, str(joined))
         self.assertEqual(joined_desc, joined.desc)

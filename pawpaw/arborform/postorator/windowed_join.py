@@ -39,7 +39,7 @@ class WindowedJoin(Postorator):
             window.append(ito)
             if len(window) == self.window_size:
                 if self.predicate(window):
-                    joined = self.ito_class.join(window, desc=self.desc)
+                    joined = self.ito_class.join(*window, desc=self.desc)
                     yield from (Types.C_BITO(False, i) for i in window)
                     window.clear()
                     yield Types.C_BITO(True, joined)

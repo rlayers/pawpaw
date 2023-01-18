@@ -13,7 +13,7 @@ class TestPostorator(_TestIto):
     @classmethod
     def simple(cls, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
         iter_1, iter_2 = tee(itos, 2)
-        joined = Ito.join(iter_1, desc=cls.post_desc)
+        joined = Ito.join(*iter_1, desc=cls.post_desc)
         yield from (Types.C_BITO(False, i) for i in iter_2)
         yield Types.C_BITO(True, joined)
 

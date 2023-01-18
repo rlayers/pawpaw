@@ -120,8 +120,14 @@ class XmlParser(ET.XMLParser):
             element._spans.char.start,
             self._text.index('>', element._spans.char.start + 1) + 1,
             xml.descriptors.START_TAG)
-        for c in itertools.chain(self._itor_extract_tag.traverse(start_tag), self._itor_extract_attributes.traverse(start_tag)):
-            start_tag.children.add(c)
+        
+        start_tag.children.add(*self._itor_extract_tag.traverse(start_tag))
+
+        attrs = [*self._itor_extract_attributes.traverse(start_tag)]
+        if len(attrs) > 0:
+            attrs_parent = Ito.join(*attrs, desc=xml.descriptors.ATTRIBUTES)
+            attrs_parent.children.add(*attrs)
+            start_tag.children.add(attrs_parent)
 
         for tag in start_tag.find_all('**[d:' + xml.descriptors.TAG + ']'):
             qn = xml.QualifiedName.from_src(tag)

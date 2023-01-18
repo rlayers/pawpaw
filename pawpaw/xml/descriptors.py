@@ -1,3 +1,4 @@
+ATTRIBUTES: str = 'attributes'
 ATTRIBUTE: str = 'attribute'
 COMMENT: str = 'comment'
 ELEMENT: str = 'element'

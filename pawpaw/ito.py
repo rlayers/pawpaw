@@ -634,7 +634,7 @@ class Ito:
     _pat_format_str = r'(?P<dir>' + '|'.join(_format_str_directives) + r')' \
                       r'(?:\!' \
                       r'(?P<lslice>\d+)?' \
-                      r'(?P<conv>[ars])' \
+                      r'(?P<conv>[ar])' \
                       r'(?P<rslice>\d+)?' \
                       r')?' \
                       r'(?:\:' \
@@ -696,7 +696,7 @@ class Ito:
                 if (conv := m.group('conv')) is not None:
                     if conv == 'a':
                         sub = ascii(sub)
-                    elif conv == 'r':
+                    else:  # 'r'
                         sub = repr(sub)
 
                     if (lslice := m.group('lslice')) is not None:

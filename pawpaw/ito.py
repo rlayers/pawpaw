@@ -632,7 +632,11 @@ class Ito:
                       r'(?P<type>[bcdeEfFgGnosxX%])?' \
                       r')?'
     _pat_format_str = r'(?P<dir>' + '|'.join(_format_str_directives) + r')' \
-                      r'(?:\!(?P<conv>[ars]))?' \
+                      r'(?:\!' \
+                      r'(?P<lslice>\d+)?' \
+                      r'(?P<conv>[ars])' \
+                      r'(?P<rslice>\d+)?' \
+                      r')?' \
                       r'(?:\:' \
                       r'(?P<abbr_pos>[\<\^\>])?' \
                       r'(?P<width>\d+)' \
@@ -694,6 +698,14 @@ class Ito:
                         sub = ascii(sub)
                     elif conv == 'r':
                         sub = repr(sub)
+
+                    if (lslice := m.group('lslice')) is not None:
+                        lslice = int(lslice)
+                    else:
+                        lslice = 0
+                    if (rslice := m.group('rslice')) is not None:
+                        rslice = None if rslice == '0' else int(rslice)
+                    sub = sub[slice(lslice, -rslice)]
 
                 if (width := m.group('width')) is not None:
                     if (width := int(width)) < len(sub):

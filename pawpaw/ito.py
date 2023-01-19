@@ -634,8 +634,9 @@ class Ito:
     _pat_format_str = r'(?P<dir>' + '|'.join(_format_str_directives) + r')' \
                       r'(?:\!(?P<conv>[ars]))?' \
                       r'(?:\:' \
+                      r'(?P<abbr_pos>[\<\^\>])?' \
                       r'(?P<width>\d+)' \
-                      r'(?P<absufx>.+)?' \
+                      r'(?P<abbr>.+)?' \
                       r')?'
     _pat_format = '|'.join([_pat_format_zero_whitespace, _pat_format_int, _pat_format_str])
     _pat_format = r'%(?:' + _pat_format + r')'
@@ -696,11 +697,19 @@ class Ito:
 
                 if (width := m.group('width')) is not None:
                     if (width := int(width)) < len(sub):
-                        absufx = m.group('absufx') |nuco| ''
-                        if (len_suf := len(absufx)) >= width:
-                            sub = absufx[len_suf - width:]
+                        abbr = m.group('abbr') |nuco| ''
+                        if (len_abbr := len(abbr)) >= width:
+                            sub = abbr[len_abbr - width:]
                         else:
-                            sub = sub[:width - len_suf] + absufx
+                            if (abbr_pos := m.group('abbr_pos')) == '<':
+                                sub = abbr + sub[len_abbr - width:]
+                            elif abbr_pos == '^':
+                                post_len = (width - len_abbr) // 2
+                                post = sub[-post_len:] if post_len > 0 else ''
+                                pre = sub[:width - len(post) - len_abbr]  # will have len >= 1
+                                sub = pre + abbr + post
+                            else:  # will be empty or '>' (default)
+                                sub = sub[:width - len_abbr] + abbr
             else:
                 raise ValueError(f'unknown format directive \'%{directive}\'')
 

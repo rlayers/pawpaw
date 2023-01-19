@@ -326,28 +326,38 @@ class TestIto(_TestIto):
 
         for directive in 'string', 'substr':
             for conversion in '', 'r':
-                for width in 0, 1, 2, 3, 5, 10:
-                    for suffix in '', '…', 'xx':
-                        with self.subTest(directive=directive, conversion=conversion, width=width, suffix=suffix):
-                            if directive == 'substr':
-                                expected = str(i)
-                            else:
-                                expected = getattr(i, directive)
-
-                            if conversion == 'r':
-                                expected = repr(expected)
-
-                            if len(expected) > width:
-                                if (len_suf := len(suffix)) >= width:
-                                    expected = suffix[len_suf - width:]
+                for abbr_pos in '', '>', '<', '^':
+                    for width in 0, 1, 2, 3, 5, 10:
+                        for abbr in '', '…', 'xx':
+                            with self.subTest(directive=directive, conversion=conversion, abbr_pos=abbr_pos, width=width, abbr=abbr):
+                                if directive == 'substr':
+                                    expected = str(i)
                                 else:
-                                    expected = expected[:width - len_suf] + suffix
+                                    expected = getattr(i, directive)
 
-                            f = f'%{directive}' \
-                                f'{"!" + conversion if conversion != "" else ""}' \
-                                f':{width}{suffix}'
-                            actual = format(i, f)
-                            self.assertEqual(expected, actual)
+                                if conversion == 'r':
+                                    expected = repr(expected)
+
+                                if len(expected) > width:
+                                    if (len_abbr := len(abbr)) >= width:
+                                        expected = abbr[len_abbr - width:]
+                                    else:
+                                        if abbr_pos == '<':
+                                            expected = abbr + expected[len_abbr - width:]
+                                        elif abbr_pos == '^':
+                                            post_len = (width - len_abbr) // 2
+                                            post = expected[-post_len:] if post_len > 0 else ''
+                                            pre = expected[:width - len(post) - len_abbr]
+                                            expected = pre + abbr + post
+                                        else:
+                                            expected = expected[:width - len_abbr] + abbr
+
+                                f = f'%{directive}' \
+                                    f'{"!" + conversion if conversion != "" else ""}' \
+                                    f':{abbr_pos}{width}{abbr}'
+                                actual = format(i, f)
+                                self.assertEqual(expected, actual)
+                                self.assertLessEqual(len(actual), width)
 
     # endregion
 

@@ -2,16 +2,6 @@
 
 ## Extraction
 
-### Extract all characters as ``str`` 
-
-```python
->>> s = 'abc'
->>> print(*s)  # For a str, you would do this
-a b c
->>> print(*(str(i)))  # So do this for an Ito
-a b c
-```
-
 ### Extract all characters as ``Ito``
 
 ```python
@@ -19,6 +9,22 @@ a b c
 >>> i = Ito(s, 1, -1)
 >>> [*i]
 [Ito(' abc ', 1, 2, None), Ito(' abc ', 2, 3, None), Ito(' abc ', 3, 4, None)]
+```
+
+### Extract all characters as ``str`` 
+
+```python
+>>> from pawpaw import Ito
+>>> s = 'abc'
+>>> print(*s)  # For a str, you would do this
+a b c
+>>> i = Ito(s)  # For an ito, you can...
+>>> print(*(str(j) for j in i))  # do this (create str tuple)...
+a b c
+>>> print(*(str(i)))  # or this (convert to str and unpack)...
+a b c
+>>> print(*i)  # or even this (send itos to print, which performs str() on each item)
+a b c
 ```
 
 ### Add all characters as child ``Ito``

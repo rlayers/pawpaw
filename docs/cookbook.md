@@ -50,8 +50,8 @@ a b c
 >>>     root = pawpaw.nlp.SimpleNlp().from_text(r.text)
 >>> para = root.children[0]
 >>> print(pawpaw.visualization.pepo.Tree().dumps(para))
-(1, 81) 'Paragraph' : 'The Project Gutenberg eBook of The Leg…
-└──(1, 81) 'Sentence' : 'The Project Gutenberg eBook of The Leg…
+(1, 81) 'Paragraph' : 'The Project Gutenber…y Washington Irving'
+└──(1, 81) 'Sentence' : 'The Project Gutenber…y Washington Irving'
    ├──(1, 4) 'Word' : 'The'
    ├──(5, 12) 'Word' : 'Project'
    ├──(13, 22) 'Word' : 'Gutenberg'

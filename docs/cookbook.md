@@ -24,6 +24,7 @@ a b c
 ### Add all characters as child ``Ito``
 
 ```python
+>>> from pawpaw import Ito
 >>> s = ' abc '
 >>> i = Ito(s, 1, -1)
 >>> i.children.add(*i)
@@ -34,8 +35,9 @@ a b c
 ### Create a char-extracting ``Itorator``
 
 ```python
->>> char_itor = Itorator.wrap(lambda ito: iter(ito))  # 1. If you don't need a desc
->>> char_itor = Itorator.wrap(lambda ito: Ito.from_substrings(s, *ito, desc='char'))  # 2. If you need a desc
+>>> from pawpaw import Ito, arborform
+>>> char_itor = arborform.Itorator.wrap(lambda ito: iter(ito))  # 1. If you don't need a desc
+>>> char_itor = arborform.Itorator.wrap(lambda ito: Ito.from_substrings(s, *ito, desc='char'))  # 2. If you need a desc
 ```
 
 ### Perform NLP Extraction

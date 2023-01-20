@@ -51,8 +51,8 @@ class Split(Itorator):
         self.return_zero_split = return_zero_split
         self.desc = desc
 
-    def _iter(self, ito: Types.C_ITO) -> Types.C_SQ_ITOS:
-        rv: typing.List[Types.C_ITO] = []
+    def _iter(self, ito: pawpaw.Ito) -> Types.C_SQ_ITOS:
+        rv: typing.List[pawpaw.Ito] = []
         prior: Span | None = None
         for m in ito.regex_finditer(self.re):
             cur = Span(*m.span(self.group))

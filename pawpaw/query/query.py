@@ -36,8 +36,8 @@ class QueryErrors:
     @classmethod
     def unbalanced_parentheses(
             cls,
-            expression: pawpaw.Types.C_ITO | str,
-            sub_region: pawpaw.Types.C_ITO | str | int = None) -> ValueError:
+            expression: pawpaw.Ito | str,
+            sub_region: pawpaw.Ito | str | int = None) -> ValueError:
         msg = f'unbalanced parentheses in \'{expression}\''
         if isinstance(sub_region, int):
             msg += f' at location {sub_region}'
@@ -48,8 +48,8 @@ class QueryErrors:
     @classmethod
     def empty_parentheses(
             cls,
-            expression: pawpaw.Types.C_ITO | str,
-            sub_region: pawpaw.Types.C_ITO | str | int = None) -> ValueError:
+            expression: pawpaw.Ito | str,
+            sub_region: pawpaw.Ito | str | int = None) -> ValueError:
         msg = f'empty parentheses in \'{expression}\''
         if isinstance(sub_region, int):
             msg += f' at location {sub_region}'
@@ -84,7 +84,7 @@ def descape(value: str) -> str:
 class Axis:
     _re = regex.compile(r'(?P<order>[\+\-]?)(?P<key>\-|\.{1,4}|\*{1,3}|\<{1,3}|\>{1,3})(?P<or_self>(?:\!{1,2})?)', regex.DOTALL)
 
-    def __init__(self, phrase: pawpaw.Types.C_ITO):
+    def __init__(self, phrase: pawpaw.Ito):
         m = phrase.regex_match(self._re)
         if m is None:
             raise ValueError(f'invalid phrase \'{phrase}\'')
@@ -106,7 +106,7 @@ class Axis:
     def to_ecs(
         self,
         itos: pawpaw.Types.C_IT_ITOS,
-        or_self_ito: pawpaw.Types.C_ITO | None = None
+        or_self_ito: pawpaw.Ito | None = None
     ) -> pawpaw.Types.C_IT_EITOS:
         _iter = iter(itos)
         stopped = False
@@ -139,7 +139,7 @@ class Axis:
         elif self.or_self == '!!' and or_self_ito is not None and self.reverse:
             yield pawpaw.Types.C_EITO(e, or_self_ito)
 
-    def find_all(self, itos: typing.Iterable[pawpaw.Types.C_ITO]) -> pawpaw.Types.C_IT_EITOS:
+    def find_all(self, itos: typing.Iterable[pawpaw.Ito]) -> pawpaw.Types.C_IT_EITOS:
         reverse = (self.order is not None and str(self.order) == '-')
 
         if self.key == '....':
@@ -214,7 +214,7 @@ class Axis:
         elif self.key == '<<':
             for i in itos:
                 if (p := i.parent) is None:
-                    sliced: typing.List[pawpaw.Types.C_ITO] = []
+                    sliced: typing.List[pawpaw.Ito] = []
                 else:
                     idx = p.children.index(i)
                     sliced = p.children[:idx]
@@ -246,7 +246,7 @@ class Axis:
         elif self.key == '>>':
             for i in itos:
                 if (p := i.parent) is None:
-                    sliced: typing.List[pawpaw.Types.C_ITO] = []
+                    sliced: typing.List[pawpaw.Ito] = []
                 else:
                     idx = p.children.index(i)
                     sliced = p.children[idx + 1:]
@@ -302,9 +302,9 @@ class EcfCombined(Ecf):
 
     def __init__(
             self,
-            ito: pawpaw.Types.C_ITO,
+            ito: pawpaw.Ito,
             filters: typing.Sequence[pawpaw.Types.F_EITO_V_P_2_B],
-            operands: typing.Sequence[pawpaw.Types.C_ITO]
+            operands: typing.Sequence[pawpaw.Ito]
     ):
         self.ito = ito
         
@@ -349,7 +349,7 @@ class EcfCombined(Ecf):
         self.operands = operands
 
     @classmethod
-    def _eval(self, operand: pawpaw.Types.C_ITO, filter_: pawpaw.Types.F_EITO_V_P_2_B, ec, values, predicates):
+    def _eval(self, operand: pawpaw.Ito, filter_: pawpaw.Types.F_EITO_V_P_2_B, ec, values, predicates):
         rv = filter_(ec, values, predicates)
 
         if operand.str_count('~') & 1 == 1:  # bitwise op to determine if n is odd
@@ -358,7 +358,7 @@ class EcfCombined(Ecf):
         return rv
 
     @classmethod
-    def _highest_precedence_diadic(cls, ops: typing.List[pawpaw.Types.C_ITO]) -> typing.Tuple[int, typing.Callable]:
+    def _highest_precedence_diadic(cls, ops: typing.List[pawpaw.Ito]) -> typing.Tuple[int, typing.Callable]:
         for k, f in OPERATORS.items():
             if k == '~':
                 continue
@@ -476,7 +476,7 @@ class EcfFilter(EcfCombined):
 
         raise ValueError(f'unknown filter key \'{key}\'')
 
-    def __init__(self, ito: pawpaw.Types.C_ITO):
+    def __init__(self, ito: pawpaw.Ito):
         filters: typing.List[pawpaw.Types.F_EITO_V_P_2_B] = []
         operands: typing.List[pawpaw.Types.F_EITO_V_P_2_B] = []
 
@@ -517,13 +517,13 @@ class EcfSubquery(EcfCombined):
     )
     
     @classmethod
-    def _func(cls, sq: pawpaw.Types.C_ITO) -> pawpaw.Types.F_EITO_V_P_2_B:
+    def _func(cls, sq: pawpaw.Ito) -> pawpaw.Types.F_EITO_V_P_2_B:
         query = Query(sq)
         return lambda e, v, p: next(query.find_all(e.ito, v, p), None) is not None
     
-    def __init__(self, ito: pawpaw.Types.C_ITO):
+    def __init__(self, ito: pawpaw.Ito):
         subqueries: typing.List[pawpaw.Types.F_EITO_V_P_2_B] = []
-        operands: typing.List[pawpaw.Types.C_ITO] = []
+        operands: typing.List[pawpaw.Ito] = []
 
         m = ito.regex_search(self._re)
         if m is None:
@@ -554,7 +554,7 @@ class EcfSubquery(EcfCombined):
 
 
 class Phrase:
-    def __init__(self, phrase: pawpaw.Types.C_ITO):
+    def __init__(self, phrase: pawpaw.Ito):
         self.ito = phrase
         self.axis = Axis(phrase)
         
@@ -590,7 +590,7 @@ class Phrase:
 
 class Query:
     @classmethod
-    def _split_phrases(cls, ito_path: pawpaw.Types.C_ITO) -> typing.Iterable[pawpaw.Types.C_ITO]:
+    def _split_phrases(cls, ito_path: pawpaw.Ito) -> typing.Iterable[pawpaw.Ito]:
         ls = 0
         esc = False
         subquery_cnt = 0
@@ -667,7 +667,7 @@ class Query:
 
     def find_all(
         self,
-        ito: pawpaw.Types.C_ITO,
+        ito: pawpaw.Ito,
         values: pawpaw.Types.C_VALUES = None,
         predicates: pawpaw.Types.C_PREDICATES = None
     ) -> pawpaw.Types.C_IT_ITOS:
@@ -678,10 +678,10 @@ class Query:
 
     def find(
         self,
-        ito: pawpaw.Types.C_ITO,
+        ito: pawpaw.Ito,
         values: pawpaw.Types.C_VALUES = None,
         predicates: pawpaw.Types.C_PREDICATES = None
-    ) -> pawpaw.Types.C_ITO | None:
+    ) -> pawpaw.Ito | None:
         return next(self.find_all(ito, values, predicates), None)
 
 
@@ -691,7 +691,7 @@ def compile(path: pawpaw.Types.C_PATH) -> Query:
 
 def find_all(
         path: pawpaw.Types.C_PATH,
-        ito: pawpaw.Types.C_ITO,
+        ito: pawpaw.Ito,
         values: pawpaw.Types.C_VALUES = None,
         predicates: pawpaw.Types.C_PREDICATES = None
 ) -> pawpaw.Types.C_IT_ITOS:
@@ -700,8 +700,8 @@ def find_all(
 
 def find(
         path: pawpaw.Types.C_PATH,
-        ito: pawpaw.Types.C_ITO,
+        ito: pawpaw.Ito,
         values: pawpaw.Types.C_VALUES = None,
         predicates: pawpaw.Types.C_PREDICATES = None
-) -> pawpaw.Types.C_ITO | None:
+) -> pawpaw.Ito | None:
     return next(find_all(path, ito, values, predicates), None)

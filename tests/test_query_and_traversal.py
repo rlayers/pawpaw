@@ -9,7 +9,7 @@ from tests.util import _TestIto, IntIto
 
 class TestItoTraversal(_TestIto):
     @classmethod
-    def count_descendants(cls, node: pawpaw.Types.C_ITO) -> int:
+    def count_descendants(cls, node: pawpaw.Ito) -> int:
         rv = len(node.children)
         for child in node.children:
             rv += cls.count_descendants(child)
@@ -99,7 +99,7 @@ class TestItoQuery(TestItoTraversal):
                 for or_self in '', '!', '!!':
                     path = f'{order}...{or_self}'
                     with self.subTest(node=node_type, path=path):
-                        expected: typing.List[pawpaw.Types.C_ITO] = []
+                        expected: typing.List[pawpaw.Ito] = []
                         cur = node
                         while (par := cur.parent) is not None:
                             expected.append(par)
@@ -123,7 +123,7 @@ class TestItoQuery(TestItoTraversal):
                 for or_self in '', '!', '!!':
                     path = f'{order}..{or_self}'
                     with self.subTest(node=node_type, path=path):
-                        expected: typing.List[pawpaw.Types.C_ITO] = []
+                        expected: typing.List[pawpaw.Ito] = []
                         if node is self.root:
                             if or_self in ('!', '!!'):
                                 expected.append(node)
@@ -215,11 +215,11 @@ class TestItoQuery(TestItoTraversal):
                     path = f'{order}<<<{or_self}'
                     with self.subTest(node=node_type, path=path):
                         if node is self.root:
-                            expected: pawpaw.Types.C_ITO = []
+                            expected: pawpaw.Ito = []
                             if or_self:
                                 expected.append(node)
                         else:
-                            ancestors: pawpaw.Types.C_ITO = [node]
+                            ancestors: pawpaw.Ito = [node]
                             while (parent := ancestors[-1].parent) is not None:
                                 ancestors.append(parent)
                             expected = [*self.root.walk_descendants(order != '-')]
@@ -250,7 +250,7 @@ class TestItoQuery(TestItoTraversal):
                 for or_self in '', '!':
                     path = f'{order}<<{or_self}'                
                     with self.subTest(node=node_type, path=path):
-                        expected: typing.List[pawpaw.Types.C_ITO] = []
+                        expected: typing.List[pawpaw.Ito] = []
                         if (p := node.parent) is not None:
                             i = p.children.index(node)
                             expected = p.children[:i]
@@ -272,7 +272,7 @@ class TestItoQuery(TestItoTraversal):
                 for or_self in '', '!':
                     path = f'{order}<{or_self}'                
                     with self.subTest(node=node_type, path=path):
-                        expected: typing.List[pawpaw.Types.C_ITO] = []
+                        expected: typing.List[pawpaw.Ito] = []
                         if (p := node.parent) is not None:
                             i = p.children.index(node)
                             if i > 0:
@@ -293,7 +293,7 @@ class TestItoQuery(TestItoTraversal):
                 for or_self in '', '!':
                     path = f'{order}>{or_self}'                
                     with self.subTest(node=node_type, path=path):
-                        expected: typing.List[pawpaw.Types.C_ITO] = []
+                        expected: typing.List[pawpaw.Ito] = []
                         if (p := node.parent) is not None:
                             i = p.children.index(node)
                             if i < len(p.children) - 1:
@@ -339,11 +339,11 @@ class TestItoQuery(TestItoTraversal):
                     path = f'{order}>>>{or_self}'
                     with self.subTest(node=node_type, path=path):
                         if node is self.root:
-                            expected: pawpaw.Types.C_ITO = []
+                            expected: pawpaw.Ito = []
                             if or_self:
                                 expected.append(node)
                         else:
-                            ancestors: pawpaw.Types.C_ITO = [node]
+                            ancestors: pawpaw.Ito = [node]
                             while (parent := ancestors[-1].parent) is not None:
                                 ancestors.append(parent)
                             expected = [*self.root.walk_descendants(order == '-')]
@@ -712,9 +712,7 @@ class TestItoQuery(TestItoTraversal):
                 with self.subTest(node=node_type, path=path):
                     with self.assertRaises(ValueError) as cm:
                         node.find(path)
-
                     msg = str(cm.exception)
-                    print(msg)
                     self.assertTrue(all(w in msg for w in ['path', 'empty']))
 
     def test_subquery_identity(self):
@@ -755,9 +753,7 @@ class TestItoQuery(TestItoTraversal):
                 with self.subTest(node=node_type, path=path):
                     with self.assertRaises(ValueError) as cm:
                         node.find(path)
-
                     msg = str(cm.exception)
-                    print(msg)
                     self.assertTrue(all(w in msg for w in ['empty parentheses']))
 
     def test_ecf_not_outside_parens(self):
@@ -794,9 +790,7 @@ class TestItoQuery(TestItoTraversal):
                 with self.subTest(node=node_type, path=path):
                     with self.assertRaises(ValueError) as cm:
                         node.find(path)
-
                     msg = str(cm.exception)
-                    print(msg)
                     self.assertTrue(all(w in msg for w in ['unbalanced', 'parentheses']))
 
     def test_ecf_logic_not(self):

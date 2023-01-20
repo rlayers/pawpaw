@@ -45,7 +45,7 @@ Pawpaw is a high performance text segmentation framework.  Segments are organize
 - Efficient pickling and JSON persistence
   - Security option enables persistence of index-only data, with reference strings re-injected during de-serialization 
 - Stable & Defect Free
-  - Over 3,250 unit tests and counting!
+  - Over 3,900 unit tests and counting!
 
 <div align="center">
   <a href="https://github.com/rlayers/pawpaw/tree/master/docs">Explore the docs</a>
@@ -127,20 +127,22 @@ Try out [this demo](docs/demos/us_constitution) yourself, which shows how easy i
 
 Pawpaw has extensive features and capabilities you can read about in the [Docs](/Docs).  As a quick example, say you have some text that would like to perform nlp-like segmentation on. 
 
- ```python
- >>> s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
- ```
+```python
+>>> s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'
+```
 
 You can use a regular expression for segmentation as follows:
 
- ```python
- >>> re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)\s*)+')
- ```
+```python
+>>> import regex 
+>>> re = regex.compile(r'(?:(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+))\s*)+')
+```
  
 You can then use this regex to feed **Pawpaw**:
 
  ```python
- >>> doc = pawpaw.Ito.from_match(re.fullmatch(s))
+>>> import pawpaw 
+>>> doc = pawpaw.Ito.from_match(re.fullmatch(s))
  ```
 
 With this single line of code, Pawpaw generates a fully hierarchical, tree of phrases, words, chars, numbers, and digits.  You can visualize the tree:
@@ -148,8 +150,8 @@ With this single line of code, Pawpaw generates a fully hierarchical, tree of ph
 ```python
 >>> tree_vis = pawpaw.visualization.pepo.Tree()
 >>> print(tree_vis.dumps(doc))
-(0, 45) '0' : 'nine 9 ten 10 eleven 11 TWELVE 12 thir…
-├──(0, 7) 'phrase' : 'nine 9 '
+(0, 45) '0' : 'nine 9 ten 10 eleven…ELVE 12 thirteen 13'
+├──(0, 6) 'phrase' : 'nine 9'
 │  ├──(0, 4) 'word' : 'nine'
 │  │  ├──(0, 1) 'char' : 'n'
 │  │  ├──(1, 2) 'char' : 'i'
@@ -157,7 +159,7 @@ With this single line of code, Pawpaw generates a fully hierarchical, tree of ph
 │  │  └──(3, 4) 'char' : 'e'
 │  └──(5, 6) 'number' : '9'
 │     └──(5, 6) 'digit' : '9'
-├──(7, 14) 'phrase' : 'ten 10 '
+├──(7, 13) 'phrase' : 'ten 10'
 │  ├──(7, 10) 'word' : 'ten'
 │  │  ├──(7, 8) 'char' : 't'
 │  │  ├──(8, 9) 'char' : 'e'
@@ -165,7 +167,7 @@ With this single line of code, Pawpaw generates a fully hierarchical, tree of ph
 │  └──(11, 13) 'number' : '10'
 │     ├──(11, 12) 'digit' : '1'
 │     └──(12, 13) 'digit' : '0'
-├──(14, 24) 'phrase' : 'eleven 11 '
+├──(14, 23) 'phrase' : 'eleven 11'
 │  ├──(14, 20) 'word' : 'eleven'
 │  │  ├──(14, 15) 'char' : 'e'
 │  │  ├──(15, 16) 'char' : 'l'
@@ -176,7 +178,7 @@ With this single line of code, Pawpaw generates a fully hierarchical, tree of ph
 │  └──(21, 23) 'number' : '11'
 │     ├──(21, 22) 'digit' : '1'
 │     └──(22, 23) 'digit' : '1'
-├──(24, 34) 'phrase' : 'TWELVE 12 '
+├──(24, 33) 'phrase' : 'TWELVE 12'
 │  ├──(24, 30) 'word' : 'TWELVE'
 │  │  ├──(24, 25) 'char' : 'T'
 │  │  ├──(25, 26) 'char' : 'W'

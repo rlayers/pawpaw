@@ -31,7 +31,7 @@ class TestItorator(_TestIto):
         s = 'one two three'
         root = Ito(s)
         itor = Itorator.wrap(my_split)
-        self.assertListEqual([*Ito.from_substrings(s, s.split())], [*itor.traverse(root)])
+        self.assertListEqual([*Ito.from_substrings(s, *s.split())], [*itor.traverse(root)])
 
     def test_wrap_itorator(self):
         # Create itorator with two end points

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import typing
 
-from pawpaw import Ito, Types
+from pawpaw import Ito, Types, Errors
 from pawpaw.arborform.postorator import Postorator
 
 
@@ -12,7 +12,7 @@ class WindowedJoin(Postorator):
             self,
             window_size: int,
             predicate: F_SQ_ITOS_2_B,
-            ito_class: Types.C_ITO = Ito,
+            ito_class: Ito = Ito,
             desc: str | None = None
     ):
         super().__init__()
@@ -34,7 +34,7 @@ class WindowedJoin(Postorator):
         self.desc = desc
 
     def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
-        window: typing.List[Types.C_ITO] = []
+        window: typing.List[Ito] = []
         for ito in itos:
             window.append(ito)
             if len(window) == self.window_size:

@@ -16,6 +16,24 @@ v_xml = pepo.Xml()
 v_json = pepo.Json()
 
 
+
+import xml.etree.ElementTree as ET
+from pawpaw import xml
+text = \
+"""<?xml version="1.0"?>
+<music xmlns:mb="http://musicbrainz.org/ns/mmd-1.0#" xmlns="http://mymusic.org/xml/">
+    <?display table-view?>
+    <album genre="R&amp;B" mb:id="123-456-789-0">
+        Robson Jorge &amp; Lincoln Olivetti <!-- 1982, Vinyl -->
+    </album>
+</music>"""
+root = ET.fromstring(text, parser=xml.XmlParser())
+
+print(pepo.Tree().dumps(root.ito))
+exit(0)
+
+
+
 import pawpaw.visualization.ascii_box as box
 
 # Box tests:

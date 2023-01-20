@@ -49,11 +49,11 @@ class Extract(Itorator):
                 Types.F_ITO_M_GK_2_B,
                 types.NoneType)
 
-    def _iter(self, ito: Types.C_ITO) -> Types.C_SQ_ITOS:
-        rv: typing.List[Types.C_ITO] = []
+    def _iter(self, ito: pawpaw.Ito) -> Types.C_SQ_ITOS:
+        rv: typing.List[pawpaw.Ito] = []
         for count, m in enumerate(ito.regex_finditer(self.re), 1):
-            path_stack: typing.List[Types.C_ITO] = []
-            match_itos: typing.List[Types.C_ITO] = []
+            path_stack: typing.List[pawpaw.Ito] = []
+            match_itos: typing.List[pawpaw.Ito] = []
             filtered_gns = (gn for gn in m.re.groupindex.keys() if self._group_filter(ito, m, gn))
             span_gns = ((span, gn) for gn in filtered_gns for span in m.spans(gn))
             for span, gn in sorted(span_gns, key=lambda val: (val[0][0], -val[0][1])):

@@ -6,7 +6,7 @@ import pawpaw
 
 # Finds indeces of non-doubled escape chars
 def find_escapes(
-    src: str | pawpaw.Types.C_ITO,
+    src: str | pawpaw.Ito,
     escape: str = '\\',
     start: int | None = None,
     stop: int | None = None
@@ -38,7 +38,7 @@ def find_escapes(
 
 
 def find_unescaped(
-    src: str | pawpaw.Types.C_ITO,
+    src: str | pawpaw.Ito,
     chars: str,
     escape: str = '\\',
     start: int | None = None,
@@ -80,12 +80,12 @@ def find_unescaped(
 
 
 def split_unescaped(
-    src: str | pawpaw.Types.C_ITO,
+    src: str | pawpaw.Ito,
     char: str,
     escape: str = '\\',
     start: int | None = None,
     stop: int | None = None
-) -> typing.Iterable[str] | typing.Iterable[pawpaw.Types.C_ITO]:
+) -> typing.Iterable[str] | typing.Iterable[pawpaw.Ito]:
     cur = 0
     for i in find_unescaped(src, char, escape, start, stop):
         yield src[cur:i]

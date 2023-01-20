@@ -18,145 +18,6 @@ from pawpaw.errors import Errors
 from .util import find_escapes
 
 
-class Types:
-    C_ITO = typing.TypeVar('C_ITO', bound='Ito')
-    C_SQ_ITOS = typing.Sequence[C_ITO]
-    C_IT_ITOS = typing.Iterable[C_ITO]
-
-    F_ITO_2_B = typing.Callable[[C_ITO], bool]
-    F_ITO_2_VAL = typing.Callable[[C_ITO], typing.Any]
-    F_ITO_2_DESC = typing.Callable[[C_ITO], str]
-    F_ITO_2_ITOR = typing.Callable[[C_ITO], 'Itorator']
-    F_ITO_2_SQ_ITOS = typing.Callable[[C_ITO], C_SQ_ITOS]
-    F_ITO_2_IT_ITOS = typing.Callable[[C_ITO], C_IT_ITOS]
-
-    C_GK = int | str
-    F_M_GK_2_DESC = typing.Callable[[regex.Match, C_GK], str]
-
-    F_ITO_M_GK_2_B = typing.Callable[[C_ITO | None, regex.Match, C_GK], bool]
-    F_ITO_M_GK_2_DESC = typing.Callable[[C_ITO | None, regex.Match, C_GK], str]
-    F_M_GK_2_B = typing.Callable[[regex.Match, C_GK], bool]
-
-    class C_BITO(typing.NamedTuple):
-        tf: bool
-        ito: pawpaw.Types.C_ITO
-    C_IT_BITOS = typing.Iterable[C_BITO]
-    F_ITOS_2_BITOS = typing.Callable[[C_IT_ITOS], C_IT_BITOS]
-
-    class C_EITO(typing.NamedTuple):
-        index: int
-        ito: pawpaw.Types.C_ITO
-    C_IT_EITOS = typing.Iterable[C_EITO]
-
-    C_VALUES = typing.Dict[str, typing.Any] | None
-    C_PREDICATES = typing.Dict[str, typing.Callable[[C_EITO], bool]] | None
-    F_EITO_V_P_2_B = typing.Callable[[C_EITO, C_VALUES, C_PREDICATES], bool]
-
-    C_PATH = str | C_ITO
-
-    @classmethod
-    def type_matches_annotation(cls, _type: typing.Type, annotation: typing.Type) -> bool:
-        if annotation == inspect._empty:
-            return True
-
-        if _type == annotation:
-            return True
-
-        origin = typing.get_origin(annotation)
-        if origin is types.UnionType:
-            return _type in typing.get_args(annotation)
-
-        if isinstance(_type, typing.TypeVar):
-            if getattr(typing, 'reveal_type', None) is None:  # Python < 3.11 check
-                return True  # Can't reveal type in < 3.11 versions
-
-            _type = typing.reveal_type(_type)
-
-        if issubclass(_type, annotation):
-            return True
-
-        return False
-
-    @classmethod
-    def is_callable(cls, func: typing.Any, type_sig: typing.Callable) -> bool:
-        if not isinstance(func, typing.Callable):
-            return False
-
-        ts_params, ts_rv = typing.get_args(type_sig)
-        
-        func_sig = inspect.signature(func)
-        if not cls.type_matches_annotation(ts_rv, func_sig.return_annotation):
-            return False
-
-        if len(ts_params) != len(func_sig.parameters):
-            return False
-
-        if not all(
-                cls.type_matches_annotation(tsp, fsp.annotation) for tsp, fsp in zip(ts_params, func_sig.parameters.values())):
-            return False
-
-        return True
-
-    @classmethod
-    def is_desc_func(cls, func: typing.Callable) -> bool:
-        if not isinstance(func, typing.Callable):
-            return False
-
-        sig = inspect.signature(func)
-        if not cls.type_matches_annotation(str, sig.return_annotation):
-            return False
-
-        return True
-
-    @classmethod
-    def is_lambda(cls, func: typing.Callable):
-        return type(func) is types.LambdaType and func.__name__ == '<lambda>'
-
-    @classmethod
-    def invoke_func(cls, func: typing.Any, *vals: typing.Any) -> typing.Any:
-        """Wire and fire
-
-        Args:
-            func:
-            *vals:
-
-        Returns:
-            Invokes func and returns its return value
-        """
-
-        if cls.is_lambda(func):
-            return func(*vals)  # No type hints on lamdbas, so this is the best we can do
-
-        unpaired: typing.List[typing.Any] = list(vals)
-
-        arg_spec = inspect.getfullargspec(func)
-        del arg_spec.annotations['return']
-
-        p_args: typing.List[typing.Any] = []
-        for arg in arg_spec.args:
-            for val in unpaired:
-                val_type = type(val)
-                if cls.type_matches_annotation(val_type, arg_spec.annotations[arg]):
-                    p_args.append(val)
-                    unpaired.remove(val)
-                    break
-
-        p_kwonlyargs: typing.Dict[str, typing.Any] = {}
-        for arg in arg_spec.kwonlyargs:
-            for val in unpaired:
-                val_type = type(val)
-                if cls.type_matches_annotation(val_type, arg_spec.annotations[arg]):
-                    p_kwonlyargs[arg] = val
-                    unpaired.remove(val)
-                    break
-
-        p_vargs: typing.List[typing.Any] = []
-        if len(unpaired) > 0 and arg_spec.varargs is not None:
-            p_vargs[arg_spec.varargs] = unpaired
-
-        return func(*p_args, *p_vargs, **p_kwonlyargs)
-
-
 nuco = Infix(lambda x, y: y if x is None else x)
 """Null coalescing operator
 """
@@ -198,7 +59,7 @@ class Ito:
         match: regex.Match,
         *exclude_keys: Types.C_GK,
         desc: str | Types.F_M_GK_2_DESC = lambda m, gk: str(gk)
-    ) -> Types.C_ITO:
+    ) -> pawpaw.Ito:
         if match is None:
             raise Errors.parameter_not_none('match')
         elif not isinstance(match, regex.Match):
@@ -228,8 +89,8 @@ class Ito:
         else:
             raise Errors.parameter_invalid_type('desc', desc, Types.F_M_GK_2_DESC)
 
-        path_stack: typing.List[Types.C_ITO] = []
-        match_itos: typing.List[Types.C_ITO] = []
+        path_stack: typing.List[pawpaw.Ito] = []
+        match_itos: typing.List[pawpaw.Ito] = []
         gn_span_tups = [(gn, span) for gn, spans in gn_spans.items() for span in spans]
         for gn, span in sorted(gn_span_tups, key=lambda val: (val[1][0], -val[1][1])):
             ito = cls(match.string, *span, desc=desc_func(match, gn))
@@ -252,7 +113,7 @@ class Ito:
         match: regex.Match,
         group: Types.C_GK = 0,
         desc: str | Types.F_M_GK_2_DESC = lambda m, gk: str(gk)
-    ) -> Types.C_ITO:
+    ) -> pawpaw.Ito:
         if match is None:
             raise Errors.parameter_not_none('match')
         elif not isinstance(match, regex.Match):
@@ -274,11 +135,11 @@ class Ito:
     def from_re(
             cls,
             re: regex.Pattern,
-            src: str | Types.C_ITO,
+            src: str | pawpaw.Ito,
             *exclude_keys: Types.C_GK,
             desc: str | Types.F_M_GK_2_DESC = lambda m, gk: str(gk),
             limit: int | None = None,
-    ) -> typing.Iterable[Types.C_ITO]:
+    ) -> typing.Iterable[pawpaw.Ito]:
         if not isinstance(re, regex.Pattern):
             raise Errors.parameter_invalid_type('re', re, regex.Pattern)
 
@@ -297,7 +158,7 @@ class Ito:
                 break
 
     @classmethod
-    def from_spans(cls, src: str | Types.C_ITO, *spans: Span, desc: str | None = None) -> typing.Iterable[Types.C_ITO]:
+    def from_spans(cls, src: str | pawpaw.Ito, *spans: Span, desc: str | None = None) -> typing.Iterable[pawpaw.Ito]:
         """Generate Itos from spans
         
         Args:
@@ -311,7 +172,7 @@ class Ito:
         yield from (cls(src, *s, desc=desc) for s in spans)
         
     @classmethod
-    def from_gaps(cls, src: str | Types.C_ITO, *gaps: Span, desc: str | None = None) -> typing.Iterable[Types.C_ITO]:
+    def from_gaps(cls, src: str | pawpaw.Ito, *gaps: Span, desc: str | None = None) -> typing.Iterable[pawpaw.Ito]:
         """Generate Itos from gaps (negative space)
         
         Args:
@@ -334,9 +195,9 @@ class Ito:
     def from_substrings(
             cls,
             src: str | Ito,
-            substrings: typing.Iterable[str],
+            *substrings: str,
             desc: str | None = None
-    ) -> typing.Iterable[Types.C_ITO]:
+    ) -> typing.Iterable[pawpaw.Ito]:
         """Generate Itos from substrings
 
         Args:
@@ -381,7 +242,7 @@ class Ito:
               stop: int | None = None,
               desc: str | None = None,
               clone_children: bool = True
-              ) -> Types.C_ITO:
+              ) -> pawpaw.Ito:
         rv = self.__class__(
             self._string,
             self.start if start is None else start,
@@ -428,7 +289,7 @@ class Ito:
     def parent(self) -> Ito:
         return self._parent
 
-    def _set_parent(self, parent: Types.C_ITO) -> None:
+    def _set_parent(self, parent: pawpaw.Ito) -> None:
         if self._string != parent._string:
             raise ValueError(f'parameter \'parent\' has a different value for .string')
         if self.start < parent.start or self.stop > parent.stop:
@@ -499,7 +360,7 @@ class Ito:
             }
 
     @classmethod
-    def _json_decoder_stringless(cls, obj: typing.Dict) -> Types.C_ITO | typing.Dict:
+    def _json_decoder_stringless(cls, obj: typing.Dict) -> pawpaw.Ito | typing.Dict:
         if (t := obj.get('__type__')) is not None and t == 'Ito':
             rv = cls('', desc=obj['desc'])
             rv._span = Span(*obj['span'])
@@ -509,13 +370,13 @@ class Ito:
             return obj
 
     @classmethod
-    def json_decode_stringless(cls, string: str, json_data: str) -> Types.C_ITO:
+    def json_decode_stringless(cls, string: str, json_data: str) -> pawpaw.Ito:
         rv = json.loads(json_data, object_hook=cls._json_decoder_stringless)
         rv._set_string(string)
         return rv
 
     @classmethod
-    def json_decoder(cls, obj: typing.Dict) -> Types.C_ITO | typing.Dict:
+    def json_decoder(cls, obj: typing.Dict) -> pawpaw.Ito | typing.Dict:
         if (t := obj.get('__type__')) is not None:
             if t == 'typing.Tuple[str, Ito]':
                 rv = obj['ito']
@@ -587,7 +448,7 @@ class Ito:
     def __len__(self) -> int:
         return self.stop - self.start
 
-    def __getitem__(self, key: int | slice | None) -> Types.C_ITO:
+    def __getitem__(self, key: int | slice | None) -> pawpaw.Ito:
         if isinstance(key, int):
             if 0 <= key < len(self):
                 span = Span.from_indices(self, key, key + 1).offset(self.start)
@@ -704,8 +565,8 @@ class Ito:
                     else:
                         lslice = 0
                     if (rslice := m.group('rslice')) is not None:
-                        rslice = None if rslice == '0' else int(rslice)
-                    sub = sub[slice(lslice, -rslice)]
+                        rslice = None if rslice == '0' else -int(rslice)
+                    sub = sub[slice(lslice, rslice)]
 
                 if (width := m.group('width')) is not None:
                     if (width := int(width)) < len(sub):
@@ -734,7 +595,7 @@ class Ito:
     # region combinatorics
 
     @classmethod
-    def adopt(cls, itos: Types.C_IT_ITOS, desc: str | None = None) -> Types.C_ITO:
+    def adopt(cls, itos: Types.C_IT_ITOS, desc: str | None = None) -> pawpaw.Ito:
         """Creates a parent for a sequence of Itos
 
         Args:
@@ -779,7 +640,7 @@ class Ito:
         return rv
 
     @classmethod
-    def join(cls, *itos: Types.C_ITO, desc: str | None = None) -> Types.C_ITO:
+    def join(cls, *itos: pawpaw.Ito, desc: str | None = None) -> pawpaw.Ito:
         """Combines Itos
 
         Args:
@@ -815,7 +676,7 @@ class Ito:
             
         return cls(string, start, stop, desc)
 
-    def strip_to_children(self) -> Types.C_ITO:
+    def strip_to_children(self) -> pawpaw.Ito:
         """Creates a clone with span trimmed to match extent of children; returns self if .children is empty
         
         Returns:
@@ -829,7 +690,7 @@ class Ito:
         
         return self
 
-    def invert_children(self) -> Types.C_ITO:
+    def invert_children(self) -> pawpaw.Ito:
         """Creates a clone of the self having children in the gaps
         
         Returns:
@@ -871,7 +732,7 @@ class Ito:
             max_split: int = 0,
             keep_seps: bool = False,
             desc: str | typing.Callable | None = None
-    ) -> typing.Iterable[Types.C_ITO]:
+    ) -> typing.Iterable[pawpaw.Ito]:
         count = 0
         i = self.start
         for m in self.regex_finditer(re):
@@ -893,7 +754,7 @@ class Ito:
             max_split: int = 0,
             keep_seps: bool = False,
             desc: str | None = None
-    ) -> typing.List[Types.C_ITO]:
+    ) -> typing.List[pawpaw.Ito]:
         return [*self.split_iter(re, max_split, keep_seps, desc)]
 
     # endregion
@@ -936,10 +797,10 @@ class Ito:
             concurrent=concurrent,
             timeout=timeout)
 
-    def regex_split(self, re: regex.Pattern, maxsplit: int = 0) -> typing.List[Types.C_ITO]:
+    def regex_split(self, re: regex.Pattern, maxsplit: int = 0) -> typing.List[pawpaw.Ito]:
         return [*self.regex_splititer(re, maxsplit)]
 
-    def regex_splititer(self, re: regex.Pattern, maxsplit: int = 0) -> typing.Iterable[Types.C_ITO]:
+    def regex_splititer(self, re: regex.Pattern, maxsplit: int = 0) -> typing.Iterable[pawpaw.Ito]:
         yield from self.split_iter(re, max_split=maxsplit, keep_seps=False)
 
     def regex_findall(
@@ -1119,7 +980,7 @@ class Ito:
         else:
             return lambda i: self._string[i] in chars
 
-    def str_lstrip(self, chars: str | None = None) -> Types.C_ITO:
+    def str_lstrip(self, chars: str | None = None) -> pawpaw.Ito:
         f_c_in = self.__f_c_in(chars)
         i = self.start
         while i < self.stop and f_c_in(i):
@@ -1127,7 +988,7 @@ class Ito:
         
         return self if i == self.start else self.clone(i, clone_children=False)
 
-    def str_rstrip(self, chars: str | None = None) -> Types.C_ITO:
+    def str_rstrip(self, chars: str | None = None) -> pawpaw.Ito:
         f_c_in = self.__f_c_in(chars)
         i = self.stop - 1
         while i >= 0 and f_c_in(i):
@@ -1135,14 +996,14 @@ class Ito:
 
         return self if i == self.stop - 1 else self.clone(stop=i + 1, clone_children=False)
 
-    def str_strip(self, chars: str | None = None) -> Types.C_ITO:
+    def str_strip(self, chars: str | None = None) -> pawpaw.Ito:
         return self.str_lstrip(chars).str_rstrip(chars)
 
     # endregion
 
     # region partition and split methods
 
-    def str_partition(self, sep) -> typing.Tuple[Types.C_ITO, Types.C_ITO, Types.C_ITO]:
+    def str_partition(self, sep) -> typing.Tuple[pawpaw.Ito, pawpaw.Ito, pawpaw.Ito]:
         if sep is None:
             raise ValueError('must be str, not NoneType')
         elif sep == '':
@@ -1156,7 +1017,7 @@ class Ito:
                 k = j + len(sep)
                 return self.clone(stop=j, clone_children=False), self.clone(j, k, clone_children=False), self.clone(k, clone_children=False)
 
-    def str_rpartition(self, sep) -> typing.Tuple[Types.C_ITO, Types.C_ITO, Types.C_ITO]:
+    def str_rpartition(self, sep) -> typing.Tuple[pawpaw.Ito, pawpaw.Ito, pawpaw.Ito]:
         if sep is None:
             raise ValueError('must be str, not NoneType')
         elif sep == '':
@@ -1170,7 +1031,7 @@ class Ito:
                 k = j + len(sep)
                 return self.clone(stop=j, clone_children=False), self.clone(j, k, clone_children=False), self.clone(k, clone_children=False)
 
-    def _nearest_non_ws_sub(self, start: int, reverse: bool = False) -> Types.C_ITO | None:
+    def _nearest_non_ws_sub(self, start: int, reverse: bool = False) -> pawpaw.Ito | None:
         start += self.start
 
         if reverse:
@@ -1202,14 +1063,14 @@ class Ito:
             i += step
             return from_idxs()
 
-    def str_rsplit(self, sep: str = None, maxsplit: int = -1) -> typing.List[Types.C_ITO]:
+    def str_rsplit(self, sep: str = None, maxsplit: int = -1) -> typing.List[pawpaw.Ito]:
         if sep is None:
-            rv: typing.List[Types.C_ITO] = []
+            rv: typing.List[pawpaw.Ito] = []
             if self._string == '':
                 return rv
 
             i = len(self) - 1
-            rv: typing.List[Types.C_ITO] = []
+            rv: typing.List[pawpaw.Ito] = []
             while (sub := self._nearest_non_ws_sub(i, True)) is not None and maxsplit != 0:
                 rv.append(sub)
                 i = sub.start - 1
@@ -1233,7 +1094,7 @@ class Ito:
             return [self]
 
         else:
-            rv: typing.List[Types.C_ITO] = []
+            rv: typing.List[pawpaw.Ito] = []
             i = self.stop
             while (j := self._string.rfind(sep, self.start, i)) >= 0 and maxsplit != 0:
                 rv.insert(0, self.clone(j + len(sep), i, clone_children=False))
@@ -1247,9 +1108,9 @@ class Ito:
 
             return rv
 
-    def str_split(self, sep: str = None, maxsplit: int = -1) -> typing.List[Types.C_ITO]:
+    def str_split(self, sep: str = None, maxsplit: int = -1) -> typing.List[pawpaw.Ito]:
         if sep is None:
-            rv: typing.List[Types.C_ITO] = []
+            rv: typing.List[pawpaw.Ito] = []
             if self._string == '':
                 return rv
 
@@ -1276,7 +1137,7 @@ class Ito:
             return [self]
 
         else:
-            rv: typing.List[Types.C_ITO] = []
+            rv: typing.List[pawpaw.Ito] = []
             i = self.start
             while (j := self._string.find(sep, i, self.stop)) >= 0 and maxsplit != 0:
                 rv.append(self.clone(i, j, clone_children=False))
@@ -1293,7 +1154,7 @@ class Ito:
     # Line separators taken from https://docs.python.org/3/library/stdtypes.html
     _splitlines_re = regex.compile(r'\r\n|\r|\n|\v|\x0b|\f|\x0c|\x1c|\x1d|\x1e|\x85|\u2028|\u2029', regex.DOTALL)
 
-    def str_splitlines(self, keepends: bool = False, desc: str | None = None) -> typing.List[Types.C_ITO]:
+    def str_splitlines(self, keepends: bool = False, desc: str | None = None) -> typing.List[pawpaw.Ito]:
         rv = [*self.split_iter(self._splitlines_re, 0, keepends, desc)]
 
         if len(rv) == 0:
@@ -1306,13 +1167,13 @@ class Ito:
 
     # region removeprefix, removesuffix
 
-    def str_removeprefix(self, prefix: str) -> Types.C_ITO:
+    def str_removeprefix(self, prefix: str) -> pawpaw.Ito:
         if self.str_startswith(prefix):
             return self.__class__(self, len(prefix), desc=self.desc)
         else:
             return self
 
-    def str_removesuffix(self, suffix: str) -> Types.C_ITO:
+    def str_removesuffix(self, suffix: str) -> pawpaw.Ito:
         if self.str_endswith(suffix):
             return self.__class__(self, stop=-len(suffix), desc=self.desc)
         else:
@@ -1324,7 +1185,7 @@ class Ito:
 
     # region traversal
 
-    def get_root(self) -> Types.C_ITO | None:
+    def get_root(self) -> pawpaw.Ito | None:
         rv = self
         while (parent := rv.parent) is not None:
             rv = parent
@@ -1349,56 +1210,56 @@ class Ito:
             self,
             path: pawpaw.Types.C_PATH,
             values: typing.Dict[str, typing.Any] | None = None,
-            predicates: typing.Dict[str, typing.Callable[[int, Types.C_ITO], bool]] | None = None
-    ) -> typing.Iterable[Types.C_ITO]:
+            predicates: typing.Dict[str, typing.Callable[[int, pawpaw.Ito], bool]] | None = None
+    ) -> typing.Iterable[pawpaw.Ito]:
         yield from pawpaw.query.find_all(path, self, values, predicates)
 
     def find(
             self,
             path: pawpaw.Types.C_PATH,
             values: typing.Dict[str, typing.Any] | None = None,
-            predicates: typing.Dict[str, typing.Callable[[int, Types.C_ITO], bool]] | None = None
-    ) -> Types.C_ITO | None:
+            predicates: typing.Dict[str, typing.Callable[[int, pawpaw.Ito], bool]] | None = None
+    ) -> pawpaw.Ito | None:
         return pawpaw.query.find(path, self, values, predicates)
 
     # endregion
 
 
 class ChildItos(collections.abc.Sequence):
-    def __init__(self, parent: Types.C_ITO, *itos: Types.C_ITO):
+    def __init__(self, parent: pawpaw.Ito, *itos: pawpaw.Ito):
         self.__parent = parent
-        self.__store: typing.List[Types.C_ITO] = []
+        self.__store: typing.List[pawpaw.Ito] = []
         self.add(*itos)
 
     # region search & index
 
-    def __bfind_start(self, ito: Types.C_ITO) -> int:
+    def __bfind_start(self, ito: pawpaw.Ito) -> int:
         i = bisect.bisect_left(self.__store, ito.start, key=lambda j: j.start)
         if i == len(self.__store) or self.__store[i].start != ito.start:
             return ~i
 
         return i
 
-    def __bfind_stop(self, ito: Types.C_ITO) -> int:
+    def __bfind_stop(self, ito: pawpaw.Ito) -> int:
         i = bisect.bisect_right(self.__store, ito.stop, key=lambda j: j.stop)
         if i == len(self.__store) or self.__store[i].stop != ito.stop:
             return ~i
 
         return i
 
-    def __is_start_lt_prior_stop(self, i: int, ito: Types.C_ITO) -> bool:
+    def __is_start_lt_prior_stop(self, i: int, ito: pawpaw.Ito) -> bool:
         if i == 0 or len(self.__store) == 0:
             return False
 
         return ito.start < self.__store[i-1].stop
 
-    def __is_stop_gt_next_start(self, i: int, ito: Types.C_ITO) -> bool:
+    def __is_stop_gt_next_start(self, i: int, ito: pawpaw.Ito) -> bool:
         if i == len(self.__store):
             return False
 
         return ito.stop > self.__store[i].start
 
-    def __ensure_between(self, ito: Types.C_ITO, i_start: int, i_end: int) -> None:
+    def __ensure_between(self, ito: pawpaw.Ito, i_start: int, i_end: int) -> None:
         if self.__is_start_lt_prior_stop(i_start, ito):
             raise ValueError('parameter \'ito\' overlaps with prior')
 
@@ -1412,7 +1273,7 @@ class ChildItos(collections.abc.Sequence):
     def __contains__(self, ito) -> bool:
         return self.__bfind_start(ito) >= 0
 
-    def __iter__(self) -> typing.Iterable[Types.C_ITO]:
+    def __iter__(self) -> typing.Iterable[pawpaw.Ito]:
         return self.__store.__iter__()
 
     def __len__(self) -> int:
@@ -1422,7 +1283,7 @@ class ChildItos(collections.abc.Sequence):
 
     # region Sequence
 
-    def __getitem__(self, key: int | slice) -> Types.C_ITO | typing.List[Types.C_ITO]:
+    def __getitem__(self, key: int | slice) -> pawpaw.Ito | typing.List[pawpaw.Ito]:
         if isinstance(key, int) or isinstance(key, slice):
             return self.__store[key]
         raise Errors.parameter_invalid_type('key', key, int, slice)
@@ -1439,7 +1300,7 @@ class ChildItos(collections.abc.Sequence):
             ito._parent = None
         del self.__store[key]
 
-    def remove(self, ito: Types.C_ITO):
+    def remove(self, ito: pawpaw.Ito):
         i = self.__bfind_start(ito)
         if i >= 0 and self.__store[i] is ito:
             self.__delitem__(i)
@@ -1458,7 +1319,7 @@ class ChildItos(collections.abc.Sequence):
 
     # region Add & Update
 
-    def __setitem__(self, key: int | slice, value: Types.C_ITO | typing.Iterable[Types.C_ITO]) -> None:
+    def __setitem__(self, key: int | slice, value: pawpaw.Ito | typing.Iterable[pawpaw.Ito]) -> None:
         if isinstance(key, int):
             if not isinstance(value, Ito):
                 raise Errors.parameter_invalid_type('value', value, Ito)
@@ -1483,12 +1344,12 @@ class ChildItos(collections.abc.Sequence):
                     self.__store.insert(start, ito)
                     start += 1
             else:
-                raise Errors.parameter_invalid_type('value', value, Ito, typing.Iterable[Types.C_ITO])
+                raise Errors.parameter_invalid_type('value', value, Ito, typing.Iterable[pawpaw.Ito])
 
         else:
             raise Errors.parameter_invalid_type('key', key, int, slice)
 
-    def add(self, *itos: Types.C_ITO) -> None:
+    def add(self, *itos: pawpaw.Ito) -> None:
         for ito in itos:
             if ito.parent is not None:
                 raise ValueError('parameter \'itos\' has element contained elsewhere')
@@ -1502,7 +1363,7 @@ class ChildItos(collections.abc.Sequence):
             ito._set_parent(self.__parent)
             self.__store.insert(i, ito)
 
-    def add_hierarchical(self, *itos: Types.C_ITO):
+    def add_hierarchical(self, *itos: pawpaw.Ito):
         for ito in itos:
             if ito._parent is not None:
                 raise ValueError('contained elsewhere...')
@@ -1556,3 +1417,146 @@ class ChildItos(collections.abc.Sequence):
                 ito._set_parent(self.__parent)
 
     # endregion
+
+
+class Types:
+    C_SQ_ITOS = typing.Sequence[Ito]
+    C_IT_ITOS = typing.Iterable[Ito]
+
+    F_ITO_2_B = typing.Callable[[Ito], bool]
+    F_ITO_2_VAL = typing.Callable[[Ito], typing.Any]
+    F_ITO_2_DESC = typing.Callable[[Ito], str]
+    F_ITO_2_ITOR = typing.Callable[[Ito], 'Itorator']
+    F_ITO_2_SQ_ITOS = typing.Callable[[Ito], C_SQ_ITOS]
+    F_ITO_2_IT_ITOS = typing.Callable[[Ito], C_IT_ITOS]
+
+    C_GK = int | str
+    F_M_GK_2_DESC = typing.Callable[[regex.Match, C_GK], str]
+
+    F_ITO_M_GK_2_B = typing.Callable[[Ito | None, regex.Match, C_GK], bool]
+    F_ITO_M_GK_2_DESC = typing.Callable[[Ito | None, regex.Match, C_GK], str]
+    F_M_GK_2_B = typing.Callable[[regex.Match, C_GK], bool]
+
+    class C_BITO(typing.NamedTuple):
+        tf: bool
+        ito: Ito
+
+    C_IT_BITOS = typing.Iterable[C_BITO]
+    F_ITOS_2_BITOS = typing.Callable[[C_IT_ITOS], C_IT_BITOS]
+
+    class C_EITO(typing.NamedTuple):
+        index: int
+        ito: Ito
+
+    C_IT_EITOS = typing.Iterable[C_EITO]
+
+    C_VALUES = typing.Dict[str, typing.Any] | None
+    C_PREDICATES = typing.Dict[str, typing.Callable[[C_EITO], bool]] | None
+    F_EITO_V_P_2_B = typing.Callable[[C_EITO, C_VALUES, C_PREDICATES], bool]
+
+    C_PATH = str | Ito
+
+    @classmethod
+    def type_matches_annotation(cls, _type: typing.Type, annotation: typing.Type) -> bool:
+        if annotation == inspect._empty:
+            return True
+
+        if _type == annotation:
+            return True
+
+        origin = typing.get_origin(annotation)
+        if origin is types.UnionType:
+            return _type in typing.get_args(annotation)
+
+        if isinstance(_type, typing.TypeVar):
+            if getattr(typing, 'reveal_type', None) is None:  # Python < 3.11 check
+                return True  # Can't reveal type in < 3.11 versions
+
+            _type = typing.reveal_type(_type)
+
+        if issubclass(_type, annotation):
+            return True
+
+        return False
+
+    @classmethod
+    def is_callable(cls, func: typing.Any, type_sig: typing.Callable) -> bool:
+        if not isinstance(func, typing.Callable):
+            return False
+
+        ts_params, ts_rv = typing.get_args(type_sig)
+
+        func_sig = inspect.signature(func)
+        if not cls.type_matches_annotation(ts_rv, func_sig.return_annotation):
+            return False
+
+        if len(ts_params) != len(func_sig.parameters):
+            return False
+
+        if not all(
+                cls.type_matches_annotation(tsp, fsp.annotation) for tsp, fsp in
+                zip(ts_params, func_sig.parameters.values())):
+            return False
+
+        return True
+
+    @classmethod
+    def is_desc_func(cls, func: typing.Callable) -> bool:
+        if not isinstance(func, typing.Callable):
+            return False
+
+        sig = inspect.signature(func)
+        if not cls.type_matches_annotation(str, sig.return_annotation):
+            return False
+
+        return True
+
+    @classmethod
+    def is_lambda(cls, func: typing.Callable):
+        return type(func) is types.LambdaType and func.__name__ == '<lambda>'
+
+    @classmethod
+    def invoke_func(cls, func: typing.Any, *vals: typing.Any) -> typing.Any:
+        """Wire and fire
+
+        Args:
+            func:
+            *vals:
+
+        Returns:
+            Invokes func and returns its return value
+        """
+
+        if cls.is_lambda(func):
+            return func(*vals)  # No type hints on lamdbas, so this is the best we can do
+
+        unpaired: typing.List[typing.Any] = list(vals)
+
+        arg_spec = inspect.getfullargspec(func)
+        del arg_spec.annotations['return']
+
+        p_args: typing.List[typing.Any] = []
+        for arg in arg_spec.args:
+            for val in unpaired:
+                val_type = type(val)
+                if cls.type_matches_annotation(val_type, arg_spec.annotations[arg]):
+                    p_args.append(val)
+                    unpaired.remove(val)
+                    break
+
+        p_kwonlyargs: typing.Dict[str, typing.Any] = {}
+        for arg in arg_spec.kwonlyargs:
+            for val in unpaired:
+                val_type = type(val)
+                if cls.type_matches_annotation(val_type, arg_spec.annotations[arg]):
+                    p_kwonlyargs[arg] = val
+                    unpaired.remove(val)
+                    break
+
+        p_vargs: typing.List[typing.Any] = []
+        if len(unpaired) > 0 and arg_spec.varargs is not None:
+            p_vargs[arg_spec.varargs] = unpaired
+
+        return func(*p_args, *p_vargs, **p_kwonlyargs)
+
+

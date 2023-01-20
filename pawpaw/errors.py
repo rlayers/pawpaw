@@ -12,6 +12,16 @@ class Errors:
         return ValueError(f'parameter \'{name}\' can be neither None nor empty')
 
     @classmethod
+    def _build_types_str(cls, *allowed: typing.Type):
+        rv: typing.List[str] = []
+        for t in allowed:
+            if t is type:
+                rv.append(t.__qualname__)
+            elif t is typing.TypeVar:
+                rv.append(t.__bound__.__qualname__)
+
+
+    @classmethod
     def parameter_invalid_type(cls, name: str, value: typing.Any, *allowed: typing.Type) -> TypeError:
         types = ' or '.join(t.__qualname__ for t in allowed)
         return TypeError(f'parameter \'{name}\' must be type {types}, not {type(value).__qualname__}')

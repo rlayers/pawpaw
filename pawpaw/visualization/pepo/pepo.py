@@ -23,10 +23,10 @@ class Pepo(abc.ABC):
 
 
     @abc.abstractmethod
-    def dump(self, fs: typing.IO, *itos: pawpaw.Types.C_ITO) -> None:
+    def dump(self, fs: typing.IO, *itos: pawpaw.Ito) -> None:
         ...
 
-    def dumps(self, *itos: pawpaw.Types.C_ITO) -> str:
+    def dumps(self, *itos: pawpaw.Ito) -> str:
         with io.StringIO() as fs:
             self.dump(fs, *itos)
             fs.seek(0)
@@ -52,7 +52,7 @@ class Compact(_PepoFstr):
             for eic in (pawpaw.Types.C_EITO(i, ito) for i, ito in enumerate(ei.ito.children, start=1)):
                 self._dump(fs, eic, level)
 
-    def dump(self, fs: typing.IO, *itos: pawpaw.Types.C_ITO) -> None:
+    def dump(self, fs: typing.IO, *itos: pawpaw.Ito) -> None:
         for ei in (pawpaw.Types.C_EITO(i, ito) for i, ito in enumerate(itos, start=1)):
             if not isinstance(ei.ito, pawpaw.Ito):
                 raise pawpaw.Errors.parameter_invalid_type('*itos', ei.ito, pawpaw.Ito)
@@ -66,10 +66,10 @@ class Tree(_PepoFstr):
     ELBOW = ascii_box.BoxDrawingChar.from_char('└')
 
     def __init__(self, indent: str = '  ', children: bool = True):
-        super().__init__(indent, children, '%span \'%desc\' : %substr!r:40…')
+        super().__init__(indent, children, '%span \'%desc\' : \'%substr!1r1:^40…% \'')
         self.children = False
 
-    def _dump_children(self, fs: typing.IO, ito: pawpaw.Types.C_ITO, prefix: str = '') -> None:
+    def _dump_children(self, fs: typing.IO, ito: pawpaw.Ito, prefix: str = '') -> None:
         for child in ito.children[:-1]:
             fs.write(f'{prefix}'
                      f'{self.TEE}'
@@ -87,7 +87,7 @@ class Tree(_PepoFstr):
                      f'{self.linesep}')
             self._dump_children(fs, child, prefix + f' {self.indent}')
 
-    def dump(self, fs: typing.IO, *itos: pawpaw.Types.C_ITO) -> None:
+    def dump(self, fs: typing.IO, *itos: pawpaw.Ito) -> None:
         for ito in itos:
             if not isinstance(ito, pawpaw.Ito):
                 raise pawpaw.Errors.parameter_invalid_type('*itos', ito, pawpaw.Ito)
@@ -123,7 +123,7 @@ class Xml(Pepo):
         level -= 1
         fs.write(f'{level * self.indent}</ito>{self.linesep}')
 
-    def dump(self, fs: typing.IO, *itos: pawpaw.Types.C_ITO) -> None:
+    def dump(self, fs: typing.IO, *itos: pawpaw.Ito) -> None:
         fs.write(f'<?xml version="1.0" encoding="UTF-8" ?>{self.linesep}')
         fs.write(f'<itos>{self.linesep}')
         for ito in itos:
@@ -171,7 +171,7 @@ class Json(Pepo):
         level -= 1
         fs.write(level * self.indent + '}')
 
-    def dump(self, fs: typing.IO, *itos: pawpaw.Types.C_ITO) -> None:
+    def dump(self, fs: typing.IO, *itos: pawpaw.Ito) -> None:
         fs.write('{' + self.linesep)
 
         fs.write(f'{self.indent}"itos": [')

@@ -99,7 +99,7 @@ class TestItoCtor(_TestIto):
 
         re = regex.compile(r'(?<word>\w+)')
         with self.subTest(re=re, limit=None):
-            expected = [*Ito.from_substrings(s, s.split(), '0')]
+            expected = [*Ito.from_substrings(s, *s.split(), desc='0')]
             for e in expected:
                 e.children.add(e.clone(desc='word'))
             actual = [*Ito.from_re(re, s)]
@@ -222,7 +222,7 @@ class TestItoCtor(_TestIto):
                 with self.subTest(size_range=size):
                     rs = RandSubstrings(size, Span(0, 0))
                     subs = [*rs.generate(string, 1, -1)]
-                    itos = Ito.from_substrings(string, subs)
+                    itos = Ito.from_substrings(string, *subs)
                     self.assertListEqual(subs, [str(i) for i in itos])
 
         with self.subTest(spacing='Gaps'):
@@ -230,7 +230,7 @@ class TestItoCtor(_TestIto):
                 with self.subTest(size_range=size):
                     rs = RandSubstrings(size, Span(1, 2))
                     subs = [*rs.generate(string, 1, -1)]
-                    itos = Ito.from_substrings(string, subs)
+                    itos = Ito.from_substrings(string, *subs)
                     self.assertListEqual(subs, [str(i) for i in itos])
 
         with self.subTest(spacing='Overlaps'):
@@ -239,7 +239,7 @@ class TestItoCtor(_TestIto):
                     rs = RandSubstrings(size, Span(-1, -1))
                     subs = [*rs.generate(string, 1, -1)]
                     with self.assertRaises(Exception):
-                        itos = [*Ito.from_substrings(string, subs)]
+                        itos = [*Ito.from_substrings(string, *subs)]
 
     def test_clone_basic(self):
         string = 'abc'

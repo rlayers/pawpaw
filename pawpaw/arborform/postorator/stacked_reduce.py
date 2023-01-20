@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
 import typing
 
-from pawpaw import Ito, Types
+from pawpaw import Ito, Types, Errors
 from pawpaw.arborform.postorator import Postorator
 
        
 class StackedReduce(Postorator):
-    F_SQ_ITOS_2_ITO = typing.Callable[[Types.C_SQ_ITOS], Types.C_ITO]
-    F_SQ_ITOS_ITO_2_B = typing.Callable[[Types.C_SQ_ITOS, Types.C_ITO], bool]
+    F_SQ_ITOS_2_ITO = typing.Callable[[Types.C_SQ_ITOS], Ito]
+    F_SQ_ITOS_ITO_2_B = typing.Callable[[Types.C_SQ_ITOS, Ito], bool]
     
     def __init__(
             self,
@@ -30,7 +30,7 @@ class StackedReduce(Postorator):
             raise Errors.parameter_invalid_type('pop_predicate', pop_predicate, self.F_SQ_ITOS_ITO_2_B, None)
 
     def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
-        stack: typing.List[Types.C_ITO] = []
+        stack: typing.List[Ito] = []
         for ito in itos:
             if stack:
                 if self.pop_predicate is not None and self.pop_predicate(stack, ito):
@@ -57,7 +57,7 @@ class StackedReduce(Postorator):
 #         self.predicate = predicate
 
 #     def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
-#         stack: typing.List[Types.C_ITO] = []
+#         stack: typing.List[pawpaw.Ito] = []
 
 #         for ito in itos:
 #             if self.predicate(ito):

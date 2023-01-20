@@ -14,6 +14,6 @@ class Desc(Itorator):
         else:
             raise Errors.parameter_invalid_type('desc', desc, str | Types.F_ITO_2_DESC)
 
-    def _iter(self, ito: Types.C_ITO) -> Types.C_SQ_ITOS:
+    def _iter(self, ito: pawpaw.Ito) -> Types.C_SQ_ITOS:
         ito.desc = self._desc_func(ito)
         return ito,

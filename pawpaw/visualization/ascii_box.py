@@ -1101,7 +1101,7 @@ class Boxer:
             raise Errors.parameter_invalid_type('se', se, BoxDrawingChar, str)
         self.se = se
 
-    def _from_lines(self, *lines: Types.C_ITO) -> typing.List[str]:
+    def _from_lines(self, *lines: pawpaw.Ito) -> typing.List[str]:
         max_line = max(len(line) for line in lines)
 
         rv = [f'{self.nw}{str(self.n) * (max_line + 2)}{self.ne}']
@@ -1113,13 +1113,13 @@ class Boxer:
 
         return rv
 
-    def from_srcs(self, *srcs: Types.C_ITO | str) -> typing.List[str]:
-        lines: typing.List[Types.C_ITO] = []
+    def from_srcs(self, *srcs: pawpaw.Ito | str) -> typing.List[str]:
+        lines: typing.List[pawpaw.Ito] = []
         for src in srcs:
             if isinstance(src, str):
                 src = Ito(src)
             elif not isinstance(src, Ito):
-                raise Errors.parameter_invalid_type('srcs', src, Types.C_ITO, str)
+                raise Errors.parameter_invalid_type('srcs', src, pawpaw.Ito, str)
             lines.extend(src.str_splitlines())
 
         return self._from_lines(*lines)

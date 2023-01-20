@@ -160,7 +160,7 @@ class TestIto(_TestIto):
         for span in Span.from_indices(s), Span.from_indices(s, 1, -1), Span.from_indices(s, 2, -2), Span(3, 3):
             with self.subTest(string=s, span=span):
                 ito = Ito(s, *span)
-                expected = [*Ito.from_substrings(s, s[slice(*span)])]
+                expected = [*Ito.from_substrings(s, *s[slice(*span)])]
                 actual = [*ito]
                 self.assertListEqual(expected, actual)
                 if len(actual) == 1:
@@ -253,7 +253,7 @@ class TestIto(_TestIto):
                         self.assertEqual(expected, actual)
                         if ito == expected:
                             self.assertIs(ito, actual)
-                        
+
     def test_getitem_invalid_slice(self):
         s = 'x123x'
         ito = Ito(s, 1, -1)
@@ -302,23 +302,32 @@ class TestIto(_TestIto):
         i = Ito(s, 1, -1, 'my_desc')
 
         for directive in 'string', 'substr':
-            for conversion in '', 's', 'a', 'r':
-                with self.subTest(directive=directive, conversion=conversion):
-                    if directive == 'substr':
-                        expected = str(i)
-                    else:
-                        expected = getattr(i, directive)
-                    if conversion in ['', 's']:
-                        pass
-                    elif conversion == 'r':
-                        expected = repr(expected)
-                    else:
-                        expected = ascii(expected)
+            for conversion in '', 'a', 'r':
+                for lslice in '', '0', '1':
+                    for rslice in '', '0', '1':
+                        with self.subTest(directive=directive, conversion=conversion, lslice=lslice, rslice=rslice):
+                            if directive == 'substr':
+                                expected = str(i)
+                            else:
+                                expected = getattr(i, directive)
 
-                    if (conv := conversion) != '':
-                        conv = '!' + conv
-                    actual = format(i, f'%{directive}{conv}')
-                    self.assertEqual(expected, actual)
+                            if conversion == '':
+                                expected = f'{expected}!{lslice}{rslice}'
+                            else:
+                                if conversion == 'r':
+                                    expected = repr(expected)
+                                else:
+                                    expected = ascii(expected)
+
+                                if lslice not in ['']:
+                                    expected = expected[int(lslice):]
+
+                                if rslice not in ['', '0']:
+                                    expected = expected[:-int(rslice)]
+
+                            conv = f'!{lslice}{conversion}{rslice}'
+                            actual = format(i, f'%{directive}{conv}')
+                            self.assertEqual(expected, actual)
 
     def test_format_str_width(self):
         s = ' Two\twords '
@@ -367,9 +376,9 @@ class TestIto(_TestIto):
         s = 'abc 123'
         adopted_desc = 'adopted'
 
-        children = [*Ito.from_substrings(s, s.split(), desc='children')]
+        children = [*Ito.from_substrings(s, *s.split(), desc='children')]
         for child in children:
-            child.children.add(*Ito.from_substrings(s, str(child), desc='grandchild'))
+            child.children.add(*Ito.from_substrings(s, *str(child), desc='grandchild'))
         grandchildren = [*itertools.chain.from_iterable(ito.children for ito in children)]
 
         adopted = Ito.adopt(children, desc=adopted_desc)
@@ -381,7 +390,7 @@ class TestIto(_TestIto):
     def test_join(self):
         s = 'the quick brown fox'
         joined_desc = 'joined'
-        children = [*Ito.from_substrings(s, s.split(), desc='children')]
+        children = [*Ito.from_substrings(s, *s.split(), desc='children')]
 
         joined = Ito.join(*children, desc=joined_desc)
         self.assertTrue(all(joined is not child for child in children))
@@ -396,7 +405,7 @@ class TestIto(_TestIto):
             actual = ito.strip_to_children()
             self.assertIs(ito, actual)
 
-        char_itos = [*Ito.from_substrings(basis, s)]
+        char_itos = [*Ito.from_substrings(basis, *s)]
         for cs in char_itos[:1], char_itos[:2], char_itos[1:2], char_itos[1:], char_itos[2:], char_itos[:]:
             with self.subTest(ito=ito, children_added=False, children_strs=[str(i) for i in cs]):
                 ito.children.add(*cs)

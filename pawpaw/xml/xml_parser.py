@@ -108,7 +108,7 @@ class XmlParser(ET.XMLParser):
 
     text_comments = Extract
 
-    def _find_text(self, start: int, stop: int) -> Types.C_ITO | None:
+    def _find_text(self, start: int, stop: int) -> Ito | None:
         rv = Ito(self._text, start, stop, xml.descriptors.TEXT)
         if len(rv) > 0 and not (self.ignore_empties and rv.str_isspace()):
             rv.children.add(*self._itor_extract_pi_comments.traverse(rv))

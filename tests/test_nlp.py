@@ -188,19 +188,29 @@ class TestSimpleNlp(_TestIto):
     def test_from_text(self):
         nlp = pawpaw.nlp.SimpleNlp()
         for name, data in {
-            'One sentence': {
+            'One sentence with one word': {
+                'Yes':
+                    {'Document': 1, 'paragraph': 1, 'sentence': 1, 'word': 1, 'number': 0}
+            },
+
+            'One BOM sentence with one word': {
+                '\ufeffYes':
+                    {'Document': 1, 'paragraph': 1, 'sentence': 1, 'word': 1, 'number': 0}
+            },
+
+            'One sentence with 5 words': {
                 'Dick said, "Look, look up!"':
                     {'Document': 1, 'paragraph': 1, 'sentence': 1, 'word': 5, 'number': 0}
             },
 
-            'One sentence with numbers': {
+            'One sentence with 6 words and 2 numbers': {
                 'Does this sentence have 6 or 8 words?':
                     {'Document': 1, 'paragraph': 1, 'sentence': 1, 'word': 6, 'number': 2}
 
             },
 
             'Two sentences': {
-                'Father said, "I want something."  "Oh, Father," said Sally.':
+                '\ufffeFather said, "I want something."  "Oh, Father," said Sally.':
                     {'Document': 1, 'paragraph': 1, 'sentence': 2, 'word': 9, 'number': 0}
             },
 

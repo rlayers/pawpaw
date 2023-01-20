@@ -8,15 +8,23 @@ from pawpaw import nuco
 
 # See https://www.unicode.org/Public/UNIDATA/NamesList.txt
 
-unicode_controls = {
-    'CHARACTER TABULATION': '\u0009',
-    'LINE FEED':            '\u000A',
-    'FORM FEED':            '\u000C',
-    'CARRIAGE RETURN':      '\u000D',
+byte_order_controls = {
+    'Big-endian byte order mark':       '\uFEFF',   # "UTF-16BE"
+    'Little-endian byte order mark':    '\uFFFE',   # "UTF-16LE"
 }
 
-unicode_white_spaces = {
+unicode_white_space_LF_FF = {
+    'LINE FEED':                    '\u000A',
+    'FORM FEED':                    '\u000C',
+}
+
+unicode_white_space_other = {
+    'CHARACTER TABULATION':         '\u0009',
+
+    'CARRIAGE RETURN':              '\u000D',
+
     'SPACE':                        '\u0020',
+
     'NO-BREAK SPACE':               '\u00A0',
 
     'EN QUAD':                      '\u2000',
@@ -37,8 +45,6 @@ unicode_white_spaces = {
     'MEDIUM MATHEMATICAL SPACE':    '\u205F',
 
     'IDEOGRAPHIC SPACE':            '\u3000',
-
-    'ZERO WIDTH NO-BREAK SPACE':    '\uFEFF',
 }
 
 unicode_single_quote_marks = {
@@ -396,7 +402,7 @@ class Sentence:
     _ignores.extend(_mil_enlisted_abbrs)
 
     _sen_ws = ['\r\n', '\n']
-    _sen_ws.extend(unicode_white_spaces.values())
+    _sen_ws.extend(unicode_white_space_other.values())
 
     _exceptions = [
         r'(?<!\L<ignores>)',                                            # Ignores 
@@ -441,12 +447,12 @@ class Sentence:
 
 
 class SimpleNlp:
-    _spaces_tab_line_feed = list(unicode_white_spaces.values())
-    _spaces_tab_line_feed.append(unicode_controls['CHARACTER TABULATION'])
-    _spaces_tab_line_feed.append(unicode_controls['LINE FEED'])
+    _paragraph_pat = r'(?:\r?\n\L<other_ws>*){2,}'
+    _paragraph_re = regex.compile(_paragraph_pat, regex.DOTALL, other_ws=unicode_white_space_other)
 
-    _paragraph_pat = r'(?:\r?\n\L<s_t_lf>*){2,}'
-    _paragraph_re = regex.compile(_paragraph_pat, regex.DOTALL, s_t_lf=_spaces_tab_line_feed)
+    _trimmable_ws = list(byte_order_controls.values())
+    _trimmable_ws.extend(unicode_white_space_LF_FF.values())
+    _trimmable_ws.extend(unicode_white_space_other.values())
 
     _word_pat = r'\w(?:(?:\L<sqs>|-\s*)?\w)*'
 
@@ -455,11 +461,11 @@ class SimpleNlp:
 
         paragraph = pawpaw.arborform.Split(self._paragraph_re, desc='paragraph')
 
-        para_trimmer = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.str_strip(''.join(unicode_white_spaces.values()))])
+        para_trimmer = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.str_strip(''.join(self._trimmable_ws))])
         paragraph.itor_next = para_trimmer
 
         sentence = pawpaw.arborform.Split(Sentence().re, desc='sentence')
-        paragraph.itor_children = sentence
+        para_trimmer.itor_children = sentence
 
         self._number = number |nuco| Number()
         word_num_re = regex.compile(self._number.num_pat + r'|(?P<word>' + self._word_pat + r')', regex.DOTALL, sqs=list(unicode_single_quote_marks.values()))

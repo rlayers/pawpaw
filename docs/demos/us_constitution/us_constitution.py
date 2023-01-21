@@ -39,10 +39,12 @@ def get_parser() -> pawpaw.arborform.Itorator:
     s_extractor.itor_children = lambda ito: nlp if ito.desc == 'value' else None
 
     return a_splitter
-    
+
+
 def get_text() -> pawpaw.Ito:
     with open(os.path.join(sys.path[0], 'us_constitution.txt')) as f:
         return pawpaw.Ito(f.read(), desc='constitution')
+
 
 # Visualize
 print(f'\nVISUALIZE:\n')

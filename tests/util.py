@@ -15,7 +15,7 @@ class IntIto(Ito):  # Used for derived class tests
 
 class _TestIto(TestCase):
     @classmethod
-    def add_chars_as_children(cls, ito: pawpaw.Ito, desc: str | None) -> None:
+    def add_chars_as_children(cls, ito: Ito, desc: str | None) -> None:
         ito.children.add(*(ito.clone(i, i + 1, desc) for i in range(*ito.span)))
 
     def matches_equal(self, first: regex.Match, second: regex.Match, msg: typing.Any = ...) -> None:

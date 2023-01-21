@@ -4,7 +4,7 @@ import typing
 import types
 
 import regex
-from pawpaw import Types, Errors, Ito
+from pawpaw import Ito, Types, Errors
 from pawpaw.arborform.itorator import Itorator
 
 
@@ -13,8 +13,9 @@ class Extract(Itorator):
                  re: regex.Pattern,
                  limit: int | None = None,
                  desc_func: Types.F_ITO_M_GK_2_DESC = lambda ito, match, group: group,
-                 group_filter: collections.abc.Container[str] | Types.F_ITO_M_GK_2_B | None = None):
-        super().__init__()
+                 group_filter: collections.abc.Container[str] | Types.F_ITO_M_GK_2_B | None = None,
+                 tag: str | None = None):
+        super().__init__(tag)
         if not isinstance(re, regex.Pattern):
             raise Errors.parameter_invalid_type('re', re, regex.Pattern)
         self.re = re
@@ -49,11 +50,11 @@ class Extract(Itorator):
                 Types.F_ITO_M_GK_2_B,
                 types.NoneType)
 
-    def _iter(self, ito: pawpaw.Ito) -> Types.C_SQ_ITOS:
-        rv: typing.List[pawpaw.Ito] = []
+    def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:
+        rv: typing.List[Ito] = []
         for count, m in enumerate(ito.regex_finditer(self.re), 1):
-            path_stack: typing.List[pawpaw.Ito] = []
-            match_itos: typing.List[pawpaw.Ito] = []
+            path_stack: typing.List[Ito] = []
+            match_itos: typing.List[Ito] = []
             filtered_gns = (gn for gn in m.re.groupindex.keys() if self._group_filter(ito, m, gn))
             span_gns = ((span, gn) for gn in filtered_gns for span in m.spans(gn))
             for span, gn in sorted(span_gns, key=lambda val: (val[0][0], -val[0][1])):

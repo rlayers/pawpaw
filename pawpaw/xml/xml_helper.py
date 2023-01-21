@@ -13,15 +13,15 @@ from pawpaw.arborform import Extract
 
 # See 4 Qualified Names in https://www.w3.org/TR/xml-names/
 class QualifiedName(typing.NamedTuple):
-    prefix: pawpaw.Ito | None
-    local_part: pawpaw.Ito
+    prefix: Ito | None
+    local_part: Ito
 
     @classmethod
-    def from_src(cls, src: str | pawpaw.Ito) -> QualifiedName:
+    def from_src(cls, src: str | Ito) -> QualifiedName:
         if isinstance(src, str):
             src = Ito(src)
         elif not isinstance(src, Ito):
-            raise Errors.parameter_invalid_type('src', src, str, pawpaw.Ito)
+            raise Errors.parameter_invalid_type('src', src, str, Ito)
         
         parts = src.str_split(':', maxsplit=1)
         if len(parts) == 1:
@@ -77,9 +77,9 @@ class XmlErrors:
 
 class XmlHelper:
     @classmethod
-    def get_qualified_name(cls, ito: pawpaw.Ito) -> QualifiedName:
+    def get_qualified_name(cls, ito: Ito) -> QualifiedName:
         if not isinstance(ito, Ito):
-            raise Errors.parameter_invalid_type('ito', ito, pawpaw.Ito)
+            raise Errors.parameter_invalid_type('ito', ito, Ito)
         elif ito.desc not in (xml.descriptors.START_TAG, xml.descriptors.ATTRIBUTE):
             raise ValueError(f'parameter \'{ito}\' lacks children with descriptor \'{xml.descriptors.NAME}\' - did you forget to use pawpaw.xml.XmlParser?')
 
@@ -93,7 +93,7 @@ class XmlHelper:
     _query_xmlns = query.compile(f'*[d:{xml.descriptors.START_TAG}]/*[d:{xml.descriptors.ATTRIBUTES}]/*[d:{xml.descriptors.ATTRIBUTE}]' + '{*[p:is_xmlns]}')
 
     @classmethod
-    def get_xmlns(cls, element: ET.Element) -> typing.Dict[QualifiedName, pawpaw.Ito]:
+    def get_xmlns(cls, element: ET.Element) -> typing.Dict[QualifiedName, Ito]:
         if not isinstance(element, ET.Element):
             raise Errors.parameter_invalid_type('element', element, ET.Element)
         elif not hasattr(element, 'ito'):
@@ -120,7 +120,7 @@ class XmlHelper:
         return {str(qn.local_part): str(val) for qn, val in cls.get_xmlns(element).items() if qn.prefix is not None}
 
     @classmethod
-    def get_default_namespace(cls, element: ET.ElementTree) -> pawpaw.Ito | None:
+    def get_default_namespace(cls, element: ET.ElementTree) -> Ito | None:
         return next((val for qn, val in cls.get_xmlns(element).items() if qn.prefix is None), None)
 
     @classmethod

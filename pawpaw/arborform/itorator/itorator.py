@@ -9,7 +9,10 @@ from pawpaw.arborform.postorator.postorator import Postorator
 
 
 class Itorator(ABC):
-    def __init__(self):
+    def __init__(self, tag: str | None = None):
+        if tag is not None and not isinstance(tag, str):
+            raise Errors.parameter_invalid_type('desc', tag, str)
+        self.tag = tag
         self._itor_next: Itorator | Types.F_ITO_2_ITOR | None = None
         self._itor_children: Itorator | Types.F_ITO_2_ITOR | None = None
         self._postorator: Postorator | Types.F_ITOS_2_BITOS | None = None
@@ -60,23 +63,23 @@ class Itorator(ABC):
             raise Errors.parameter_invalid_type('val', val, Postorator, Types.F_ITOS_2_BITOS, types.NoneType)
 
     @abstractmethod
-    def _iter(self, ito: pawpaw.Ito) -> Types.C_SQ_ITOS:
+    def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:
         pass
 
-    def _do_children(self, ito: pawpaw.Ito) -> None:
+    def _do_children(self, ito: Ito) -> None:
         if self._itor_children is not None:
             itor_c = self._itor_children(ito)
             if itor_c is not None:
                 for c in itor_c._traverse(ito, True):
                     pass  # force iter walk
 
-    def _do_next(self, ito: pawpaw.Ito) -> Types.C_IT_ITOS:
+    def _do_next(self, ito: Ito) -> Types.C_IT_ITOS:
         if self._itor_next is None:
             yield ito
         elif (itor_n := self._itor_next(ito)) is not None:
             yield from itor_n._traverse(ito)
 
-    def _do_post(self, parent: pawpaw.Ito, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
+    def _do_post(self, parent: Ito, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         if self._post_func is None:
             yield from itos
         else:
@@ -88,7 +91,7 @@ class Itorator(ABC):
                 elif (_parent := bito.ito.parent) is not None:
                     _parent.children.remove(bito.ito)
 
-    def _traverse(self, ito: pawpaw.Ito, as_children: bool = False) -> Types.C_IT_ITOS:
+    def _traverse(self, ito: Ito, as_children: bool = False) -> Types.C_IT_ITOS:
         # Process ._iter with parent in place
         curs = self._iter(ito)
         
@@ -108,9 +111,9 @@ class Itorator(ABC):
 
         yield from self._do_post(parent, itertools.chain(*iters))
 
-    def traverse(self, ito: pawpaw.Ito) -> Types.C_IT_ITOS:
+    def traverse(self, ito: Ito) -> Types.C_IT_ITOS:
         if not isinstance(ito, Ito):
-            raise Errors.parameter_invalid_type('ito', ito, pawpaw.Ito)
+            raise Errors.parameter_invalid_type('ito', ito, Ito)
         yield from self._traverse(ito.clone())
 
     @classmethod
@@ -129,5 +132,5 @@ class _WrappedItorator(Itorator):
         super().__init__()
         self.__f = f
 
-    def _iter(self, ito: pawpaw.Ito) -> Types.C_SQ_ITOS:
+    def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:
         return self.__f(ito)

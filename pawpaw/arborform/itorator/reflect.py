@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from pawpaw import Types
+from pawpaw import Ito, Types
 from pawpaw.arborform.itorator import Itorator
 
 
 class Reflect(Itorator):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, tag: str | None = None):
+        super().__init__(tag)
 
-    def _iter(self, ito: pawpaw.Ito) -> Types.C_SQ_ITOS:
+    def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:
         return ito,

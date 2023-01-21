@@ -3,7 +3,7 @@ import enum
 import typing
 
 import regex
-from pawpaw import Types, Span
+from pawpaw import Span, Ito, Types
 from pawpaw.arborform.itorator import Itorator
 
 
@@ -50,9 +50,10 @@ class Split(Itorator):
         self.boundary_retention = boundary_retention
         self.return_zero_split = return_zero_split
         self.desc = desc
+        tag: str | None = None
 
-    def _iter(self, ito: pawpaw.Ito) -> Types.C_SQ_ITOS:
-        rv: typing.List[pawpaw.Ito] = []
+    def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:
+        rv: typing.List[Ito] = []
         prior: Span | None = None
         for m in ito.regex_finditer(self.re):
             cur = Span(*m.span(self.group))

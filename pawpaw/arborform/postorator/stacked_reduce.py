@@ -13,9 +13,10 @@ class StackedReduce(Postorator):
             self,
             reduce_func: F_SQ_ITOS_2_ITO,
             push_predicate: Types.F_ITO_2_B,
-            pop_predicate: F_SQ_ITOS_ITO_2_B | None = None
+            pop_predicate: F_SQ_ITOS_ITO_2_B | None = None,
+            tag: str | None = None
     ):
-        super().__init__()
+        super().__init__(tag)
         if not Types.is_callable(reduce_func, self.F_SQ_ITOS_2_ITO):
             raise Errors.parameter_invalid_type('reduce_func', reduce_func, self.F_SQ_ITOS_2_ITO)
         self.reduce_func = reduce_func

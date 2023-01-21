@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import typing
 
-from pawpaw import Ito, Types
+from pawpaw import Types, Errors
 
 
 class Postorator(ABC):
@@ -12,6 +12,11 @@ class Postorator(ABC):
     @classmethod
     def wrap(cls, func: Types.F_ITOS_2_BITOS):
         return _WrappedPostorator(func)
+
+    def __init__(self, tag: str | None = None):
+        if tag is not None and not isinstance(tag, str):
+            raise Errors.parameter_invalid_type('desc', tag, str)
+        self.tag = tag
 
 
 class _WrappedPostorator(Postorator):

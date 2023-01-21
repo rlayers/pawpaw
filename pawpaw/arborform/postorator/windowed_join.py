@@ -13,9 +13,10 @@ class WindowedJoin(Postorator):
             window_size: int,
             predicate: F_SQ_ITOS_2_B,
             ito_class: Ito = Ito,
-            desc: str | None = None
+            desc: str | None = None,
+            tag: str | None = None
     ):
-        super().__init__()
+        super().__init__(tag)
         if not isinstance(window_size, int):
             raise Errors.parameter_invalid_type('window_size', window_size, int)
         if window_size < 2:

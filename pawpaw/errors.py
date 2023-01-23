@@ -1,4 +1,5 @@
 from __future__ import annotations
+import types
 import typing
 
 
@@ -12,16 +13,20 @@ class Errors:
         return ValueError(f'parameter \'{name}\' can be neither None nor empty')
 
     @classmethod
-    def _build_types_str(cls, *allowed: typing.Type):
-        rv: typing.List[str] = []
+    def _get_type_strs(cls, *allowed) -> typing.Iterable[str]:
         for t in allowed:
-            if t is type:
-                rv.append(t.__qualname__)
-            elif t is typing.TypeVar:
-                rv.append(t.__bound__.__qualname__)
+            if hasattr(t, '__qualname__'):
+                yield t.__qualname__
+            elif hasattr(t, '__bound__'):
+                yield from cls._get_type_strs(t.__bound__)
+            elif (origin := typing.get_origin(t)) is types.UnionType:
+                args = typing.get_args(t)
+                yield from cls._get_type_strs(*args)
 
+    @classmethod
+    def _build_types_str(cls, *allowed: typing.Type) -> str:
+        return ' or '.join(cls._get_type_strs(*allowed))
 
     @classmethod
     def parameter_invalid_type(cls, name: str, value: typing.Any, *allowed: typing.Type) -> TypeError:
-        types = ' or '.join(t.__qualname__ for t in allowed)
-        return TypeError(f'parameter \'{name}\' must be type {types}, not {type(value).__qualname__}')
+        return TypeError(f'parameter \'{name}\' must be type {cls._build_types_str(*allowed)}, not {type(value).__qualname__}')

@@ -226,7 +226,7 @@ with pip or conda.
 
 ### Installation Options
 
-There are lots of ways to install Pawpaw.  Versioned instances that have passed all automated tests are available from [PyPI](https://pypi.org/):
+There are lots of ways to install Pawpaw.  Versioned instances that have passed all automated tests are available from [PyPI](https://pypi.org/project/pawpaw/):
 
 1. Install with pip from PyPI:  
    ```

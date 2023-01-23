@@ -29,6 +29,10 @@ text = \
 </music>"""
 root = ET.fromstring(text, parser=xml.XmlParser())
 
+highlighter = Highlighter(sgr.palettes.PAWPAW)
+highlighter.print(root.ito)
+exit(0)
+
 print(pepo.Tree().dumps(root.ito))
 exit(0)
 

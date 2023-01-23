@@ -641,7 +641,7 @@ class Ito:
 
     @classmethod
     def join(cls, *itos: pawpaw.Ito, desc: str | None = None) -> pawpaw.Ito:
-        """Combines Itos
+        """Synthesizes a new Ito whose .span contains the supplied objects
 
         Args:
             *itos: one or more, arbitrarily ordered Itos that have

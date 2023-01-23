@@ -279,7 +279,7 @@ If your last line looks like this, you are up and running with Pawpaw!
 <!-- HISTORY & ROADMAP -->
 ## History & Roadmap
 
-Pawpaw is a rewrite of *desponia*, a now-deprecated Python 2.x segmentation framework that was itself based on a prior framework called *Ito*.  Currently in alpha, many components and features are production ready.  However, documentation is still being written and some newer features are still undergoing work.  A rough outline of what components are production ready is as follows
+Pawpaw is a rewrite of *desponia*, a now-deprecated Python 2.x segmentation framework that was itself based on a prior framework called *Ito*.  Currently in alpha, many components and features are production ready.  However, documentation is still being written and some newer features are still undergoing work.  A rough outline of which components are finalized is as follows:
 
 - [x] arborform
   - [x] itorator

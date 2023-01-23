@@ -12,9 +12,6 @@ import pawpaw
 from pawpaw.visualization import ascii_box
 
 
-Repr = typing.Callable[[str], str]
-
-
 class Pepo(abc.ABC):
     def __init__(self, indent: str = '    ', children: bool = True):
         self.linesep: str = os.linesep
@@ -41,7 +38,7 @@ class _PepoFstr(Pepo):
 
 class Compact(_PepoFstr):
     def __init__(self, indent: str = '    ', children: bool = True):
-        super().__init__(indent, children, '%span \'%desc\' : %substr!r:40…')
+        super().__init__(indent, children, '%span \'%desc\' : \'%substr!1r1:40…% \'')
         self.children = children
 
     def _dump(self, fs: typing.IO, ei: pawpaw.Types.C_EITO, level: int = 0) -> None:

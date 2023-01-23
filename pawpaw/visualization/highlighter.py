@@ -15,7 +15,7 @@ class Highlighter:
             i += 1
             i %= len(self.palette)
             
-    def print(self, ito: pawpaw.Ito):
+    def print(self, ito: pawpaw.Ito) -> None:
         it_col = self._rotate_color()
         
         stop = 0

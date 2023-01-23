@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass, field
 import enum
 import typing
@@ -133,6 +134,10 @@ class _Colors:
         green: int
         blue: int
 
+        @classmethod
+        def from_24_bit(cls, val: int) -> Rgb:
+            return cls(val >> 16, (val >> 8) & 0xFF, val & 0xFF)
+
 
     class EightBit(int):
         """
@@ -147,7 +152,8 @@ class _Colors:
 Colors = _Colors()
 
 
-Color = Colors.Named | Colors.Rgb | Colors.EightBit
+C_COLOR = Colors.Named | Colors.Rgb | Colors.EightBit
+C_PALETTE = typing.Sequence[C_COLOR]
 
 
 @dataclass(frozen=True)

@@ -19,10 +19,15 @@ class Highlighter:
         it_col = self._rotate_color()
         
         stop = 0
+        leaf: Ito | None = None
+
         for leaf in ito.find_all('***'):
             if stop < leaf.start:
                 print(ito.string[stop:leaf.start], end='')
             print(f'{next(it_col)}{leaf}{sgr.Back.RESET}', end='')
             stop = leaf.stop
-        if leaf.stop < len(ito.string):
+        
+        if leaf is None:
+            print(ito)
+        elif leaf.stop < len(ito.string):
             print(ito.string[stop:])

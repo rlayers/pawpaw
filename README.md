@@ -291,12 +291,12 @@ Pawpaw is a rewrite of *desponia*, a now-deprecated Python 2.x segmentation fram
   - [x] plumule
 - [ ] NLP
 - [ ] visualization
-  - [ ] ascibox
+  - [x] ascibox
   - [x] highlighter
   - [ ] pepo
   - [x] sgr
-- [ ] xml
-  - [ ] XmlHelper
+- [x] xml
+  - [x] XmlHelper
   - [x] XmlParser
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

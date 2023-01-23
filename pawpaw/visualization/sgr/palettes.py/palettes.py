@@ -1,4 +1,4 @@
-from papaw.visualization.sgr import C_PALETTE, Colors
+from pawpaw.visualization.sgr import C_PALETTE, Colors
 
 
 PAWPAW: C_PALETTE = (

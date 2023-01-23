@@ -12,8 +12,6 @@
 
 <!-- ![Pawpaw](svg/title.svg) -->
 
-<!-- 533E30  D2AC70  E4D1AE  517D3D  90C246 -->
-
 # Pawpaw  [![High Performance Text Segmentation, Parsing, & Query][byline-img]][repo]
 
 Pawpaw is a high performance text segmentation framework.  Segments are organized into tree graphs that can be serialized, traversed, and searched using a powerful structured query language.  Pawpaw also features a framework for quickly and easily building complex, pipelined parsers.
@@ -265,11 +263,11 @@ Alternatively, you can pull from the main branch at GitHub.  This will ensure th
 
 Whichever way you fetch Pawpaw, you can easily verify that it is installed correctly.  Just open Python prompt and type:
 
-  ```python
-  >>> from pawpaw import Ito
-  >>> Ito('Hello, World!')
-  Ito('Hello, World!', 0, 13, None)
-  ```
+```python
+>>> from pawpaw import Ito
+>>> Ito('Hello, World!')
+Ito('Hello, World!', 0, 13, None)
+```
   
 If your last line looks like this, you are up and running with Pawpaw!
 
@@ -313,7 +311,6 @@ Pawpaw is a rewrite of *desponia*, a now-deprecated Python 2.x segmentation fram
   - [x] XmlParser
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
--->
 
 
 <!-- CONTRIBUTING -->

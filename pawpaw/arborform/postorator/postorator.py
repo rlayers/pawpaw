@@ -10,8 +10,8 @@ class Postorator(ABC):
         ...
 
     @classmethod
-    def wrap(cls, func: Types.F_ITOS_2_BITOS):
-        return _WrappedPostorator(func)
+    def wrap(cls, func: Types.F_ITOS_2_BITOS, tag: str | None = None):
+        return _WrappedPostorator(func, tag)
 
     def __init__(self, tag: str | None = None):
         if tag is not None and not isinstance(tag, str):
@@ -20,8 +20,8 @@ class Postorator(ABC):
 
 
 class _WrappedPostorator(Postorator):
-    def __init__(self, f: Types.F_ITOS_2_BITOS):
-        super().__init__()
+    def __init__(self, f: Types.F_ITOS_2_BITOS, tag: str | None = None):
+        super().__init__(tag)
         self.__f = f
 
     def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:

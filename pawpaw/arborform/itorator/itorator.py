@@ -117,19 +117,19 @@ class Itorator(ABC):
         yield from self._traverse(ito.clone())
 
     @classmethod
-    def wrap(cls, src: Itorator | Types.F_ITO_2_SQ_ITOS):
+    def wrap(cls, src: Itorator | Types.F_ITO_2_SQ_ITOS, tag: str | None = None):
         if isinstance(src, Itorator):
-            return _WrappedItorator(src.traverse)
+            return _WrappedItorator(src.traverse, tag)
         
         if Types.is_callable(src, Types.F_ITO_2_SQ_ITOS):
-            return _WrappedItorator(src)
+            return _WrappedItorator(src, tag)
 
         raise Errors.parameter_invalid_type('src', src, Types.F_ITO_2_SQ_ITOS, Itorator)
 
 
 class _WrappedItorator(Itorator):
-    def __init__(self, f: Types.F_ITO_2_SQ_ITOS):
-        super().__init__()
+    def __init__(self, f: Types.F_ITO_2_SQ_ITOS, tag: str | None = None):
+        super().__init__(tag)
         self.__f = f
 
     def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:

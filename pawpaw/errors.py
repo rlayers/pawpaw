@@ -1,4 +1,5 @@
 from __future__ import annotations
+import inspect
 import types
 import typing
 
@@ -16,7 +17,10 @@ class Errors:
     def _get_type_strs(cls, *allowed) -> typing.Iterable[str]:
         for t in allowed:
             if hasattr(t, '__qualname__'):
-                yield t.__qualname__
+                if (qn := t.__qualname__) == 'Callable':
+                    yield str(t)
+                else:
+                    yield t.__qualname__
             elif hasattr(t, '__bound__'):
                 yield from cls._get_type_strs(t.__bound__)
             elif (origin := typing.get_origin(t)) is types.UnionType:
@@ -24,6 +28,8 @@ class Errors:
                 yield from cls._get_type_strs(*args)
             elif t is None:
                 yield 'None'
+            else:
+                yield repr(t)
 
     @classmethod
     def _build_types_str(cls, *allowed: typing.Type) -> str:
@@ -31,4 +37,5 @@ class Errors:
 
     @classmethod
     def parameter_invalid_type(cls, name: str, value: typing.Any, *allowed: typing.Type) -> TypeError:
-        return TypeError(f'parameter \'{name}\' must be type {cls._build_types_str(*allowed)}, not {type(value).__qualname__}')
+        actual = str(inspect.signature(value)) if callable(value) else repr(value)
+        return TypeError(f'parameter \'{name}\' must be type {cls._build_types_str(*allowed)}, not {actual}')

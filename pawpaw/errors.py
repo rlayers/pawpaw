@@ -22,6 +22,8 @@ class Errors:
             elif (origin := typing.get_origin(t)) is types.UnionType:
                 args = typing.get_args(t)
                 yield from cls._get_type_strs(*args)
+            elif t is None:
+                yield 'None'
 
     @classmethod
     def _build_types_str(cls, *allowed: typing.Type) -> str:

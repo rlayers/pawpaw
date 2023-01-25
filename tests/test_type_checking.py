@@ -27,9 +27,11 @@ F_TOO_MANY = typing.Callable[[T_A, T_B, T_C, T_A], T_RET]
 F_WRONG_TYPES = typing.Callable[[T_C, T_B, T_A], T_RET]
 
 
-def def_ub_w_typehints(a: T_A, b: T_B, c: T_C) -> T_RET:
+def def_ub_w_typehints_direct(a: str, b: int | None, c: Foo) -> bool:
     return True
 
+def def_ub_w_typehints_indirect(a: T_A, b: T_B, c: T_C) -> T_RET:
+    return True
 
 def def_ub_wo_typehints(a, b, c):
     return True
@@ -65,7 +67,8 @@ class TestTypeChecking(_TestIto):
         lam_wo_typehints = lambda a, b, c: True
         
         self.test_data = [
-            TestData('unbound def', True, def_ub_w_typehints),
+            TestData('unbound def direct typehints', True, def_ub_w_typehints_direct),
+            TestData('unbound def indirect typehints', True, def_ub_w_typehints_indirect),
             TestData('unbound def', False, def_ub_wo_typehints),
             TestData('class def', True, TestTypeChecking.def_cm_w_typehints),
             TestData('class def', False, TestTypeChecking.def_cm_wo_typehints),

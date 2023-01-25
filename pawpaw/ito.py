@@ -1456,47 +1456,65 @@ class Types:
 
     C_PATH = str | Ito
 
+    C_TYPE_CHECK_T = typing.Type | types.UnionType
+
     @classmethod
-    def type_matches_annotation(cls, _type: typing.Type, annotation: typing.Type) -> bool:
-        if annotation == inspect._empty:
+    def _as_types(cls, t: C_TYPE_CHECK_T) -> typing.List[typing.Type]:
+        rv = list[typing.Type]()
+
+        if (origin := typing.get_origin(t)) is types.UnionType:
+            for i in typing.get_args(t):
+                rv.extend(cls._as_types(i))
+        elif isinstance(t, typing.Type):
+            rv.append(t)
+        else:
+            raise Errors.parameter_invalid_type('t', t, *typing.get_args(cls.C_TYPE_CHECK_T))
+
+        return rv
+
+    @classmethod
+    def type_matches_annotation(cls, t: C_TYPE_CHECK_T, annotation: C_TYPE_CHECK_T) -> bool:
+        if annotation == inspect._empty:  # Impossible to check without
             return True
 
-        if _type == annotation:
-            return True
+        ats = cls._as_types(annotation)
+        if len(ats) > 0:  # Impossible to check without
+            for tt in cls._as_types(t):
+                if not any(issubclass(tt, at) for at in ats):
+                    return False
 
-        origin = typing.get_origin(annotation)
-        if origin is types.UnionType:
-            return _type in typing.get_args(annotation)
-
-        if isinstance(_type, typing.TypeVar):
-            if getattr(typing, 'reveal_type', None) is None:  # Python < 3.11 check
-                return True  # Can't reveal type in < 3.11 versions
-
-            _type = typing.reveal_type(_type)
-
-        if issubclass(_type, annotation):
-            return True
-
-        return False
+        return True
 
     @classmethod
     def is_callable(cls, func: typing.Any, type_sig: typing.Callable) -> bool:
         if not isinstance(func, typing.Callable):
             return False
 
-        ts_params, ts_rv = typing.get_args(type_sig)
+        ts_params, ts_ret_val = typing.get_args(type_sig)
 
-        func_sig = inspect.signature(func)
-        if not cls.type_matches_annotation(ts_rv, func_sig.return_annotation):
+        # This has proper types, even when "from __future__ import annotations" used.  However:
+        # if the ret-val or param lacks a type hint, it is missing from this dict
+        func_sig_1 = typing.get_type_hints(func)
+
+        # This has guarranteed entries for the ret_val and all params, however, the types _may_ be
+        # strings if "from __future__ import annotations" is used.
+        func_sig_2 = inspect.signature(func)
+
+        if (f_ret_val := func_sig_1.get('return', None)) != None:
+            if not cls.type_matches_annotation(ts_ret_val, f_ret_val):
+                return False
+
+        if len(ts_params) != len(func_sig_2.parameters):
             return False
 
-        if len(ts_params) != len(func_sig.parameters):
-            return False
+        for tsp, fsp in zip(ts_params, func_sig_2.parameters.values()):
+            if isinstance(fsp.annotation, typing.get_args(cls.C_TYPE_CHECK_T)):
+                f_param_val = fsp.annotation
+            else:
+                f_param_val = func_sig_1.get(fsp, None)
 
-        if not all(
-                cls.type_matches_annotation(tsp, fsp.annotation) for tsp, fsp in
-                zip(ts_params, func_sig.parameters.values())):
-            return False
+            if f_param_val != None and not cls.type_matches_annotation(tsp, f_param_val):
+                return False
 
         return True
 
@@ -1558,5 +1576,3 @@ class Types:
             p_vargs[arg_spec.varargs] = unpaired
 
         return func(*p_args, *p_vargs, **p_kwonlyargs)
-
-

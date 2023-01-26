@@ -7,6 +7,9 @@ del infix
 from pawpaw.errors import Errors
 del errors
 
+import pawpaw._type_magic as type_magic
+del _type_magic
+
 from pawpaw.span import Span
 del span
 

@@ -83,7 +83,7 @@ def isinstance_ex(obj: object, type_or_union: TYPE_OR_UNION) -> bool:
             # Could expand this for various generic types
             if isinstance(obj, origin):
                 return True
-        elif issubclass(obj, t):
+        elif issubclass(type(obj), t):
             return True
     return False
 

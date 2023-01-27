@@ -10,6 +10,12 @@ del errors
 import pawpaw._type_magic as type_magic
 del _type_magic
 
+from pawpaw._predicated_value import F_PREDICATE, PredicatedValue
+del _predicated_value
+
+from pawpaw._furcation import Furcation
+del _furcation
+
 from pawpaw.span import Span
 del span
 

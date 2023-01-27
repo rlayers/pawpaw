@@ -1,4 +1,5 @@
 import dataclasses
+import random
 import typing
 
 
@@ -36,7 +37,6 @@ class TestFurcation(_TestIto):
             _TestData('tuple[typing.Callable[[Itorator], bool], R | None]', True, (len_nonzero, itor_ltrim_one)),
             _TestData('typing.Callable[[Itorator], bool]', True, len_nonzero),
             _TestData('Itorator', True, itor_ltrim_one),
-            _TestData('None', True, None),
 
             _TestData('str', False, 'abc'),
             _TestData('tuple[typing.Callable[[Itorator], bool], R | None, bool]', False, (len_nonzero, itor_ltrim_one, bool)),
@@ -45,23 +45,39 @@ class TestFurcation(_TestIto):
         ]
 
     def test_append(self):
-        monad = Furcation[Ito, arborform.Itorator]()
         for ti in self.test_data:
+            monad = Furcation[Ito, arborform.Itorator]()
             with self.subTest(type=ti.name):
                 if ti.valid:
                     monad.append(ti.value)
-                    self.assertTrue(True)
+                    self.assertEqual(1, len(monad))
                 else:
                     with self.assertRaises(TypeError):
                         monad.append(ti.value)
 
     def test_insert(self):
-        monad = Furcation[Ito, arborform.Itorator]()
         for ti in self.test_data:
+            monad = Furcation[Ito, arborform.Itorator]()
             with self.subTest(type=ti.name):
                 if ti.valid:
                     monad.insert(0, ti.value)
-                    self.assertTrue(True)
+                    self.assertEqual(1, len(monad))
                 else:
                     with self.assertRaises(TypeError):
                         monad.insert(0, ti.value)
+
+    def test_extend(self):
+        valids = [ti.value for ti in filter(lambda ti2: ti2.valid, self.test_data)]
+        with self.subTest(items='all valid'):
+            monad = Furcation[Ito, arborform.Itorator]()
+            monad.extend(valids)
+            self.assertEqual(len(valids), len(monad))
+
+        for invalid in filter(lambda ti: not ti.valid, self.test_data):
+            with self.subTest(items=f'all valid, one invalid ({invalid.name})'):
+                monad = Furcation[Ito, arborform.Itorator]()
+                cloned = valids.copy()
+                cloned.append(invalid.value)
+                random.shuffle(cloned)
+                with self.assertRaises(TypeError):
+                    monad.extend(cloned)

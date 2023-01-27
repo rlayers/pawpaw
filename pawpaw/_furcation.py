@@ -55,3 +55,6 @@ class Furcation(list[PredicatedValue], typing.Generic[I, R]):
 
     def insert(self, index: int, item: C_ITEM) -> None:
         super().insert(index, self._transform_insertion(item))
+
+    def extend(self, items: typing.Iterable[C_ITEM]) -> None:
+        super().extend(self._transform_insertion(i) for i in items)

@@ -79,7 +79,7 @@ def isinstance_ex(obj: object, type_or_union: TYPE_OR_UNION) -> bool:
     Tuples are not allowed for 2nd parameter because... why support them now that you can pass a Union?
     '''
     for t in unpack(type_or_union):
-        if (origin := typing.get_origin) is not None:
+        if (origin := typing.get_origin(t)) is not None:
             # Could expand this for various generic types
             if isinstance(obj, origin):
                 return True
@@ -88,8 +88,32 @@ def isinstance_ex(obj: object, type_or_union: TYPE_OR_UNION) -> bool:
     return False
 
 
+def issubclass_ex(_cls, type_or_union: TYPE_OR_UNION) -> bool:
+    cls_types = [t if (origin := typing.get_origin(t)) is None else origin for t in unpack(_cls)]
+    tou_types = [t if (origin := typing.get_origin(t)) is None else origin for t in unpack(type_or_union)]
+    for cls_type in cls_types:
+        if any(issubclass(cls_type, tou_type) for tou_type in tou_types):
+            return True
+    return False
+
+
 class Functoid:
     """Marker object"""
+
+
+def _annotation_or_type_hint_matches_type(
+        annotation: TYPE_OR_UNION | str | inspect.Signature.empty,
+        type_hint: typing.Any or None,
+        _type: TYPE_OR_UNION
+) -> type | None:
+    t = annotation
+    if not isinstance(t, TYPE_OR_UNION) or (isinstance(t, type) and issubclass(t, inspect.Signature.empty)):
+        t = type_hint
+    if t is not None:
+        if not issubclass_ex(t, _type):
+            return False
+
+    return True
 
 
 def functoid_isinstance(functoid: typing.Callable, callable_type_or_generic: CALLABLE_TYPE_OR_GENERIC) -> bool:
@@ -99,140 +123,69 @@ def functoid_isinstance(functoid: typing.Callable, callable_type_or_generic: CAL
     if not is_functoid(functoid):
         raise Errors.parameter_invalid_type('functoid', functoid, Functoid)
 
-    # This has guarranteed entries for the ret_val and all params, however, the types _may_ be
+    # This has guaranteed entries for the ret_val and all params, however, the types _may_ be
     # strings if "from __future__ import annotations" is used.
-    func_sig_2 = inspect.signature(func)
+    func_sig = inspect.signature(functoid)
 
     # This has proper types, even when "from __future__ import annotations" used.  However:
     # if the ret-val or param lacks a type hint, it is missing from this dict
-    func_sig_1 = typing.get_type_hints(func)
+    func_type_hints = typing.get_type_hints(functoid)
 
     ts_params, ts_ret_val = typing.get_args(callable_type_or_generic)
 
+    if not _annotation_or_type_hint_matches_type(func_sig.return_annotation, func_type_hints.get('return', None), ts_ret_val):
+        return False
 
-# def issubclass(cls: TYPE_OR_UNION, template: TYPE_OR_UNION):
-#     template_Types = as_types(template)
+    if len(func_sig.parameters) != len(ts_params):
+        return False
 
+    for func_p, ts_p in zip(func_sig.parameters.items(), ts_params):
+        func_n, func_p = func_p
+        if not _annotation_or_type_hint_matches_type(func_p, func_type_hints.get(func_n, None), ts_p):
+            return False
 
-
-# def type_matches_annotation(t1: TYPE_CHECKABLE, t2: TYPE_CHECKABLE) -> bool:
-#     if isinstance(t1, inspect.Signature.empty) or isinstance(t2, inspect.Signature.empty):
-#         return True  # Can't check empty
-
-#     ats = _as_types(t2)
-#     if len(ats) > 0:  # Impossible to check without
-#         for tt in _as_types(t):
-#             if not any(issubclass(tt, at) for at in ats):
-#                 return False
-
-#     return True
+    return True
 
 
+def invoke_func(func: typing.Any, *vals: typing.Any) -> typing.Any:
+    """Wire and fire
 
+    Args:
+        func:
+        *vals:
 
+    Returns:
+        Invokes func and returns its return value
+    """
 
-# def _callable_type_checkables(func: typing.Callable) -> tuple(typing.Dict[str, TYPE_CHECKABLE], TYPE_CHECKABLE):
-#     # This has proper types, even when "from __future__ import annotations" used.  However:
-#     # if the ret-val or param lacks a type hint, it is missing from this dict
-#     func_sig_1 = typing.get_type_hints(func)
+    if is_lambda(func):
+        return func(*vals)  # No type hints on lamdbas, so this is the best we can do
 
-#     # This has guarranteed entries for the ret_val and all params, however, the types _may_ be
-#     # strings if "from __future__ import annotations" is used.
-#     func_sig_2 = inspect.signature(func)
+    unpaired: typing.List[typing.Any] = list(vals)
 
-#     ts_params, ts_ret_val = typing.get_args(type_sig)
+    arg_spec = inspect.getfullargspec(func)
+    del arg_spec.annotations['return']
 
+    p_args: typing.List[typing.Any] = []
+    for arg in arg_spec.args:
+        for val in unpaired:
+            val_type = type(val)
+            if issubclass_ex(val_type, arg_spec.annotations[arg]):
+                p_args.append(val)
+                unpaired.remove(val)
+                break
 
+    p_kwonlyargs: typing.Dict[str, typing.Any] = {}
+    for arg in arg_spec.kwonlyargs:
+        for val in unpaired:
+            val_type = type(val)
+            if issubclass_ex(val_type, arg_spec.annotations[arg]):
+                p_kwonlyargs[arg] = val
+                unpaired.remove(val)
+                break
 
+    p_vargs: typing.List[typing.Any] = []
+    if len(unpaired) > 0 and arg_spec.varargs is not None:
+        p_vargs[arg_spec.varargs] = unpaired
 
-# def is_callable(func: typing.Any, type_sig: typing.Callable) -> bool:
-#     if not isinstance(func, typing.Callable):
-#         return False
-
-#     ts_params, ts_ret_val = typing.get_args(type_sig)
-
-#     # This has proper types, even when "from __future__ import annotations" used.  However:
-#     # if the ret-val or param lacks a type hint, it is missing from this dict
-#     func_sig_1 = typing.get_type_hints(func)
-
-#     # This has guarranteed entries for the ret_val and all params, however, the types _may_ be
-#     # strings if "from __future__ import annotations" is used.
-#     func_sig_2 = inspect.signature(func)
-
-#     # use func_sig_2.return_annotation?
-#     if (f_ret_val := func_sig_1.get('return', None)) != None:
-#         if not type_checkables_match(ts_ret_val, f_ret_val):
-#             return False
-
-#     if len(ts_params) != len(func_sig_2.parameters):
-#         return False
-
-#     for tsp, fsp in zip(ts_params, func_sig_2.parameters.values()):
-#         if isinstance(fsp.annotation, typing.get_args(TYPE_CHECKABLE)):
-#             f_param_val = fsp.annotation
-#         else:
-#             f_param_val = func_sig_1.get(fsp, None)
-
-#         if f_param_val != None and not type_checkables_match(tsp, f_param_val):
-#             return False
-
-#     return True
-
-
-# def is_desc_func(func: typing.Callable) -> bool:
-#     if not isinstance(func, typing.Callable):
-#         return False
-
-#     sig = inspect.signature(func)
-#     if not type_checkables_match(str, sig.return_annotation):
-#         return False
-
-#     return True
-
-
-# def is_lambda(func: typing.Callable):
-#     return type(func) is types.LambdaType and func.__name__ == '<lambda>'
-
-
-# def invoke_func(func: typing.Any, *vals: typing.Any) -> typing.Any:
-#     """Wire and fire
-
-#     Args:
-#         func:
-#         *vals:
-
-#     Returns:
-#         Invokes func and returns its return value
-#     """
-
-#     if is_lambda(func):
-#         return func(*vals)  # No type hints on lamdbas, so this is the best we can do
-
-#     unpaired: typing.List[typing.Any] = list(vals)
-
-#     arg_spec = inspect.getfullargspec(func)
-#     del arg_spec.annotations['return']
-
-#     p_args: typing.List[typing.Any] = []
-#     for arg in arg_spec.args:
-#         for val in unpaired:
-#             val_type = type(val)
-#             if type_checkables_match(val_type, arg_spec.annotations[arg]):
-#                 p_args.append(val)
-#                 unpaired.remove(val)
-#                 break
-
-#     p_kwonlyargs: typing.Dict[str, typing.Any] = {}
-#     for arg in arg_spec.kwonlyargs:
-#         for val in unpaired:
-#             val_type = type(val)
-#             if type_checkables_match(val_type, arg_spec.annotations[arg]):
-#                 p_kwonlyargs[arg] = val
-#                 unpaired.remove(val)
-#                 break
-
-#     p_vargs: typing.List[typing.Any] = []
-#     if len(unpaired) > 0 and arg_spec.varargs is not None:
-#         p_vargs[arg_spec.varargs] = unpaired
-
-#     return func(*p_args, *p_vargs, **p_kwonlyargs)
+    return func(*p_args, *p_vargs, **p_kwonlyargs)

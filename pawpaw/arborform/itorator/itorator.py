@@ -8,6 +8,14 @@ from pawpaw import Types, Errors, Ito
 from pawpaw.arborform.postorator.postorator import Postorator
 
 
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class ItoDist:
+    predicate: typing.Callable[[Ito], bool]
+    itorator: Itorator | None
+
+
 class Itorator(ABC):
     def __init__(self, tag: str | None = None):
         if tag is not None and not isinstance(tag, str):

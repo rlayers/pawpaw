@@ -3,11 +3,20 @@ import sys
 sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
+import typing
 
 import regex
 import pawpaw
 from pawpaw import Ito
 from pawpaw.visualization import sgr, Highlighter, pepo
+
+
+
+
+
+
+itor_funcs: typing.List[typing.Callable[[Ito], bool]]
+
 
 
 v_compact = pepo.Compact()

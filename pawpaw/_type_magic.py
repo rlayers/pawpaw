@@ -110,7 +110,9 @@ def _annotation_or_type_hint_matches_type(
     if not isinstance(t, TYPE_OR_UNION) or (isinstance(t, type) and issubclass(t, inspect.Signature.empty)):
         t = type_hint
     if t is not None:
-        if not issubclass_ex(t, _type):
+        if _type is typing.Any:
+            return True
+        elif not issubclass_ex(t, _type):
             return False
 
     return True
@@ -145,7 +147,7 @@ def functoid_isinstance(functoid: typing.Callable, callable_type_or_generic: CAL
 
     for func_p, ts_p in zip(func_sig.parameters.items(), ts_params):
         func_n, func_p = func_p
-        if not _annotation_or_type_hint_matches_type(func_p, func_type_hints.get(func_n, None), ts_p):
+        if not _annotation_or_type_hint_matches_type(func_p.annotation, func_type_hints.get(func_n, None), ts_p):
             return False
 
     return True

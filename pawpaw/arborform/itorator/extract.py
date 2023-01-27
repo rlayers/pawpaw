@@ -4,7 +4,7 @@ import typing
 import types
 
 import regex
-from pawpaw import Ito, Types, Errors
+from pawpaw import Ito, Types, Errors, type_magic
 from pawpaw.arborform.itorator import Itorator
 
 
@@ -22,7 +22,7 @@ class Extract(Itorator):
         if limit is not None and not isinstance(limit, int):
             raise Errors.parameter_invalid_type('limit', limit, int)
         self.limit = limit
-        if not Types.is_callable(desc_func, Types.F_ITO_M_GK_2_DESC):
+        if not type_magic.functoid_isinstance(desc_func, Types.F_ITO_M_GK_2_DESC):
             raise Errors.parameter_invalid_type('desc_func', desc_func, Types.F_ITO_M_GK_2_DESC)
         self.desc_func = desc_func
         self.group_filter = group_filter
@@ -36,7 +36,7 @@ class Extract(Itorator):
         if group_filter is None:
             self._group_filter = lambda i, m_, g: True
 
-        elif Types.is_callable(group_filter, Types.F_ITO_M_GK_2_B):
+        elif type_magic.functoid_isinstance(group_filter, Types.F_ITO_M_GK_2_B):
             self._group_filter = group_filter
 
         elif isinstance(group_filter, collections.abc.Container):

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import typing
 
-from pawpaw import Ito, Types, Errors
+from pawpaw import Ito, Types, Errors, type_magic
 from pawpaw.arborform.postorator import Postorator
 
        
@@ -17,15 +17,15 @@ class StackedReduce(Postorator):
             tag: str | None = None
     ):
         super().__init__(tag)
-        if not Types.is_callable(reduce_func, self.F_SQ_ITOS_2_ITO):
+        if not type_magic.functoid_isinstance(reduce_func, self.F_SQ_ITOS_2_ITO):
             raise Errors.parameter_invalid_type('reduce_func', reduce_func, self.F_SQ_ITOS_2_ITO)
         self.reduce_func = reduce_func
 
-        if not Types.is_callable(push_predicate, Types.F_ITO_2_B):
+        if not type_magic.functoid_isinstance(push_predicate, Types.F_ITO_2_B):
             raise Errors.parameter_invalid_type('push_predicate', push_predicate, Types.F_ITO_2_B)
         self.push_predicate = push_predicate
 
-        if pop_predicate is None or Types.is_callable(pop_predicate, self.F_SQ_ITOS_ITO_2_B):
+        if pop_predicate is None or type_magic.functoid_isinstance(pop_predicate, self.F_SQ_ITOS_ITO_2_B):
             self.pop_predicate = pop_predicate
         else:
             raise Errors.parameter_invalid_type('pop_predicate', pop_predicate, self.F_SQ_ITOS_ITO_2_B, None)
@@ -53,7 +53,7 @@ class StackedReduce(Postorator):
 # class PromoteChildren(Consolidator):
 #     def __init__(self, predicate: Types.F_ITO_2_B):
 #         super().__init__()
-#         if not Types.is_callable(predicate, Types.F_ITO_2_B):
+#         if not type_magic.functoid_isinstance(predicate, Types.F_ITO_2_B):
 #             raise Errors.parameter_invalid_type('predicate', predicate, Types.F_ITO_2_B)
 #         self.predicate = predicate
 

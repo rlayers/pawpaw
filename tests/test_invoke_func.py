@@ -21,7 +21,7 @@ class TestDescFunc(_TestIto):
     def test_arg_only_func(self):
         for vars in {'a': False, 'b': -1}, {'a': False, 'b': -1, 'c': 1.234}:
             with self.subTest(vars=vars):
-                rv = pawpaw.Types.invoke_func(arg_only_func, *vars.values())
+                rv = pawpaw.type_magic.invoke_func(arg_only_func, *vars.values())
                 for k, v in vars.items():
                     if k in ('a', 'b'):
                         self.assertEqual(v, rv[k])
@@ -34,20 +34,20 @@ class TestDescFunc(_TestIto):
                     {'a': False, 'b': -1, 'c': 1.234}, \
                     {'a': False, 'b': -1, 'c': 1.234, 'd': 'd-value'}:
             with self.subTest(vars=vars):
-                rv = pawpaw.Types.invoke_func(arg_kwonlyargs_func, *vars.values())
+                rv = pawpaw.type_magic.invoke_func(arg_kwonlyargs_func, *vars.values())
                 for k, v in vars.items():
                     self.assertEqual(v, rv[k])
 
     def test_args(self):
         for vars in {'a': True}, {'a': False, 'b': -1}:
             with self.subTest(vars=vars):
-                rv = pawpaw.Types.invoke_func(big_func, *vars.values())
+                rv = pawpaw.type_magic.invoke_func(big_func, *vars.values())
                 for k, v in vars.items():
                     self.assertEqual(v, rv[k])
 
     def test_args_kwargs(self):
         for vars in {'a': True, 'c': 1.234}, {'a': False, 'b': -1, 'c': 5.678}:
             with self.subTest(vars=vars):
-                rv = pawpaw.Types.invoke_func(big_func, *vars.values())
+                rv = pawpaw.type_magic.invoke_func(big_func, *vars.values())
                 for k, v in vars.items():
                     self.assertEqual(v, rv[k])

@@ -4,7 +4,7 @@ import itertools
 import types
 import typing
 
-from pawpaw import Types, Errors, Ito
+from pawpaw import Types, Errors, Ito, type_magic
 from pawpaw.arborform.postorator.postorator import Postorator
 
 
@@ -36,7 +36,7 @@ class Itorator(ABC):
             raise ValueError('can\'t set .itor_next to self')
         elif isinstance(val, Itorator):
             self._itor_next = lambda ito: val
-        elif val is None or Types.is_callable(val, Types.F_ITO_2_ITOR):
+        elif val is None or type_magic.functoid_isinstance(val, Types.F_ITO_2_ITOR):
             self._itor_next = val
         else:
             raise Errors.parameter_invalid_type('val', val, Itorator, Types.F_ITO_2_ITOR, types.NoneType)
@@ -51,7 +51,7 @@ class Itorator(ABC):
             raise ValueError('can\'t set .itor_children to self')
         elif isinstance(val, Itorator):
             self._itor_children = lambda ito: val
-        elif val is None or Types.is_callable(val, Types.F_ITO_2_ITOR):
+        elif val is None or type_magic.functoid_isinstance(val, Types.F_ITO_2_ITOR):
             self._itor_children = val
         else:
             raise Errors.parameter_invalid_type('val', val, Itorator, Types.F_ITO_2_ITOR, types.NoneType)
@@ -62,7 +62,7 @@ class Itorator(ABC):
 
     @postorator.setter
     def postorator(self, val: Postorator | Types.F_ITOS_2_BITOS | None):
-        if val is None or Types.is_callable(val, Types.F_ITOS_2_BITOS):
+        if val is None or type_magic.functoid_isinstance(val, Types.F_ITOS_2_BITOS):
             self._postorator = self._post_func = val
         elif isinstance(val, Postorator):
             self._postorator = val
@@ -129,7 +129,7 @@ class Itorator(ABC):
         if isinstance(src, Itorator):
             return _WrappedItorator(src.traverse, tag)
         
-        if Types.is_callable(src, Types.F_ITO_2_SQ_ITOS):
+        if type_magic.functoid_isinstance(src, Types.F_ITO_2_SQ_ITOS):
             return _WrappedItorator(src, tag)
 
         raise Errors.parameter_invalid_type('src', src, Types.F_ITO_2_SQ_ITOS, Itorator)

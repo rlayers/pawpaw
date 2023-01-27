@@ -120,8 +120,12 @@ def functoid_isinstance(functoid: typing.Callable, callable_type_or_generic: CAL
     '''
     There is no good way to type hint for functoid, so falling back to 'typing.Callable'
     '''
+
+    if not is_callable_type_or_generic(callable_type_or_generic):
+        raise Errors.parameter_invalid_type('callable_type_or_generic', callable_type_or_generic, CALLABLE_TYPE_OR_GENERIC)
+
     if not is_functoid(functoid):
-        raise Errors.parameter_invalid_type('functoid', functoid, Functoid)
+        return False
 
     # This has guaranteed entries for the ret_val and all params, however, the types _may_ be
     # strings if "from __future__ import annotations" is used.

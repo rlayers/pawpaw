@@ -12,9 +12,7 @@ import typing
 import regex
 
 import pawpaw.query
-from pawpaw import Infix
-from pawpaw.span import Span
-from pawpaw.errors import Errors
+from pawpaw import Infix, Span, Errors, type_magic
 from .util import find_escapes
 
 
@@ -84,7 +82,7 @@ class Ito:
 
         if isinstance(desc, str):
             desc_func = lambda match, group: desc
-        elif Types.is_callable(desc, Types.F_M_GK_2_DESC):
+        elif type_magic.functoid_isinstance(desc, Types.F_M_GK_2_DESC):
             desc_func = desc
         else:
             raise Errors.parameter_invalid_type('desc', desc, Types.F_M_GK_2_DESC)
@@ -124,7 +122,7 @@ class Ito:
 
         if isinstance(desc, str):
             desc_func = lambda m, g: desc
-        elif Types.is_callable(desc, Types.F_M_GK_2_DESC):
+        elif type_magic.functoid_isinstance(desc, Types.F_M_GK_2_DESC):
             desc_func = desc
         else:
             raise Errors.parameter_invalid_type('desc', desc, Types.F_M_GK_2_DESC)
@@ -1457,122 +1455,3 @@ class Types:
     C_PATH = str | Ito
 
     C_TYPE_CHECK_T = typing.Type | types.UnionType
-
-    @classmethod
-    def _as_types(cls, t: C_TYPE_CHECK_T) -> typing.List[typing.Type]:
-        rv = list[typing.Type]()
-
-        if (origin := typing.get_origin(t)) is types.UnionType:
-            for i in typing.get_args(t):
-                rv.extend(cls._as_types(i))
-        elif isinstance(t, typing.Type):
-            rv.append(t)
-        else:
-            raise Errors.parameter_invalid_type('t', t, *typing.get_args(cls.C_TYPE_CHECK_T))
-
-        return rv
-
-    @classmethod
-    def type_matches_annotation(cls, t: C_TYPE_CHECK_T, annotation: C_TYPE_CHECK_T) -> bool:
-        if annotation == inspect._empty:  # Impossible to check without
-            return True
-
-        ats = cls._as_types(annotation)
-        if len(ats) > 0:  # Impossible to check without
-            for tt in cls._as_types(t):
-                if not any(issubclass(tt, at) for at in ats):
-                    return False
-
-        return True
-
-    @classmethod
-    def is_callable(cls, func: typing.Any, type_sig: typing.Callable) -> bool:
-        if not isinstance(func, typing.Callable):
-            return False
-
-        ts_params, ts_ret_val = typing.get_args(type_sig)
-
-        # This has proper types, even when "from __future__ import annotations" used.  However:
-        # if the ret-val or param lacks a type hint, it is missing from this dict
-        func_sig_1 = typing.get_type_hints(func)
-
-        # This has guarranteed entries for the ret_val and all params, however, the types _may_ be
-        # strings if "from __future__ import annotations" is used.
-        func_sig_2 = inspect.signature(func)
-
-        if (f_ret_val := func_sig_1.get('return', None)) != None:
-            if not cls.type_matches_annotation(ts_ret_val, f_ret_val):
-                return False
-
-        if len(ts_params) != len(func_sig_2.parameters):
-            return False
-
-        for tsp, fsp in zip(ts_params, func_sig_2.parameters.values()):
-            if isinstance(fsp.annotation, typing.get_args(cls.C_TYPE_CHECK_T)):
-                f_param_val = fsp.annotation
-            else:
-                f_param_val = func_sig_1.get(fsp, None)
-
-            if f_param_val != None and not cls.type_matches_annotation(tsp, f_param_val):
-                return False
-
-        return True
-
-    @classmethod
-    def is_desc_func(cls, func: typing.Callable) -> bool:
-        if not isinstance(func, typing.Callable):
-            return False
-
-        sig = inspect.signature(func)
-        if not cls.type_matches_annotation(str, sig.return_annotation):
-            return False
-
-        return True
-
-    @classmethod
-    def is_lambda(cls, func: typing.Callable):
-        return type(func) is types.LambdaType and func.__name__ == '<lambda>'
-
-    @classmethod
-    def invoke_func(cls, func: typing.Any, *vals: typing.Any) -> typing.Any:
-        """Wire and fire
-
-        Args:
-            func:
-            *vals:
-
-        Returns:
-            Invokes func and returns its return value
-        """
-
-        if cls.is_lambda(func):
-            return func(*vals)  # No type hints on lamdbas, so this is the best we can do
-
-        unpaired: typing.List[typing.Any] = list(vals)
-
-        arg_spec = inspect.getfullargspec(func)
-        del arg_spec.annotations['return']
-
-        p_args: typing.List[typing.Any] = []
-        for arg in arg_spec.args:
-            for val in unpaired:
-                val_type = type(val)
-                if cls.type_matches_annotation(val_type, arg_spec.annotations[arg]):
-                    p_args.append(val)
-                    unpaired.remove(val)
-                    break
-
-        p_kwonlyargs: typing.Dict[str, typing.Any] = {}
-        for arg in arg_spec.kwonlyargs:
-            for val in unpaired:
-                val_type = type(val)
-                if cls.type_matches_annotation(val_type, arg_spec.annotations[arg]):
-                    p_kwonlyargs[arg] = val
-                    unpaired.remove(val)
-                    break
-
-        p_vargs: typing.List[typing.Any] = []
-        if len(unpaired) > 0 and arg_spec.varargs is not None:
-            p_vargs[arg_spec.varargs] = unpaired
-
-        return func(*p_args, *p_vargs, **p_kwonlyargs)

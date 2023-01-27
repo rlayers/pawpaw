@@ -3,13 +3,13 @@ import dataclasses
 import typing
 import types
 
-from pawpaw import Ito, Types, Errors, arborform
+from pawpaw import Ito, Types, Errors, type_magic, arborform
 
 F_PREDICATE = typing.Callable[[typing.Any], bool]
 
 class PredicatedValue:
     def __init__(self, predicate: F_PREDICATE, val: typing.Any):
-        if not Types.is_callable(predicate, F_PREDICATE):
+        if not type_magic.functoid_isinstance(predicate, F_PREDICATE):
             raise Errors.parameter_invalid_type('predicate', predicate, F_PREDICATE)
         self._predicate: F_PREDICATE = predicate
         self._val: typing.Any = val
@@ -68,7 +68,7 @@ class Furcation(list[PredicatedValue], typing.Generic[P, R]):
         if isinstance(item1, PredicatedValue):
             item = item1
         elif isinstance(item1, typing.Callable):
-            if Types.is_callable(item1, typing.Callable[[p], bool]):
+            if type_magic.functoid_isinstance(item1, typing.Callable[[p], bool]):
                 if isinstance(item2, r) or item2 is None:
                     item = PredicatedValue(item1, item2)
                 else:

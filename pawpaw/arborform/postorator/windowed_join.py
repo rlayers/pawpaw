@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import typing
 
-from pawpaw import Ito, Types, Errors
+from pawpaw import Ito, Types, Errors, type_magic
 from pawpaw.arborform.postorator import Postorator
 
 
@@ -24,7 +24,7 @@ class WindowedJoin(Postorator):
                              f'{window_size:,}, but must be greater than or equal to 2')
         self.window_size = window_size
 
-        if not Types.is_callable(predicate, self.F_SQ_ITOS_2_B):
+        if not type_magic.functoid_isinstance(predicate, self.F_SQ_ITOS_2_B):
             raise Errors.parameter_invalid_type('predicate', predicate, self.F_SQ_ITOS_2_B)
         self.predicate = predicate
 

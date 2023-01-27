@@ -37,6 +37,11 @@ class TestFurcation(_TestIto):
             _TestData('typing.Callable[[Itorator], bool]', True, len_nonzero),
             _TestData('Itorator', True, itor_ltrim_one),
             _TestData('None', True, None),
+
+            _TestData('str', False, 'abc'),
+            _TestData('tuple[typing.Callable[[Itorator], bool], R | None, bool]', False, (len_nonzero, itor_ltrim_one, bool)),
+            _TestData('typing.Callable[[int], bool]', False, def_invalid_input_val),
+            _TestData('None', False, None),
         ]
 
     def test_append(self):

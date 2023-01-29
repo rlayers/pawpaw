@@ -17,7 +17,7 @@ def is_callable_type_or_generic(obj: typing.Any) -> bool:
 
 def is_functoid(obj: typing.Any):
     '''
-    Python's builtin callable method' returns true for all callable types (e.g., def, lambda,
+    Python's builtin callable method iscallable() returns true for all callable types (e.g., def, lambda,
     instance/class/builtin method, etc.) However, it also returns True for typing.Callable
     objects.  E.g.:
 

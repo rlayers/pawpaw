@@ -345,7 +345,7 @@ class EcfCombined(Ecf):
         self.operands = operands
 
     @classmethod
-    def _eval(self, operand: pawpaw.Ito, filter_: pawpaw.Types.F_EITO_V_P_2_B, ec, values, predicates):
+    def _eval(cls, operand: pawpaw.Ito, filter_: pawpaw.Types.F_EITO_V_P_2_B, ec, values, predicates):
         rv = filter_(ec, values, predicates)
 
         if operand.str_count('~') & 1 == 1:  # bitwise op to determine if n is odd

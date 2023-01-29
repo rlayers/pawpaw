@@ -105,7 +105,7 @@ def _annotation_or_type_hint_matches_type(
         annotation: TYPE_OR_UNION | str | inspect.Signature.empty,
         type_hint: typing.Any or None,
         _type: TYPE_OR_UNION
-) -> type | None:
+) -> bool:
     t = annotation
     if not isinstance(t, TYPE_OR_UNION) or (isinstance(t, type) and issubclass(t, inspect.Signature.empty)):
         t = type_hint

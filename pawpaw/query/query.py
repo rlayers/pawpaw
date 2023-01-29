@@ -82,7 +82,7 @@ def descape(value: str) -> str:
 
 
 class Axis:
-    _re = regex.compile(r'(?P<order>[\+\-]?)(?P<key>\-|\.{1,4}|\*{1,3}|\<{1,3}|\>{1,3})(?P<or_self>(?:\!{1,2})?)', regex.DOTALL)
+    _re = regex.compile(r'(?P<order>[\+\-]?)(?P<key>\.{1,4}|\*{1,3}|\>\<|\<{1,3}|\>{1,3})(?P<or_self>(?:\!{1,2})?)', regex.DOTALL)
 
     def __init__(self, phrase: pawpaw.Ito):
         m = phrase.regex_match(self._re)
@@ -170,16 +170,12 @@ class Axis:
         elif self.key == '.':
             yield from self.to_ecs(itos)  # Special case where each ito gets unique enumeration
             
-            # TODO : raise exception if self.or_self?
-
-        elif self.key == '-':  # TODO : choose better de-dup operator than '-'
+        elif self.key == '><':
             rv = list(dict.fromkeys(itos))
             if reverse:
                 rv.reverse()
             yield from self.to_ecs(rv)
             
-            # TODO : raise exception if self.or_self?
-
         elif self.key == '*':
             for i in itos:
                 yield from self.to_ecs(reversed(i.children) if reverse else i.children, i)

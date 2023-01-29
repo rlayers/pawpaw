@@ -146,20 +146,24 @@ class TestItoQuery(TestItoTraversal):
                     self.assertIs(node, i)
 
     def test_axis_dedup(self):
+        non_leaves: list[Ito] = [self.root]
+        non_leaves.extend(i for i in self.root.walk_descendants() if len(i.children) != 0)
+
         # First ensure dups present
-        path = f'*/..'
-        rv = [*self.root.find_all(path)]
-        self.assertEqual(len(self.root.children), len(rv))
-        self.assertTrue(all(i is self.root for i in rv))
-                                                                        
+        path = f'***/...'
+        dups = [*self.root.find_all(path)]
+        self.assertLess(len(non_leaves), len(dups))
+
         # Now make sure they get removed
         for order in '', '+', '-':
-            path = f'*/../{order}-'
+            path = f'***/.../{order}><'
             with self.subTest(path=path):
+                expected = list({d:None for d in dups}.keys())
+                if order == '-':
+                    expected.reverse()
                 rv = [*self.root.find_all(path)]
-                self.assertEqual(1, len(rv))
-                self.assertIs(self.root, rv[0])
-                                                                        
+                self.assertListEqual(expected, rv)
+
     def test_axis_children(self):
         for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
             for order in '', '+', '-':

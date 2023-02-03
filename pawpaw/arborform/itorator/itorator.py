@@ -4,57 +4,51 @@ import itertools
 import types
 import typing
 
-from pawpaw import Types, Errors, Ito, type_magic
+from pawpaw import Types, Errors, Ito, type_magic, PredicatedValue, Furcation
 from pawpaw.arborform.postorator.postorator import Postorator
 
 
-from dataclasses import dataclass
-
-@dataclass(frozen=True)
-class ItoDist:
-    predicate: typing.Callable[[Ito], bool]
-    itorator: Itorator | None
-
-
 class Itorator(ABC):
+    # define Python user-defined exceptions
+    class SelfChainingError(ValueError):
+        """Raised when attempt is made to add self to the pipeline"""
+        def __init__(self, type: str):
+            self.message = f'can\t add self to {type} chain'
+
     def __init__(self, tag: str | None = None):
         if tag is not None and not isinstance(tag, str):
             raise Errors.parameter_invalid_type('desc', tag, str)
         self.tag = tag
-        self._itor_next: Itorator | Types.F_ITO_2_ITOR | None = None
-        self._itor_children: Itorator | Types.F_ITO_2_ITOR | None = None
+        self._itor_next = Furcation[Ito, Itorator]()
+        self._itor_children = Furcation[Ito, Itorator]()
         self._postorator: Postorator | Types.F_ITOS_2_BITOS | None = None
         self._post_func: Types.F_ITOS_2_BITOS | None = None
 
     @property
-    def itor_next(self) -> Types.F_ITO_2_ITOR:
+    def itor_next(self) -> Furcation[Ito, Itorator]():
         return self._itor_next
 
     @itor_next.setter
-    def itor_next(self, val: Itorator | Types.F_ITO_2_ITOR | None):
-        if val is self:
-            raise ValueError('can\'t set .itor_next to self')
-        elif isinstance(val, Itorator):
-            self._itor_next = lambda ito: val
-        elif val is None or type_magic.functoid_isinstance(val, Types.F_ITO_2_ITOR):
-            self._itor_next = val
-        else:
-            raise Errors.parameter_invalid_type('val', val, Itorator, Types.F_ITO_2_ITOR, types.NoneType)
+    def itor_next(self, val: Itorator | PredicatedValue | tuple[typing.Callable[[Ito], bool], Itorator | None] | None) -> None:
+        if (val is self) or (isinstance(val, PredicatedValue) and val.value is self) or (isinstance(val, tuple) and val[1] is self):
+            raise Itorator.SelfChainingError('itor_next')
+
+        self._itor_next.clear()
+        if val is not None:
+            self._itor_next.append(val)
 
     @property
-    def itor_children(self) -> Types.F_ITO_2_ITOR:
+    def itor_children(self) -> Furcation[Ito, Itorator]():
         return self._itor_children
 
     @itor_children.setter
-    def itor_children(self, val: Itorator | Types.F_ITO_2_ITOR | None):
-        if val is self:
-            raise ValueError('can\'t set .itor_children to self')
-        elif isinstance(val, Itorator):
-            self._itor_children = lambda ito: val
-        elif val is None or type_magic.functoid_isinstance(val, Types.F_ITO_2_ITOR):
-            self._itor_children = val
-        else:
-            raise Errors.parameter_invalid_type('val', val, Itorator, Types.F_ITO_2_ITOR, types.NoneType)
+    def itor_children(self, val: Itorator | PredicatedValue | tuple[typing.Callable[[Ito], bool], Itorator | None] | None) -> None:
+        if (val is self) or (isinstance(val, PredicatedValue) and val.value is self) or (isinstance(val, tuple) and val[1] is self):
+            raise Itorator.SelfChainingError('itor_children')
+
+        self._itor_children.clear()
+        if val is not None:
+            self._itor_children.append(val)
 
     @property
     def postorator(self) -> Postorator | Types.F_ITOS_2_BITOS | None:
@@ -75,16 +69,14 @@ class Itorator(ABC):
         pass
 
     def _do_children(self, ito: Ito) -> None:
-        if self._itor_children is not None:
-            itor_c = self._itor_children(ito)
-            if itor_c is not None:
-                for c in itor_c._traverse(ito, True):
-                    pass  # force iter walk
+        if (itor_c := self._itor_children.evaluate(ito)) is not None:
+            for c in itor_c._traverse(ito, True):
+                pass  # force iter walk
 
     def _do_next(self, ito: Ito) -> Types.C_IT_ITOS:
-        if self._itor_next is None:
+        if (itor_n := self._itor_next.evaluate(ito)) is None:
             yield ito
-        elif (itor_n := self._itor_next(ito)) is not None:
+        else:
             yield from itor_n._traverse(ito)
 
     def _do_post(self, parent: Ito, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:

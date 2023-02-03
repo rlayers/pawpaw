@@ -1,7 +1,7 @@
 import typing
 
 import regex
-from pawpaw import Ito, Types
+from pawpaw import Ito, Types, PredicatedValue
 from pawpaw.arborform import Itorator, Reflect
 from tests.util import _TestIto
 
@@ -9,14 +9,33 @@ from tests.util import _TestIto
 class TestItorator(_TestIto):
     """Uses Reflect and Wrap classes, which have trivial implementation, to test base class functionality"""
 
-    def test_add_self(self):
+    def test_add_self_itor_children(self):
         i = Reflect()
 
         with self.assertRaises(ValueError):
             i.itor_children = i
 
+    def test_add_self_itor_next(self):
+        i = Reflect()
+
         with self.assertRaises(ValueError):
             i.itor_next = i
+
+        with self.assertRaises(ValueError):
+            i.itor_next = (lambda ito: True, i)
+
+        with self.assertRaises(ValueError):
+            i.itor_next = PredicatedValue(lambda ito: True, i)
+
+    def test_set_itor_next_none(self):
+        i_root = Reflect()
+        self.assertEqual(0, len(i_root.itor_next))
+
+        i_root.itor_next = Itorator.wrap(lambda ito: ito.str_split())
+        self.assertEqual(1, len(i_root.itor_next))
+
+        i_root.itor_next = None
+        self.assertEqual(0, len(i_root.itor_next))
 
     def test_wrap_lambda(self):
         s = 'abc'
@@ -38,7 +57,8 @@ class TestItorator(_TestIto):
         itor_split_words = Itorator.wrap(lambda ito: ito.str_split())
         itor_strip_first = Itorator.wrap(lambda ito: [ito[1:]])
         itor_strip_last = Itorator.wrap(lambda ito: [ito[:-1]])
-        itor_split_words.itor_next = lambda ito: itor_strip_first if str(ito) == 'two' else itor_strip_last
+        itor_split_words.itor_next.append((lambda ito: str(ito) == 'two', itor_strip_first))
+        itor_split_words.itor_next.append(itor_strip_last)
 
         # Wrap the multi-endpoint itorator
         itor_wrap = Itorator.wrap(itor_split_words)
@@ -54,7 +74,7 @@ class TestItorator(_TestIto):
     def test_traverse(self):
         s = 'abc'
         root = Ito(s)
-        self.add_chars_as_children(root, 'Child')
+        root.children.add(*root)
 
         reflect = Reflect()
         rv = [*reflect.traverse(root)]
@@ -200,7 +220,8 @@ class TestItorator(_TestIto):
         func = lambda ito: [*ito.split(regex.compile(r'(?<=[A-Z])(?=[a-z])'), desc='upper or lower')]
         splt_case = Itorator.wrap(func)
         
-        namer.itor_children = lambda ito: splt_digits if ito.desc == 'numeric' else splt_case
+        namer.itor_children = (lambda ito: ito.desc == 'numeric', splt_digits)
+        namer.itor_children.append(splt_case)
         
         func = lambda ito: [ito.clone(i, i + 1, desc='char') for i in range(ito.start, ito.stop)]
         splt_chars = Itorator.wrap(func)

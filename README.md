@@ -115,7 +115,7 @@ graph TD;
 You can then search your tree using plumule: a powerful structured query language:
 
  ```python
- '**[d:section]{**[d:word] & [lcs:power,right]}'  # Find sections that contain words 'power' or 'right'
+'**[d:section]{**[d:word] & [lcs:power,right]}'  # Plumule query to find sections that containing words 'power' or 'right'
  ```
 
 Try out [this demo](docs/demos/us_constitution) yourself, which shows how easy it is to parse, visualize, and query the US Constitution using Pawpaw.
@@ -205,9 +205,9 @@ With this single line of code, Pawpaw generates a fully hierarchical, tree of ph
 And you can search the tree using Pawpaw's *plumule*, a powerful XPATH-like structured query language:
 
  ```python
- >>> print(*doc.find_all('**[d:dig]'), sep=', ')  # all digits
+ >>> print(*doc.find_all('**[d:digit]'), sep=', ')  # all digits
 9, 1, 0, 1, 1, 1, 2, 1, 3
- >>> print(*doc.find_all('**[d:num]{</*[s:i]}'), sep=', ')  # all numbers with 'i' in their name
+ >>> print(*doc.find_all('**[d:number]{</*[s:i]}'), sep=', ')  # all numbers with 'i' in their name
 9, 13
  ```
 

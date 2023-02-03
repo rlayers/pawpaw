@@ -23,7 +23,7 @@ def get_parser() -> pawpaw.arborform.Itorator:
     a_splitter.itor_next = a_desc
 
     a_extractor = pawpaw.arborform.Extract(regex.compile(r'Article\. (?<key>[A-Z]+)\.\n(?<value>.+)', regex.DOTALL))
-    a_desc.itor_children = lambda ito: a_extractor if ito.desc == 'article' else None
+    a_desc.itor_children = (lambda ito: ito.desc == 'article', a_extractor)
 
     # Section (only some articles have sections)
     s_splitter = pawpaw.arborform.Split(
@@ -31,12 +31,14 @@ def get_parser() -> pawpaw.arborform.Itorator:
         boundary_retention=pawpaw.arborform.Split.BoundaryRetention.LEADING,
         desc='section')
     nlp = pawpaw.nlp.SimpleNlp().itor
-    a_extractor.itor_children = lambda ito: (s_splitter if ito.str_startswith('Section.') else nlp) if ito.desc == 'value' else None
+    # a_extractor.itor_children = lambda ito: (s_splitter if ito.str_startswith('Section.') else nlp) if ito.desc == 'value' else None
+    a_extractor.itor_children.append((lambda ito: ito.desc == 'value' and ito.str_startswith('Section.'), s_splitter))
+    a_extractor.itor_children.append((lambda ito: ito.desc == 'value', nlp))
 
     s_extractor = pawpaw.arborform.Extract(regex.compile(r'Section\. (?<key>\d+)\.\n(?<value>.+)', regex.DOTALL))
     s_splitter.itor_children = s_extractor
 
-    s_extractor.itor_children = lambda ito: nlp if ito.desc == 'value' else None
+    s_extractor.itor_children = (lambda ito: ito.desc == 'value', nlp)
 
     return a_splitter
 

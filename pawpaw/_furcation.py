@@ -8,6 +8,7 @@ from pawpaw import Errors, PredicatedValue, type_magic
 I = typing.TypeVar('I')  # Input to predicate
 R = typing.TypeVar('R')  # Return value type; should be "anything but None", but Python lacks this ability
 
+
 class Furcation(list[PredicatedValue], typing.Generic[I, R]):
     C_ITEM = PredicatedValue | tuple[typing.Callable[[I], bool], R | None] | typing.Callable[[I], bool] | R
 
@@ -18,12 +19,12 @@ class Furcation(list[PredicatedValue], typing.Generic[I, R]):
     def evaluate(self, item: I) -> R | None:
         i_typ, r_typ = self.generic_types()
 
-        if not type_magic.isinstance_ex(i, i_typ):
+        if not type_magic.isinstance_ex(item, i_typ):
             raise Errors.parameter_invalid_type('item', item, i_typ)
 
         for pv in self:
             if pv.predicate(item):
-                return pv.val
+                return pv.value
 
         return None
 

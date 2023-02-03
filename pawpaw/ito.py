@@ -1424,7 +1424,6 @@ class Types:
     F_ITO_2_B = typing.Callable[[Ito], bool]
     F_ITO_2_VAL = typing.Callable[[Ito], typing.Any]
     F_ITO_2_DESC = typing.Callable[[Ito], str]
-    F_ITO_2_ITOR = typing.Callable[[Ito], 'Itorator']
     F_ITO_2_SQ_ITOS = typing.Callable[[Ito], C_SQ_ITOS]
     F_ITO_2_IT_ITOS = typing.Callable[[Ito], C_IT_ITOS]
 

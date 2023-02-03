@@ -455,22 +455,24 @@ class TestItoQuery(TestItoTraversal):
             for s in 'ten', 'ELEVEN', 'twelve':
                 for case_func in str.upper, str.casefold, str.lower:
                     s = case_func(s)
-                    path = f'**[scf:{pawpaw.query.escape(s)}]'
-                    with self.subTest(node=node_type, path=path):
-                        expected = [d for d in node.walk_descendants() if str(d).casefold() == s.casefold()]
-                        actual = [*node.find_all(path)]
-                        self.assertSequenceEqual(expected, actual)
+                    for casefold_key in 'str-casefold', 'scf', 'lcs':
+                        path = f'**[{casefold_key}:{pawpaw.query.escape(s)}]'
+                        with self.subTest(node=node_type, path=path):
+                            expected = [d for d in node.walk_descendants() if str(d).casefold() == s.casefold()]
+                            actual = [*node.find_all(path)]
+                            self.assertSequenceEqual(expected, actual)
     
     def test_filter_string_casefold_multiple(self):
         for node_type, node in {'root': self.root}.items():
             basis = 'ten', 'ELEVEN', 'twelve'
             for case_func in str.upper, str.casefold, str.lower:
                 cfs = [case_func(s) for s in basis]
-                path = f'**[scf:{",".join(pawpaw.query.escape(s) for s in cfs)}]'
-                with self.subTest(node=node_type, path=path):
-                        expected = [d for d in node.walk_descendants() if str(d).casefold() in [s.casefold() for s in cfs]]
-                        actual = [*node.find_all(path)]
-                        self.assertSequenceEqual(expected, actual)
+                for casefold_key in 'str-casefold', 'scf', 'lcs':
+                    path = f'**[{casefold_key}:{",".join(pawpaw.query.escape(s) for s in cfs)}]'
+                    with self.subTest(node=node_type, path=path):
+                            expected = [d for d in node.walk_descendants() if str(d).casefold() in [s.casefold() for s in cfs]]
+                            actual = [*node.find_all(path)]
+                            self.assertSequenceEqual(expected, actual)
 
     # endregion
        
@@ -481,22 +483,24 @@ class TestItoQuery(TestItoTraversal):
             for s in 'x', 'n', 'N', 'e':
                 for case_func in str.upper, str.casefold, str.lower:
                     s = case_func(s)
-                    path = f'**[scfew:{pawpaw.query.escape(s)}]'
-                    with self.subTest(node=node_type, path=path):
-                        expected = [d for d in node.walk_descendants() if str(d).casefold().endswith(s.casefold())]
-                        actual = [*node.find_all(path)]
-                        self.assertSequenceEqual(expected, actual)
+                    for key in 'str-casefold-ew', 'scfew', 'lcsew':
+                        path = f'**[{key}:{pawpaw.query.escape(s)}]'
+                        with self.subTest(node=node_type, path=path):
+                            expected = [d for d in node.walk_descendants() if str(d).casefold().endswith(s.casefold())]
+                            actual = [*node.find_all(path)]
+                            self.assertSequenceEqual(expected, actual)
     
     def test_filter_string_casefold_endswith_multiple(self):
         for node_type, node in {'root': self.root}.items():
             basis = 'x', 'N', 'e'
             for case_func in str.upper, str.casefold, str.lower:
                 cfs = [case_func(s) for s in basis]
-                path = f'**[scfew:{",".join(pawpaw.query.escape(s) for s in cfs)}]'
-                with self.subTest(node=node_type, path=path):
-                        expected = [d for d in node.walk_descendants() if any(str(d).casefold().endswith(s.casefold()) for s in cfs)]
-                        actual = [*node.find_all(path)]
-                        self.assertSequenceEqual(expected, actual)  
+                for key in 'str-casefold-ew', 'scfew', 'lcsew':
+                    path = f'**[{key}:{",".join(pawpaw.query.escape(s) for s in cfs)}]'
+                    with self.subTest(node=node_type, path=path):
+                            expected = [d for d in node.walk_descendants() if any(str(d).casefold().endswith(s.casefold()) for s in cfs)]
+                            actual = [*node.find_all(path)]
+                            self.assertSequenceEqual(expected, actual)
 
     # endregion
     
@@ -507,22 +511,24 @@ class TestItoQuery(TestItoTraversal):
             for s in 'x', 'n', 't':
                 for case_func in str.upper, str.casefold, str.lower:
                     s = case_func(s)
-                    path = f'**[scfsw:{pawpaw.query.escape(s)}]'
-                    with self.subTest(node=node_type, path=path):
-                        expected = [d for d in node.walk_descendants() if str(d).casefold().startswith(s.casefold())]
-                        actual = [*node.find_all(path)]
-                        self.assertSequenceEqual(expected, actual)
+                    for key in 'str-casefold-sw', 'scfsw', 'lcssw':
+                        path = f'**[{key}:{pawpaw.query.escape(s)}]'
+                        with self.subTest(node=node_type, path=path):
+                            expected = [d for d in node.walk_descendants() if str(d).casefold().startswith(s.casefold())]
+                            actual = [*node.find_all(path)]
+                            self.assertSequenceEqual(expected, actual)
     
     def test_filter_string_casefold_startswith_multiple(self):
         for node_type, node in {'root': self.root}.items():
             basis = 'x', 'n', 't'
             for case_func in str.upper, str.casefold, str.lower:
                 cfs = [case_func(s) for s in basis]
-                path = f'**[scfsw:{",".join(pawpaw.query.escape(s) for s in cfs)}]'
-                with self.subTest(node=node_type, path=path):
-                        expected = [d for d in node.walk_descendants() if any(str(d).casefold().startswith(s.casefold()) for s in cfs)]
-                        actual = [*node.find_all(path)]
-                        self.assertSequenceEqual(expected, actual)  
+                for key in 'str-casefold-sw', 'scfsw', 'lcssw':
+                    path = f'**[{key}:{",".join(pawpaw.query.escape(s) for s in cfs)}]'
+                    with self.subTest(node=node_type, path=path):
+                            expected = [d for d in node.walk_descendants() if any(str(d).casefold().startswith(s.casefold()) for s in cfs)]
+                            actual = [*node.find_all(path)]
+                            self.assertSequenceEqual(expected, actual)
 
     # endregion
 

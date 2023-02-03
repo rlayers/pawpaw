@@ -10,8 +10,10 @@ from tests.util import _TestIto, IntIto
 def len_nonzero(ito: Ito) -> bool:
     return len(ito) > 0
 
+
 def def_invalid_input_val(i: int) -> bool:
     return i << 1
+
 
 def def_invalid_ret_val(ito: Ito) -> str:
     return str(ito)

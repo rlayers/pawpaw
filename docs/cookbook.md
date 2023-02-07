@@ -72,3 +72,68 @@ a b c
    ├──(64, 74) 'Word' : 'Washington'
    └──(75, 81) 'Word' : 'Irving'
 ```
+
+## XML
+
+### Get spans for elements:
+
+**Code:**
+
+```python
+import sys
+sys.modules['_elementtree'] is None
+import xml.etree.ElementTree as ET
+from pawpaw import xml
+text = """<?xml version="1.0"?>
+<data>
+    <country name="Liechtenstein">
+        <rank updated="yes">2</rank>
+        <year>2008</year>
+        <gdppc>141100</gdppc>
+        <neighbor name="Austria" direction="E"/>
+        <neighbor name="Switzerland" direction="W"/>
+    </country>
+</data>"""
+root = ET.fromstring(text, parser=xml.XmlParser())
+for e in root.find('.//'):
+    print(f'{e.tag}: {e.ito:%span}')
+```
+
+**Output:**
+
+```python
+rank: (72, 100)
+year: (109, 126)
+gdppc: (135, 156)
+neighbor: (165, 205)
+neighbor: (214, 258)
+```
+
+### Get spans for element text:
+
+```python
+import sys
+sys.modules['_elementtree'] is None
+import xml.etree.ElementTree as ET
+from pawpaw import xml
+text = """<doc xmlns:w="https://example.com">
+    <w:r>
+        <w:rPr>
+            <w:sz w:val="36"/>
+            <w:szCs w:val="36"/>
+        </w:rPr>
+        <w:t>BIG_TEXT</w:t>
+    </w:r>
+</doc>"""
+root = ET.fromstring(text, parser=xml.XmlParser())
+prefix_map = xml.XmlHelper.get_prefix_map(root)
+e = root.find('.//w:t', namespaces=prefix_map)
+ito = e.ito.find('**[d:text]')
+print(f'{ito:%span}')
+```
+
+**Output:**
+
+```python
+(156, 164)
+```

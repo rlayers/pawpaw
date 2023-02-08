@@ -19,23 +19,10 @@ class Itorator(ABC):
         if tag is not None and not isinstance(tag, str):
             raise Errors.parameter_invalid_type('desc', tag, str)
         self.tag = tag
-        self._itor_next = Furcation[Ito, Itorator]()
         self._itor_children = Furcation[Ito, Itorator]()
+        self._itor_sub = Furcation[Ito, Itorator]()
+        self._itor_next = Furcation[Ito, Itorator]()
         self._postorator: Postorator | Types.F_ITOS_2_BITOS | None = None
-        self._post_func: Types.F_ITOS_2_BITOS | None = None
-
-    @property
-    def itor_next(self) -> Furcation[Ito, Itorator]():
-        return self._itor_next
-
-    @itor_next.setter
-    def itor_next(self, val: Itorator | PredicatedValue | tuple[typing.Callable[[Ito], bool], Itorator | None] | None) -> None:
-        if (val is self) or (isinstance(val, PredicatedValue) and val.value is self) or (isinstance(val, tuple) and val[1] is self):
-            raise Itorator.SelfChainingError('itor_next')
-
-        self._itor_next.clear()
-        if val is not None:
-            self._itor_next.append(val)
 
     @property
     def itor_children(self) -> Furcation[Ito, Itorator]():
@@ -51,16 +38,40 @@ class Itorator(ABC):
             self._itor_children.append(val)
 
     @property
+    def itor_sub(self) -> Furcation[Ito, Itorator]():
+        return self._itor_sub
+
+    @itor_sub.setter
+    def itor_sub(self, val: Itorator | PredicatedValue | tuple[typing.Callable[[Ito], bool], Itorator | None] | None) -> None:
+        if (val is self) or (isinstance(val, PredicatedValue) and val.value is self) or (isinstance(val, tuple) and val[1] is self):
+            raise Itorator.SelfChainingError('_itor_sub')
+
+        self._itor_sub.clear()
+        if val is not None:
+            self._itor_sub.append(val)
+
+    @property
+    def itor_next(self) -> Furcation[Ito, Itorator]():
+        return self._itor_next
+
+    @itor_next.setter
+    def itor_next(self, val: Itorator | PredicatedValue | tuple[typing.Callable[[Ito], bool], Itorator | None] | None) -> None:
+        if (val is self) or (isinstance(val, PredicatedValue) and val.value is self) or (isinstance(val, tuple) and val[1] is self):
+            raise Itorator.SelfChainingError('itor_next')
+
+        self._itor_next.clear()
+        if val is not None:
+            self._itor_next.append(val)
+
+
+    @property
     def postorator(self) -> Postorator | Types.F_ITOS_2_BITOS | None:
         return self._postorator
 
     @postorator.setter
     def postorator(self, val: Postorator | Types.F_ITOS_2_BITOS | None):
-        if val is None or type_magic.functoid_isinstance(val, Types.F_ITOS_2_BITOS):
-            self._postorator = self._post_func = val
-        elif isinstance(val, Postorator):
+        if val is None or isinstance(val, Postorator):
             self._postorator = val
-            self._post_func = val.traverse
         else:
             raise Errors.parameter_invalid_type('val', val, Postorator, Types.F_ITOS_2_BITOS, types.NoneType)
 
@@ -73,6 +84,12 @@ class Itorator(ABC):
             for c in itor_c._traverse(ito, True):
                 pass  # force iter walk
 
+    def _do_sub(self, ito: Ito) -> Types.C_IT_ITOS:
+        if (itor_s := self._itor_sub.evaluate(ito)) is None:
+            yield ito
+        else:
+            yield from itor_s._traverse(ito)
+
     def _do_next(self, ito: Ito) -> Types.C_IT_ITOS:
         if (itor_n := self._itor_next.evaluate(ito)) is None:
             yield ito
@@ -80,10 +97,10 @@ class Itorator(ABC):
             yield from itor_n._traverse(ito)
 
     def _do_post(self, parent: Ito, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
-        if self._post_func is None:
+        if self._postorator is None:
             yield from itos
         else:
-            for bito in self._post_func(itos):
+            for bito in self._postorator.traverse(itos):
                 if bito.tf:
                     if parent is not None and bito.ito.parent is not parent:
                         parent.children.add(bito.ito)
@@ -92,8 +109,8 @@ class Itorator(ABC):
                     _parent.children.remove(bito.ito)
 
     def _traverse(self, ito: Ito, as_children: bool = False) -> Types.C_IT_ITOS:
-        # Process ._iter with parent in place
-        curs = self._iter(ito)
+        # Process ._iter & .itor_sub with parent in place
+        curs = (s for i in self._iter(ito) for s in self._do_sub(i))
         
         if as_children:
             parent = ito
@@ -117,10 +134,7 @@ class Itorator(ABC):
         yield from self._traverse(ito.clone())
 
     @classmethod
-    def wrap(cls, src: Itorator | Types.F_ITO_2_SQ_ITOS, tag: str | None = None):
-        if isinstance(src, Itorator):
-            return _WrappedItorator(src.traverse, tag)
-        
+    def wrap(cls, src: Types.F_ITO_2_SQ_ITOS, tag: str | None = None):
         if type_magic.functoid_isinstance(src, Types.F_ITO_2_SQ_ITOS):
             return _WrappedItorator(src, tag)
 

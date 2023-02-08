@@ -459,7 +459,7 @@ class SimpleNlp:
     def __init__(self, number: Number | None = None, chars: bool = False):
         super().__init__()
 
-        paragraph = pawpaw.arborform.Split(self._paragraph_re, desc='paragraph')
+        paragraph = pawpaw.arborform.Split(self._paragraph_re, desc='paragraph', tag='paragraph')
 
         para_trimmer = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.str_strip(''.join(self._trimmable_ws))])
         paragraph.itor_next = para_trimmer

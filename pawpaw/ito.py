@@ -546,7 +546,7 @@ class Ito:
                 if directive == 'string':
                     sub = self._string
                 elif directive == 'desc':
-                    sub = str(self.desc)
+                    sub = self.desc
                 elif directive == 'substr':
                     sub = self.__str__()
                 else:  # 'value'

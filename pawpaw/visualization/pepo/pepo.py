@@ -38,7 +38,7 @@ class _PepoFstr(Pepo):
 
 class Compact(_PepoFstr):
     def __init__(self, indent: str = '    ', children: bool = True):
-        super().__init__(indent, children, '%span \'%desc\' : \'%substr!1r1:40…% \'')
+        super().__init__(indent, children, '%span %desc!r : \'%substr!1r1:40…% \'')
         self.children = children
 
     def _dump(self, fs: typing.IO, ei: pawpaw.Types.C_EITO, level: int = 0) -> None:
@@ -63,7 +63,7 @@ class Tree(_PepoFstr):
     ELBOW = ascii_box.BoxDrawingChar.from_char('└')
 
     def __init__(self, indent: str = '  ', children: bool = True):
-        super().__init__(indent, children, '%span \'%desc\' : \'%substr!1r1:^40…% \'')
+        super().__init__(indent, children, '%span %desc|r : \'%substr!1r1:^40…% \'')
         self.children = False
 
     def _dump_children(self, fs: typing.IO, ito: pawpaw.Ito, prefix: str = '') -> None:

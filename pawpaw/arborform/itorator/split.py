@@ -20,7 +20,8 @@ class Split(Itorator):
             group: int | str = 0,
             boundary_retention: BoundaryRetention = BoundaryRetention.NONE,
             return_zero_split: bool = True,
-            desc: str | None = None
+            desc: str | None = None,
+            tag: str | None = None
     ):
         """Given P-O-O-S where P is prefix, - is boundary, O is/are middle part(s), and S is suffix, the
         behavior is as follows:
@@ -44,13 +45,12 @@ class Split(Itorator):
         desc: Value used for the .desc of any returned Itos; note that a returned Ito can be surrounded by
           0, 1, or 2 boundaries, i.e., there is no clear mapping from a result to a boundary
         """
-        super().__init__()
+        super().__init__(tag)
         self.re = re
         self.group = group
         self.boundary_retention = boundary_retention
         self.return_zero_split = return_zero_split
         self.desc = desc
-        tag: str | None = None
 
     def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:
         rv: typing.List[Ito] = []

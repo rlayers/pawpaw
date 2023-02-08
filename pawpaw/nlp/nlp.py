@@ -456,16 +456,27 @@ class SimpleNlp:
 
     _word_pat = r'\w(?:(?:\L<sqs>|-\s*)?\w)*'
 
+    def get_paragraph(self) -> pawpaw.arborform.Itorator:
+        rv = pawpaw.arborform.Desc(desc='paragraph')
+
+        splitter = pawpaw.arborform.Split(self._paragraph_re, tag='para splitter')
+        rv.itor_sub = splitter
+
+        trimmer = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.str_strip(''.join(self._trimmable_ws))], tag='para trimmer')
+        rv.itor_sub.append(trimmer)
+
+        return rv
+
+    def get_sentence(self) -> pawpaw.arborform.Itorator:
+        return pawpaw.arborform.Split(Sentence().re, desc='sentence', tag='sentence')
+
     def __init__(self, number: Number | None = None, chars: bool = False):
         super().__init__()
 
-        paragraph = pawpaw.arborform.Split(self._paragraph_re, desc='paragraph', tag='paragraph')
+        paragraph = self.get_paragraph()
 
-        para_trimmer = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.str_strip(''.join(self._trimmable_ws))])
-        paragraph.itor_next = para_trimmer
-
-        sentence = pawpaw.arborform.Split(Sentence().re, desc='sentence')
-        para_trimmer.itor_children = sentence
+        sentence = self.get_sentence()
+        paragraph.itor_children = sentence
 
         self._number = number |nuco| Number()
         word_num_re = regex.compile(self._number.num_pat + r'|(?P<word>' + self._word_pat + r')', regex.DOTALL, sqs=list(unicode_single_quote_marks.values()))

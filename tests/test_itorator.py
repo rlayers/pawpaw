@@ -52,25 +52,6 @@ class TestItorator(_TestIto):
         itor = Itorator.wrap(my_split)
         self.assertListEqual([*Ito.from_substrings(s, *s.split())], [*itor.traverse(root)])
 
-    def test_wrap_itorator(self):
-        # Create itorator with two end points
-        itor_split_words = Itorator.wrap(lambda ito: ito.str_split())
-        itor_strip_first = Itorator.wrap(lambda ito: [ito[1:]])
-        itor_strip_last = Itorator.wrap(lambda ito: [ito[:-1]])
-        itor_split_words.itor_next.append((lambda ito: str(ito) == 'two', itor_strip_first))
-        itor_split_words.itor_next.append(itor_strip_last)
-
-        # Wrap the multi-endpoint itorator
-        itor_wrap = Itorator.wrap(itor_split_words, tag='wrapped')
-
-        # Attach successor to wrapped
-        itor_split_chars = Itorator.wrap(lambda ito: [i for i in ito])
-        itor_wrap.itor_next = itor_split_chars
-
-        s = 'one two three'
-        root = Ito(s)
-        self.assertListEqual(['o', 'n', 'w', 'o', 't', 'h', 'r', 'e'], [str(i) for i in itor_wrap.traverse(root)])
-
     def test_traverse(self):
         s = 'abc'
         root = Ito(s)

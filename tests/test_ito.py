@@ -61,21 +61,56 @@ class TestIto(_TestIto):
             with self.assertRaises(ValueError):
                 i1._set_parent(i1)
 
-    def test_value_func(self):
+    def test_value_None(self):
         s = 'abc'
         ito = Ito(s)
 
+        # Verify initial state        
         self.assertIsNone(ito.value_func)
-        self.assertEqual(s, ito.value())
 
-        f = lambda i: str(i) * 2
-        ito.value_func = f
-        self.assertEqual(f, ito.value_func)
-        self.assertEqual(s * 2, ito.value())
+        # Ensure setting to None when already None doesn't throw
+        ito.value_func = None
+
+        ito.value_func = lambda ito: len(ito)
+        self.assertIsNotNone(ito.value_func)
 
         ito.value_func = None
         self.assertIsNone(ito.value_func)
-        self.assertEqual(s, ito.value())
+
+    @classmethod
+    def upper_static_method(cls, ito: Ito) -> str:
+        return str(ito).upper()
+
+    def upper_instance_method(self, ito: Ito) -> str:
+        return str(ito).upper()
+
+    def test_value_func(self):
+        def upper_inline_method(ito: Ito) -> str:
+            return str(ito).upper()
+
+        upper_lambda_method = lambda ito: str(ito).upper()
+
+        tests = {
+            'static': self.upper_static_method,
+            'instance': self.upper_instance_method,
+            'inline': upper_inline_method,
+            'lambda': upper_lambda_method,
+        }
+
+        s = 'abc'
+        ito = Ito(s)
+        for t, f in tests.items():
+            with self.subTest(method_type=t):
+                self.assertIsNone(ito.value_func)
+                self.assertEqual(str(ito), ito.value())
+
+                ito.value_func = f
+                self.assertIs(f, ito.value_func)
+                self.assertEqual(str(ito), ito.value())
+
+                ito.value_func = None
+                self.assertIsNone(ito.value_func)
+                self.assertEqual(str(ito), ito.value())
 
     def test_children(self):
         i = Ito('abc')

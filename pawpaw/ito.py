@@ -309,10 +309,13 @@ class Ito:
 
     @value_func.setter
     def value_func(self, f: Types.F_ITO_2_VAL | None) -> None:
+        if not (f is None or type_magic.functoid_isinstance(f, Types.F_ITO_2_VAL)):
+            raise Errors.parameter_invalid_type('f', f, Types.F_ITO_2_VAL, None)
         if f is None:
-            delattr(self, 'value')
+            if self._value_func is not None:
+                delattr(self, 'value')
         else:
-            setattr(self, 'value', f.__get__(self))
+            setattr(self, 'value', lambda: f(self))
         self._value_func = f
 
     # endregion

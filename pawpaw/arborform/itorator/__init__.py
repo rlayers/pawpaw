@@ -7,6 +7,9 @@ del reflect
 from .desc import Desc
 del desc
 
+from .value_func import ValueFunc
+del value_func
+
 from .extract import Extract
 del extract
 

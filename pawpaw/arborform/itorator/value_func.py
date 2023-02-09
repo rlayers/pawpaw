@@ -12,6 +12,5 @@ class ValueFunc(Itorator):
         self.f = f
 
     def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:
-        ito.value_func = f
-        ito.desc = self._desc_func(ito)
+        ito.value_func = self.f
         return ito,

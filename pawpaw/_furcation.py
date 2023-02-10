@@ -34,11 +34,8 @@ class Furcation(list[PredicatedValue], typing.Generic[I, R]):
     def _transform_insertion(self, item: C_ITEM) -> PredicatedValue:
         i_typ, r_typ = self.generic_types()
 
-        if type_magic.isinstance_ex(item, PredicatedValue):
-            return item
-
-        if type_magic.functoid_isinstance(item, typing.Callable[[i_typ], bool]):
-            return PredicatedValue(item, None)
+        if type_magic.isinstance_ex(item, r_typ):
+            return PredicatedValue(self.tautology, item)
 
         if type_magic.isinstance_ex(item, tuple) and \
             len(item) == 2 and \
@@ -46,8 +43,11 @@ class Furcation(list[PredicatedValue], typing.Generic[I, R]):
             type_magic.isinstance_ex(item[1], r_typ | None):
             return PredicatedValue(item[0], item[1])
 
-        if type_magic.isinstance_ex(item, r_typ):
-            return PredicatedValue(self.tautology, item)
+        if type_magic.isinstance_ex(item, PredicatedValue):
+            return item
+
+        if type_magic.functoid_isinstance(item, typing.Callable[[i_typ], bool]):
+            return PredicatedValue(item, None)
 
         raise Errors.parameter_invalid_type('item', item, PredicatedValue, tuple[typing.Callable[[i_typ], bool], r_typ | None], typing.Callable[[i_typ], bool], r_typ)
 

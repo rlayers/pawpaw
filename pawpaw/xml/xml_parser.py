@@ -111,7 +111,7 @@ class XmlParser(ET.XMLParser):
     def _find_text(self, start: int, stop: int) -> Ito | None:
         rv = Ito(self._text, start, stop, xml.descriptors.TEXT)
         if len(rv) > 0 and not (self.ignore_empties and rv.str_isspace()):
-            rv.children.add(*self._itor_extract_pi_comments.traverse(rv))
+            rv.children.add(*self._itor_extract_pi_comments(rv))
             return rv
 
     def _extract_itos(self, element: ET.Element) -> None:
@@ -121,9 +121,9 @@ class XmlParser(ET.XMLParser):
             self._text.index('>', element._spans.char.start + 1) + 1,
             xml.descriptors.START_TAG)
         
-        start_tag.children.add(*self._itor_extract_tag.traverse(start_tag))
+        start_tag.children.add(*self._itor_extract_tag(start_tag))
 
-        attrs = [*self._itor_extract_attributes.traverse(start_tag)]
+        attrs = [*self._itor_extract_attributes(start_tag)]
         if len(attrs) > 0:
             attrs_parent = Ito.join(*attrs, desc=xml.descriptors.ATTRIBUTES)
             attrs_parent.value_func = lambda ito: element.attrib
@@ -140,7 +140,7 @@ class XmlParser(ET.XMLParser):
                 element._spans.char.stop,
                 self._text.index('>', element._spans.char.stop + 1) + 1,
                 xml.descriptors.END_TAG)
-            for c in self._itor_extract_tag.traverse(end_tag):
+            for c in self._itor_extract_tag(end_tag):
                 c.value_func = lambda i: xml.QualifiedName.from_src(c)
                 end_tag.children.add(c)
             end_index = end_tag.stop

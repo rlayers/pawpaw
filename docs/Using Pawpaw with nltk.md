@@ -25,7 +25,7 @@
 >>> ws_tok = nltk.tokenize.WhitespaceTokenizer()
 >>> splitter = arborform.Split(regex.compile(ws_tok._pattern, ws_tok._flags))
 >>> i = Ito('The quick brown fox.')
->>> [str(i) for i in splitter.traverse(i)]
+>>> [str(i) for i in splitter(i)]
 ['The', 'quick', 'brown', 'fox.']
 ```
 
@@ -42,7 +42,7 @@
 >>> word_itor = pawpaw.arborform.Itorator.wrap(lambda ito: ito.from_substrings(ito, *nltk_tok.word_tokenize(str(ito))))
 >>> sent_itor.itor_children = word_itor
 >>>
->>> i.children.add(*sent_itor.traverse(i))
+>>> i.children.add(*sent_itor(i))
 >>> vis_tree = pawpaw.visualization.pepo.Tree()
 >>> print(vis_tree.dumps(i))
 (0, 39) 'None' : 'Here is one sentence.  Here is another.'

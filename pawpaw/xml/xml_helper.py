@@ -55,7 +55,7 @@ class EtName(typing.NamedTuple):
         elif not isinstance(item, Ito):
             raise Errors.parameter_invalid_type('item', item, str, Ito, ET.Element)
 
-        vals = [*cls._extractor.traverse(item)]
+        vals = [*cls._extractor(item)]
         if len(vals) == 1:
             vals.insert(0, None)
         return cls(*vals)

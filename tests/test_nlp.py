@@ -180,7 +180,7 @@ class TestSentence(_TestIto):
             with self.subTest(description=td.description, text=td.text):
                 text = pawpaw.Ito(td.text)
                 expected = [*pawpaw.Ito.from_substrings(text, *td.expected, desc='sentence')]
-                actual = [*sbd.traverse(text)]
+                actual = [*sbd(text)]
                 self.assertListEqual(expected, actual)
 
 

@@ -15,6 +15,13 @@ class Itorator(ABC):
         def __init__(self, type: str):
             self.message = f'can\t add self to {type} chain'
 
+    @classmethod
+    def wrap(cls, src: Types.F_ITO_2_SQ_ITOS, tag: str | None = None):
+        if type_magic.functoid_isinstance(src, Types.F_ITO_2_SQ_ITOS):
+            return _WrappedItorator(src, tag)
+
+        raise Errors.parameter_invalid_type('src', src, Types.F_ITO_2_SQ_ITOS, Itorator)
+
     def __init__(self, tag: str | None = None):
         if tag is not None and not isinstance(tag, str):
             raise Errors.parameter_invalid_type('desc', tag, str)
@@ -63,7 +70,6 @@ class Itorator(ABC):
         if val is not None:
             self._itor_next.append(val)
 
-
     @property
     def postorator(self) -> Postorator | Types.F_ITOS_2_BITOS | None:
         return self._postorator
@@ -100,7 +106,7 @@ class Itorator(ABC):
         if self._postorator is None:
             yield from itos
         else:
-            for bito in self._postorator.traverse(itos):
+            for bito in self._postorator(itos):
                 if bito.tf:
                     if parent is not None and bito.ito.parent is not parent:
                         parent.children.add(bito.ito)
@@ -128,18 +134,10 @@ class Itorator(ABC):
 
         yield from self._do_post(parent, itertools.chain(*iters))
 
-    def traverse(self, ito: Ito) -> Types.C_IT_ITOS:
+    def __call__(self, ito: Ito) -> Types.C_IT_ITOS:
         if not isinstance(ito, Ito):
             raise Errors.parameter_invalid_type('ito', ito, Ito)
         yield from self._traverse(ito.clone())
-
-    @classmethod
-    def wrap(cls, src: Types.F_ITO_2_SQ_ITOS, tag: str | None = None):
-        if type_magic.functoid_isinstance(src, Types.F_ITO_2_SQ_ITOS):
-            return _WrappedItorator(src, tag)
-
-        raise Errors.parameter_invalid_type('src', src, Types.F_ITO_2_SQ_ITOS, Itorator)
-
 
 class _WrappedItorator(Itorator):
     def __init__(self, f: Types.F_ITO_2_SQ_ITOS, tag: str | None = None):

@@ -26,7 +26,7 @@ class TestWindowedJoin(_TestIto):
                 with self.subTest(string=s, itos=itos, window_size=window_size, desc=desc):
                     wj = WindowedJoin(window_size, func, desc=desc)
                     itos_iter = root.split_iter(re)
-                    actual = [*wj.traverse(itos_iter)]
+                    actual = [*wj(itos_iter)]
                     if len(itos) < window_size:
                         self.assertListEqual([Types.C_BITO(True, i) for i in itos], actual)
                     else:

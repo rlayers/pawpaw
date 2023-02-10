@@ -53,7 +53,7 @@ print(f'\nVISUALIZE:\n')
 i = get_text()
 tree_vis = pawpaw.visualization.pepo.Tree()
 parser = get_parser()
-i.children.add(*parser.traverse(i))
+i.children.add(*parser(i))
 print(tree_vis.dumps(i))
 
 # Query

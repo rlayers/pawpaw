@@ -496,5 +496,5 @@ class SimpleNlp:
 
     def from_text(self, text: str) -> pawpaw.Ito:
         doc = pawpaw.Ito(text, desc='Document')
-        doc.children.add(*self.itor.traverse(doc))
+        doc.children.add(*self.itor(doc))
         return doc

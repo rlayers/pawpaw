@@ -34,7 +34,7 @@ class WindowedJoin(Postorator):
 
         self.desc = desc
 
-    def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
+    def _traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
         window: typing.List[Ito] = []
         for ito in itos:
             window.append(ito)

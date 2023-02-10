@@ -41,7 +41,7 @@ class TestItorator(_TestIto):
         s = 'abc'
         root = Ito(s)
         itor = Itorator.wrap(lambda ito: [ito[:1]])
-        self.assertListEqual([root[:1]], [*itor.traverse(root)])
+        self.assertListEqual([root[:1]], [*itor(root)])
 
     def test_wrap_method(self):
         def my_split(ito: Ito) -> Types.C_SQ_ITOS:
@@ -50,7 +50,7 @@ class TestItorator(_TestIto):
         s = 'one two three'
         root = Ito(s)
         itor = Itorator.wrap(my_split)
-        self.assertListEqual([*Ito.from_substrings(s, *s.split())], [*itor.traverse(root)])
+        self.assertListEqual([*Ito.from_substrings(s, *s.split())], [*itor(root)])
 
     def test_traverse(self):
         s = 'abc'
@@ -58,7 +58,7 @@ class TestItorator(_TestIto):
         root.children.add(*root)
 
         reflect = Reflect()
-        rv = [*reflect.traverse(root)]
+        rv = [*reflect(root)]
             
         self.assertEqual(1, len(rv))
         ito = rv[0]
@@ -74,7 +74,7 @@ class TestItorator(_TestIto):
         reflect = Reflect()
         desc = 'x'
         reflect.itor_next = Itorator.wrap(lambda ito: (ito.clone(desc=desc),))
-        rv = [*reflect.traverse(root)]
+        rv = [*reflect(root)]
             
         self.assertEqual(1, len(rv))
         ito = rv[0]
@@ -89,7 +89,7 @@ class TestItorator(_TestIto):
         reflect = Reflect()
         desc = 'x'
         reflect.itor_children = Itorator.wrap(lambda ito: tuple(ito.clone(i, i+1, desc) for i, c in enumerate(s)))
-        rv = [*reflect.traverse(root)]
+        rv = [*reflect(root)]
             
         self.assertEqual(1, len(rv))
         ito = rv[0]
@@ -107,7 +107,7 @@ class TestItorator(_TestIto):
         reflect.itor_children = make_chars
         rename = Itorator.wrap(lambda ito: tuple(ito.clone(desc=d_changed) if i.parent is not None else i for i in [ito]))
         make_chars.itor_next = rename
-        rv = [*reflect.traverse(root)]
+        rv = [*reflect(root)]
             
         self.assertEqual(1, len(rv))
         ito = rv[0]
@@ -124,13 +124,13 @@ class TestItorator(_TestIto):
         chars.itor_sub = lambda ito: str(ito) in vowels, Desc('vowel')
         chars.itor_sub.append(Desc('consonant'))
 
-        results = [*chars.traverse(root)]
+        results = [*chars(root)]
         self.assertEqual(len(s), len(results))
         self.assertListEqual([i for i in s if i in vowels], [str(i) for i in results if i.desc == 'vowel'])
         self.assertListEqual([i for i in s if i not in vowels], [str(i) for i in results if i.desc == 'consonant'])
 
         chars.itor_next = Desc('changed')
-        results = [*chars.traverse(root)]
+        results = [*chars(root)]
         self.assertEqual(len(s), len(results))
         self.assertTrue(all(i.desc == 'changed' for i in results))
 
@@ -151,46 +151,46 @@ class TestItorator(_TestIto):
             yield Types.C_BITO(True, Ito.join(*window))
 
         with self.subTest(chain_length=1, scenario='itor_next'):
-            rv = [*reflect.traverse(root)]
+            rv = [*reflect(root)]
             self.assertEqual(3, len(rv))
 
             word_splitter.postorator = Postorator.wrap(simple_join)
-            rv = [*reflect.traverse(root)]
+            rv = [*reflect(root)]
             self.assertEqual(1, len(rv))
 
         with self.subTest(chain_length=2, scenario='itor_next'):
             word_splitter.postorator = None
             word_splitter.itor_next = char_splitter
-            rv = [*reflect.traverse(root)]
+            rv = [*reflect(root)]
             self.assertEqual(9, len(rv))
 
             char_splitter.postorator = Postorator.wrap(simple_join)
-            rv = [*reflect.traverse(root)]
+            rv = [*reflect(root)]
             self.assertEqual(3, len(rv))
 
             word_splitter.postorator = Postorator.wrap(simple_join)
-            rv = [*reflect.traverse(root)]
+            rv = [*reflect(root)]
             self.assertEqual(1, len(rv))
 
             char_splitter.postorator = None
-            rv = [*reflect.traverse(root)]
+            rv = [*reflect(root)]
             self.assertEqual(1, len(rv))
 
         with self.subTest(chain_length=2, scenario='itor_child'):
             word_splitter.postorator = None
             word_splitter.itor_next = None
             word_splitter.itor_children = char_splitter
-            rv = [*reflect.traverse(root)]
+            rv = [*reflect(root)]
             self.assertEqual(3, len(rv))
             self.assertEqual(9, sum(len(i.children) for i in rv))            
 
             char_splitter.postorator = Postorator.wrap(simple_join)
-            rv = [*reflect.traverse(root)]
+            rv = [*reflect(root)]
             self.assertEqual(3, len(rv))
             self.assertEqual(3, sum(len(i.children) for i in rv))            
 
             word_splitter.postorator = Postorator.wrap(simple_join)
-            rv = [*reflect.traverse(root)]
+            rv = [*reflect(root)]
             self.assertEqual(1, len(rv))
             self.assertEqual(0, len(rv[0].children))  # Ito.join doesn't include children
 
@@ -227,7 +227,7 @@ class TestItorator(_TestIto):
         splt_chars = Itorator.wrap(func)
         splt_case.itor_children = splt_chars
         
-        root.children.add(*splt_space.traverse(root))
+        root.children.add(*splt_space(root))
         
         expected_child_count = s.count('-') + 1
         self.assertEqual(expected_child_count, len(root.children))

@@ -243,7 +243,7 @@ sent_itor = pawpaw.arborform.Itorator.wrap(lambda ito: ito.from_substrings(ito, 
 word_itor = pawpaw.arborform.Itorator.wrap(lambda ito: ito.from_substrings(ito, *nltk_tok.word_tokenize(str(ito))))
 sent_itor.itor_children = word_itor
 
-i.children.add(*(sent_itor.traverse(i)))
+i.children.add(*(sent_itor(i)))
 print(v_tree.dumps(i))
 exit(0)
 
@@ -251,7 +251,7 @@ exit(0)
 ws_tok = nltk.tokenize.WhitespaceTokenizer()
 splitter = pawpaw.arborform.Split(regex.compile(ws_tok._pattern, ws_tok._flags))
 i = pawpaw.Ito('The quick brown fox.')
-[str(i) for i in splitter.traverse(i)]
+[str(i) for i in splitter(i)]
 
 
 
@@ -289,7 +289,7 @@ phrases.itor_children = wrds_nums
 chrs_digs = Extract(regex.compile(r'(?P<char>[a-z])+|(?P<digit>\d)+'))
 wrds_nums.itor_children = chrs_digs
 
-root.children.add(*phrases.traverse(root))
+root.children.add(*phrases(root))
 
 print(dump.Compact().dumps(root))
 exit(0)

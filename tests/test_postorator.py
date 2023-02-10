@@ -24,7 +24,7 @@ class TestPostorator(_TestIto):
                 wrapped = Postorator.wrap(self.simple)
                 expected = [Types.C_BITO(False, i) for i in itos]
                 expected.append(Types.C_BITO(True, Ito(s, desc=self.post_desc)))
-                actual = [*wrapped.traverse(itos)]
+                actual = [*wrapped(itos)]
                 self.assertListEqual(expected, actual)
 
     def test_post(self):
@@ -32,10 +32,10 @@ class TestPostorator(_TestIto):
             root = Ito(s, desc='root')
             splitter = Split(regex.compile(r'\s+'))
 
-            rv = [*splitter.traverse(root)]
+            rv = [*splitter(root)]
             self.assertListEqual(root.str_split(), rv)
 
             splitter.postorator = Postorator.wrap(self.simple)
             expected = [Ito(s, desc=self.post_desc)]
-            actual = [*splitter.traverse(root)]
+            actual = [*splitter(root)]
             self.assertListEqual(expected, actual)

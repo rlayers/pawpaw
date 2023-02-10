@@ -16,7 +16,7 @@ class Furcation(list[PredicatedValue], typing.Generic[I, R]):
     def tautology(cls, item: I) -> bool:
         return True
 
-    def evaluate(self, item: I) -> R | None:
+    def __call__(self, item: I) -> R | None:
         i_typ, r_typ = self.generic_types()
 
         if not type_magic.isinstance_ex(item, i_typ):

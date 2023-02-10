@@ -86,18 +86,18 @@ class Itorator(ABC):
         pass
 
     def _do_children(self, ito: Ito) -> None:
-        if (itor_c := self._itor_children.evaluate(ito)) is not None:
+        if (itor_c := self._itor_children(ito)) is not None:
             for c in itor_c._traverse(ito, True):
                 pass  # force iter walk
 
     def _do_sub(self, ito: Ito) -> Types.C_IT_ITOS:
-        if (itor_s := self._itor_sub.evaluate(ito)) is None:
+        if (itor_s := self._itor_sub(ito)) is None:
             yield ito
         else:
             yield from itor_s._traverse(ito)
 
     def _do_next(self, ito: Ito) -> Types.C_IT_ITOS:
-        if (itor_n := self._itor_next.evaluate(ito)) is None:
+        if (itor_n := self._itor_next(ito)) is None:
             yield ito
         else:
             yield from itor_n._traverse(ito)

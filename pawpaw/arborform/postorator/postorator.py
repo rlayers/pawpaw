@@ -19,7 +19,7 @@ class Postorator(ABC):
         ...
 
     def __call__(self, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
-        yield from self.traverse(itos)   
+        yield from self._traverse(itos)   
 
 class _WrappedPostorator(Postorator):
     def __init__(self, f: Types.F_ITOS_2_BITOS, tag: str | None = None):

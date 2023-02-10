@@ -106,7 +106,7 @@ class TestIto(_TestIto):
 
                 ito.value_func = f
                 self.assertIs(f, ito.value_func)
-                self.assertEqual(str(ito), ito.value())
+                self.assertEqual(f(ito), ito.value())
 
                 ito.value_func = None
                 self.assertIsNone(ito.value_func)

@@ -63,7 +63,7 @@ class Tree(_PepoFstr):
     ELBOW = ascii_box.BoxDrawingChar.from_char('└')
 
     def __init__(self, indent: str = '  ', children: bool = True):
-        super().__init__(indent, children, '%span %desc|r : \'%substr!1r1:^40…% \'')
+        super().__init__(indent, children, '%span %desc!r : \'%substr!1r1:^40…% \'')
         self.children = False
 
     def _dump_children(self, fs: typing.IO, ito: pawpaw.Ito, prefix: str = '') -> None:

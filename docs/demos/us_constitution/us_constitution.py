@@ -13,25 +13,31 @@ Note: The text for the constitution was taken from https://www.archives.gov/foun
 """
 
 def get_parser() -> pawpaw.arborform.Itorator:
-    # Article (can also be preamble)
+    # Article: can also be preamble
     a_splitter = pawpaw.arborform.Split(
         regex.compile(r'(?<=\n+)(?=Article\.)', regex.DOTALL),
-        boundary_retention=pawpaw.arborform.Split.BoundaryRetention.NONE)
+        boundary_retention=pawpaw.arborform.Split.BoundaryRetention.NONE,
+        tag='article splitter')
 
     a_desc = pawpaw.arborform.Desc(
-        desc=lambda ito: 'article' if ito.str_startswith('Article.') else 'preamble')
+        desc=lambda ito: 'article' if ito.str_startswith('Article.') else 'preamble',
+        tag='article desc')
     a_splitter.itor_next = a_desc
 
-    a_extractor = pawpaw.arborform.Extract(regex.compile(r'Article\. (?<key>[A-Z]+)\.\n(?<value>.+)', regex.DOTALL))
-    a_desc.itor_children = (lambda ito: ito.desc == 'article', a_extractor)
+    a_extractor = pawpaw.arborform.Extract(
+        regex.compile(r'Article\. (?<key>[A-Z]+)\.\n(?<value>.+)', regex.DOTALL),
+        tag='article extractor')
+    a_desc.itor_children = lambda ito: ito.desc == 'article', a_extractor
+    nlp = pawpaw.nlp.SimpleNlp().itor
+    a_desc.itor_children.append(nlp)
 
-    # Section (only some articles have sections)
+    # Section: only some articles have sections
     s_splitter = pawpaw.arborform.Split(
         regex.compile(r'(?<=\n+)(?=Section\.)', regex.DOTALL),
         boundary_retention=pawpaw.arborform.Split.BoundaryRetention.LEADING,
-        desc='section')
-    nlp = pawpaw.nlp.SimpleNlp().itor
-    # a_extractor.itor_children = lambda ito: (s_splitter if ito.str_startswith('Section.') else nlp) if ito.desc == 'value' else None
+        desc='section',
+        tag='section splitter')
+    nlp.tag = 'nlp'
     a_extractor.itor_children.append((lambda ito: ito.desc == 'value' and ito.str_startswith('Section.'), s_splitter))
     a_extractor.itor_children.append((lambda ito: ito.desc == 'value', nlp))
 

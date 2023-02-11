@@ -117,12 +117,12 @@ class Itorator(ABC):
     def _traverse(self, ito: Ito, as_children: bool = False) -> Types.C_IT_ITOS:
         # Process ._iter & .itor_sub with parent in place
         curs = (s for i in self._iter(ito) for s in self._do_sub(i))
-        
+
         if as_children:
             parent = ito
         elif (parent := ito.parent) is not None:
-            parent.children.remove(ito)  
-  
+            parent.children.remove(ito)
+
         iters: typing.List[iter] = []
         for cur in curs:
             if parent is not None and cur.parent is not parent:

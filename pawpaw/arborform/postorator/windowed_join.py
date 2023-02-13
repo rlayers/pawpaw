@@ -34,17 +34,15 @@ class WindowedJoin(Postorator):
 
         self.desc = desc
 
-    def _traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
+    def _traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         window: typing.List[Ito] = []
         for ito in itos:
             window.append(ito)
             if len(window) == self.window_size:
                 if self.predicate(window):
-                    joined = self.ito_class.join(*window, desc=self.desc)
-                    yield from (Types.C_BITO(False, i) for i in window)
+                    yield self.ito_class.join(*window, desc=self.desc)
                     window.clear()
-                    yield Types.C_BITO(True, joined)
                 else:
-                    yield Types.C_BITO(True, window.pop(0))
+                    window.pop(0)
 
-        yield from (Types.C_BITO(True, i) for i in window)
+        yield from window

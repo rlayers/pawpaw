@@ -11,19 +11,15 @@ class TestPostorator(_TestIto):
     post_desc = 'joined'
 
     @classmethod
-    def simple(cls, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
-        iter_1, iter_2 = tee(itos, 2)
-        joined = Ito.join(*iter_1, desc=cls.post_desc)
-        yield from (Types.C_BITO(False, i) for i in iter_2)
-        yield Types.C_BITO(True, joined)
+    def simple(cls, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
+        yield Ito.join(*itos)
 
     def test_traverse(self):
         for s in 'One', 'One Two', 'One Two Three', 'One Two Three Four':
             itos = Ito(s).str_split()
             with self.subTest(string=s, itos=itos, desc=self.post_desc):
                 wrapped = Postorator.wrap(self.simple)
-                expected = [Types.C_BITO(False, i) for i in itos]
-                expected.append(Types.C_BITO(True, Ito(s, desc=self.post_desc)))
+                expected = [*self.simple(itos)]
                 actual = [*wrapped(itos)]
                 self.assertListEqual(expected, actual)
 
@@ -36,6 +32,6 @@ class TestPostorator(_TestIto):
             self.assertListEqual(root.str_split(), rv)
 
             splitter.postorator = Postorator.wrap(self.simple)
-            expected = [Ito(s, desc=self.post_desc)]
+            expected = [Ito(s)]
             actual = [*splitter(root)]
             self.assertListEqual(expected, actual)

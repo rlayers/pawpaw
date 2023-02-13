@@ -23,18 +23,21 @@ class TestWindowedJoin(_TestIto):
             itos = root.split(re)
             desc = 'merged'
             for window_size in 2, 3, 4:
-                with self.subTest(string=s, itos=itos, window_size=window_size, desc=desc):
+                with self.subTest(string=s, window_size=window_size, desc=desc):
                     wj = WindowedJoin(window_size, func, desc=desc)
                     itos_iter = root.split_iter(re)
                     actual = [*wj(itos_iter)]
                     if len(itos) < window_size:
-                        self.assertListEqual([Types.C_BITO(True, i) for i in itos], actual)
+                        self.assertListEqual(itos, actual)
                     else:
-                        while len(actual) >= window_size:
-                            self.assertTrue(all(not bi.tf for bi in actual[:window_size]))
-                            del actual[:window_size]
-                            if len(actual) > 0:
-                                self.assertTrue(actual[0].tf)
-                                del actual[0]
+                        joined_count = len(itos) // window_size
+                        unjoined_count = len(itos) % window_size
+                        self.assertEqual(joined_count + unjoined_count, len(actual))
 
-                        self.assertTrue(all(bi.tf for bi in actual))
+                        for i in range(0, joined_count):
+                            expected = Ito.join(*itos[i * window_size:i * window_size + window_size], desc=desc)
+                            self.assertEqual(expected, actual[i])
+
+                        if unjoined_count > 0:
+                            tail = itos[-unjoined_count:]
+                            self.assertListEqual(tail, actual[-unjoined_count:])

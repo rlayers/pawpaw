@@ -111,7 +111,7 @@ class Itorator(ABC):
         if self._postorator is None:
             yield from itos
         else:
-            yield from (bito.ito for bito in filter(lambda i: i.tf, self._postorator(itos)))
+            yield from self._postorator(itos)
 
     def _traverse(self, ito: Ito) -> Types.C_IT_ITOS:
         yield from self._do_post(self._do_prior_to_post(ito))

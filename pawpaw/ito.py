@@ -1429,6 +1429,7 @@ class Types:
     F_ITO_2_DESC = typing.Callable[[Ito], str]
     F_ITO_2_SQ_ITOS = typing.Callable[[Ito], C_SQ_ITOS]
     F_ITO_2_IT_ITOS = typing.Callable[[Ito], C_IT_ITOS]
+    F_ITOS_2_ITOS = typing.Callable[[C_IT_ITOS], C_IT_ITOS]
 
     C_GK = int | str
     F_M_GK_2_DESC = typing.Callable[[regex.Match, C_GK], str]
@@ -1436,13 +1437,6 @@ class Types:
     F_ITO_M_GK_2_B = typing.Callable[[Ito | None, regex.Match, C_GK], bool]
     F_ITO_M_GK_2_DESC = typing.Callable[[Ito | None, regex.Match, C_GK], str]
     F_M_GK_2_B = typing.Callable[[regex.Match, C_GK], bool]
-
-    class C_BITO(typing.NamedTuple):
-        tf: bool
-        ito: Ito
-
-    C_IT_BITOS = typing.Iterable[C_BITO]
-    F_ITOS_2_BITOS = typing.Callable[[C_IT_ITOS], C_IT_BITOS]
 
     class C_EITO(typing.NamedTuple):
         index: int

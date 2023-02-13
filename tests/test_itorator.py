@@ -146,9 +146,7 @@ class TestItorator(_TestIto):
         char_splitter = Itorator.wrap(lambda ito: [*ito])
 
         def simple_join(itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
-            window = list(itos)
-            yield from (Types.C_BITO(False, i) for i in window)
-            yield Types.C_BITO(True, Ito.join(*window))
+            yield Ito.join(*itos)
 
         with self.subTest(chain_length=1, scenario='itor_next'):
             rv = [*reflect(root)]

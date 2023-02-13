@@ -1,13 +1,16 @@
 from abc import ABC, abstractmethod
 import typing
 
-from pawpaw import Types, Errors
+from pawpaw import Types, type_magic, Errors
 
 
 class Postorator(ABC):
     @classmethod
-    def wrap(cls, func: Types.F_ITOS_2_BITOS, tag: str | None = None):
-        return _WrappedPostorator(func, tag)
+    def wrap(cls, func: Types.F_ITOS_2_ITOS, tag: str | None = None):
+        if type_magic.functoid_isinstance(func, Types.F_ITOS_2_ITOS):
+            return _WrappedPostorator(func, tag)
+
+        raise Errors.parameter_invalid_type('func', func, Types.F_ITOS_2_ITOS)        
 
     def __init__(self, tag: str | None = None):
         if tag is not None and not isinstance(tag, str):
@@ -15,17 +18,17 @@ class Postorator(ABC):
         self.tag = tag
 
     @abstractmethod
-    def _traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
+    def _traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         ...
 
-    def __call__(self, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
+    def __call__(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         yield from self._traverse(itos)   
 
 
 class _WrappedPostorator(Postorator):
-    def __init__(self, f: Types.F_ITOS_2_BITOS, tag: str | None = None):
+    def __init__(self, f: Types.F_ITOS_2_ITOS, tag: str | None = None):
         super().__init__(tag)
         self.__f = f
 
-    def _traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
+    def _traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         yield from self.__f(itos)

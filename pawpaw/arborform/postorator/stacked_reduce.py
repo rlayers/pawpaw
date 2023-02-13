@@ -30,7 +30,7 @@ class StackedReduce(Postorator):
         else:
             raise Errors.parameter_invalid_type('pop_predicate', pop_predicate, self.F_SQ_ITOS_ITO_2_B, None)
 
-    def _traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_BITOS:
+    def _traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         stack: typing.List[Ito] = []
         for ito in itos:
             if stack:
@@ -48,22 +48,3 @@ class StackedReduce(Postorator):
 
         if stack:
             yield self.reduce_func(stack)
-
-
-# class PromoteChildren(Consolidator):
-#     def __init__(self, predicate: Types.F_ITO_2_B):
-#         super().__init__()
-#         if not type_magic.functoid_isinstance(predicate, Types.F_ITO_2_B):
-#             raise Errors.parameter_invalid_type('predicate', predicate, Types.F_ITO_2_B)
-#         self.predicate = predicate
-
-#     def traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
-#         stack: typing.List[pawpaw.Ito] = []
-
-#         for ito in itos:
-#             if self.predicate(ito):
-#                 stack.extend(ito.children)
-#             else:
-#                 stack.append(ito)
-
-#         yield from stack

@@ -9,4 +9,4 @@ class Reflect(Itorator):
         super().__init__(tag)
 
     def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:
-        return ito.clone(),
+        return ito,

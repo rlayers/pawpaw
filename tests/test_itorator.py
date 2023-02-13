@@ -105,7 +105,7 @@ class TestItorator(_TestIto):
         reflect = Reflect()
         make_chars = Itorator.wrap(lambda ito: tuple(ito.clone(i, i+1, 'char') for i in range(*ito.span)))
         reflect.itor_children = make_chars
-        rename = Itorator.wrap(lambda ito: tuple(ito.clone(desc=d_changed) if i.parent is not None else i for i in [ito]))
+        rename = Itorator.wrap(lambda ito: (ito.clone(desc=d_changed),))
         make_chars.itor_next = rename
         rv = [*reflect(root)]
             
@@ -134,7 +134,7 @@ class TestItorator(_TestIto):
         self.assertEqual(len(s), len(results))
         self.assertTrue(all(i.desc == 'changed' for i in results))
 
-    def test_traverse_with_post_processor(self):
+    def test_traverse_with_postorator(self):
         s = 'abc def ghi'
         root = Ito(s)
 

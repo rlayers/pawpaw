@@ -12,4 +12,4 @@ class TestItorator(_TestIto):
         reflect = Reflect()
         rv = reflect._iter(root)
         self.assertEqual(1, len(rv))
-        self.assertIsNot(root, rv[0])
+        self.assertIs(root, rv[0])

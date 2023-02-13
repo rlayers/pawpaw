@@ -92,6 +92,6 @@ class Split(Itorator):
                 rv.append(ito.clone(start, stop, self.desc))
 
         if len(rv) == 0 and self.return_zero_split:
-            rv.append(ito.clone(desc=self.desc))
+            rv.append(ito.clone(desc=self.desc))  # TODO : Don't clone this!
 
         return rv

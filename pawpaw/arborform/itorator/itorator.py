@@ -85,16 +85,15 @@ class Itorator(ABC):
     def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:
         pass
 
-    def _do_children(self, ito: Ito) -> None:
-        if (itor_c := self._itor_children(ito)) is not None:
-            for c in itor_c._traverse(ito, True):
-                pass  # force iter walk
-
     def _do_sub(self, ito: Ito) -> Types.C_IT_ITOS:
         if (itor_s := self._itor_sub(ito)) is None:
             yield ito
         else:
             yield from itor_s._traverse(ito)
+
+    def _do_children(self, ito: Ito) -> Types.C_IT_ITOS:
+        if (itor_c := self._itor_children(ito)) is not None:
+            yield from itor_c._traverse(ito)
 
     def _do_next(self, ito: Ito) -> Types.C_IT_ITOS:
         if (itor_n := self._itor_next(ito)) is None:
@@ -114,30 +113,17 @@ class Itorator(ABC):
                 elif (_parent := bito.ito.parent) is not None:
                     _parent.children.remove(bito.ito)
 
-    def _traverse(self, ito: Ito, as_children: bool = False) -> Types.C_IT_ITOS:
-        # Process ._iter & .itor_sub with parent in place
-        curs = (s for i in self._iter(ito) for s in self._do_sub(i))
-
-        if as_children:
-            parent = ito
-        elif (parent := ito.parent) is not None:
-            parent.children.remove(ito)
-
-        iters: typing.List[iter] = []
-        for cur in curs:
-            if parent is not None and cur.parent is not parent:
-                parent.children.add(cur)
-
-            self._do_children(cur)
-
-            iters.append(self._do_next(cur))
-
-        yield from self._do_post(parent, itertools.chain(*iters))
+    def _traverse(self, ito: Ito) -> Types.C_IT_ITOS:
+        for i in self._iter(ito):
+            for s in self._do_sub(i):
+                s.children.add(*self._do_children(s))
+                yield from self._do_next(s)
 
     def __call__(self, ito: Ito) -> Types.C_IT_ITOS:
         if not isinstance(ito, Ito):
             raise Errors.parameter_invalid_type('ito', ito, Ito)
         yield from self._traverse(ito.clone())
+
 
 class _WrappedItorator(Itorator):
     def __init__(self, f: Types.F_ITO_2_SQ_ITOS, tag: str | None = None):

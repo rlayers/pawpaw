@@ -281,13 +281,14 @@ Pawpaw is a rewrite of *desponia*, a now-deprecated Python 2.x segmentation fram
 
 - [x] arborform
   - [x] itorator
-    - [x] desc
-    - [x] extract
-    - [x] reflect
-    - [x] split
-  - [x] postorator
-    - [x] stacked_reduce
-    - [x] windowed_join
+    - [x] Desc
+    - [x] Extract
+    - [x] Reflect
+    - [x] Split
+    - [x] ValueFunc
+  - [ ] postorator
+    - [ ] StackedReduce
+    - [ ] WindowedJoin
 - [x] core
   - [x] Errors
   - [x] Infix

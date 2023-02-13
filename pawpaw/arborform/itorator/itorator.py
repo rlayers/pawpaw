@@ -20,7 +20,7 @@ class Itorator(ABC):
         if type_magic.functoid_isinstance(src, Types.F_ITO_2_SQ_ITOS):
             return _WrappedItorator(src, tag)
 
-        raise Errors.parameter_invalid_type('src', src, Types.F_ITO_2_SQ_ITOS, Itorator)
+        raise Errors.parameter_invalid_type('src', src, Types.F_ITO_2_SQ_ITOS)
 
     def __init__(self, tag: str | None = None):
         if tag is not None and not isinstance(tag, str):

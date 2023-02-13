@@ -18,11 +18,11 @@ class Postorator(ABC):
         self.tag = tag
 
     @abstractmethod
-    def _traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
+    def transform(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         ...
 
     def __call__(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
-        yield from self._traverse(itos)   
+        yield from self.transform(itos)   
 
 
 class _WrappedPostorator(Postorator):
@@ -30,5 +30,5 @@ class _WrappedPostorator(Postorator):
         super().__init__(tag)
         self.__f = f
 
-    def _traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
+    def transform(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         yield from self.__f(itos)

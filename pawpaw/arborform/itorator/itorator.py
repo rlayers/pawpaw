@@ -82,7 +82,7 @@ class Itorator(ABC):
             raise Errors.parameter_invalid_type('val', val, Postorator, Types.F_ITOS_2_BITOS, types.NoneType)
 
     @abstractmethod
-    def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:
+    def transform(self, ito: Ito) -> Types.C_SQ_ITOS:
         pass
 
     def _do_sub(self, ito: Ito) -> Types.C_IT_ITOS:
@@ -102,7 +102,7 @@ class Itorator(ABC):
             yield from itor_n._traverse(ito)
 
     def _do_prior_to_post(self, ito: Ito) -> Types.C_IT_ITOS:
-        for i in self._iter(ito):
+        for i in self.transform(ito):
             for s in self._do_sub(i):
                 s.children.add(*self._do_children(s))
                 yield from self._do_next(s)
@@ -127,5 +127,5 @@ class _WrappedItorator(Itorator):
         super().__init__(tag)
         self.__f = f
 
-    def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:
+    def transform(self, ito: Ito) -> Types.C_SQ_ITOS:
         return self.__f(ito)

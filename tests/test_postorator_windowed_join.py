@@ -15,7 +15,7 @@ class TestWindowedJoin(_TestIto):
               else:
                   WindowedJoin(window_size, func)
 
-    def test_traverse(self):
+    def test_traverse_tautology(self):
         func = lambda itos: True
         re = regex.compile(r'\s')
         for s in '', 'One', 'One Two', 'One Two Three', 'One Two Three Four':
@@ -25,8 +25,7 @@ class TestWindowedJoin(_TestIto):
             for window_size in 2, 3, 4:
                 with self.subTest(string=s, window_size=window_size, desc=desc):
                     wj = WindowedJoin(window_size, func, desc=desc)
-                    itos_iter = root.split_iter(re)
-                    actual = [*wj(itos_iter)]
+                    actual = [*wj(itos)]
                     if len(itos) < window_size:
                         self.assertListEqual(itos, actual)
                     else:
@@ -41,3 +40,19 @@ class TestWindowedJoin(_TestIto):
                         if unjoined_count > 0:
                             tail = itos[-unjoined_count:]
                             self.assertListEqual(tail, actual[-unjoined_count:])
+
+    def test_traverse_non_tautology(self):
+        s = 'One Two Three Four'
+        root = Ito(s, desc='root')
+        itos = root.str_split()
+
+        window_size = 2
+        func = lambda itos: all(i.str_startswith('T') for i in itos)
+        desc = 'merged'
+
+        wj = WindowedJoin(window_size, func, desc=desc)
+        actual = [*wj(itos)]
+        self.assertEqual(3, len(actual))
+        self.assertEqual(itos[0], actual[0])
+        self.assertEqual(itos[-1], actual[-1])
+        self.assertEqual('Two Three', str(actual[1]))

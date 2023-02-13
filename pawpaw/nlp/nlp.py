@@ -457,10 +457,7 @@ class SimpleNlp:
     _word_pat = r'\w(?:(?:\L<sqs>|-\s*)?\w)*'
 
     def get_paragraph(self) -> pawpaw.arborform.Itorator:
-        rv = pawpaw.arborform.Desc(desc='paragraph')
-
-        splitter = pawpaw.arborform.Split(self._paragraph_re, tag='para splitter')
-        rv.itor_sub = splitter
+        rv = pawpaw.arborform.Split(self._paragraph_re, desc='paragraph', tag='para splitter')
 
         trimmer = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.str_strip(''.join(self._trimmable_ws))], tag='para trimmer')
         rv.itor_sub.append(trimmer)

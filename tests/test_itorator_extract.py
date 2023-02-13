@@ -12,7 +12,7 @@ class TestExtract(_TestIto):
         root = Ito(s)
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
         itor = Extract(re)
-        rv = itor._iter(root)
+        rv = itor.transform(root)
         itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]
         grouped = {k: [v for v in itos if v.desc == k] for k, val in itertools.groupby(itos, lambda x: x.desc)}
 
@@ -39,7 +39,7 @@ class TestExtract(_TestIto):
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
         df = lambda i, m, g: g + 'x' if g == 'char' else g
         itor = Extract(re, desc_func=df)
-        rv = itor._iter(root)
+        rv = itor.transform(root)
         itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]
         grouped = {k: [v for v in itos if v.desc == k] for k, val in itertools.groupby(itos, lambda x: x.desc)}
 
@@ -66,7 +66,7 @@ class TestExtract(_TestIto):
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )')
         limit = 2
         itor = Extract(re, limit=2)
-        rv = itor._iter(root)
+        rv = itor.transform(root)
 
         itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]
         grouped = {k: [v for v in itos if v.desc == k] for k, val in itertools.groupby(itos, lambda x: x.desc)}
@@ -94,7 +94,7 @@ class TestExtract(_TestIto):
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
         gf = ('phrase', 'word')
         itor = Extract(re, group_filter=gf)
-        rv = itor._iter(root)
+        rv = itor.transform(root)
         itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]
         grouped = {k: [v for v in itos if v.desc == k] for k, val in itertools.groupby(itos, lambda x: x.desc)}
 
@@ -116,7 +116,7 @@ class TestExtract(_TestIto):
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
         gf = lambda i, m, g: g in ('phrase', 'number')
         itor = Extract(re, group_filter=gf)
-        rv = itor._iter(root)
+        rv = itor.transform(root)
         itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]
         grouped = {k: [v for v in itos if v.desc == k] for k, val in itertools.groupby(itos, lambda x: x.desc)}
 

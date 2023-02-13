@@ -12,7 +12,7 @@ class TestDesc(_TestIto):
 
         desc = 'changed'
         itor = Desc(desc)
-        rv = itor._iter(root)
+        rv = itor.transform(root)
         self.assertEqual(1, len(rv))
 
         rv = rv[0]

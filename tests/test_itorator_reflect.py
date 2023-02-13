@@ -10,6 +10,6 @@ class TestItorator(_TestIto):
         self.add_chars_as_children(root, 'Child')
 
         reflect = Reflect()
-        rv = reflect._iter(root)
+        rv = reflect.transform(root)
         self.assertEqual(1, len(rv))
         self.assertIs(root, rv[0])

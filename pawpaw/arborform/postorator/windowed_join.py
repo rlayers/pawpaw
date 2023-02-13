@@ -43,6 +43,6 @@ class WindowedJoin(Postorator):
                     yield self.ito_class.join(*window, desc=self.desc)
                     window.clear()
                 else:
-                    window.pop(0)
+                    yield window.pop(0)
 
         yield from window

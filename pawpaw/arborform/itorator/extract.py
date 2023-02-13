@@ -50,7 +50,7 @@ class Extract(Itorator):
                 Types.F_ITO_M_GK_2_B,
                 types.NoneType)
 
-    def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:
+    def transform(self, ito: Ito) -> Types.C_SQ_ITOS:
         rv: typing.List[Ito] = []
         for count, m in enumerate(ito.regex_finditer(self.re), 1):
             path_stack: typing.List[Ito] = []

@@ -11,6 +11,6 @@ class ValueFunc(Itorator):
             raise Errors.parameter_invalid_type('f', f, Types.F_ITO_2_VAL, None)
         self.f = f
 
-    def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:
+    def transform(self, ito: Ito) -> Types.C_SQ_ITOS:
         ito.value_func = self.f
         return ito,

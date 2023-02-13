@@ -30,7 +30,7 @@ class StackedReduce(Postorator):
         else:
             raise Errors.parameter_invalid_type('pop_predicate', pop_predicate, self.F_SQ_ITOS_ITO_2_B, None)
 
-    def _traverse(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
+    def transform(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         stack: typing.List[Ito] = []
         for ito in itos:
             if stack:

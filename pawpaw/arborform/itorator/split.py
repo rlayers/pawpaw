@@ -52,7 +52,7 @@ class Split(Itorator):
         self.return_zero_split = return_zero_split
         self.desc = desc
 
-    def _iter(self, ito: Ito) -> Types.C_SQ_ITOS:
+    def transform(self, ito: Ito) -> Types.C_SQ_ITOS:
         rv: typing.List[Ito] = []
         prior: Span | None = None
         for m in ito.regex_finditer(self.re):

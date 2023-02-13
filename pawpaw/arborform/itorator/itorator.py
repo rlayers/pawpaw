@@ -101,23 +101,20 @@ class Itorator(ABC):
         else:
             yield from itor_n._traverse(ito)
 
-    def _do_post(self, parent: Ito, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
-        if self._postorator is None:
-            yield from itos
-        else:
-            for bito in self._postorator(itos):
-                if bito.tf:
-                    if parent is not None and bito.ito.parent is not parent:
-                        parent.children.add(bito.ito)
-                    yield bito.ito
-                elif (_parent := bito.ito.parent) is not None:
-                    _parent.children.remove(bito.ito)
-
-    def _traverse(self, ito: Ito) -> Types.C_IT_ITOS:
+    def _do_prior_to_post(self, ito: Ito) -> Types.C_IT_ITOS:
         for i in self._iter(ito):
             for s in self._do_sub(i):
                 s.children.add(*self._do_children(s))
                 yield from self._do_next(s)
+
+    def _do_post(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
+        if self._postorator is None:
+            yield from itos
+        else:
+            yield from (bito.ito for bito in filter(lambda i: i.tf, self._postorator(itos)))
+
+    def _traverse(self, ito: Ito) -> Types.C_IT_ITOS:
+        yield from self._do_post(self._do_prior_to_post(ito))
 
     def __call__(self, ito: Ito) -> Types.C_IT_ITOS:
         if not isinstance(ito, Ito):

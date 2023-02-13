@@ -14,7 +14,7 @@ Note: The text for the constitution was taken from https://www.archives.gov/foun
 """
 
 def get_parser() -> arborform.Itorator:
-    # Article: can also be preamble
+    # Article: could be preamble
     a_splitter = arborform.Split(
         regex.compile(r'(?<=\n+)(?=Article\.)', regex.DOTALL),
         boundary_retention=arborform.Split.BoundaryRetention.NONE,

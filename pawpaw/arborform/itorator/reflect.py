@@ -8,5 +8,5 @@ class Reflect(Itorator):
     def __init__(self, tag: str | None = None):
         super().__init__(tag)
 
-    def transform(self, ito: Ito) -> Types.C_SQ_ITOS:
+    def _transform(self, ito: Ito) -> Types.C_SQ_ITOS:
         return ito,

@@ -82,39 +82,39 @@ class Itorator(ABC):
             raise Errors.parameter_invalid_type('val', val, Postorator, Types.F_ITOS_2_BITOS, types.NoneType)
 
     @abstractmethod
-    def transform(self, ito: Ito) -> Types.C_SQ_ITOS:
+    def _transform(self, ito: Ito) -> Types.C_SQ_ITOS:
         pass
 
-    def _do_sub(self, ito: Ito) -> Types.C_IT_ITOS:
+    def __do_sub(self, ito: Ito) -> Types.C_IT_ITOS:
         if (itor_s := self._itor_sub(ito)) is None:
             yield ito
         else:
             yield from itor_s._traverse(ito)
 
-    def _do_children(self, ito: Ito) -> Types.C_IT_ITOS:
+    def __do_children(self, ito: Ito) -> Types.C_IT_ITOS:
         if (itor_c := self._itor_children(ito)) is not None:
             yield from itor_c._traverse(ito)
 
-    def _do_next(self, ito: Ito) -> Types.C_IT_ITOS:
+    def __do_next(self, ito: Ito) -> Types.C_IT_ITOS:
         if (itor_n := self._itor_next(ito)) is None:
             yield ito
         else:
             yield from itor_n._traverse(ito)
 
-    def _do_prior_to_post(self, ito: Ito) -> Types.C_IT_ITOS:
-        for i in self.transform(ito):
-            for s in self._do_sub(i):
-                s.children.add(*self._do_children(s))
-                yield from self._do_next(s)
+    def __do_prior_to_post(self, ito: Ito) -> Types.C_IT_ITOS:
+        for i in self._transform(ito):
+            for s in self.__do_sub(i):
+                s.children.add(*self.__do_children(s))
+                yield from self.__do_next(s)
 
-    def _do_post(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
+    def __do_post(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         if self._postorator is None:
             yield from itos
         else:
             yield from self._postorator(itos)
 
     def _traverse(self, ito: Ito) -> Types.C_IT_ITOS:
-        yield from self._do_post(self._do_prior_to_post(ito))
+        yield from self.__do_post(self.__do_prior_to_post(ito))
 
     def __call__(self, ito: Ito) -> Types.C_IT_ITOS:
         if not isinstance(ito, Ito):
@@ -127,5 +127,5 @@ class _WrappedItorator(Itorator):
         super().__init__(tag)
         self.__f = f
 
-    def transform(self, ito: Ito) -> Types.C_SQ_ITOS:
+    def _transform(self, ito: Ito) -> Types.C_SQ_ITOS:
         return self.__f(ito)

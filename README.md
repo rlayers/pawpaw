@@ -18,7 +18,7 @@ Pawpaw is a high performance text segmentation framework.  Segments are organize
 
 <img align="right" width="30%" height="30%" alt="Botanical Drawing: Asimina triloba: the American papaw" src="https://raw.githubusercontent.com/rlayers/pawpaw/master/images/pawpaw.png"> 
 
-- Indexed str and substr representation
+- Indexed string and substring representation
   - Efficient memory utilization
   - Fast processing
   - Pythonic relative indexing and slicing
@@ -286,15 +286,17 @@ Pawpaw is a rewrite of *desponia*, a now-deprecated Python 2.x segmentation fram
     - [x] Reflect
     - [x] Split
     - [x] ValueFunc
-  - [ ] postorator
+  - [x] postorator
     - [ ] StackedReduce
-    - [ ] WindowedJoin
+    - [x] WindowedJoin
 - [x] core
   - [x] Errors
+  - [x] Furcation
   - [x] Infix
   - [x] Ito
   - [x] ItoChildren
   - [x] nuco
+  - [x] PredicatedValue
   - [x] Span
   - [x] Types
 - [ ] documentation & examples

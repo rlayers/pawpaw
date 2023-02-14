@@ -12,7 +12,7 @@ class TestValueFunc(_TestIto):
 
         f = lambda i: int(str(i))
         itor = ValueFunc(f)
-        rv = itor.transform(root)
+        rv = itor._transform(root)
         self.assertEqual(1, len(rv))
 
         rv = rv[0]

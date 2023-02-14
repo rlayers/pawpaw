@@ -34,7 +34,7 @@ class WindowedJoin(Postorator):
 
         self.desc = desc
 
-    def transform(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
+    def _transform(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         window: typing.List[Ito] = []
         for ito in itos:
             window.append(ito)

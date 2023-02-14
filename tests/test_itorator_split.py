@@ -46,7 +46,7 @@ class TestSplit(_TestIto):
                     expected = self.expected_from(s, sep, brt)
                     desc = 'split'
                     split = Split(re, boundary_retention=brt, desc=desc)
-                    actual = [*split.transform(ito)]
+                    actual = [*split._transform(ito)]
                     self.assertListEqual(expected, [str(i) for i in actual])
                     self.assertTrue(all(i.desc == desc for i in actual))
 
@@ -61,7 +61,7 @@ class TestSplit(_TestIto):
                 with self.subTest(string=s, separator=sep, boundary_retention=brt, return_zero_split=return_zero_split, desc=desc):
                     expected = [ito.clone(desc=desc)] if return_zero_split else []
                     split = Split(re, boundary_retention=brt, return_zero_split=return_zero_split, desc=desc)
-                    actual = [*split.transform(ito)]
+                    actual = [*split._transform(ito)]
                     self.assertListEqual(expected, actual)
 
     @classmethod
@@ -85,6 +85,6 @@ class TestSplit(_TestIto):
                         del expected[-1]
                     desc = 'split'
                     split = Split(re, boundary_retention=brt, desc=desc)
-                    actual = [*split.transform(ito)]
+                    actual = [*split._transform(ito)]
                     self.assertListEqual(expected, [str(i) for i in actual])
                     self.assertTrue(all(i.desc == desc for i in actual))

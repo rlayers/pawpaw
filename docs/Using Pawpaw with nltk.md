@@ -32,18 +32,18 @@
 ### Chaining NLP
 
 ```python
->>> from pawpaw import Ito, arborform
+>>> from pawpaw import Ito, arborform, visualization
 >>> s = 'Here is one sentence.  Here is another.'
 >>> i = Ito(s)
 >>>
 >>> nltk_tok = nltk.tokenize
->>> sent_itor = pawpaw.arborform.Itorator.wrap(lambda ito: ito.from_substrings(ito, *nltk_tok.sent_tokenize(str(ito))))
+>>> sent_itor = arborform.Itorator.wrap(lambda ito: ito.from_substrings(ito, *nltk_tok.sent_tokenize(str(ito))))
 >>>
->>> word_itor = pawpaw.arborform.Itorator.wrap(lambda ito: ito.from_substrings(ito, *nltk_tok.word_tokenize(str(ito))))
+>>> word_itor = arborform.Itorator.wrap(lambda ito: ito.from_substrings(ito, *nltk_tok.word_tokenize(str(ito))))
 >>> sent_itor.itor_children = word_itor
 >>>
 >>> i.children.add(*sent_itor(i))
->>> vis_tree = pawpaw.visualization.pepo.Tree()
+>>> vis_tree = visualization.pepo.Tree()
 >>> print(vis_tree.dumps(i))
 (0, 39) 'None' : 'Here is one sentence.  Here is another.'
 ├──(0, 21) 'None' : 'Here is one sentence.'

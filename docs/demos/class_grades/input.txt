@@ -1,0 +1,48 @@
+School = Riverdale High
+Grade = 1
+Student number, Name
+0, Phoebe
+1, Rachel
+
+Student number, Score
+0, 3
+1, 7
+
+Grade = 2
+Student number, Name
+0, Angela
+1, Tristan
+2, Aurora
+
+Student number, Score
+0, 6
+1, 3
+2, 9
+
+School = Hogwarts
+Grade = 1
+Student number, Name
+0, Ginny
+1, Luna
+
+Student number, Score
+0, 8
+1, 7
+
+Grade = 2
+Student number, Name
+0, Harry
+1, Hermione
+
+Student number, Score
+0, 5
+1, 10
+
+Grade = 3
+Student number, Name
+0, Fred
+1, George
+
+Student number, Score
+0, 0
+1, 0

@@ -6,7 +6,6 @@
 
 ```python
 >>> import nltk
->>> import pawpaw
 >>> from pawpaw import Ito
 >>> from nltk.tokenize import WhitespaceTokenizer
 >>> s = 'The quick brown fox.'

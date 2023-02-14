@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 import typing
 
 from pawpaw import Ito, Types, Errors, type_magic

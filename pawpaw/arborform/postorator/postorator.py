@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-import typing
 
 from pawpaw import Types, type_magic, Errors
 

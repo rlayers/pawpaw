@@ -50,10 +50,10 @@ def get_parser() -> arborform.Itorator:
     return a_splitter
 
 
+# Segment
 def get_text() -> pawpaw.Ito:
     with open(os.path.join(sys.path[0], 'us_constitution.txt')) as f:
         return pawpaw.Ito(f.read(), desc='constitution')
-
 
 # Visualize
 print(f'\nVISUALIZE:\n')

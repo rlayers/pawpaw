@@ -11,8 +11,8 @@ class Itorator(ABC):
     # define Python user-defined exceptions
     class SelfChainingError(ValueError):
         """Raised when attempt is made to add self to the pipeline"""
-        def __init__(self, type: str):
-            self.message = f'can\t add self to {type} chain'
+        def __init__(self, _type: str):
+            self.message = f'can\t add self to {_type} chain'
 
     @classmethod
     def wrap(cls, src: Types.F_ITO_2_SQ_ITOS, tag: str | None = None):
@@ -28,7 +28,7 @@ class Itorator(ABC):
         self._itor_children = Furcation[Ito, Itorator]()
         self._itor_sub = Furcation[Ito, Itorator]()
         self._itor_next = Furcation[Ito, Itorator]()
-        self._postorator: Postorator | Types.F_ITOS_2_BITOS | None = None
+        self._postorator: Postorator | Types.F_ITOS_2_ITOS | None = None
 
     @property
     def itor_children(self) -> Furcation[Ito, Itorator]():
@@ -70,15 +70,15 @@ class Itorator(ABC):
             self._itor_next.append(val)
 
     @property
-    def postorator(self) -> Postorator | Types.F_ITOS_2_BITOS | None:
+    def postorator(self) -> Postorator | Types.F_ITOS_2_ITOS | None:
         return self._postorator
 
     @postorator.setter
-    def postorator(self, val: Postorator | Types.F_ITOS_2_BITOS | None):
+    def postorator(self, val: Postorator | Types.F_ITOS_2_ITOS | None):
         if val is None or isinstance(val, Postorator):
             self._postorator = val
         else:
-            raise Errors.parameter_invalid_type('val', val, Postorator, Types.F_ITOS_2_BITOS, types.NoneType)
+            raise Errors.parameter_invalid_type('val', val, Postorator, Types.F_ITOS_2_ITOS, types.NoneType)
 
     @abstractmethod
     def _transform(self, ito: Ito) -> Types.C_SQ_ITOS:

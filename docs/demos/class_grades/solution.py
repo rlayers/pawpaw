@@ -39,5 +39,5 @@ data = pd.DataFrame(d)
 data.set_index(['School', 'Grade', 'Student number'], inplace=True)
 data = data.groupby(level=data.index.names).first()
 
-# Display pandas DataFrame
+# display pandas DataFrame
 print(data)

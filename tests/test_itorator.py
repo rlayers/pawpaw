@@ -114,6 +114,25 @@ class TestItorator(_TestIto):
         self.assertNotEqual(root, rv[0])
         self.assertSequenceEqual([*root.children], [*rv[0].children])
 
+    def test_traverse_with_itor_sub_bifurcation(self):
+        s = 'abcde'
+        root = Ito(s)
+        vowels = 'aeiou'
+
+        chars = Itorator.wrap(lambda ito: [*ito])
+        chars.itor_sub = lambda ito: str(ito) in vowels, Desc('vowel')
+        chars.itor_sub.append(Desc('consonant'))
+
+        results = [*chars(root)]
+        self.assertEqual(len(s), len(results))
+        self.assertListEqual([i for i in s if i in vowels], [str(i) for i in results if i.desc == 'vowel'])
+        self.assertListEqual([i for i in s if i not in vowels], [str(i) for i in results if i.desc == 'consonant'])
+
+        chars.itor_next = Desc('changed')
+        results = [*chars(root)]
+        self.assertEqual(len(s), len(results))
+        self.assertTrue(all(i.desc == 'changed' for i in results))        
+
     def test_traverse_with_itor_children_mode_add(self):
         s = 'abc'
         root = Ito(s)
@@ -202,8 +221,8 @@ class TestItorator(_TestIto):
         self.assertNotEqual(len(root.children), len(rv[0].children))
         self.assertEqual(2, len(rv[0].children))
         
-        expected = list(set(root.children) - set(f(root)))
-        self.assertSequenceEqual(expected, [*rv[0].children])    
+        expected = [c for c in root.children if c not in f(root)]
+        self.assertSequenceEqual(expected, [*rv[0].children])
         
     def test_traverse_with_plumule_on_added_children(self):
         s = ' one two three '
@@ -271,25 +290,6 @@ class TestItorator(_TestIto):
         self.assertIsNot(root, ito)
         self.assertSequenceEqual(s, [str(i) for i in ito.children])
         self.assertTrue(all(c.desc == d_changed for c in ito.children))
-
-    def test_traverse_with_sub(self):
-        s = 'abcde'
-        root = Ito(s)
-        vowels = 'aeiou'
-
-        chars = Itorator.wrap(lambda ito: [*ito])
-        chars.itor_sub = lambda ito: str(ito) in vowels, Desc('vowel')
-        chars.itor_sub.append(Desc('consonant'))
-
-        results = [*chars(root)]
-        self.assertEqual(len(s), len(results))
-        self.assertListEqual([i for i in s if i in vowels], [str(i) for i in results if i.desc == 'vowel'])
-        self.assertListEqual([i for i in s if i not in vowels], [str(i) for i in results if i.desc == 'consonant'])
-
-        chars.itor_next = Desc('changed')
-        results = [*chars(root)]
-        self.assertEqual(len(s), len(results))
-        self.assertTrue(all(i.desc == 'changed' for i in results))
 
     def test_traverse_with_postorator(self):
         s = 'abc def ghi'

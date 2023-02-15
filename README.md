@@ -14,7 +14,7 @@
 
 # Pawpaw  [![High Performance Text Segmentation, Parsing, & Query][byline-img]][repo]
 
-Pawpaw is a high performance text segmentation framework.  Segments are organized into tree graphs that can be serialized, traversed, and searched using a powerful structured query language.  Pawpaw also features a framework for quickly and easily building complex, pipelined parsers.
+Pawpaw is a high performance parsing & text segmentation framework that allows you to quickly and easily build complex, pipelined parsers.  Segments are automatically organized into tree graphs that can be serialized, traversed, and searched using a powerful structured query language called *plumule*.
 
 <img align="right" width="30%" height="30%" alt="Botanical Drawing: Asimina triloba: the American papaw" src="https://raw.githubusercontent.com/rlayers/pawpaw/master/images/pawpaw.png"> 
 

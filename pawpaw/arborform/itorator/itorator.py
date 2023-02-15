@@ -2,18 +2,13 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 import types
 import typing
+import enum
 
 from pawpaw import Types, Errors, Ito, type_magic, PredicatedValue, Furcation
 from pawpaw.arborform.postorator.postorator import Postorator
 
 
 class Itorator(ABC):
-    # define Python user-defined exceptions
-    class SelfChainingError(ValueError):
-        """Raised when attempt is made to add self to the pipeline"""
-        def __init__(self, _type: str):
-            self.message = f'can\t add self to {_type} chain'
-
     @classmethod
     def wrap(cls, src: Types.F_ITO_2_SQ_ITOS, tag: str | None = None):
         if type_magic.functoid_isinstance(src, Types.F_ITO_2_SQ_ITOS):
@@ -21,27 +16,20 @@ class Itorator(ABC):
 
         raise Errors.parameter_invalid_type('src', src, Types.F_ITO_2_SQ_ITOS)
 
+    class ItorChildrenMode(enum.Enum):
+        ADD = enum.auto()
+        REPLACE = enum.auto()
+        DEL = enum.auto()
+
     def __init__(self, tag: str | None = None):
         if tag is not None and not isinstance(tag, str):
             raise Errors.parameter_invalid_type('desc', tag, str)
         self.tag = tag
-        self._itor_children = Furcation[Ito, Itorator]()
         self._itor_sub = Furcation[Ito, Itorator]()
+        self._itor_children = Furcation[Ito, Itorator]()
+        self._itor_children_mode = self.ItorChildrenMode.ADD
         self._itor_next = Furcation[Ito, Itorator]()
         self._postorator: Postorator | Types.F_ITOS_2_ITOS | None = None
-
-    @property
-    def itor_children(self) -> Furcation[Ito, Itorator]():
-        return self._itor_children
-
-    @itor_children.setter
-    def itor_children(self, val: Itorator | PredicatedValue | tuple[typing.Callable[[Ito], bool], Itorator | None] | None) -> None:
-        if (val is self) or (isinstance(val, PredicatedValue) and val.value is self) or (isinstance(val, tuple) and val[1] is self):
-            raise Itorator.SelfChainingError('itor_children')
-
-        self._itor_children.clear()
-        if val is not None:
-            self._itor_children.append(val)
 
     @property
     def itor_sub(self) -> Furcation[Ito, Itorator]():
@@ -49,12 +37,33 @@ class Itorator(ABC):
 
     @itor_sub.setter
     def itor_sub(self, val: Itorator | PredicatedValue | tuple[typing.Callable[[Ito], bool], Itorator | None] | None) -> None:
-        if (val is self) or (isinstance(val, PredicatedValue) and val.value is self) or (isinstance(val, tuple) and val[1] is self):
-            raise Itorator.SelfChainingError('_itor_sub')
-
         self._itor_sub.clear()
         if val is not None:
             self._itor_sub.append(val)
+
+    @property
+    def itor_children(self) -> Furcation[Ito, Itorator]():
+        return self._itor_children
+
+    @itor_children.setter
+    def itor_children(self, val: Itorator | PredicatedValue | tuple[typing.Callable[[Ito], bool], Itorator | None] | None) -> None:
+        self._itor_children.clear()
+        if val is not None:
+            self._itor_children.append(val)
+
+    @property
+    def itor_children_mode(self) -> ItorChildrenMode:
+        return self._itor_children_mode
+
+    @itor_children_mode.setter
+    def itor_children_mode(self, mode: Itorator.ItorChildrenMode) -> None:
+        if not isinstance(mode, self.ItorChildrenMode):
+            raise Errors.parameter_invalid_type('mode', mode, self.ItorChildrenMode)
+
+        if mode not in self.ItorChildrenMode:
+            raise Errors.parameter_enum_not_in('mode', mode, self.ItorChildrenMode)
+
+        self._itor_children_mode = mode
 
     @property
     def itor_next(self) -> Furcation[Ito, Itorator]():
@@ -62,9 +71,6 @@ class Itorator(ABC):
 
     @itor_next.setter
     def itor_next(self, val: Itorator | PredicatedValue | tuple[typing.Callable[[Ito], bool], Itorator | None] | None) -> None:
-        if (val is self) or (isinstance(val, PredicatedValue) and val.value is self) or (isinstance(val, tuple) and val[1] is self):
-            raise Itorator.SelfChainingError('itor_next')
-
         self._itor_next.clear()
         if val is not None:
             self._itor_next.append(val)
@@ -90,9 +96,18 @@ class Itorator(ABC):
         else:
             yield from itor_s._traverse(ito)
 
-    def __do_children(self, ito: Ito) -> Types.C_IT_ITOS:
+    def __do_children(self, ito: Ito):
         if (itor_c := self._itor_children(ito)) is not None:
-            yield from itor_c._traverse(ito)
+            children = [*itor_c._traverse(ito)]
+
+            if self._itor_children_mode == self.ItorChildrenMode.REPLACE:
+                ito.children.clear()
+
+            for c in children:
+                if self._itor_children_mode in (self.ItorChildrenMode.ADD, self.ItorChildrenMode.REPLACE):
+                    ito.children.add(c)
+                else:  # self.ItorChildrenMode.DEL
+                    ito.children.remove(c)
 
     def __do_next(self, ito: Ito) -> Types.C_IT_ITOS:
         if (itor_n := self._itor_next(ito)) is None:
@@ -103,7 +118,7 @@ class Itorator(ABC):
     def __do_prior_to_post(self, ito: Ito) -> Types.C_IT_ITOS:
         for i in self._transform(ito):
             for s in self.__do_sub(i):
-                s.children.add(*self.__do_children(s))
+                self.__do_children(s)
                 yield from self.__do_next(s)
 
     def __do_post(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:

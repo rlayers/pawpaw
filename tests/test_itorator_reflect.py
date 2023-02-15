@@ -3,7 +3,7 @@ from pawpaw.arborform import Reflect
 from tests.util import _TestIto
 
 
-class TestItorator(_TestIto):
+class TestReflect(_TestIto):
     def test_iter(self):
         s = 'abc'
         root = Ito(s)

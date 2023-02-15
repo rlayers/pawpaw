@@ -2,6 +2,7 @@ from __future__ import annotations
 import inspect
 import types
 import typing
+import enum
 
 
 class Errors:
@@ -12,6 +13,10 @@ class Errors:
     @classmethod
     def parameter_neither_none_nor_empty(cls, name: str) -> ValueError:
         return ValueError(f'parameter \'{name}\' can be neither None nor empty')
+
+    @classmethod
+    def parameter_enum_not_in(cls, name: str, value: typing.Any, enum_: enum.Enum) -> ValueError:
+        return ValueError(f'parameter \'{name}\' is not a valid {enum_.__name__}')
 
     @classmethod
     def _get_type_strs(cls, *allowed) -> typing.Iterable[str]:

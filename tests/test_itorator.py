@@ -9,39 +9,65 @@ from tests.util import _TestIto
 class TestItorator(_TestIto):
     """Uses Reflect and Wrap classes, which have trivial implementation, to test base class functionality"""
 
-    def test_add_self_itor_children(self):
-        i = Reflect()
+    def test_add_self_itor_sub(self):
+        i1 = Reflect()
 
-        with self.assertRaises(ValueError):
-            i.itor_children = i
+        for itor in i1, Reflect():
+            with self.subTest(itor_is_self=itor is i1):
+                i1.itor_sub = itor
+                self.assertEqual(1, len(i1.itor_sub))
+                self.assertEqual(itor, i1.itor_sub[0].value)
+                
+                i1.itor_sub = None
+                self.assertEqual(0, len(i1.itor_sub))
+
+    def test_add_self_itor_children(self):
+        i1 = Reflect()
+
+        for itor in i1, Reflect():
+            with self.subTest(itor_is_self=itor is i1):
+                i1.itor_children = itor
+                self.assertEqual(1, len(i1.itor_children))
+                self.assertEqual(itor, i1.itor_children[0].value)
+                
+                i1.itor_children = None
+                self.assertEqual(0, len(i1.itor_children))
 
     def test_add_self_itor_next(self):
-        i = Reflect()
+        i1 = Reflect()
 
-        with self.assertRaises(ValueError):
-            i.itor_next = i
+        for itor in i1, Reflect():
+            with self.subTest(itor_is_self=itor is i1):
+                i1.itor_next = itor
+                self.assertEqual(1, len(i1.itor_next))
+                self.assertEqual(itor, i1.itor_next[0].value)
+                
+                i1.itor_next = None
+                self.assertEqual(0, len(i1.itor_next))                
 
-        with self.assertRaises(ValueError):
-            i.itor_next = (lambda ito: True, i)
+    def test_update_itor_children_mode_valid(self):
+        itor = Reflect()
 
-        with self.assertRaises(ValueError):
-            i.itor_next = PredicatedValue(lambda ito: True, i)
+        # Loop twice in case the initial set is the default value
+        for i in range(2):
+            for icm in Itorator.ItorChildrenMode:
+                itor.itor_children_mode = icm
+                self.assertEqual(icm, itor.itor_children_mode)
 
-    def test_set_itor_next_none(self):
-        i_root = Reflect()
-        self.assertEqual(0, len(i_root.itor_next))
+    def test_update_itor_children_mode_ivalid(self):
+        itor = Reflect()
 
-        i_root.itor_next = Itorator.wrap(lambda ito: ito.str_split())
-        self.assertEqual(1, len(i_root.itor_next))
+        with self.assertRaises(TypeError):
+            itor.itor_children_mode = 'a'
 
-        i_root.itor_next = None
-        self.assertEqual(0, len(i_root.itor_next))
+        with self.assertRaises(TypeError):
+            itor.itor_children_mode = None
 
     def test_wrap_lambda(self):
         s = 'abc'
         root = Ito(s)
         itor = Itorator.wrap(lambda ito: [ito[:1]])
-        self.assertListEqual([root[:1]], [*itor(root)])
+        self.assertSequenceEqual(root[:1], [*itor(root)])
 
     def test_wrap_method(self):
         def my_split(ito: Ito) -> Types.C_SQ_ITOS:
@@ -50,9 +76,18 @@ class TestItorator(_TestIto):
         s = 'one two three'
         root = Ito(s)
         itor = Itorator.wrap(my_split)
-        self.assertListEqual([*Ito.from_substrings(s, *s.split())], [*itor(root)])
+        self.assertSequenceEqual([*Ito.from_substrings(s, *s.split())], [*itor(root)])
 
-    def test_traverse(self):
+    def test_traverse_clones(self):
+        s = 'abc'
+        root = Ito(s)
+        reflect = Reflect()
+        rv = [*reflect(root)]
+        self.assertEqual(1, len(rv))
+        self.assertEqual(root, rv[0])
+        self.assertIsNot(root, rv[0])
+
+    def test_traverse_does_clone(self):
         s = 'abc'
         root = Ito(s)
         root.children.add(*root)
@@ -61,41 +96,163 @@ class TestItorator(_TestIto):
         rv = [*reflect(root)]
             
         self.assertEqual(1, len(rv))
-        ito = rv[0]
-        self.assertIsNot(root, ito)
-        self.assertEqual(root, ito)
-        self.assertEqual([*root.children], [*ito.children])
+        self.assertEqual(root, rv[0])
+        self.assertIsNot(root, rv[0])
 
-    def test_traverse_with_next(self):
-        s = 'abc'
-        root = Ito(s)
-        self.add_chars_as_children(root, 'Child')
+        self.assertSequenceEqual([*root.children], [*rv[0].children])
+        self.assertTrue(root_c is not rv_c for root_c, rv_c in zip(root.children, rv[0].children))
 
-        reflect = Reflect()
-        desc = 'x'
-        reflect.itor_next = Itorator.wrap(lambda ito: (ito.clone(desc=desc),))
-        rv = [*reflect(root)]
-            
-        self.assertEqual(1, len(rv))
-        ito = rv[0]
-        self.assertIsNot(root, ito)
-        self.assertEqual(desc, ito.desc)
-        self.assertEqual([*root.children], [*ito.children])
-
-    def test_traverse_with_children(self):
+    def test_traverse_with_itor_sub(self):
         s = 'abc'
         root = Ito(s)
 
-        reflect = Reflect()
-        desc = 'x'
-        reflect.itor_children = Itorator.wrap(lambda ito: tuple(ito.clone(i, i+1, desc) for i, c in enumerate(s)))
-        rv = [*reflect(root)]
+        itor_root = Reflect()
+        itor_root.itor_sub = Itorator.wrap(lambda ito: (Ito(ito, 1, -1),))
+        rv = [*itor_root(root)]
             
         self.assertEqual(1, len(rv))
-        ito = rv[0]
-        self.assertIsNot(root, ito)
-        self.assertSequenceEqual(s, [str(i) for i in ito.children])
-        self.assertTrue(all(c.desc == desc for c in ito.children))
+        self.assertNotEqual(root, rv[0])
+        self.assertSequenceEqual([*root.children], [*rv[0].children])
+
+    def test_traverse_with_itor_children_mode_add(self):
+        s = 'abc'
+        root = Ito(s)
+
+        itor_root = Reflect()
+        itor_root.itor_children = Itorator.wrap(lambda ito: ito)
+        rv = [*itor_root(root)]
+            
+        self.assertEqual(1, len(rv))
+        self.assertEqual(str(root), str(rv[0]))
+
+        self.assertEqual(0, len(root.children))  # Ensure input ito.children unaffected
+        self.assertSequenceEqual(root, rv[0].children)
+
+    def test_traverse_with_itor_children_mode_replace_with_self(self):
+        s = 'a b c'
+        root = Ito(s)
+        root.children.add(*root)
+
+        itor_root = Reflect()
+
+        itor_children = lambda ito: ito.children
+        itor_root.itor_children = itor_children
+        itor_root.itor_children_mode = Itorator.ItorChildrenMode.REPLACE
+
+        rv = [*itor_root(root)]
+            
+        self.assertEqual(1, len(rv))
+        self.assertEqual(str(root), str(rv[0]))
+
+        self.assertSequenceEqual([*root.children], [*rv[0].children])
+
+    def test_traverse_with_itor_children_mode_replace_with_clones(self):
+        s = 'a b c'
+        root = Ito(s)
+        root.children.add(*root)
+
+        itor_root = Reflect()
+
+        itor_children = lambda ito: [c.clone() for c in ito.children]
+        itor_root.itor_children = itor_children
+        itor_root.itor_children_mode = Itorator.ItorChildrenMode.REPLACE
+
+        rv = [*itor_root(root)]
+            
+        self.assertEqual(1, len(rv))
+        self.assertEqual(str(root), str(rv[0]))
+
+        self.assertSequenceEqual([*root.children], [*rv[0].children])        
+
+    def test_traverse_with_itor_children_mode_replace_with_different(self):
+        s = 'a b c'
+        root = Ito(s)
+        root.children.add(*root)
+
+        f = lambda ito: (Ito(ito, 1, -1),)
+
+        itor_root = Reflect()
+        itor_root.itor_children = Itorator.wrap(f)
+        itor_root.itor_children_mode = Itorator.ItorChildrenMode.REPLACE
+        rv = [*itor_root(root)]
+            
+        self.assertEqual(1, len(rv))
+        self.assertEqual(str(root), str(rv[0]))
+
+        self.assertNotEqual(len(root.children), len(rv[0].children))
+        self.assertEqual(1, len(rv[0].children))
+        
+        self.assertSequenceEqual([*f(root)], [*rv[0].children])        
+
+    def test_traverse_with_itor_children_mode_delete(self):
+        s = 'a b c'
+        root = Ito(s)
+        root.children.add(*root)
+
+        f = lambda ito: ito.children[1:-1]
+
+        itor_root = Reflect()
+        itor_root.itor_children = Itorator.wrap(f)
+        itor_root.itor_children_mode = Itorator.ItorChildrenMode.DEL
+        rv = [*itor_root(root)]
+            
+        self.assertEqual(1, len(rv))
+        self.assertEqual(str(root), str(rv[0]))
+
+        self.assertNotEqual(len(root.children), len(rv[0].children))
+        self.assertEqual(2, len(rv[0].children))
+        
+        expected = list(set(root.children) - set(f(root)))
+        self.assertSequenceEqual(expected, [*rv[0].children])    
+        
+    def test_traverse_with_plumule_on_added_children(self):
+        s = ' one two three '
+        root = Ito(s, 1, -1)
+
+        expected = root.clone()
+        expected.children.add(*expected.str_split())
+        for c in expected.children:
+            c.children.add(*c)
+
+        itor_split_wrds = Itorator.wrap(lambda ito: ito.str_split())
+
+        itor_split_chrs = Itorator.wrap(lambda ito: ito)
+        itor_split_wrds.itor_children = itor_split_chrs
+
+        itor_word_desc = Desc('word')
+        itor_split_wrds.itor_next = lambda ito: ito.find('*') is not None, itor_word_desc  # plumule child search
+
+        itor_children = Itorator.wrap(lambda ito: ito.children)
+        itor_word_desc.itor_children_mode = Itorator.ItorChildrenMode.REPLACE
+        itor_word_desc.itor_children = itor_children
+
+        itor_chr_desc = Desc('char')
+        itor_children.itor_next = lambda ito: ito.find('..') is not None, itor_chr_desc  # plumule parent search
+
+        rv = root.clone()
+        rv.children.add(*itor_split_wrds(root))
+
+        self.assertSequenceEqual(
+            [str(i) for i in expected.find_all('**')],
+            [str(i) for i in rv.find_all('**')]
+        )
+
+        for child in rv.children:
+            self.assertEqual('word', child.desc)
+            for gc in child.children:
+                self.assertEqual('char', gc.desc)
+
+    def test_traverse_with_itor_next(self):
+        s = 'abc'
+        root = Ito(s)
+
+        itor_root = Reflect()
+        itor_root.itor_next = Itorator.wrap(lambda ito: (Ito(ito, 1, -1),))
+        rv = [*itor_root(root)]
+            
+        self.assertEqual(1, len(rv))
+        self.assertNotEqual(root, rv[0])
+        self.assertSequenceEqual([*root.children], [*rv[0].children])
         
     def test_traverse_with_carry_through(self):
         s = 'abc'

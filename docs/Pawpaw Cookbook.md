@@ -81,7 +81,7 @@ a b c
 
 ```python
 import sys
-sys.modules['_elementtree'] is None
+sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 from pawpaw import xml
 text = """<?xml version="1.0"?>
@@ -113,7 +113,7 @@ neighbor: (214, 258)
 
 ```python
 import sys
-sys.modules['_elementtree'] is None
+sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 from pawpaw import xml
 text = """<doc xmlns:w="https://example.com">

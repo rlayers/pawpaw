@@ -10,6 +10,9 @@ del desc
 from .value_func import ValueFunc
 del value_func
 
+from .filter import Filter
+del filter
+
 from .extract import Extract
 del extract
 

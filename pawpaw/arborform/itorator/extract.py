@@ -96,7 +96,7 @@ class Extract(Itorator):
 
     def _transform(self, ito: Ito) -> Types.C_SQ_ITOS:
         rv: typing.List[Ito] = []
-        for count, m in enumerate(ito.regex_finditer(self.re), 1):
+        for count, m in enumerate(ito.regex_finditer(self._re), 1):
             path_stack: typing.List[Ito] = []
             match_itos: typing.List[Ito] = []
             filtered_gks = (gk for i, gk in enumerate(self._group_keys) if self.group_filter(ito, m, i) or self.group_filter(ito, m, gk))

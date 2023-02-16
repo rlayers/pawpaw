@@ -1,6 +1,7 @@
 from __future__ import annotations
 import enum
 import typing
+import itertools
 
 import regex
 from pawpaw import Span, Ito, Types
@@ -17,6 +18,7 @@ class Split(Itorator):
     def __init__(
             self,
             re: regex.Pattern,
+            limit: int | None = None,
             group: int | str = 0,
             boundary_retention: BoundaryRetention = BoundaryRetention.NONE,
             return_zero_split: bool = True,
@@ -47,15 +49,21 @@ class Split(Itorator):
         """
         super().__init__(tag)
         self.re = re
+        self.limit = limit
         self.group = group
         self.boundary_retention = boundary_retention
         self.return_zero_split = return_zero_split
         self.desc = desc
 
     def _transform(self, ito: Ito) -> Types.C_SQ_ITOS:
+        if self.limit == 0:
+            return ito,
+
         rv: typing.List[Ito] = []
+        
+        count = 0
         prior: Span | None = None
-        for m in ito.regex_finditer(self.re):
+        for m in itertools.takewhile(lambda i: self.limit is None or count < self.limit, ito.regex_finditer(self.re)):
             cur = Span(*m.span(self.group))
             if prior is None:
                 if self.boundary_retention == self.BoundaryRetention.LEADING:
@@ -76,6 +84,8 @@ class Split(Itorator):
                 else:  # TRAILING
                     start = prior.stop
                     stop = cur.stop
+
+            count += 1
 
             if start != stop:
                 rv.append(ito.clone(start, stop, self.desc))

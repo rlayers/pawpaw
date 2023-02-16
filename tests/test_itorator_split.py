@@ -88,3 +88,23 @@ class TestSplit(_TestIto):
                     actual = [*split._transform(ito)]
                     self.assertListEqual(expected, [str(i) for i in actual])
                     self.assertTrue(all(i.desc == desc for i in actual))
+
+    def test_limit(self):
+        s = 'abc'
+        root = Ito(s)
+        
+        re = regex.compile('(?=.)')
+        for limit in None, *range(0, len(s)):
+            with self.subTest(re=re.pattern, limit=limit):
+                splitter = Split(re, limit=limit)
+                rv = [*splitter(root)]
+                expected = []
+                if limit is None:
+                    expected.extend(root)
+                elif limit == 0:
+                    expected.append(root)
+                else:
+                    expected.extend(i for i in root[:limit-1] if len(i) > 0)  # split parts
+                    expected.append(root.clone(limit-1))  # remaining part
+                self.assertSequenceEqual(expected, rv)
+                

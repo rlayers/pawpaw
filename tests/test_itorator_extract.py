@@ -33,6 +33,50 @@ class TestExtract(_TestIto):
         self.assertEqual(6, len(grouped['digit']))
         self.assertTrue(all(d.parent.desc == 'number' for d in grouped['digit']))
 
+    def test_group_filter_default(self):
+        s = 'abc'
+        root = Ito(s)
+        name = 'X'
+        re = regex.compile(r'.(.).')
+
+        extract = Extract(re)
+        rv = [*extract(root)]
+        self.assertEqual(0, len(rv))
+
+    def test_group_filter_none(self):
+        s = 'abc'
+        root = Ito(s)
+        name = 'X'
+        re = regex.compile(r'.(.).')
+
+        extract = Extract(re, group_filter=None)
+        expected = root.clone(desc='0')
+        expected.children.add(root.clone(1, 2, desc='1'))
+        rv = [*extract(root)]
+        self.assertEqual(1, len(rv))
+        self.assertEqual(expected, rv[0])
+        self.assertSequenceEqual([*expected.children], [*rv[0].children])
+
+    def test_group_filter_inverse_tautology(self):
+        s = 'abc'
+        root = Ito(s)
+        name = 'X'
+        re = regex.compile(r'.(.).')
+
+        extract = Extract(re, group_filter=lambda ito, match, gk: False)
+        rv = [*extract(root)]
+        self.assertEqual(0, len(rv))
+
+    def test_named_and_unnamed_groups_present_in_match(self):
+        s = 'AB'
+        root = Ito(s)
+        re = regex.compile(r'(.)(?<foo>.)')
+        d = lambda ito, match, group: match.group(1)  # Used first (unnamed) group as descriptor for 'foo'
+        extract = Extract(re, desc_func=d)
+        rv = [*extract(Ito(s))]
+        self.assertEqual(1, len(rv))
+        self.assertEqual(root.clone(1, desc=s[0]), rv[0])
+
     def test_desc_func(self):
         s = 'ten 10 eleven 11 twelve 12 '
         root = Ito(s)

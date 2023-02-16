@@ -1209,7 +1209,7 @@ class Ito:
 
     def find_all(
             self,
-            path: pawpaw.Types.C_PATH,
+            path: pawpaw.Types.C_QPATH,
             values: typing.Dict[str, typing.Any] | None = None,
             predicates: typing.Dict[str, typing.Callable[[int, pawpaw.Ito], bool]] | None = None
     ) -> typing.Iterable[pawpaw.Ito]:
@@ -1217,7 +1217,7 @@ class Ito:
 
     def find(
             self,
-            path: pawpaw.Types.C_PATH,
+            path: pawpaw.Types.C_QPATH,
             values: typing.Dict[str, typing.Any] | None = None,
             predicates: typing.Dict[str, typing.Callable[[int, pawpaw.Ito], bool]] | None = None
     ) -> pawpaw.Ito | None:
@@ -1421,22 +1421,9 @@ class ChildItos(collections.abc.Sequence):
 
 
 class Types:
+    # Ito
     C_SQ_ITOS = typing.Sequence[Ito]
     C_IT_ITOS = typing.Iterable[Ito]
-
-    F_ITO_2_B = typing.Callable[[Ito], bool]
-    F_ITO_2_VAL = typing.Callable[[Ito], typing.Any]
-    F_ITO_2_DESC = typing.Callable[[Ito], str]
-    F_ITO_2_SQ_ITOS = typing.Callable[[Ito], C_SQ_ITOS]
-    F_ITO_2_IT_ITOS = typing.Callable[[Ito], C_IT_ITOS]
-    F_ITOS_2_ITOS = typing.Callable[[C_IT_ITOS], C_IT_ITOS]
-
-    C_GK = int | str
-    F_M_GK_2_DESC = typing.Callable[[regex.Match, C_GK], str]
-
-    F_ITO_M_GK_2_B = typing.Callable[[Ito | None, regex.Match, C_GK], bool]
-    F_ITO_M_GK_2_DESC = typing.Callable[[Ito | None, regex.Match, C_GK], str]
-    F_M_GK_2_B = typing.Callable[[regex.Match, C_GK], bool]
 
     class C_EITO(typing.NamedTuple):
         index: int
@@ -1444,10 +1431,27 @@ class Types:
 
     C_IT_EITOS = typing.Iterable[C_EITO]
 
+    P_ITO_2_B = typing.Callable[[Ito], bool]
+    P_EITO_2_B = typing.Callable[[C_EITO], bool]
+
+    F_ITO_2_VAL = typing.Callable[[Ito], typing.Any]
+    F_ITO_2_DESC = typing.Callable[[Ito], str]
+    F_ITO_2_SQ_ITOS = typing.Callable[[Ito], C_SQ_ITOS]
+    F_ITO_2_IT_ITOS = typing.Callable[[Ito], C_IT_ITOS]
+    F_ITOS_2_ITOS = typing.Callable[[C_IT_ITOS], C_IT_ITOS]
+
+    # Regex
+    C_GK = int | str
+
+    P_M_GK_2_B = typing.Callable[[regex.Match, C_GK], bool]
+    P_ITO_M_GK_2_B = typing.Callable[[Ito | None, regex.Match, C_GK], bool]
+
+    F_M_GK_2_DESC = typing.Callable[[regex.Match, C_GK], str]
+    F_ITO_M_GK_2_DESC = typing.Callable[[Ito | None, regex.Match, C_GK], str]
+
+    # Query
     C_VALUES = typing.Dict[str, typing.Any] | None
-    C_PREDICATES = typing.Dict[str, typing.Callable[[C_EITO], bool]] | None
-    F_EITO_V_P_2_B = typing.Callable[[C_EITO, C_VALUES, C_PREDICATES], bool]
+    C_QPS = typing.Dict[str, P_EITO_2_B] | None
+    C_QPATH = str | Ito
 
-    C_PATH = str | Ito
-
-    C_TYPE_CHECK_T = typing.Type | types.UnionType
+    P_EITO_V_QPS_2_B = typing.Callable[[C_EITO, C_VALUES, C_QPS], bool]

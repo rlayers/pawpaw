@@ -277,18 +277,18 @@ class Ecf(ABC):
         return values
     
     @classmethod
-    def validate_predicates(cls, predicates: pawpaw.Types.C_PREDICATES) -> pawpaw.Types.C_PREDICATES:
+    def validate_predicates(cls, predicates: pawpaw.Types.C_QPS) -> pawpaw.Types.C_QPS:
         if predicates is None:
             raise ValueError('predicate expression found, however, no predicates dictionary supplied')
         return predicates
     
     @abstractmethod
-    def func(self, ec: pawpaw.Types.C_EITO, values: pawpaw.Types.C_VALUES, predicates: pawpaw.Types.C_PREDICATES) -> bool:
+    def func(self, ec: pawpaw.Types.C_EITO, values: pawpaw.Types.C_VALUES, predicates: pawpaw.Types.C_QPS) -> bool:
         pass
     
     
 class EcfTautology(Ecf):
-    def func(self, ec: pawpaw.Types.C_EITO, values: pawpaw.Types.C_VALUES, predicates: pawpaw.Types.C_PREDICATES) -> bool:
+    def func(self, ec: pawpaw.Types.C_EITO, values: pawpaw.Types.C_VALUES, predicates: pawpaw.Types.C_QPS) -> bool:
         return True
     
 
@@ -363,7 +363,7 @@ class EcfCombined(Ecf):
                 if k in str(op):
                     return i, f
 
-    def func(self, ec: pawpaw.Types.C_EITO, values: pawpaw.Types.C_VALUES, predicates: pawpaw.Types.C_PREDICATES) -> bool:
+    def func(self, ec: pawpaw.Types.C_EITO, values: pawpaw.Types.C_VALUES, predicates: pawpaw.Types.C_QPS) -> bool:
         vals = [self._eval(self.operands[i], f, ec, values, predicates) for i, f in enumerate(self.filters)]
         ops = self.operands[1:-1]
 
@@ -571,14 +571,14 @@ class Phrase:
         else:
             self.filter = EcfFilter(filt_ito)
 
-    def combined(self, ec: pawpaw.Types.C_EITO, values: pawpaw.Types.C_VALUES, predicates: pawpaw.Types.C_PREDICATES) -> bool:
+    def combined(self, ec: pawpaw.Types.C_EITO, values: pawpaw.Types.C_VALUES, predicates: pawpaw.Types.C_QPS) -> bool:
         return self.filter.func(ec, values, predicates) and self.subquery.func(ec, values, predicates)
 
     def find_all(
             self,
             itos: pawpaw.Types.C_IT_ITOS,
             values: pawpaw.Types.C_VALUES,
-            predicates: pawpaw.Types.C_PREDICATES
+            predicates: pawpaw.Types.C_QPS
     ) -> pawpaw.Types.C_IT_ITOS:
         func = lambda ec: self.combined(ec, values, predicates)
         yield from (ec.ito for ec in filter(func, self.axis.find_all(itos)))
@@ -615,7 +615,7 @@ class Query:
             i += 1
             yield ito_path[i-ls:i]
 
-    def __init__(self, path: pawpaw.Types.C_PATH):
+    def __init__(self, path: pawpaw.Types.C_QPATH):
         """Creates a compiled query that can be used to search an Ito hierarchy
 
         Args:
@@ -654,7 +654,7 @@ class Query:
             path = pawpaw.Ito(path)
             
         if not isinstance(path, pawpaw.Ito):
-            raise pawpaw.Errors.parameter_invalid_type('path', path, pawpaw.Types.C_PATH)
+            raise pawpaw.Errors.parameter_invalid_type('path', path, pawpaw.Types.C_QPATH)
             
         if len(path) == 0 or not path.str_isprintable():
             raise pawpaw.Errors.parameter_neither_none_nor_empty('path')
@@ -665,7 +665,7 @@ class Query:
         self,
         ito: pawpaw.Ito,
         values: pawpaw.Types.C_VALUES = None,
-        predicates: pawpaw.Types.C_PREDICATES = None
+        predicates: pawpaw.Types.C_QPS = None
     ) -> pawpaw.Types.C_IT_ITOS:
         cur = [ito]
         for phrase in self.phrases:
@@ -676,28 +676,28 @@ class Query:
         self,
         ito: pawpaw.Ito,
         values: pawpaw.Types.C_VALUES = None,
-        predicates: pawpaw.Types.C_PREDICATES = None
+        predicates: pawpaw.Types.C_QPS = None
     ) -> pawpaw.Ito | None:
         return next(self.find_all(ito, values, predicates), None)
 
 
-def compile(path: pawpaw.Types.C_PATH) -> Query:
+def compile(path: pawpaw.Types.C_QPATH) -> Query:
     return Query(path)
 
 
 def find_all(
-        path: pawpaw.Types.C_PATH,
+        path: pawpaw.Types.C_QPATH,
         ito: pawpaw.Ito,
         values: pawpaw.Types.C_VALUES = None,
-        predicates: pawpaw.Types.C_PREDICATES = None
+        predicates: pawpaw.Types.C_QPS = None
 ) -> pawpaw.Types.C_IT_ITOS:
     yield from Query(path).find_all(ito, values, predicates)
 
 
 def find(
-        path: pawpaw.Types.C_PATH,
+        path: pawpaw.Types.C_QPATH,
         ito: pawpaw.Ito,
         values: pawpaw.Types.C_VALUES = None,
-        predicates: pawpaw.Types.C_PREDICATES = None
+        predicates: pawpaw.Types.C_QPS = None
 ) -> pawpaw.Ito | None:
     return next(find_all(path, ito, values, predicates), None)

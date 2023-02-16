@@ -85,11 +85,11 @@ class TestXmlHelper(_TestIto):
 
     def test_reverse_find(self):
         for sample_index, sample in enumerate(XML_TEST_SAMPLES):
-            desc_path, anc_pred = sample.descendant_path_with_ancestor_predicate
-            with self.subTest(xml_sample_index=sample_index, descendant_path=desc_path, ancestor_predicate=anc_pred):
+            desC_QPATH, anc_pred = sample.descendant_path_with_ancestor_predicate
+            with self.subTest(xml_sample_index=sample_index, descendant_path=desC_QPATH, ancestor_predicate=anc_pred):
                 root = ET.fromstring(sample.xml, xml.XmlParser())
 
-                desc = root.find(desc_path)
+                desc = root.find(desC_QPATH)
                 self.assertIsNotNone(desc)
 
                 actual = xml.XmlHelper.reverse_find(desc, anc_pred)

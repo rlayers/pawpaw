@@ -90,10 +90,22 @@ class XmlHelper:
 
     _re_xmlns = regex.compile(r'xmlns(?:\:.+)?', regex.DOTALL)
     _query_xmlns_predicates = {'is_xmlns': lambda ei: ei.ito.regex_fullmatch(XmlHelper._re_xmlns) is not None}
-    _query_xmlns = query.compile(f'*[d:{xml.descriptors.START_TAG}]/*[d:{xml.descriptors.ATTRIBUTES}]/*[d:{xml.descriptors.ATTRIBUTE}]' + '{*[p:is_xmlns]}')
+    __query_xmlns: query.Query = None
+
+    # Lazily instantiate to avoid some circular dependencies
+    @classmethod
+    @property
+    def _query_xmlns(cls) -> query.Query:
+        if cls.__query_xmlns is None:
+            cls.__query_xmlns = query.compile(f'*[d:{xml.descriptors.START_TAG}]/*[d:{xml.descriptors.ATTRIBUTES}]/*[d:{xml.descriptors.ATTRIBUTE}]' + '{*[p:is_xmlns]}')
+
+        return cls.__query_xmlns
 
     @classmethod
     def get_xmlns(cls, element: ET.Element) -> typing.Dict[QualifiedName, Ito]:
+        if cls._query_xmlns is None:
+            cls._query_xmlns = query.compile(f'*[d:{xml.descriptors.START_TAG}]/*[d:{xml.descriptors.ATTRIBUTES}]/*[d:{xml.descriptors.ATTRIBUTE}]' + '{*[p:is_xmlns]}')
+
         if not isinstance(element, ET.Element):
             raise Errors.parameter_invalid_type('element', element, ET.Element)
         elif not hasattr(element, 'ito'):

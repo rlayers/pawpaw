@@ -13,7 +13,7 @@ class Extract(Itorator):
                  re: regex.Pattern,
                  limit: int | None = None,
                  desc_func: Types.F_ITO_M_GK_2_DESC = lambda ito, match, group: group,
-                 group_filter: collections.abc.Container[str] | Types.F_ITO_M_GK_2_B | None = None,
+                 group_filter: collections.abc.Container[str] | Types.P_ITO_M_GK_2_B | None = None,
                  tag: str | None = None):
         super().__init__(tag)
         if not isinstance(re, regex.Pattern):
@@ -32,11 +32,11 @@ class Extract(Itorator):
         return self._group_filter
 
     @group_filter.setter
-    def group_filter(self, group_filter: collections.abc.Container[str] | Types.F_ITO_M_GK_2_B | None) -> None:
+    def group_filter(self, group_filter: collections.abc.Container[str] | Types.P_ITO_M_GK_2_B | None) -> None:
         if group_filter is None:
             self._group_filter = lambda i, m_, g: True
 
-        elif type_magic.functoid_isinstance(group_filter, Types.F_ITO_M_GK_2_B):
+        elif type_magic.functoid_isinstance(group_filter, Types.P_ITO_M_GK_2_B):
             self._group_filter = group_filter
 
         elif isinstance(group_filter, collections.abc.Container):
@@ -47,7 +47,7 @@ class Extract(Itorator):
                 'group_filter',
                 group_filter,
                 typing.Container[str],
-                Types.F_ITO_M_GK_2_B,
+                Types.P_ITO_M_GK_2_B,
                 types.NoneType)
 
     def _transform(self, ito: Ito) -> Types.C_SQ_ITOS:

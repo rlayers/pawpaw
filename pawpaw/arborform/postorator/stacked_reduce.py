@@ -11,7 +11,7 @@ class StackedReduce(Postorator):
     def __init__(
             self,
             reduce_func: F_SQ_ITOS_2_ITO,
-            push_predicate: Types.F_ITO_2_B,
+            push_predicate: Types.P_ITO_2_B,
             pop_predicate: F_SQ_ITOS_ITO_2_B | None = None,
             tag: str | None = None
     ):
@@ -20,8 +20,8 @@ class StackedReduce(Postorator):
             raise Errors.parameter_invalid_type('reduce_func', reduce_func, self.F_SQ_ITOS_2_ITO)
         self.reduce_func = reduce_func
 
-        if not type_magic.functoid_isinstance(push_predicate, Types.F_ITO_2_B):
-            raise Errors.parameter_invalid_type('push_predicate', push_predicate, Types.F_ITO_2_B)
+        if not type_magic.functoid_isinstance(push_predicate, Types.P_ITO_2_B):
+            raise Errors.parameter_invalid_type('push_predicate', push_predicate, Types.P_ITO_2_B)
         self.push_predicate = push_predicate
 
         if pop_predicate is None or type_magic.functoid_isinstance(pop_predicate, self.F_SQ_ITOS_ITO_2_B):

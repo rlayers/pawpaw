@@ -1431,8 +1431,8 @@ class Types:
 
     C_IT_EITOS = typing.Iterable[C_EITO]
 
-    P_ITO_2_B = typing.Callable[[Ito], bool]
-    P_EITO_2_B = typing.Callable[[C_EITO], bool]
+    P_ITO = typing.Callable[[Ito], bool]
+    P_EITO = typing.Callable[[C_EITO], bool]
 
     F_ITO_2_VAL = typing.Callable[[Ito], typing.Any]
     F_ITO_2_DESC = typing.Callable[[Ito], str]
@@ -1443,15 +1443,15 @@ class Types:
     # Regex
     C_GK = int | str
 
-    P_M_GK_2_B = typing.Callable[[regex.Match, C_GK], bool]
-    P_ITO_M_GK_2_B = typing.Callable[[Ito | None, regex.Match, C_GK], bool]
+    P_M_GK = typing.Callable[[regex.Match, C_GK], bool]
+    P_ITO_M_GK = typing.Callable[[Ito | None, regex.Match, C_GK], bool]
 
     F_M_GK_2_DESC = typing.Callable[[regex.Match, C_GK], str]
     F_ITO_M_GK_2_DESC = typing.Callable[[Ito | None, regex.Match, C_GK], str]
 
     # Query
     C_VALUES = typing.Dict[str, typing.Any] | None
-    C_QPS = typing.Dict[str, P_EITO_2_B] | None
+    C_QPS = typing.Dict[str, P_EITO] | None
     C_QPATH = str | Ito
 
-    P_EITO_V_QPS_2_B = typing.Callable[[C_EITO, C_VALUES, C_QPS], bool]
+    P_EITO_V_QPS = typing.Callable[[C_EITO, C_VALUES, C_QPS], bool]

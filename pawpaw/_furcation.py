@@ -10,7 +10,8 @@ R = typing.TypeVar('R')  # Return value type; should be "anything but None", but
 
 
 class Furcation(list[PredicatedValue], typing.Generic[I, R]):
-    C_ITEM = PredicatedValue | tuple[typing.Callable[[I], bool], R | None] | typing.Callable[[I], bool] | R
+    P_I = typing.Callable[[I], bool]
+    C_ITEM = PredicatedValue | tuple[P_I, R | None] | P_I | R
 
     @classmethod
     def tautology(cls, item: I) -> bool:

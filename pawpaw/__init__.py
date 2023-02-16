@@ -10,7 +10,7 @@ del errors
 import pawpaw._type_magic as type_magic
 del _type_magic
 
-from pawpaw._predicated_value import F_PREDICATE, PredicatedValue
+from pawpaw._predicated_value import P_A, PredicatedValue
 del _predicated_value
 
 from pawpaw._furcation import Furcation

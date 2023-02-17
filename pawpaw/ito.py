@@ -688,16 +688,16 @@ class Ito:
         return self
 
     def invert_children(self) -> pawpaw.Ito:
-        """Creates a clone of the self having children in the gaps
+        """Creates a clone having children in spans unoccupied by self's children
         
         Returns:
-            A clone whose children occupy the gaps of self.
+            - If len(self) is zero: returns clone having no children.
             
-            - If len(self) is zero: the returned clone will have no no children.
+            - If self has no children, returns clone with a single, contiguous child
             
-            - If self has no gaps: returned clone will have no children.
+            - If self has contigous children (i.e., every char of self has coverage), returns childless clone.
 
-            - If self is empty: returned clone will have a single, contiguous child.
+            - If self's children are non-contiguous, returns a clone with one or more children in the gaps
         """            
         rv = self.clone(clone_children=False)
         

@@ -107,4 +107,31 @@ class TestSplit(_TestIto):
                     expected.extend(i for i in root[:limit-1] if len(i) > 0)  # split parts
                     expected.append(root.clone(limit-1))  # remaining part
                 self.assertSequenceEqual(expected, rv)
+
+        re = regex.compile('(?<=.)')
+        for limit in None, *range(0, len(s)):
+            with self.subTest(re=re.pattern, limit=limit):
+                splitter = Split(re, limit=limit)
+                rv = [*splitter(root)]
+                expected = []
+                if limit is None:
+                    expected.extend(root)
+                elif limit == 0:
+                    expected.append(root)
+                else:
+                    expected.extend(i for i in root[:limit] if len(i) > 0)  # split parts
+                    expected.append(root.clone(limit))  # remaining part
+                self.assertSequenceEqual(expected, rv)
+
+        re = regex.compile('b')
+        for limit in None, *range(0, len(s)):
+            with self.subTest(re=re.pattern, limit=limit):
+                splitter = Split(re, limit=limit)
+                rv = [*splitter(root)]
+                expected = []
+                if limit is None or limit > 0:
+                    expected.extend(root.str_split('b'))
+                else:
+                    expected.append(root)
+                self.assertSequenceEqual(expected, rv)
                 

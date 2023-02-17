@@ -1,3 +1,11 @@
+## From
+
+* [stackoverflow question 47982949](https://stackoverflow.com/questions/47982949/how-to-parse-complex-text-files-using-python)
+
+* [codereview question 183668](https://codereview.stackexchange.com/questions/183668/parse-complex-text-files-using-python)
+
+## Description
+
 Given the a file containing this text:
 
 ```text
@@ -68,9 +76,3 @@ Riverdale High 1     0                 Phoebe      3
                      1                Tristan      3
                      2                 Aurora      9
 ```
-
-For more details, see:
-
-* [stackoverflow question 47982949](https://stackoverflow.com/questions/47982949/how-to-parse-complex-text-files-using-python)
-
-* [codereview question 183668](https://codereview.stackexchange.com/questions/183668/parse-complex-text-files-using-python)

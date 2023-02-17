@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 import typing
 
 import regex
-from pawpaw import Ito, Types, query, xml
+from pawpaw import Ito, query, xml
 from pawpaw.errors import Errors
 from pawpaw.arborform import Extract
 
@@ -104,7 +104,7 @@ class XmlHelper:
     @classmethod
     def get_xmlns(cls, element: ET.Element) -> typing.Dict[QualifiedName, Ito]:
         if cls._query_xmlns is None:
-            cls._query_xmlns = query.compile(f'*[d:{xml.descriptors.START_TAG}]/*[d:{xml.descriptors.ATTRIBUTES}]/*[d:{xml.descriptors.ATTRIBUTE}]' + '{*[p:is_xmlns]}')
+            cls.__query_xmlns = query.compile(f'*[d:{xml.descriptors.START_TAG}]/*[d:{xml.descriptors.ATTRIBUTES}]/*[d:{xml.descriptors.ATTRIBUTE}]' + '{*[p:is_xmlns]}')
 
         if not isinstance(element, ET.Element):
             raise Errors.parameter_invalid_type('element', element, ET.Element)
@@ -114,7 +114,7 @@ class XmlHelper:
         return {
             cls.get_qualified_name(xmlns): xmlns.find(f'*[d:{xml.descriptors.VALUE}]')
             for xmlns
-            in cls._query_xmlns.find_all(element.ito, predicates=cls._query_xmlns_predicates)
+            in cls.__query_xmlns.find_all(element.ito, predicates=cls._query_xmlns_predicates)
         }
 
     @classmethod

@@ -3,10 +3,9 @@ import sys
 sys.modules['_elementtree'] = None
 import xml.etree.ElementTree as ET
 import xml.parsers.expat as expat
-import itertools
 
 import regex
-from pawpaw import Span, Ito, xml, Types
+from pawpaw import Span, Ito, xml
 from pawpaw.arborform import Extract
 
         
@@ -159,7 +158,7 @@ class XmlParser(ET.XMLParser):
         #   c) could contain pi and comments
         # See https://docs.python.org/3/library/xml.etree.elementtree.html for definition of .text and .tail
 
-        last_child: ET.Element = None        
+        last_child: ET.Element | None = None
         for child in element:
             self._extract_itos(child)
             ito.children.add(child.ito)

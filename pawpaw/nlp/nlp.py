@@ -1,6 +1,4 @@
-import itertools
 import locale
-import typing
 
 import regex
 import pawpaw

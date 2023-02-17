@@ -4,7 +4,7 @@ import typing
 import pawpaw
 
 
-# Finds indeces of non-doubled escape chars
+# Finds indices of non-doubled escape chars
 def find_escapes(
     src: str | pawpaw.Ito,
     escape: str = '\\',

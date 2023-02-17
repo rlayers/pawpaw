@@ -22,13 +22,13 @@ class Errors:
     def _get_type_strs(cls, *allowed) -> typing.Iterable[str]:
         for t in allowed:
             if hasattr(t, '__qualname__'):
-                if (qn := t.__qualname__) == 'Callable':
+                if t.__qualname__ == 'Callable':
                     yield str(t)
                 else:
                     yield t.__qualname__
             elif hasattr(t, '__bound__'):
                 yield from cls._get_type_strs(t.__bound__)
-            elif (origin := typing.get_origin(t)) is types.UnionType:
+            elif typing.get_origin(t) is types.UnionType:
                 args = typing.get_args(t)
                 yield from cls._get_type_strs(*args)
             elif t is None:

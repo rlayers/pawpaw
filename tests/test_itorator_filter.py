@@ -13,7 +13,7 @@ class TestFilter(_TestIto):
         rv = [*split_chr(root)]
         self.assertEqual(len(s), len(rv))
 
-        for ft, f in [('None', lambda ito: False), ('All', lambda ito: True), ('Partial', ito.str_isnumeric)]:
+        for ft, f in [('None', lambda ito: False), ('All', lambda ito: True), ('Partial', Ito.str_isnumeric)]:
             with self.subTest(filter_type=ft):
                 filter = Filter(f)
                 split_chr.itor_next = filter

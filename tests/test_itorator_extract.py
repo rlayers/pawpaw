@@ -81,7 +81,7 @@ class TestExtract(_TestIto):
         s = 'ten 10 eleven 11 twelve 12 '
         root = Ito(s)
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
-        df = lambda i, m, g: g + 'x' if g == 'char' else g
+        df = lambda i, m, gk: str(gk) + 'x' if str(gk) == 'char' else str(gk)
         itor = Extract(re, desc_func=df)
         rv = itor._transform(root)
         itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]

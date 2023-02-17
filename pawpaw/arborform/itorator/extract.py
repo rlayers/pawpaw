@@ -13,11 +13,11 @@ class Extract(Itorator):
                  re: regex.Pattern,
                  limit: int | None = None,
                  desc_func: Types.F_ITO_M_GK_2_DESC = lambda ito, match, group_key: str(group_key),
-                 group_filter: collections.abc.Container[str] | Types.P_ITO_M_GK | None = None,
+                 group_filter: collections.abc.Container[str] | Types.P_ITO_M_GK | None = lambda ito, m, gk: isinstance(gk, str),
                  tag: str | None = None):
         super().__init__(tag)
 
-        self._group_keys: List(Type.C_GK)
+        self._group_keys: list[Types.C_GK]
         self.re = re  # sets ._group_keys
         
         if limit is not None and not isinstance(limit, int):
@@ -37,8 +37,7 @@ class Extract(Itorator):
     @property
     def re(self) -> regex.Pattern:
         return self._re
-        self._group_keys = self._get_group_keys(re)
-    
+
     @re.setter
     def re(self, re: regex.Pattern) -> None:
         if not isinstance(re, regex.Pattern):
@@ -68,31 +67,6 @@ class Extract(Itorator):
                 typing.Container[Types.C_GK],
                 Types.P_ITO_M_GK,
                 types.NoneType)
-
-    def _transformOld(self, ito: Ito) -> Types.C_SQ_ITOS:
-        rv: typing.List[Ito] = []
-        for count, m in enumerate(ito.regex_finditer(self.re), 1):
-            path_stack: typing.List[Ito] = []
-            match_itos: typing.List[Ito] = []
-            filtered_gns = (gn for gn in m.re.groupindex.keys() if self._group_filter(ito, m, gn))
-            span_gns = ((span, gn) for gn in filtered_gns for span in m.spans(gn))
-            for span, gn in sorted(span_gns, key=lambda val: (val[0][0], -val[0][1])):
-                ito = ito.clone(*span, desc=self.desc_func(ito, m, gn), clone_children=False)
-                while len(path_stack) > 0 and (ito.start < path_stack[-1].start or ito.stop > path_stack[-1].stop):
-                    path_stack.pop()
-                if len(path_stack) == 0:
-                    match_itos.append(ito)
-                else:
-                    path_stack[-1].children.add(ito)
-
-                path_stack.append(ito)
-
-            rv.extend(match_itos)
-
-            if self.limit is not None and self.limit == count:
-                break
-
-        return rv
 
     def _transform(self, ito: Ito) -> Types.C_SQ_ITOS:
         rv: typing.List[Ito] = []

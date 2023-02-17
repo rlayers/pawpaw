@@ -1,11 +1,7 @@
 from __future__ import annotations
 import bisect
 import collections.abc
-import dataclasses
-import inspect
-import itertools
 import json
-import pickle
 import types
 import typing
 
@@ -81,7 +77,7 @@ class Ito:
         }
 
         if isinstance(desc, str):
-            desc_func = lambda match, group: desc
+            desc_func = lambda m, gk: desc
         elif type_magic.functoid_isinstance(desc, Types.F_M_GK_2_DESC):
             desc_func = desc
         else:

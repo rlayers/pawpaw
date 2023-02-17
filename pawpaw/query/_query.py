@@ -43,7 +43,7 @@ class QueryErrors:
             msg += f' at location {sub_region}'
         elif isinstance(sub_region, (pawpaw.Ito, str)):
             msg += f' in sub-region \'{sub_region}\''
-        raise ValueError(msg)
+        return ValueError(msg)
 
     @classmethod
     def empty_parentheses(
@@ -55,7 +55,7 @@ class QueryErrors:
             msg += f' at location {sub_region}'
         elif isinstance(sub_region, (pawpaw.Ito, str)):
             msg += f' in sub-region \'{sub_region}\''
-        raise ValueError(msg)
+        return ValueError(msg)
 
 
 def escape(value: str) -> str:
@@ -299,8 +299,8 @@ class EcfCombined(Ecf):
     def __init__(
             self,
             ito: pawpaw.Ito,
-            filters: typing.Sequence[pawpaw.Types.F_EITO_V_P_2_B],
-            operands: typing.Sequence[pawpaw.Ito]
+            filters: list[pawpaw.Types.P_EITO_V_QPS],
+            operands: list[pawpaw.Ito]
     ):
         self.ito = ito
         
@@ -345,7 +345,7 @@ class EcfCombined(Ecf):
         self.operands = operands
 
     @classmethod
-    def _eval(cls, operand: pawpaw.Ito, filter_: pawpaw.Types.F_EITO_V_P_2_B, ec, values, predicates):
+    def _eval(cls, operand: pawpaw.Ito, filter_: pawpaw.Types.P_EITO_V_QPS, ec, values, predicates):
         rv = filter_(ec, values, predicates)
 
         if operand.str_count('~') & 1 == 1:  # bitwise op to determine if n is odd
@@ -387,7 +387,7 @@ class EcfFilter(EcfCombined):
     )
 
     @classmethod
-    def _func(cls, not_: str, key: str, value: str) -> pawpaw.Types.F_EITO_V_P_2_B:
+    def _func(cls, not_: str, key: str, value: str) -> pawpaw.Types.P_EITO_V_QPS:
         if key in FILTER_KEYS['desc']:
             if not_ == '~':
                 return lambda ec, values, predicates: ec.ito.desc not in [descape(s) for s in pawpaw.split_unescaped(value, ',')]
@@ -473,8 +473,8 @@ class EcfFilter(EcfCombined):
         raise ValueError(f'unknown filter key \'{key}\'')
 
     def __init__(self, ito: pawpaw.Ito):
-        filters: typing.List[pawpaw.Types.F_EITO_V_P_2_B] = []
-        operands: typing.List[pawpaw.Types.F_EITO_V_P_2_B] = []
+        filters: typing.List[pawpaw.Types.P_EITO_V_QPS] = []
+        operands: typing.List[pawpaw.Types.P_EITO_V_QPS] = []
 
         if len([*ito.regex_finditer(self._re_open_bracket)]) != len([*ito.regex_finditer(self._re_close_bracket)]):
             raise ValueError(f'unbalanced brackets in filter(s) \'{ito}\'')
@@ -513,12 +513,12 @@ class EcfSubquery(EcfCombined):
     )
     
     @classmethod
-    def _func(cls, sq: pawpaw.Ito) -> pawpaw.Types.F_EITO_V_P_2_B:
+    def _func(cls, sq: pawpaw.Ito) -> pawpaw.Types.P_EITO_V_QPS:
         query = Query(sq)
         return lambda e, v, p: next(query.find_all(e.ito, v, p), None) is not None
     
     def __init__(self, ito: pawpaw.Ito):
-        subqueries: typing.List[pawpaw.Types.F_EITO_V_P_2_B] = []
+        subqueries: typing.List[pawpaw.Types.P_EITO_V_QPS] = []
         operands: typing.List[pawpaw.Ito] = []
 
         m = ito.regex_search(self._re)
@@ -529,7 +529,7 @@ class EcfSubquery(EcfCombined):
         if sum(1 for i in sqm.regex_finditer(self._re_open_cur)) != sum(1 for i in sqm.regex_finditer(self._re_close_cur)):
             raise ValueError(f'unbalanced curly braces in sub-query(ies) \'{sqm}\'')
 
-        last: regex.Match = None
+        last: regex.Match | None = None
         for i, sq in enumerate(sqm.regex_finditer(self._re_balanced_splitter)):
             start = ito.start if last is None else last.span(0)[1]
             stop = sq.span(0)[0]

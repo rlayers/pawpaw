@@ -1,5 +1,3 @@
-import itertools
-
 import regex
 from pawpaw import Ito, Span
 from tests.util import _TestIto, IntIto, RandSpans, RandSubstrings
@@ -95,7 +93,7 @@ class TestItoCtor(_TestIto):
         re = 'abc'
         with self.subTest(re='abc'):
             with self.assertRaises(TypeError):
-                actual = [*Ito.from_re(re, s)]
+                [*Ito.from_re(re, s)]
 
         re = regex.compile(r'(?<word>\w+)')
         with self.subTest(re=re, limit=None):
@@ -177,42 +175,118 @@ class TestItoCtor(_TestIto):
                 actual = [*_class.from_spans(src, *spans, desc=desc)]
                 self.assertListEqual(expected, actual)
 
+    def test_from_gaps_src_str(self):
+        desc = 'non gap'
+        for s in '', 'a', ' ', 'ab', ' ab', 'a b', 'ab ', ' a b ':
+            non_gaps = list[Ito]()
+            expected = list[Ito]()
+            for i in Ito(s):
+                if i.str_isspace():
+                    expected.append(i.clone(desc=desc))
+                else:
+                    non_gaps.append(i)
+
+            for ngs in non_gaps, [ng.span for ng in non_gaps]:
+                with self.subTest(src=s, non_gaps=ngs):
+                    actual = [*Ito.from_gaps(s, ngs, desc=desc)]
+                    self.assertSequenceEqual(expected, actual)
+
+    def test_from_gaps_src_ito(self):
+        desc = 'non gap'
+        for s in '', 'a', ' ', 'ab', ' ab', 'a b', 'ab ', ' a b ':
+            s = f' {s} '
+            src = Ito(s, 1, -1)
+            non_gaps = list[Ito]()
+            expected = list[Ito]()
+            for i in src:
+                if i.str_isspace():
+                    expected.append(i.clone(desc=desc))
+                else:
+                    non_gaps.append(i)
+
+            for ngs in non_gaps, [ng.span.offset(-1) for ng in non_gaps]:
+                with self.subTest(src=src, non_gaps=ngs):
+                    actual = [*Ito.from_gaps(src, ngs, desc=desc)]
+                    self.assertSequenceEqual(expected, actual)
+
+    def test_from_gaps_with_zero_widths(self):
+        desc = 'non gap'
+
+        with self.subTest(non_gap_count=2, non_gap_proximity='adjacent', non_gap_extent='contained'):
+            s = ' abc '
+            root = Ito(s, 1, -1)
+            root.children.add(*root)
+            expected = [Ito(root, i, i, desc) for i in range(1, len(root))]
+            rv = [*root.from_gaps(root, root.children, return_zero_widths=True, desc=desc)]
+            self.assertEqual(len(expected), len(rv))
+            self.assertSequenceEqual(expected, rv)
+
+        with self.subTest(non_gap_count=2, non_gap_proximity='overlapping', non_gap_extent='contained'):
+            overlapping_non_gaps = [Ito(s, *root.span), Ito(s, root.start + 1, root.stop)]
+            rv = [*root.from_gaps(root, overlapping_non_gaps, return_zero_widths=True, desc=desc)]
+            self.assertEqual(0, len(rv))
+
+        with self.subTest(non_gap_count=3, non_gap_proximity='overlapping', non_gap_extent='contained'):
+            overlapping_non_gaps = [Ito(s, root.start + i, root.stop) for i in range(0, len(root))]
+            rv = [*root.from_gaps(root, overlapping_non_gaps, return_zero_widths=True, desc=desc)]
+            self.assertEqual(0, len(rv))
+
+        with self.subTest(non_gap_count=2, non_gap_proximity='overlapping', non_gap_extent='non-contained'):
+            overlapping_non_gaps = [Ito(s, 0, len(s) - 1), Ito(s, 1, len(s) + 2)]
+            rv = [*root.from_gaps(root, overlapping_non_gaps, return_zero_widths=True, desc=desc)]
+            self.assertEqual(0, len(rv))
+
+        with self.subTest(non_gap_count=1, non_gap_proximity='N/A', non_gap_extent='non-contained', location='prior'):
+            ng_prior = [Ito(s, 0, 1)]
+            rv = [*root.from_gaps(root, ng_prior, return_zero_widths=True, desc=desc)]
+            self.assertEqual(1, len(rv))
+            self.assertEqual(root.clone(desc=desc), rv[0])
+
+        with self.subTest(non_gap_count=1, non_gap_proximity='N/A', non_gap_extent='non-contained', location='after'):
+            ng_after = [Ito(s, -1)]
+            rv = [*root.from_gaps(root, ng_after, return_zero_widths=True, desc=desc)]
+            self.assertEqual(1, len(rv))
+            self.assertEqual(root.clone(desc=desc), rv[0])
+
+        with self.subTest(non_gap_count=2, non_gap_proximity='overlapping', non_gap_extent='non-contained'):
+            ng = ng_prior + ng_after
+            rv = [*root.from_gaps(root, ng, return_zero_widths=True, desc=desc)]
+            self.assertEqual(1, len(rv))
+            self.assertEqual(root.clone(desc=desc), rv[0])
+
     def test_from_gaps_simple(self):
         s = 'abcd' * 10
-        gaps = [*RandSpans(Span(1, 8), Span(0, 3)).generate(s)]
+        non_gaps = [*RandSpans(Span(1, 8), Span(0, 3)).generate(s)]
         desc = 'x'
         for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', IntIto)):
             with self.subTest(_class=cls_name):
-                for i in _class.from_gaps(s, *gaps, desc=desc):
+                for i in _class.from_gaps(s, non_gaps, desc=desc):
                     self.assertIsInstance(i, _class)
                     self.assertIs(s, i.string)
-                    self.assertFalse(any(gap.start <= i.start <= i.stop <= gap.stop for gap in gaps))
+                    self.assertFalse(any(gap.start <= i.start <= i.stop <= gap.stop for gap in non_gaps))
                     self.assertEqual(desc, i.desc)
-                    
+
     def test_from_gaps_complex(self):
         s = 'abcd' * 10
-        gaps = [Span(10, 20), Span(5, 10), Span(20, 25)]  # Overlapping and unordered
+        non_gaps = [Span(10, 20), Span(5, 10), Span(20, 25)]  # Overlapping and unordered
         desc = 'x'
-        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', IntIto)):
-            with self.subTest(_class=cls_name):
-                expected = [
-                    _class(s, 0, min(gap.start for gap in gaps), desc),
-                    _class(s, max(gap.stop for gap in gaps), desc=desc)
-                ]
-                actual = [*_class.from_gaps(s, *gaps, desc=desc)]
-                self.assertListEqual(expected, actual)
-                    
-    def test_from_gaps_ito(self):
-        s = ' abc '
-        src = Ito(s, 1, -1)
-        gaps = [Span(1, 2), Span(0, 1)]  # Overlapping and unordered
-        desc = 'x'
-        for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', IntIto)):
-            with self.subTest(_class=cls_name):
-                expected = [_class(src, 2, desc=desc)]
-                actual = [*_class.from_gaps(src, *gaps, desc=desc)]
-                self.assertListEqual(expected, actual)
-                    
+        for ordered in True, False:
+            for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', IntIto)):
+                with self.subTest(_class=cls_name, ordered=ordered):
+                    if ordered:
+                        ngs = non_gaps.copy()
+                        ngs.sort(key=lambda i: i.start)
+                        expected = [
+                            _class(s, 0, min(gap.start for gap in non_gaps), desc),
+                            _class(s, max(gap.stop for gap in non_gaps), desc=desc)
+                        ]
+                        actual = [*_class.from_gaps(s, ngs, desc=desc)]
+                        self.assertListEqual(expected, actual)
+                    else:
+                        ngs = non_gaps.copy()
+                        with self.assertRaises(ValueError):
+                            [*_class.from_gaps(s, ngs, desc=desc)]
+
     def test_from_substrings(self):
         string = 'abcd' * 10
         string = f' {string} '
@@ -239,7 +313,7 @@ class TestItoCtor(_TestIto):
                     rs = RandSubstrings(size, Span(-1, -1))
                     subs = [*rs.generate(string, 1, -1)]
                     with self.assertRaises(Exception):
-                        itos = [*Ito.from_substrings(string, *subs)]
+                        [*Ito.from_substrings(string, *subs)]
 
     def test_clone_basic(self):
         string = 'abc'

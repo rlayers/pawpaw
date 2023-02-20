@@ -164,26 +164,81 @@ class Ito:
             Itos; stream ordering will match that of spans; if spans overlap, so will the resulting Itos
         """
         yield from (cls(src, *s, desc=desc) for s in spans)
-        
+
     @classmethod
-    def from_gaps(cls, src: str | pawpaw.Ito, *gaps: Span, desc: str | None = None) -> typing.Iterable[pawpaw.Ito]:
-        """Generate Itos from gaps (negative space)
-        
+    def from_gaps(
+            cls,
+            src: str | pawpaw.Ito,
+            non_gaps: typing.Iterable[Span | pawpaw.Ito],
+            return_zero_widths: bool = False,
+            desc: str | None = None
+    ) -> typing.Iterable[pawpaw.Ito]:
+        """Generate Itos based on negative space (gaps)
+
         Args:
             src: a str or Ito to use as the basis
-            gaps: one or more Spans that resulting Itos will exclude
+            non_gaps: one or more positive-space Spans (relative to src) or Itos (whose .string matches basis); must be ordered; overlaps are fine spans within the basis; can be unordered; overlaps are fine
+            return_zero_widths: If true, zero-width Itos will be returned for non-overlapping, adjacent non-gaps
             desc: a descriptor for the generated Itos
-            
+
         Yields:
-            Itos; stream ordering will be left to right; overlapping spans are allowed
+            Itos whose spans occupy the space between the non-gaps
         """
-        stop = 0
-        for gap in sorted(gaps):
-            if gap.start > stop:
-                yield cls(src, stop, gap.start, desc=desc)
-            stop = gap.stop
-        if stop < len(src):
-            yield cls(src, stop, desc=desc)
+        if isinstance(src, str):
+            basis = src
+            start = 0
+            end = len(src)
+            offset = 0
+        elif isinstance(src, Ito):
+            basis = src.string
+            start, end = src.span
+            offset = start
+        else:
+            raise Errors.parameter_invalid_type('src', src, str, Ito)
+
+        it_ng = iter(non_gaps)
+
+        def next_ng_span() -> Span | None:
+            try:
+                ng = next(it_ng)
+            except StopIteration:
+                return None
+
+            if isinstance(ng, Span):
+                return ng.offset(offset)
+            elif isinstance(ng, Ito):
+                if ng.string != basis:
+                    raise ValueError('parameter \'non_gaps\' contains Itos whose .string does not match src')
+                return ng.span
+            else:
+                raise Errors.parameter_invalid_type('non_gaps', ng, Span, Ito)
+
+        if (last := next_ng_span()) is None:
+            if start < end:
+                yield cls(basis, start, end, desc=desc)
+            return
+
+        if start < last.start:
+            yield cls(basis, start, min(last.start, end), desc=desc)
+
+        while last.stop < end:
+            if (cur := next_ng_span()) is None:
+                break
+            elif cur.start < last.start:  # unordered
+                raise ValueError('parameter \'non_gaps\' is unordered')
+            elif cur.start < last.stop:  # overlapping
+                pass
+            elif cur.start == last.stop:  # adjacent
+                if return_zero_widths:
+                    yield cls(basis, last.stop, cur.start, desc=desc)
+            elif cur.start >= end:
+                break
+            else:  # non-adjacent
+                yield cls(basis, last.stop, cur.start, desc=desc)
+            last = cur
+
+        if last.stop < end:
+            yield cls(basis, last.stop, end, desc=desc)
 
     @classmethod
     def from_substrings(
@@ -603,8 +658,8 @@ class Ito:
 
         Returns:
             An Ito whose .span matches the min .start and max .stop of the
-            input sequence, and to whose .children clones of the input sequence
-            have been hierarchically added
+            input sequence, and whose .children consist of clones
+             of the input sequence, hierarchically added
         """
         _iter = iter(itos)
         try:
@@ -687,42 +742,29 @@ class Ito:
         
         return self
 
-    def invert_children(self) -> pawpaw.Ito:
-        """Creates a clone having children in spans unoccupied by self's children
+    def invert_children(self, desc: str | None = None) -> pawpaw.Ito:
+        """Creates a clone with children occupying the negative space of self's children
+
+        Args:
+            desc: a descriptor used for any created children
         
         Returns:
-            - If len(self) is zero: returns clone having no children.
+            - If .len(self) is zero: returns clone having no children.
             
             - If self has no children, returns clone with a single, contiguous child
             
-            - If self has contigous children (i.e., every char of self has coverage), returns childless clone.
+            - If self has contiguous children (i.e., every char of self has coverage), returns childless clone.
 
-            - If self's children are non-contiguous, returns a clone with one or more children in the gaps
-        """            
+            - Otherwise returns a clone with children corresponding to the non-overlapping, non-contiguous gpas in self's children.
+        """
         rv = self.clone(clone_children=False)
         
         if len(self) == 0:
             return rv
-            
-        if len(self.children) == 0:
-            rv.children.add(rv.clone())
-            return rv
-        
-        left = self.children[0]
-        if left.start > self.start:
-            rv.children.add(rv.clone(stop=left.start, clone_children=False))
-            
-        for right in self.children[1:]:
-            if left.stop < right.start:
-                rv.children.add(rv.clone(left.stop, right.start, clone_children=False))
-                
-            left = right
-            
-        if left.stop < self.stop:
-            rv.children.add(rv.clone(left.stop, self.stop, clone_children=False))
-            
+
+        rv.children.add(*self.from_gaps(rv, self.children, False, desc))
         return rv
-    
+
     def split_iter(
             self,
             re: regex.Pattern,

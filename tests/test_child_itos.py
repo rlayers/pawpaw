@@ -1,7 +1,7 @@
 import random
 import string as py_string
 
-from pawpaw import Ito, Span
+from pawpaw import Ito, Span, visualization
 from tests.util import _TestIto, RandSpans
 
 
@@ -46,6 +46,19 @@ class TestChildItos(_TestIto):
         parent.children.add(*g)
         self.assertSequenceEqual(s, [str(i) for i in parent.children])
 
+    def test_remove(self):
+        s = ' abc '
+        root = Ito(s, 1, -1, desc='root')
+        adds = list[Ito]()
+        for desc in [str(i) for i in range(1, 6)]:
+            adds += [i.clone(desc=desc) for i in root]
+        random.shuffle(adds)
+        root.children.add_hierarchical(*adds)
+
+        for i in root.walk_descendants(reverse=True):
+            if i.parent is None:
+                print('uh oh')
+            i.parent.children.remove(i)
     def test_add_hierarchical(self):
         s = ' ' * 2048
         root = Ito(s, desc='root')
@@ -74,6 +87,23 @@ class TestChildItos(_TestIto):
         # Add shuffled and compare
         root.children.add_hierarchical(*shuffled_descendants)
         self.assertSequenceEqual(ordered_descendants, [*root.walk_descendants()])
+
+    def test_add_hierarchical_with_key(self):
+        s = ' abc '
+        root = Ito(s, 1, -1, desc='root')
+        adds = list[Ito]()
+        for desc in 'X', 'Y', 'Z':
+            adds += [i.clone(desc=desc) for i in root]
+
+        for i in range(0, 1):
+            random.shuffle(adds)
+            root.children.add_hierarchical(*adds)
+            # Do tests
+            for i in root.walk_descendants(reverse=True):
+                print(visualization.pepo.Tree().dumps(root))
+                i.parent.children.remove(i)
+
+
 
     def test_del_key_int(self):
         s = py_string.ascii_lowercase

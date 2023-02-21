@@ -1448,6 +1448,7 @@ class ChildItos(collections.abc.Sequence):
 
             if i == j:
                 self.__store.insert(i, ito)
+                ito._set_parent(self.__parent)
             else:
                 tmp = self[i:j]
                 del self[i:j]

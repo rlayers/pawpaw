@@ -46,19 +46,35 @@ class TestChildItos(_TestIto):
         parent.children.add(*g)
         self.assertSequenceEqual(s, [str(i) for i in parent.children])
 
-    def test_remove(self):
+    def test_remove_non_contiguous_descendants(self):
+        s = " one two three "
+        counter = 0
+        root = Ito(s, 1, -2, str(counter))
+
+        for word in root.str_split():
+            word.desc = str(counter := counter + 1)
+            root.children.add(word)
+            for c in word:
+                c.desc = str(counter := counter + 1)
+                word.children.add(c)
+
+        for i in root.walk_descendants(reverse=True):
+            i.parent.children.remove(i)
+
+    def test_remove_contiguous_descendants(self):
         s = ' abc '
         root = Ito(s, 1, -1, desc='root')
+        counter = 0
         adds = list[Ito]()
-        for desc in [str(i) for i in range(1, 6)]:
-            adds += [i.clone(desc=desc) for i in root]
-        random.shuffle(adds)
+        for i in range(0, 5):
+            adds.extend(i.clone(desc=(str(counter := counter + 1))) for i in root)
         root.children.add_hierarchical(*adds)
 
         for i in root.walk_descendants(reverse=True):
             if i.parent is None:
                 print('uh oh')
             i.parent.children.remove(i)
+
     def test_add_hierarchical(self):
         s = ' ' * 2048
         root = Ito(s, desc='root')
@@ -88,6 +104,8 @@ class TestChildItos(_TestIto):
         root.children.add_hierarchical(*shuffled_descendants)
         self.assertSequenceEqual(ordered_descendants, [*root.walk_descendants()])
 
+        self.assertTrue(all(i.parent is not None for i in root.walk_descendants()))
+
     def test_add_hierarchical_with_key(self):
         s = ' abc '
         root = Ito(s, 1, -1, desc='root')
@@ -102,8 +120,6 @@ class TestChildItos(_TestIto):
             for i in root.walk_descendants(reverse=True):
                 print(visualization.pepo.Tree().dumps(root))
                 i.parent.children.remove(i)
-
-
 
     def test_del_key_int(self):
         s = py_string.ascii_lowercase

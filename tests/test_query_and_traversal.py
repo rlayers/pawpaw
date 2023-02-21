@@ -40,28 +40,27 @@ class TestItoTraversal(_TestIto):
 
         self.descs = ['root', 'phrase', 'word', 'char']
 
-
     def test_walk_descendants(self):
+        s = " one two three "
+        counter = 0
+        root = Ito(s, 1, -2, str(counter))
 
-        for node_type, node in {'root': self.root, 'leaf': self.leaf}.items():
-            for start in 0, 5:
-                with self.subTest(node=node_type, start=start):
-                    forward = [*node.walk_descendants_levels(start)]
-                    _reversed = [*node.walk_descendants_levels(start, True)]
+        for word in root.str_split():
+            word.desc = str(counter := counter + 1)
+            root.children.add(word)
+            for c in word:
+                c.desc = str(counter := counter + 1)
+                word.children.add(c)
 
-                    if node is self.root:
-                        self.assertEqual(self.descendants_count, len(forward))
-                        self.assertEqual(self.descendants_count, len(_reversed))
-                    elif node is self.leaf:
-                        self.assertEqual(0, len(forward))
-                        self.assertEqual(0, len(_reversed))
-                    if 0 < len(forward) == len(_reversed):
-                        self.assertEqual(start, forward[0].index)
-                        max_level = max(ei.index for ei in forward)
-                        self.assertEqual(max_level, _reversed[0].index)
+        with self.subTest(reverse=False):
+            expected = [str(i) for i in range(1, counter + 1)]
+            actual = [i.desc for i in root.walk_descendants()]
+            self.assertListEqual(expected, actual)
 
-                    _reversed.reverse()
-                    self.assertListEqual(forward, _reversed)
+        with self.subTest(reverse=True):
+            expected = [str(i) for i in range(counter, 0, -1)]
+            actual = [i.desc for i in root.walk_descendants(reverse=True)]
+            self.assertListEqual(expected, actual)
 
 
 class TestItoQuery(TestItoTraversal):

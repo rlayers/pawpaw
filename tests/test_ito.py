@@ -461,17 +461,34 @@ class TestIto(_TestIto):
             parent = Ito(s)
             with self.subTest(string=s, children_added=False):
                 inverted = parent.invert_children()
-                expected = ''.join(str(c) for c in inverted.children)
-                self.assertEqual(s, expected)
+                self.assertEqual(parent, inverted)
+
+                if len(s) == 0:
+                    self.assertEqual(0, len(inverted.children))
+                else:
+                    self.assertEqual(1, len(inverted.children))
+                    self.assertEqual(inverted, inverted.children[0])
 
             parent.children.add(*parent.str_split())
             with self.subTest(string=s, children_added=True):
                 inverted = parent.invert_children()
-                clone = parent.clone(clone_children=False)
-                clone.children.add(*(c.clone() for c in parent.children))
-                clone.children.add(*(c.clone() for c in inverted.children))
-                expected = ''.join(str(c) for c in clone.children)
-                self.assertEqual(s, expected)
+                self.assertEqual(parent, inverted)
+
+                if len(s) == 0:
+                    self.assertEqual(0, len(inverted.children))
+                elif len(parent.children) == 0:
+                    self.assertEqual(1, len(inverted.children))
+                    self.assertEqual(inverted, inverted.children[0])
+                else:
+                    count_spaces = sum(1 for i in s if i == ' ')
+                    self.assertEqual(count_spaces, len(inverted.children))
+
+                    if (count_spaces) > 0:
+                        parent_child_chars = [*itertools.chain(*parent.children)]
+                        inverted_chars = [*inverted]
+                        all_chars = parent_child_chars + inverted_chars
+                        all_chars.sort(key=lambda i: i.start)
+                        self.assertEqual(s, str(Ito.join(*all_chars)))
         
     def test_split_iter_simple(self):
         basis = 'A B C D E'

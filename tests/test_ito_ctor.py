@@ -148,7 +148,7 @@ class TestItoCtor(_TestIto):
         desc = 'x'
         for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', IntIto)):
             with self.subTest(_class=cls_name):
-                for i in _class.from_spans(s, *spans, desc=desc):
+                for i in _class.from_spans(s, spans, desc=desc):
                     self.assertIsInstance(i, _class)
                     self.assertIs(s, i.string)
                     self.assertIn(i.span, spans)
@@ -161,7 +161,7 @@ class TestItoCtor(_TestIto):
         for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', IntIto)):
             with self.subTest(_class=cls_name):
                 expected = [_class(s, *span, desc) for span in spans]
-                actual = [*_class.from_spans(s, *spans, desc=desc)]
+                actual = [*_class.from_spans(s, spans, desc=desc)]
                 self.assertListEqual(expected, actual)
                     
     def test_from_spans_ito(self):
@@ -172,10 +172,10 @@ class TestItoCtor(_TestIto):
         for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', IntIto)):
             with self.subTest(_class=cls_name):
                 expected = [_class(src, *span, desc) for span in spans]
-                actual = [*_class.from_spans(src, *spans, desc=desc)]
+                actual = [*_class.from_spans(src, spans, desc=desc)]
                 self.assertListEqual(expected, actual)
 
-    def test_from_gaps_src_str(self):
+    def test_from_gaps_src_str_1(self):
         desc = 'non gap'
         for s in '', 'a', ' ', 'ab', ' ab', 'a b', 'ab ', ' a b ':
             non_gaps = list[Ito]()
@@ -191,7 +191,7 @@ class TestItoCtor(_TestIto):
                     actual = [*Ito.from_gaps(s, ngs, desc=desc)]
                     self.assertSequenceEqual(expected, actual)
 
-    def test_from_gaps_src_ito(self):
+    def test_from_gaps_src_ito_1(self):
         desc = 'non gap'
         for s in '', 'a', ' ', 'ab', ' ab', 'a b', 'ab ', ' a b ':
             s = f' {s} '
@@ -208,6 +208,72 @@ class TestItoCtor(_TestIto):
                 with self.subTest(src=src, non_gaps=ngs):
                     actual = [*Ito.from_gaps(src, ngs, desc=desc)]
                     self.assertSequenceEqual(expected, actual)
+
+    def test_from_gaps_src_str_2(self):
+        src = ' abc '
+        non_gap_starts = src.find('a'), src.find('c')
+
+        for width in 0, 1:
+            for ngt in 'Span', 'Ito':
+                if ngt == 'Span':
+                    non_gaps = [Span(s, s + width) for s in non_gap_starts]
+                elif ngt == 'Ito':
+                    non_gaps = [Ito(src, s, s + width) for s in non_gap_starts]
+                for return_zero_widths in True, False:
+                    with self.subTest(src=src, non_gap_width=width, non_gap_type=ngt, return_zero_widths=return_zero_widths):
+                        expected = list[Ito]()
+                        expected.append(Ito(src, stop=non_gaps[0].start))
+                        expected.append(Ito(src, non_gaps[0].stop, non_gaps[-1].start))
+                        expected.append(Ito(src, non_gaps[-1].stop))
+                        if not return_zero_widths:
+                            expected = [e for e in expected if len(e) > 0]
+                        actual = [*Ito.from_gaps(src, non_gaps)]
+                        self.assertListEqual(expected, actual)
+
+    def test_from_gaps_src_ito_2(self):
+        string = ' abc '
+        src = Ito(string, 1, -1)
+        non_gap_starts = src.str_find('a'), src.str_find('c')  # relative to src, not string
+
+        for width in 0, 1:
+            for ngt in 'Span', 'Ito':
+                if ngt == 'Span':
+                    non_gaps = [Span(s, s + width) for s in non_gap_starts]
+                    offset = 0
+                elif ngt == 'Ito':
+                    non_gaps = [Ito(src, s, s + width) for s in non_gap_starts]
+                    offset = -src.start
+                for return_zero_widths in True, False:
+                    with self.subTest(src=src, non_gap_width=width, non_gap_type=ngt, return_zero_widths=return_zero_widths):
+                        expected = list[Ito]()
+                        expected.append(Ito(src, non_gaps[0].stop + offset, non_gaps[-1].start + offset))
+                        expected.append(Ito(src, non_gaps[-1].stop + offset, src.stop + offset))
+                        if len(expected[-1]) == 0:
+                            expected.pop(-1)
+                        if not return_zero_widths:
+                            expected = [e for e in expected if len(e) > 0]
+                        actual = [*Ito.from_gaps(src, non_gaps)]
+                        self.assertListEqual(expected, actual)
+
+    def test_from_gaps_none(self):
+        src = 'abc'
+        desc = 'X'
+        expected = Ito(src, desc=desc)
+        actual = next(Ito.from_gaps(src, [], desc=desc), None)
+        self.assertIsNotNone(actual)
+        self.assertEqual(expected, actual)
+
+    def test_from_gaps_identity(self):
+        src = 'abc'
+        desc = 'X'
+        actual = next(Ito.from_gaps(src, [Ito(src)], desc=desc), None)
+        self.assertIsNone(actual)
+
+    def test_from_gaps_contiguous_non_gaps(self):
+        src = 'abc'
+        desc = 'X'
+        actual = next(Ito.from_gaps(src, Ito(src), desc=desc), None)
+        self.assertIsNone(actual)            
 
     def test_from_gaps_with_zero_widths(self):
         desc = 'non gap'

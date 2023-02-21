@@ -152,16 +152,16 @@ class Ito:
                 break
 
     @classmethod
-    def from_spans(cls, src: str | pawpaw.Ito, *spans: Span, desc: str | None = None) -> typing.Iterable[pawpaw.Ito]:
+    def from_spans(cls, src: str | pawpaw.Ito, spans: typing.Iterable[Span], desc: str | None = None) -> typing.Iterable[pawpaw.Ito]:
         """Generate Itos from spans
         
         Args:
             src: a str or Ito to use as the basis
-            spans: one or more spans within the basis
+            spans: one or more spans within the basis; can be unordred & overlapping
             desc: a descriptor for the generated Itos
             
         Yields:
-            Itos; stream ordering will match that of spans; if spans overlap, so will the resulting Itos
+            Itos that match spans
         """
         yield from (cls(src, *s, desc=desc) for s in spans)
 
@@ -177,7 +177,7 @@ class Ito:
 
         Args:
             src: a str or Ito to use as the basis
-            non_gaps: one or more positive-space Spans (relative to src) or Itos (whose .string matches basis); must be ordered; overlaps are fine spans within the basis; can be unordered; overlaps are fine
+            non_gaps: one or more Spans (relative to src) or Itos (whose .string matches basis) to be excluded from the result; must be ordered; overlaps are fine spans within the basis; can be unordered; overlaps are fine; zero-widths are fine
             return_zero_widths: If true, zero-width Itos will be returned for non-overlapping, adjacent non-gaps
             desc: a descriptor for the generated Itos
 
@@ -748,14 +748,17 @@ class Ito:
         Args:
             desc: a descriptor used for any created children
         
+        Args:
+            desc: a descriptor used for any created children
+
         Returns:
             - If .len(self) is zero: returns clone having no children.
             
-            - If self has no children, returns clone with a single, contiguous child
+            - Else if self has no children, returns clone with a single, contiguous child
             
-            - If self has contiguous children (i.e., every char of self has coverage), returns childless clone.
+            - Else if self has contiguous children, returns childless clone.
 
-            - Otherwise returns a clone with children corresponding to the non-overlapping, non-contiguous gpas in self's children.
+            - Else returns a clone with children corresponding to the non-overlapping, non-contiguous gpas in self's children.
         """
         rv = self.clone(clone_children=False)
         

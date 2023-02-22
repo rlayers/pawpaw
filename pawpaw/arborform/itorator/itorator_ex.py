@@ -10,6 +10,44 @@ from pawpaw import Types, Errors, Ito, type_magic
 from pawpaw.arborform.postorator.postorator import Postorator
 
 
+class _Connection(ABC):
+    def __init__(self, itorator: ItoratorEx, predicate: Types.P_ITO = lambda ito: True):
+        self.itorator = itorator
+        self.predicate = predicate
+
+
+class _Children(_Connection, ABC):
+    def __init__(self, itorator: ItoratorEx, predicate: Types.P_ITO = lambda ito: True):
+        super().__init__(itorator, predicate)
+
+
+class Connections:
+    class Next(_Connection):
+        def __init__(self, itorator: ItoratorEx, predicate: Types.P_ITO = lambda ito: True):
+            super().__init__(itorator, predicate)
+
+
+    class Sub(_Connection):
+        def __init__(self, itorator: ItoratorEx, predicate: Types.P_ITO = lambda ito: True):
+            super().__init__(itorator, predicate)
+
+
+    class Children:
+        class Add(_Children):
+            def __init__(self, itorator: ItoratorEx, predicate: Types.P_ITO = lambda ito: True):
+                super().__init__(itorator, predicate)
+
+
+        class Update(_Children):
+            def __init__(self, itorator: ItoratorEx, predicate: Types.P_ITO = lambda ito: True):
+                super().__init__(itorator, predicate)
+
+
+        class Delete(_Children):
+            def __init__(self, itorator: ItoratorEx, predicate: Types.P_ITO = lambda ito: True):
+                super().__init__(itorator, predicate)
+
+
 class Connector(ABC):
     pass
 

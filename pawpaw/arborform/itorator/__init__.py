@@ -1,3 +1,6 @@
+from .itorator_ex import Connectors, ItoratorEx
+del itorator_ex
+
 from .itorator import Itorator
 del itorator
 

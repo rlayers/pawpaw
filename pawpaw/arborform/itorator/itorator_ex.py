@@ -1,10 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-import dataclasses
-import itertools
 import types
 import typing
-import enum
 
 from pawpaw import Types, Errors, Ito, type_magic
 from pawpaw.arborform.postorator.postorator import Postorator
@@ -26,56 +23,22 @@ class Connections:
         def __init__(self, itorator: ItoratorEx, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
-
     class Sub(_Connection):
         def __init__(self, itorator: ItoratorEx, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
-
 
     class Children:
         class Add(_Children):
             def __init__(self, itorator: ItoratorEx, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)
 
-
-        class Update(_Children):
+        class Replace(_Children):
             def __init__(self, itorator: ItoratorEx, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)
-
 
         class Delete(_Children):
             def __init__(self, itorator: ItoratorEx, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)
-
-
-class Connector(ABC):
-    pass
-
-class Sub(Connector):
-    pass
-
-class Children(Connector):
-    class Mode(enum.Enum):
-        ADD = enum.auto()
-        REPLACE = enum.auto()
-        DELETE = enum.auto()
-
-    def __init__(self, mode: Mode):
-        self._mode = mode
-
-    @property
-    def mode(self) -> Mode:
-        return self._mode
-
-class Next(Connector):
-    pass
-
-
-@dataclasses.dataclass(frozen=True)
-class Connection:
-    connector: Connector
-    itorator: ItoratorEx
-    predicate: Types.P_ITO = lambda ito: True
 
 
 class ItoratorEx(ABC):
@@ -89,7 +52,7 @@ class ItoratorEx(ABC):
     def __init__(self, tag: str | None = None):
         if tag is not None and not isinstance(tag, str):
             raise Errors.parameter_invalid_type('desc', tag, str)
-        self._connections = list[Connection]()
+        self._connections = list[_Connection]()
         self.tag: str | None = tag
         self._postorator: Postorator | Types.F_ITOS_2_ITOS | None = None
 
@@ -97,7 +60,7 @@ class ItoratorEx(ABC):
         return self(tag)
 
     @property
-    def connections(self) -> List[Connection]:
+    def connections(self) -> list[_Connection]:
         return self._connections
 
     @property
@@ -123,18 +86,18 @@ class ItoratorEx(ABC):
         else:
             con = self._connections[con_idx]
             if con.predicate(ito):
-                if isinstance(con.connector, Next):
+                if isinstance(con, Connections.Next):
                     yield from con.itorator._traverse(ito)
 
-                elif isinstance(con.connector, Children):
+                elif isinstance(con, _Children):
                     children = [*con.itorator._traverse(ito)]
 
-                    if con.connector.mode == Children.Mode.REPLACE:
+                    if isinstance(con, Connections.Children.Replace):
                         ito.children.clear()
 
-                    if con.connector.mode in (Children.Mode.ADD, Children.Mode.REPLACE):
+                    if isinstance(con, (Connections.Children.Add, Connections.Children.Replace)):
                         ito.children.add(*children)
-                    else:  # Children.Mode.DELETE
+                    else:  # Connections.Children.Delete
                         for c in children:
                             ito.children.remove(c)
 
@@ -177,20 +140,20 @@ s = ' one two three '
 root = Ito(s, 1, -1)
 itor_wrd_split = ItoratorEx.wrap(lambda ito: ito.str_split())
 
-itor_wrd_desc = ItoratorEx.wrap(lambda ito: [ito.clone(desc='word'),])
-con = Connection(Sub(), itor_wrd_desc)
+itor_wrd_desc = ItoratorEx.wrap(lambda ito: [ito.clone(desc='word'), ])
+con = Connections.Sub(itor_wrd_desc)
 itor_wrd_split.connections.append(con)
 
 itor_char_split = ItoratorEx.wrap(lambda ito: ito)
-con = Connection(Children(Children.Mode.ADD), itor_char_split)
+con = Connections.Children.Add(itor_char_split)
 itor_wrd_split.connections.append(con)
 
-itor_char_desc = ItoratorEx.wrap(lambda ito: [ito.clone(desc='char'),])
-con = Connection(Sub(), itor_char_desc)
+itor_char_desc = ItoratorEx.wrap(lambda ito: [ito.clone(desc='char'), ])
+con = Connections.Sub(itor_char_desc)
 itor_char_split.connections.append(con)
 
-itor_char_desc_vowel = ItoratorEx.wrap(lambda ito: [ito.clone(desc='char-vowel'),])
-con = Connection(Sub(), itor_char_desc_vowel, lambda ito: str(ito) in 'aeiou')
+itor_char_desc_vowel = ItoratorEx.wrap(lambda ito: [ito.clone(desc='char-vowel'), ])
+con = Connections.Sub(itor_char_desc_vowel, lambda ito: str(ito) in 'aeiou')
 itor_char_desc.connections.append(con)
 
 from pawpaw.visualization import pepo

@@ -2,14 +2,14 @@ import typing
 
 import regex
 from pawpaw import Ito, Types
-from pawpaw.arborform import ItoratorEx, Connectors, Postorator
+from pawpaw.arborform import Itorator, Connectors, Postorator
 from tests.util import _TestIto
 
 
 class TestItoratorEx(_TestIto):
     @classmethod
-    def get_reflect(cls) -> ItoratorEx:
-        return ItoratorEx.wrap(lambda ito: (ito,))
+    def get_reflect(cls) -> Itorator:
+        return Itorator.wrap(lambda ito: (ito,))
 
     @classmethod
     def change_desc(cls, ito: Ito, desc: str | None) -> Types.C_IT_ITOS:
@@ -17,8 +17,8 @@ class TestItoratorEx(_TestIto):
         return ito,
 
     @classmethod
-    def get_desc(cls, desc: str | None) -> ItoratorEx:
-        return ItoratorEx.wrap(lambda ito: cls.change_desc(ito, desc))
+    def get_desc(cls, desc: str | None) -> Itorator:
+        return Itorator.wrap(lambda ito: cls.change_desc(ito, desc))
 
     def test_call_fails_on_non_ito(self):
         s = ' abc '
@@ -104,7 +104,7 @@ class TestItoratorEx(_TestIto):
         itor_r = self.get_reflect()
 
         # create sub-pipeline with two endpoints
-        itor_tok_split = ItoratorEx.wrap(lambda ito: ito.str_split())
+        itor_tok_split = Itorator.wrap(lambda ito: ito.str_split())
         con = Connectors.Sub(itor_tok_split)
         itor_r.connections.append(con)
 
@@ -125,7 +125,7 @@ class TestItoratorEx(_TestIto):
         def prepend_x(ito) -> Types.C_IT_ITOS:
             ito.desc = 'x' + ito.desc
             return ito,
-        itor_desc_pre_x = ItoratorEx.wrap(prepend_x)
+        itor_desc_pre_x = Itorator.wrap(prepend_x)
         con = Connectors.Next(itor_desc_pre_x)
         itor_r.connections.append(con)
 
@@ -140,7 +140,7 @@ class TestItoratorEx(_TestIto):
         
         itor_r = self.get_reflect()
 
-        itor_tok_split = ItoratorEx.wrap(lambda ito: ito.str_split())
+        itor_tok_split = Itorator.wrap(lambda ito: ito.str_split())
         con = Connectors.Children.Add(itor_tok_split)
         itor_r.connections.append(con)
 
@@ -155,7 +155,7 @@ class TestItoratorEx(_TestIto):
             for c in ito.children:
                 if c.str_isnumeric():
                     yield c
-        itor_numerics = ItoratorEx.wrap(numerics)
+        itor_numerics = Itorator.wrap(numerics)
         con = Connectors.Children.Delete(itor_numerics)
         itor_r.connections.clear()
         itor_r.connections.append(con)
@@ -170,7 +170,7 @@ class TestItoratorEx(_TestIto):
                 if not c.str_isnumeric():
                     c.desc = 'alpha'
                     yield c
-        itor_alphas = ItoratorEx.wrap(alphas)
+        itor_alphas = Itorator.wrap(alphas)
         con = Connectors.Children.Replace(itor_alphas)
         itor_r.connections.clear()
         itor_r.connections.append(con)
@@ -188,7 +188,7 @@ class TestItoratorEx(_TestIto):
         def simple_join(itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
             yield Ito.join(*itos)
 
-        word_splitter = ItoratorEx.wrap(lambda ito: ito.str_split())
+        word_splitter = Itorator.wrap(lambda ito: ito.str_split())
 
         with self.subTest(chain_length=1, chain_depth=0):
             rv = [*word_splitter(root)]
@@ -202,7 +202,7 @@ class TestItoratorEx(_TestIto):
         with self.subTest(chain_length=2, chain_depth=0):
             word_splitter = word_splitter.clone()
 
-            char_splitter = ItoratorEx.wrap(lambda ito: ito)
+            char_splitter = Itorator.wrap(lambda ito: ito)
             con = Connectors.Next(char_splitter)
             word_splitter.connections.append(con)
             expected = [j for i in word_splitter(root) for j in i]
@@ -246,21 +246,21 @@ class TestItoratorEx(_TestIto):
         s = ' one two three '
         root = Ito(s, 1, -1)
         
-        itor_wrd_split = ItoratorEx.wrap(lambda ito: ito.str_split())
+        itor_wrd_split = Itorator.wrap(lambda ito: ito.str_split())
 
-        itor_wrd_desc = ItoratorEx.wrap(lambda ito: [ito.clone(desc='word'), ])
+        itor_wrd_desc = Itorator.wrap(lambda ito: [ito.clone(desc='word'), ])
         con = Connectors.Sub(itor_wrd_desc)
         itor_wrd_split.connections.append(con)
 
-        itor_char_split = ItoratorEx.wrap(lambda ito: ito)
+        itor_char_split = Itorator.wrap(lambda ito: ito)
         con = Connectors.Children.Add(itor_char_split)
         itor_wrd_split.connections.append(con)
 
-        itor_char_desc = ItoratorEx.wrap(lambda ito: [ito.clone(desc='char'), ])
+        itor_char_desc = Itorator.wrap(lambda ito: [ito.clone(desc='char'), ])
         con = Connectors.Sub(itor_char_desc)
         itor_char_split.connections.append(con)
 
-        itor_char_desc_vowel = ItoratorEx.wrap(lambda ito: [ito.clone(desc='char-vowel'), ])
+        itor_char_desc_vowel = Itorator.wrap(lambda ito: [ito.clone(desc='char-vowel'), ])
         con = Connectors.Sub(itor_char_desc_vowel, lambda ito: str(ito) in 'aeiou')
         itor_char_desc.connections.append(con)
 

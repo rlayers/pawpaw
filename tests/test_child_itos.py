@@ -71,8 +71,6 @@ class TestChildItos(_TestIto):
         root.children.add_hierarchical(*adds)
 
         for i in root.walk_descendants(reverse=True):
-            if i.parent is None:
-                print('uh oh')
             i.parent.children.remove(i)
 
     def test_add_hierarchical(self):

@@ -7,7 +7,6 @@ import regex
 from pawpaw import Ito, Types, Errors, type_magic
 from pawpaw.arborform.itorator import Itorator
 
-
 class Extract(Itorator):
     def __init__(self,
                  re: regex.Pattern,
@@ -26,6 +25,9 @@ class Extract(Itorator):
 
         self.desc_func = desc_func
         self.group_filter = group_filter  
+
+    def clone(self, tag: str | None = None) -> Extract:
+        return type(self())(self._re, self.limit, self.desc_func, self._group_filter, self.tag if tag is None else tag)
 
     @classmethod
     def _get_group_keys(cls, re: regex.Pattern) -> list[Types.C_GK]:
@@ -68,7 +70,7 @@ class Extract(Itorator):
                 Types.P_ITO_M_GK,
                 types.NoneType)
 
-    def _transform(self, ito: Ito) -> Types.C_SQ_ITOS:
+    def _transform(self, ito: Ito) -> Types.C_IT_ITOS:
         rv: typing.List[Ito] = []
         for count, m in enumerate(ito.regex_finditer(self._re), 1):
             path_stack: typing.List[Ito] = []

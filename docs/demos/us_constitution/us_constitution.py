@@ -23,14 +23,18 @@ def get_parser() -> arborform.Itorator:
     a_desc = arborform.Desc(
         desc=lambda ito: 'article' if ito.str_startswith('Article.') else 'preamble',
         tag='article desc')
-    a_splitter.itor_next = a_desc
+    con = arborform.Connectors.Next(a_desc)
+    a_splitter.connections.append(con)
+
+    con = arborform.Connectors.Children.Add(pawpaw.nlp.SimpleNlp().itor, lambda ito: ito.desc == 'preamble')
+    a_desc.connections.append(con)
 
     a_extractor = arborform.Extract(
         regex.compile(r'Article\. (?<key>[A-Z]+)\.\n(?<value>.+)', regex.DOTALL),
         tag='article extractor')
-    a_desc.itor_children = lambda ito: ito.desc == 'article', a_extractor
-    nlp = pawpaw.nlp.SimpleNlp().itor
-    a_desc.itor_children.append(nlp)
+    con = arborform.Connectors.Children.Add(a_extractor, lambda ito: ito.desc == 'article')
+    a_desc.connections.append(con)
+    con = arborform.Connectors.Children.Add(pawpaw.nlp.SimpleNlp().itor, lambda ito: ito.desc == 'value')
 
     # Section: only some articles have sections
     s_splitter = arborform.Split(
@@ -38,22 +42,24 @@ def get_parser() -> arborform.Itorator:
         boundary_retention=arborform.Split.BoundaryRetention.LEADING,
         desc='section',
         tag='section splitter')
-    nlp.tag = 'nlp'
-    a_extractor.itor_children = lambda ito: ito.desc == 'value' and ito.str_startswith('Section.'), s_splitter
-    a_extractor.itor_children.append((lambda ito: ito.desc == 'value', nlp))
+    con = arborform.Connectors.Children.Add(s_splitter, lambda ito: ito.desc == 'value' and ito.str_startswith('Section.'))
+    a_extractor.connections.append(con)
+    con = arborform.Connectors.Children.Add(pawpaw.nlp.SimpleNlp().itor, lambda ito: ito.desc == 'value' and not ito.str_startswith('Section.'))
+    a_extractor.connections.append(con)
 
     s_extractor = arborform.Extract(regex.compile(r'Section\. (?<key>\d+)\.\n(?<value>.+)', regex.DOTALL))
-    s_splitter.itor_children = s_extractor
-
-    s_extractor.itor_children = lambda ito: ito.desc == 'value', nlp
+    con = arborform.Connectors.Children.Add(s_extractor)
+    s_splitter.connections.append(con)
+    con = arborform.Connectors.Children.Add(pawpaw.nlp.SimpleNlp().itor, lambda ito: ito.desc == 'value')
+    s_extractor.connections.append(con)
 
     return a_splitter
 
 
-# Segment
 def get_text() -> pawpaw.Ito:
     with open(os.path.join(sys.path[0], 'us_constitution.txt')) as f:
         return pawpaw.Ito(f.read(), desc='constitution')
+
 
 # Visualize
 print(f'\nVISUALIZE:\n')

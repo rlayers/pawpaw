@@ -55,7 +55,17 @@ class Split(Itorator):
         self.return_zero_split = return_zero_split
         self.desc = desc
 
-    def _transform(self, ito: Ito) -> Types.C_SQ_ITOS:
+    def clone(self, tag: str | None = None) -> Split:
+        return type(self())(
+            self._re,
+            self.limit,
+            self.group,
+            self.boundary_retention,
+            self.return_zero_split,
+            self.desc,
+            self.tag if tag is None else tag)
+
+    def _transform(self, ito: Ito) -> Types.C_IT_ITOS:
         if self.limit == 0:
             return ito,
 

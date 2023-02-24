@@ -11,6 +11,9 @@ class ValueFunc(Itorator):
             raise Errors.parameter_invalid_type('f', f, Types.F_ITO_2_VAL, None)
         self.f = f
 
-    def _transform(self, ito: Ito) -> Types.C_SQ_ITOS:
+    def clone(self, tag: str | None = None) -> ValueFunc:
+        return type(self())(self.f, self.tag if tag is None else tag)
+
+    def _transform(self, ito: Ito) -> Types.C_IT_ITOS:
         ito.value_func = self.f
-        return ito,
+        yield ito

@@ -5,14 +5,14 @@ from tests.util import _TestIto
 
 
 class TestDesc(_TestIto):
-    def test_iter(self):
+    def test_transform(self):
         s = ' abc '
         root = Ito(s, 1, -1)
         self.assertIsNone(root.desc)
 
         desc = 'changed'
         itor = Desc(desc)
-        rv = itor._transform(root)
+        rv = [*itor._transform(root)]
         self.assertEqual(1, len(rv))
 
         rv = rv[0]

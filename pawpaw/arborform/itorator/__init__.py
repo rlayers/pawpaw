@@ -1,7 +1,4 @@
-from .itorator_ex import Connectors, ItoratorEx
-del itorator_ex
-
-from .itorator import Itorator
+from .itorator import Connectors, Itorator
 del itorator
 
 from .reflect import Reflect

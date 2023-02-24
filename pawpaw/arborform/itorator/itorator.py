@@ -1,79 +1,69 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
+import itertools
 import types
 import typing
-import enum
 
-from pawpaw import Types, Errors, Ito, type_magic, PredicatedValue, Furcation
+from pawpaw import Types, Errors, Ito, type_magic
 from pawpaw.arborform.postorator.postorator import Postorator
+
+
+class Connector(ABC):
+    def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+        self.itorator = itorator
+        self.predicate = predicate
+
+
+class ChildrenConnector(Connector, ABC):
+    def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+        super().__init__(itorator, predicate)
+
+
+class Connectors:
+    class Next(Connector):
+        def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+            super().__init__(itorator, predicate)
+
+    class Sub(Connector):
+        def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+            super().__init__(itorator, predicate)
+
+    class Children:
+        class Add(ChildrenConnector):
+            def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+                super().__init__(itorator, predicate)
+
+        class Replace(ChildrenConnector):
+            def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+                super().__init__(itorator, predicate)
+
+        class Delete(ChildrenConnector):
+            def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+                super().__init__(itorator, predicate)
 
 
 class Itorator(ABC):
     @classmethod
-    def wrap(cls, src: Types.F_ITO_2_SQ_ITOS, tag: str | None = None):
-        if type_magic.functoid_isinstance(src, Types.F_ITO_2_SQ_ITOS):
-            return _WrappedItorator(src, tag)
+    def wrap(cls, src: Types.F_ITO_2_IT_ITOS, tag: str | None = None):
+        if type_magic.functoid_isinstance(src, Types.F_ITO_2_IT_ITOS):
+            return _WrappedItoratorEx(src, tag)
 
-        raise Errors.parameter_invalid_type('src', src, Types.F_ITO_2_SQ_ITOS)
-
-    class ItorChildrenMode(enum.Enum):
-        ADD = enum.auto()
-        REPLACE = enum.auto()
-        DEL = enum.auto()
+        raise Errors.parameter_invalid_type('src', src, Types.F_ITO_2_IT_ITOS)
 
     def __init__(self, tag: str | None = None):
         if tag is not None and not isinstance(tag, str):
             raise Errors.parameter_invalid_type('desc', tag, str)
-        self.tag = tag
-        self._itor_sub = Furcation[Ito, Itorator]()
-        self._itor_children = Furcation[Ito, Itorator]()
-        self._itor_children_mode = self.ItorChildrenMode.ADD
-        self._itor_next = Furcation[Ito, Itorator]()
+        self._connections = list[Connector]()
+        self.tag: str | None = tag
         self._postorator: Postorator | Types.F_ITOS_2_ITOS | None = None
 
-    @property
-    def itor_sub(self) -> Furcation[Ito, Itorator]():
-        return self._itor_sub
-
-    @itor_sub.setter
-    def itor_sub(self, val: Itorator | PredicatedValue | tuple[typing.Callable[[Ito], bool], Itorator | None] | None) -> None:
-        self._itor_sub.clear()
-        if val is not None:
-            self._itor_sub.append(val)
+    @abstractmethod
+    def clone(self, tag: str | None = None) -> Itorator:
+        ...
 
     @property
-    def itor_children(self) -> Furcation[Ito, Itorator]():
-        return self._itor_children
-
-    @itor_children.setter
-    def itor_children(self, val: Itorator | PredicatedValue | tuple[typing.Callable[[Ito], bool], Itorator | None] | None) -> None:
-        self._itor_children.clear()
-        if val is not None:
-            self._itor_children.append(val)
-
-    @property
-    def itor_children_mode(self) -> ItorChildrenMode:
-        return self._itor_children_mode
-
-    @itor_children_mode.setter
-    def itor_children_mode(self, mode: Itorator.ItorChildrenMode) -> None:
-        if not isinstance(mode, self.ItorChildrenMode):
-            raise Errors.parameter_invalid_type('mode', mode, self.ItorChildrenMode)
-
-        if mode not in self.ItorChildrenMode:
-            raise Errors.parameter_enum_not_in('mode', mode, self.ItorChildrenMode)
-
-        self._itor_children_mode = mode
-
-    @property
-    def itor_next(self) -> Furcation[Ito, Itorator]():
-        return self._itor_next
-
-    @itor_next.setter
-    def itor_next(self, val: Itorator | PredicatedValue | tuple[typing.Callable[[Ito], bool], Itorator | None] | None) -> None:
-        self._itor_next.clear()
-        if val is not None:
-            self._itor_next.append(val)
+    def connections(self) -> list[Connector]:
+        return self._connections
 
     @property
     def postorator(self) -> Postorator | Types.F_ITOS_2_ITOS | None:
@@ -87,48 +77,50 @@ class Itorator(ABC):
             raise Errors.parameter_invalid_type('val', val, Postorator, Types.F_ITOS_2_ITOS, types.NoneType)
 
     @abstractmethod
-    def _transform(self, ito: Ito) -> Types.C_SQ_ITOS:
+    def _transform(self, ito: Ito) -> Types.C_IT_ITOS:
         pass
 
-    def __do_sub(self, ito: Ito) -> Types.C_IT_ITOS:
-        if (itor_s := self._itor_sub(ito)) is None:
+    # flow 
+    def _flow(self, ito: Ito, con_idx: int) -> Types.C_IT_ITOS:
+        if con_idx >= len(self.connections):
             yield ito
+
         else:
-            yield from itor_s._traverse(ito)
+            con = self._connections[con_idx]
+            if con.predicate(ito):
+                if isinstance(con, Connectors.Next):
+                    yield from con.itorator._traverse(ito)
 
-    def __do_children(self, ito: Ito):
-        if (itor_c := self._itor_children(ito)) is not None:
-            children = [*itor_c._traverse(ito)]
+                elif isinstance(con, ChildrenConnector):
+                    children = [*con.itorator._traverse(ito)]
 
-            if self._itor_children_mode == self.ItorChildrenMode.REPLACE:
-                ito.children.clear()
+                    if isinstance(con, Connectors.Children.Replace):
+                        ito.children.clear()
 
-            for c in children:
-                if self._itor_children_mode in (self.ItorChildrenMode.ADD, self.ItorChildrenMode.REPLACE):
-                    ito.children.add(c)
-                else:  # self.ItorChildrenMode.DEL
-                    ito.children.remove(c)
+                    if isinstance(con, (Connectors.Children.Add, Connectors.Children.Replace)):
+                        ito.children.add(*children)
+                    else:  # Connections.Children.Delete
+                        for c in children:
+                            ito.children.remove(c)
 
-    def __do_next(self, ito: Ito) -> Types.C_IT_ITOS:
-        if (itor_n := self._itor_next(ito)) is None:
-            yield ito
-        else:
-            yield from itor_n._traverse(ito)
+                    yield from self._flow(ito, con_idx + 1)
 
-    def __do_prior_to_post(self, ito: Ito) -> Types.C_IT_ITOS:
-        for i in self._transform(ito):
-            for s in self.__do_sub(i):
-                self.__do_children(s)
-                yield from self.__do_next(s)
+                else:  # isinstance(con.connector, Sub)
+                    for sub in con.itorator._traverse(ito):
+                        yield from self._flow(sub, con_idx + 1)
 
-    def __do_post(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
+            else:
+                yield from self._flow(ito, con_idx + 1)
+
+    def _post(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         if self._postorator is None:
             yield from itos
         else:
-            yield from self._postorator(itos)
+            yield from self._postorator(itos)                
 
+    # soup to nuts
     def _traverse(self, ito: Ito) -> Types.C_IT_ITOS:
-        yield from self.__do_post(self.__do_prior_to_post(ito))
+        yield from self._post(itertools.chain.from_iterable(self._flow(i, 0) for i in self._transform(ito)))
 
     def __call__(self, ito: Ito) -> Types.C_IT_ITOS:
         if not isinstance(ito, Ito):
@@ -136,10 +128,13 @@ class Itorator(ABC):
         yield from self._traverse(ito.clone())
 
 
-class _WrappedItorator(Itorator):
-    def __init__(self, f: Types.F_ITO_2_SQ_ITOS, tag: str | None = None):
+class _WrappedItoratorEx(Itorator):
+    def __init__(self, f: Types.F_ITO_2_IT_ITOS, tag: str | None = None):
         super().__init__(tag)
         self.__f = f
 
-    def _transform(self, ito: Ito) -> Types.C_SQ_ITOS:
-        return self.__f(ito)
+    def _transform(self, ito: Ito) -> Types.C_IT_ITOS:
+        yield from self.__f(ito)
+
+    def clone(self, tag: str | None = None) -> _WrappedItoratorEx:
+        return type(self)(self.__f, self.tag if tag is None else tag)

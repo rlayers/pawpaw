@@ -458,7 +458,8 @@ class SimpleNlp:
         rv = pawpaw.arborform.Split(self._paragraph_re, desc='paragraph', tag='para splitter')
 
         trimmer = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.str_strip(''.join(self._trimmable_ws))], tag='para trimmer')
-        rv.itor_sub.append(trimmer)
+        con = pawpaw.arborform.Connectors.Sub(trimmer)
+        rv.connections.append(con)
 
         return rv
 
@@ -471,17 +472,20 @@ class SimpleNlp:
         paragraph = self.get_paragraph()
 
         sentence = self.get_sentence()
-        paragraph.itor_children = sentence
+        con = pawpaw.arborform.Connectors.Children.Add(sentence)
+        paragraph.connections.append(con)
 
         self._number = number |nuco| Number()
         word_num_re = regex.compile(self._number.num_pat + r'|(?P<word>' + self._word_pat + r')', regex.DOTALL, sqs=list(unicode_single_quote_marks.values()))
 
         word_number = pawpaw.arborform.Extract(word_num_re)
-        sentence.itor_children = word_number
+        con = pawpaw.arborform.Connectors.Children.Add(word_number)
+        sentence.connections.append(con)
 
         if chars:
             char = pawpaw.arborform.Extract(regex.compile(r'(?P<char>\w)', regex.DOTALL))
-            word_number.itor_children = lambda ito: char if ito.desc == 'word' else None
+            con = pawpaw.arborform.Connectors.Children.Add(char)
+            word_number.connections.append(con, lambda ito: ito.desc == 'word')
 
         self.itor = paragraph
 

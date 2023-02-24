@@ -7,12 +7,12 @@ from tests.util import _TestIto
 
 
 class TestExtract(_TestIto):
-    def test_iter(self):
+    def test_transform(self):
         s = 'ten 10 eleven 11 twelve 12 '
         root = Ito(s)
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
         itor = Extract(re)
-        rv = itor._transform(root)
+        rv = [*itor._transform(root)]
         itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]
         grouped = {k: [v for v in itos if v.desc == k] for k, val in itertools.groupby(itos, lambda x: x.desc)}
 

@@ -1,6 +1,6 @@
 import regex
 from pawpaw import Ito
-from pawpaw.arborform import Itorator, Filter
+from pawpaw.arborform import Itorator, Filter, Connectors
 from tests.util import _TestIto
 
 
@@ -15,8 +15,10 @@ class TestFilter(_TestIto):
 
         for ft, f in [('None', lambda ito: False), ('All', lambda ito: True), ('Partial', Ito.str_isnumeric)]:
             with self.subTest(filter_type=ft):
+                split_chr = split_chr.clone()
                 filter = Filter(f)
-                split_chr.itor_next = filter
+                con = Connectors.Next(filter)
+                split_chr.connections.append(con)
                 expected = [i for i in root if f(i)]
                 actual = [*split_chr(root)]
                 self.assertSequenceEqual(expected, actual)

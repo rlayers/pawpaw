@@ -5,14 +5,14 @@ from tests.util import _TestIto
 
 
 class TestValueFunc(_TestIto):
-    def test_iter(self):
+    def test_transform(self):
         s = '123'
         root = Ito(s)
         self.assertEqual(str(root), root.value())
 
         f = lambda i: int(str(i))
         itor = ValueFunc(f)
-        rv = itor._transform(root)
+        rv = [*itor._transform(root)]
         self.assertEqual(1, len(rv))
 
         rv = rv[0]

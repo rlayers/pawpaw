@@ -10,27 +10,32 @@ def get_parser() -> arborform.Itorator:
     name_grades = arborform.Extract(
         regex.compile(r'School = (?<name>.+?)\n(?<grades>.+)(?:$|\n)', regex.DOTALL),
         tag='school name & grades')
-    school_splitter.itor_children = name_grades
+    con = arborform.Connectors.Children.Add(name_grades)
+    school_splitter.connections.append(con)
 
     grade_splitter = arborform.Split(
         regex.compile(r'(?<=\n)(?=Grade =)', regex.DOTALL),
         desc='grade',
         tag='grade splitter')
-    name_grades.itor_next = lambda ito: ito.desc == 'grades', grade_splitter
+    con = arborform.Connectors.Next(grade_splitter, lambda ito: ito.desc == 'grades')
+    name_grades.connections.append(con)
 
     grade = arborform.Extract(
         regex.compile(r'Grade = (?<key>\d+)\nStudent number, Name\n(?<stu_num_names>.+?)\nStudent number, Score\n(?<stu_num_scores>.+)', regex.DOTALL),
         tag='grade & stu_num/name * stu_num/score')
-    grade_splitter.itor_children = grade
+    con = arborform.Connectors.Children.Add(grade)
+    grade_splitter.connections.append(con)
 
     stu_num_names = arborform.Extract(
         regex.compile(r'(?<stu_num>\d+), (?<name>.+?)\n', regex.DOTALL),
         tag='stu num/name pairs')
-    grade.itor_children = lambda ito: ito.desc == 'stu_num_names', stu_num_names
+    con = arborform.Connectors.Children.Add(stu_num_names, lambda ito: ito.desc == 'stu_num_names')
+    grade.connections.append(con)
 
     stu_num_scores = arborform.Extract(
         regex.compile(r'(?<stu_num>\d+), (?<score>\d+)(?:$|\n)', regex.DOTALL),
         tag='stu num/score pairs')
-    grade.itor_children.append(stu_num_scores)
+    con = arborform.Connectors.Children.Add(stu_num_scores)
+    grade.connections.append(con)
 
     return school_splitter

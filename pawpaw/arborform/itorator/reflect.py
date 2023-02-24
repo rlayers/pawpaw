@@ -8,5 +8,8 @@ class Reflect(Itorator):
     def __init__(self, tag: str | None = None):
         super().__init__(tag)
 
-    def _transform(self, ito: Ito) -> Types.C_SQ_ITOS:
-        return ito,
+    def clone(self, tag: str | None = None) -> Reflect:
+        return type(self())(self.tag if tag is None else tag)
+
+    def _transform(self, ito: Ito) -> Types.C_IT_ITOS:
+        yield ito

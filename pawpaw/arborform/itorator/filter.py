@@ -11,8 +11,9 @@ class Filter(Itorator):
             raise Errors.parameter_invalid_type('filter', filter_, Types.P_ITO)
         self._filter = filter_
 
-    def _transform(self, ito: Ito) -> Types.C_SQ_ITOS:
+    def clone(self, tag: str | None = None) -> Filter:
+        return type(self())(self._filter, self.tag if tag is None else tag)
+
+    def _transform(self, ito: Ito) -> Types.C_IT_ITOS:
         if self._filter(ito):
-            return ito,
-        else:
-            return ()
+            yield ito

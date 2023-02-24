@@ -14,6 +14,9 @@ class Desc(Itorator):
         else:
             raise Errors.parameter_invalid_type('desc', desc, str | Types.F_ITO_2_DESC)
 
-    def _transform(self, ito: Ito) -> Types.C_SQ_ITOS:
+    def clone(self, tag: str | None = None) -> Desc:
+        return type(self())(self._desc_func, self.tag if tag is None else tag)
+
+    def _transform(self, ito: Ito) -> Types.C_IT_ITOS:
         ito.desc = self._desc_func(ito)
-        return ito,
+        yield ito

@@ -431,17 +431,20 @@ class TestItoCtor(_TestIto):
             self.assertEqual(c, cc)
 
     def test_clone_children(self):
-        s = 'abc'
-        parent = Ito(s, desc='parent')
-        self.add_chars_as_children(parent, 'child')
+        s = ' one two three '
+        root = Ito(s, 1, -1, 'root')
+        root.children.add(*root.str_split())
+        for c in root.children:
+            c.children.add(*c)
 
-        for cc in (True, False):
-            with self.subTest(clone_children=cc):
-                clone = parent.clone(clone_children=cc)
-                if cc:
-                    self.assertSequenceEqual([*parent.children], [*clone.children])
-                else:
-                    self.assertEqual(0, len(clone.children))
+        self.assertEqual(len(s.split()), len(root.children))
+        for c in root.children:
+            self.assertEqual(len(c), len(c.children))
+
+        clone = root.clone()
+        self.assertSequenceEqual([*root.children], [*clone.children])
+        for rc, cc in zip(root.children, clone.children):
+            self.assertSequenceEqual([*rc.children], [*cc.children])
 
     def test_clone_with_value_func(self):
         string = ' abcdef '

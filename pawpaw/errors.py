@@ -44,3 +44,8 @@ class Errors:
     def parameter_invalid_type(cls, name: str, value: typing.Any, *allowed: typing.Type) -> TypeError:
         actual = str(inspect.signature(value)) if callable(value) else repr(value)
         return TypeError(f'parameter \'{name}\' must be type {cls._build_types_str(*allowed)}, not {actual}')
+
+    @classmethod
+    def parameter_iterable_contains_invalid_type(cls, name: str, value: typing.Any, *allowed: typing.Type) -> TypeError:
+        actual = str(inspect.signature(value)) if callable(value) else repr(value)
+        return TypeError(f'parameter \'{name}\' must contain elements of type {cls._build_types_str(*allowed)}, however, it contains an element of type {actual}: {value}')

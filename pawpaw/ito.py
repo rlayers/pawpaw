@@ -211,7 +211,7 @@ class Ito:
                     raise ValueError('parameter \'non_gaps\' contains Itos whose .string does not match src')
                 return ng.span
             else:
-                raise Errors.parameter_invalid_type('non_gaps', ng, Span, Ito)
+                raise Errors.parameter_iterable_contains_invalid_type('non_gaps', ng, Span, Ito)
 
         if (last := next_ng_span()) is None:
             if start < end:
@@ -1407,6 +1407,9 @@ class ChildItos(collections.abc.Sequence):
 
     def add_hierarchical(self, *itos: pawpaw.Ito):
         for ito in itos:
+            if not isinstance(ito, pawpaw.Ito):
+                raise Errors.parameter_iterable_contains_invalid_type('itos', ito, pawpaw.Ito)
+
             if ito._parent is not None:
                 raise ValueError('contained elsewhere...')
 

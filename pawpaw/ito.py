@@ -1418,7 +1418,9 @@ class ChildItos(collections.abc.Sequence):
                 self.__store.append(ito)
                 continue
 
-            # do empty span insertions here
+            while (len(ito.children) > 0):
+                child = ito.children.pop(-1)
+                self.add_hierarchical(child)
 
             i = self.__bfind_start(ito)
             if i >= 0:

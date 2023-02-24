@@ -73,7 +73,7 @@ class TestChildItos(_TestIto):
         for i in root.walk_descendants(reverse=True):
             i.parent.children.remove(i)
 
-    def test_add_hierarchical(self):
+    def test_add_hierarchical_rand(self):
         s = ' ' * 2048
         root = Ito(s, desc='root')
         levels = 10
@@ -104,6 +104,25 @@ class TestChildItos(_TestIto):
 
         self.assertTrue(all(i.parent is not None for i in root.walk_descendants()))
 
+    def test_add_hierarchical_interleaved(self):
+        s = '012345543210'
+        
+        i1 = Ito(s) # 0..0
+        i1.children.add(c := Ito(s, 2, -2))  # 2..2
+        c.children.add(Ito(s, 4, -4))  # 4..4
+
+        i2 = Ito(s, 1, -1)  # 1..1
+        i2.children.add(c := Ito(s, 3, -3))  # 3..3
+        c.children.add(Ito(s, 5, -5))  # 3..3
+
+        i1.children.add_hierarchical(i2)
+
+        ito = i1
+        for i in range(1, 6):
+            ito = ito.children[0]
+            self.assertTrue(ito.str_startswith(str(i)))
+            self.assertTrue(ito.str_endswith(str(i)))
+
     def test_add_hierarchical_with_key(self):
         s = ' abc '
         root = Ito(s, 1, -1, desc='root')
@@ -117,7 +136,7 @@ class TestChildItos(_TestIto):
             # Do tests
             for i in root.walk_descendants(reverse=True):
                 print(visualization.pepo.Tree().dumps(root))
-                i.parent.children.remove(i)
+                i.parent.children.remove(i)                
 
     def test_del_key_int(self):
         s = py_string.ascii_lowercase

@@ -154,8 +154,8 @@ class TestItorator(_TestIto):
         all_tokens_root = rv[0]
 
         # AddHierarchical
-        itor_char_split = Itorator.wrap(lambda ito: ito)
-        con = Connectors.Children.AddHierarchical(itertools.chain.from_iterable(ito.children))
+        itor_char_split = Itorator.wrap(lambda ito: itertools.chain.from_iterable(ito.children))
+        con = Connectors.Children.AddHierarchical(itor_char_split)
         itor_r.connections.clear()
         itor_r.connections.append(con)
 

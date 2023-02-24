@@ -1,3 +1,4 @@
+import itertools
 import typing
 
 import regex
@@ -6,7 +7,7 @@ from pawpaw.arborform import Itorator, Connectors, Postorator
 from tests.util import _TestIto
 
 
-class TestItoratorEx(_TestIto):
+class TestItorator(_TestIto):
     @classmethod
     def get_reflect(cls) -> Itorator:
         return Itorator.wrap(lambda ito: (ito,))
@@ -140,6 +141,7 @@ class TestItoratorEx(_TestIto):
         
         itor_r = self.get_reflect()
 
+        # Add
         itor_tok_split = Itorator.wrap(lambda ito: ito.str_split())
         con = Connectors.Children.Add(itor_tok_split)
         itor_r.connections.append(con)
@@ -151,6 +153,20 @@ class TestItoratorEx(_TestIto):
 
         all_tokens_root = rv[0]
 
+        # AddHierarchical
+        itor_char_split = Itorator.wrap(lambda ito: ito)
+        con = Connectors.Children.AddHierarchical(itertools.chain.from_iterable(ito.children))
+        itor_r.connections.clear()
+        itor_r.connections.append(con)
+
+        with self.subTest(children_type=type(con).__name__):
+            rv = [*itor_r(all_tokens_root)]
+            self.assertEqual(1, len(rv))
+            self.assertEqual(len(root.str_split()), len(rv[0].children))
+            for t in rv[0].children:
+                self.assertEqual(len(t), len(t.children))
+
+        # Delete
         def numerics(ito) -> Types.C_IT_ITOS:
             for c in ito.children:
                 if c.str_isnumeric():
@@ -159,7 +175,29 @@ class TestItoratorEx(_TestIto):
         con = Connectors.Children.Delete(itor_numerics)
         itor_r.connections.clear()
         itor_r.connections.append(con)
+        
+        with self.subTest(children_type=type(con).__name__):
+            rv = [*itor_r(all_tokens_root)]
+            self.assertEqual(1, len(rv))
+            self.assertEqual(sum(1 for i in all_tokens_root.children if i.str_isnumeric()), len(rv[0].children))
 
+        # Replace
+        def alphas(ito) -> Types.C_IT_ITOS:
+            for c in ito.children:
+                if not c.str_isnumeric():
+                    c.desc = 'alpha'
+                    yield c
+        itor_alphas = Itorator.wrap(alphas)
+        con = Connectors.Children.Replace(itor_alphas)
+        itor_r.connections.clear()
+        itor_r.connections.append(con)
+
+        with self.subTest(children_type=type(con).__name__):
+            rv = [*itor_r(all_tokens_root)]
+            self.assertEqual(1, len(rv))
+            self.assertEqual(sum(1 for i in all_tokens_root.children if not i.str_isnumeric()), len(rv[0].children))
+            self.assertTrue(all(i.desc == 'alpha' for i in rv[0].children))
+            
         with self.subTest(children_type=type(con).__name__):
             rv = [*itor_r(all_tokens_root)]
             self.assertEqual(1, len(rv))

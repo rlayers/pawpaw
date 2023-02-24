@@ -33,6 +33,10 @@ class Connectors:
             def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)
 
+        class AddHierarchical(ChildrenConnector):
+            def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+                super().__init__(itorator, predicate)
+
         class Replace(ChildrenConnector):
             def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)
@@ -99,6 +103,8 @@ class Itorator(ABC):
 
                     if isinstance(con, (Connectors.Children.Add, Connectors.Children.Replace)):
                         ito.children.add(*children)
+                    elif isinstance(con, Connectors.Children.AddHierarchical):
+                        ito.children.add_hierarchical(*children)
                     else:  # Connections.Children.Delete
                         for c in children:
                             ito.children.remove(c)

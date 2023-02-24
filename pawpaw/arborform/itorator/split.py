@@ -98,7 +98,7 @@ class Split(Itorator):
             count += 1
 
             if start != stop:
-                rv.append(ito.clone(start, stop, self.desc))
+                rv.append(ito.clone(start, stop, self.desc, False))
 
             prior = cur
 
@@ -109,9 +109,9 @@ class Split(Itorator):
                 start = prior.start
             stop = ito.stop
             if start != stop:
-                rv.append(ito.clone(start, stop, self.desc))
+                rv.append(ito.clone(start, stop, self.desc, False))
 
         if len(rv) == 0 and self.return_zero_split:
-            rv.append(ito.clone(desc=self.desc))  # TODO : Don't clone this!
+            rv.append(ito.clone(desc=self.desc, clone_children=False))
 
         return rv

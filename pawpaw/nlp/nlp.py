@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod, abstractproperty
 import locale
 
 import regex
@@ -76,6 +77,20 @@ unicode_double_quote_marks = {
 
     'HEAVY LOW DOUBLE COMMA QUOTATION MARK ORNAMENT':       '\u2760',
 }
+
+trimmable_ws = list(byte_order_controls.values())
+trimmable_ws.extend(unicode_white_space_LF_FF.values())
+trimmable_ws.extend(unicode_white_space_other.values())
+
+class NlpComponent(ABC):
+    @abstractproperty
+    @property
+    def re(self) -> regex.Pattern:
+        ...
+
+    @abstractmethod
+    def get_itor(self) -> pawpaw.arborform.Itorator:
+        ...
 
 
 class Number:
@@ -289,7 +304,43 @@ class List:
 
     pass
 
-class Sentence:
+
+class Paragraph(NlpComponent):
+    _paragraph_pat = r'(?:\r?\n\L<other_ws>*){2,}'
+    _paragraph_re = regex.compile(_paragraph_pat, regex.DOTALL, other_ws=unicode_white_space_other)
+
+    def __init__(self, min_newlines: int = 2):
+        self._re: regex.Pattern
+        self.min_newlines = min_newlines
+
+    @property
+    def min_newlines(self) -> int:
+        return self._min_newlines 
+
+    @min_newlines.setter
+    def min_newlines(self, val: int):
+        if isinstance(val, int):
+            self._min_newlines = val
+            pat = r'(?:\r?\n\L<other_ws>*){' + str(self._min_newlines) + ',}'
+            self._re = regex.compile(pat, regex.DOTALL, other_ws=unicode_white_space_other)
+        else:
+            raise Errors.parameter_invalid_type('val', val, int)        
+
+    @property
+    def re(self) -> regex.Pattern:
+        return self._re
+
+    def get_itor(self) -> pawpaw.arborform.Itorator:
+        rv = pawpaw.arborform.Split(self._re, desc='paragraph', tag='para splitter')
+
+        ws_trimmer = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.str_strip(''.join(trimmable_ws))], tag='para trimmer')
+        con = pawpaw.arborform.Connectors.Sub(ws_trimmer)
+        rv.connections.append(con)
+
+        return rv
+
+
+class Sentence(NlpComponent):
     _prefix_chars = list(unicode_single_quote_marks.values())
     _prefix_chars.extend(unicode_double_quote_marks.values())
     _prefix_chars.extend(c for c in '([{')
@@ -443,25 +494,13 @@ class Sentence:
     def re(self) -> regex.Pattern:
         return self._re
 
+    def get_itor(self) -> pawpaw.arborform.Itorator:
+        return pawpaw.arborform.Split(Sentence().re, desc='sentence', tag='sentence')       
+
 
 class SimpleNlp:
-    _paragraph_pat = r'(?:\r?\n\L<other_ws>*){2,}'
-    _paragraph_re = regex.compile(_paragraph_pat, regex.DOTALL, other_ws=unicode_white_space_other)
-
-    _trimmable_ws = list(byte_order_controls.values())
-    _trimmable_ws.extend(unicode_white_space_LF_FF.values())
-    _trimmable_ws.extend(unicode_white_space_other.values())
 
     _word_pat = r'\w(?:(?:\L<sqs>|-\s*)?\w)*'
-
-    def get_paragraph(self) -> pawpaw.arborform.Itorator:
-        rv = pawpaw.arborform.Split(self._paragraph_re, desc='paragraph', tag='para splitter')
-
-        trimmer = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.str_strip(''.join(self._trimmable_ws))], tag='para trimmer')
-        con = pawpaw.arborform.Connectors.Sub(trimmer)
-        rv.connections.append(con)
-
-        return rv
 
     def get_sentence(self) -> pawpaw.arborform.Itorator:
         return pawpaw.arborform.Split(Sentence().re, desc='sentence', tag='sentence')
@@ -469,9 +508,9 @@ class SimpleNlp:
     def __init__(self, number: Number | None = None, chars: bool = False):
         super().__init__()
 
-        paragraph = self.get_paragraph()
+        paragraph = Paragraph().get_itor()
 
-        sentence = self.get_sentence()
+        sentence = Sentence().get_itor()
         con = pawpaw.arborform.Connectors.Children.Add(sentence)
         paragraph.connections.append(con)
 

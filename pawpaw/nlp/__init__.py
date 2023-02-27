@@ -1,1 +1,2 @@
-from .nlp import Number, Sentence, SimpleNlp
+from .nlp import Number, Paragraph, Sentence, SimpleNlp
+del nlp

@@ -28,6 +28,10 @@ class Connectors:
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
+    class Xxx(Connector):
+        def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+            super().__init__(itorator, predicate)
+
     class Children:
         class Add(ChildrenConnector):
             def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
@@ -111,9 +115,19 @@ class Itorator(ABC):
 
                     yield from self._flow(ito, con_idx + 1)
 
-                else:  # isinstance(con.connector, Sub)
+                elif isinstance(con, Connectors.Sub):
                     for sub in con.itorator._traverse(ito):
                         yield from self._flow(sub, con_idx + 1)
+
+                else:  # isinstance(con, Connectors.Xxx):
+                    it = con.itorator._traverse(ito)
+                    while True:
+                        try:
+                            next(it)
+                        except StopIteration:
+                            break
+
+                    yield from self._flow(ito, con_idx + 1)
 
             else:
                 yield from self._flow(ito, con_idx + 1)

@@ -191,7 +191,7 @@ class Number:
         return self._re
 
 
-class Table:
+class Table(NlpComponent, ABC):
     """
     Style 1: md style
 
@@ -274,13 +274,60 @@ class Table:
 
     A\tB\tC
     a\tb\tc
-
-
-
-
     """
 
-    pass
+class Tables:
+    class TableA(Table):
+        '''
+            ---+---+---
+             A | B | C
+            ---+---+---
+             a | b | c
+             a |   | c
+            ---+---+---         
+        '''
+
+        _table_start_pat = r'-{2,}[\-\+]*-{2,}'
+        _table_header_end_pat = _table_start_pat
+        _table_end_pat = _table_start_pat
+
+
+        def __init__(self):
+            self._re = regex.compile('(?<=\n)(?<table>' + self._table_start_pat + '\n(?:.+?\n' + self._table_end_pat + ')+)', regex.DOTALL)
+
+        @property
+        def re(self) -> regex.Pattern:
+            return self._re
+
+        def get_itor(self) -> pawpaw.arborform.Itorator:
+            return pawpaw.arborform.Extract(self._re, tag='table extractor')
+
+    class TableB(Table):
+        '''
+            -------------
+            | A | B | C |
+            -------------
+            | a | b | c |
+            | a |   | c
+            -------------       
+        '''
+
+        _table_start_pat = r'-{2,}'
+        _table_header_end_pat = _table_start_pat
+        _table_end_pat = _table_start_pat
+
+
+        def __init__(self):
+            self._re = regex.compile('(?<=\n)(?<table>' + self._table_start_pat + '\n(?:\|.+?\|\n' + self._table_end_pat + ')+)', regex.DOTALL)
+
+        @property
+        def re(self) -> regex.Pattern:
+            return self._re
+
+        def get_itor(self) -> pawpaw.arborform.Itorator:
+            return pawpaw.arborform.Extract(self._re, tag='table extractor')
+
+    # TODO: repeating white-space left margin
 
 
 class List:

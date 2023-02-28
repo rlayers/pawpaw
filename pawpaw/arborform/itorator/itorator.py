@@ -52,6 +52,17 @@ class Connectors:
 
 class Itorator(ABC):
     @classmethod
+    def __exhaust_iterator(cls, it: typing.Iterator):
+        if not isinstance(it, typing.Iterator):
+            raise Errors.parameter_invalid_type('it', it, typing.Iterator)
+        
+        while True:
+            try:
+                next(it)
+            except StopIteration:
+                break
+
+    @classmethod
     def wrap(cls, src: Types.F_ITO_2_IT_ITOS, tag: str | None = None):
         if type_magic.functoid_isinstance(src, Types.F_ITO_2_IT_ITOS):
             return _WrappedItoratorEx(src, tag)
@@ -119,15 +130,12 @@ class Itorator(ABC):
                     for sub in con.itorator._traverse(ito):
                         yield from self._flow(sub, con_idx + 1)
 
-                else:  # isinstance(con, Connectors.Xxx):
-                    it = con.itorator._traverse(ito)
-                    while True:
-                        try:
-                            next(it)
-                        except StopIteration:
-                            break
-
+                elif isinstance(con, Connectors.Xxx):
+                    self.__exhaust_iterator(con.itorator._traverse(ito))
                     yield from self._flow(ito, con_idx + 1)
+
+                else:
+                    raise TypeError('Invalid connector: {con}')
 
             else:
                 yield from self._flow(ito, con_idx + 1)

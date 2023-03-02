@@ -32,18 +32,18 @@ class StackedReduce(Postorator):
     def _transform(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
         stack: typing.List[Ito] = []
         for ito in itos:
-            if stack:
+            if len(stack) > 0:
                 if self.pop_predicate is not None and self.pop_predicate(stack, ito):
                     yield self.reduce_func(stack)
                     stack.clear()
                 else:
                     stack.append(ito)
 
-            if not stack:
+            if len(stack) == 0:
                 if self.push_predicate(ito):
                     stack.append(ito)
                 else:
                     yield ito
 
-        if stack:
+        if len(stack) > 0:
             yield self.reduce_func(stack)

@@ -216,7 +216,7 @@ class List:
 
 class Paragraph(NlpComponent):
     _paragraph_pat = r'(?:\r?\n\L<other_ws>*){2,}'
-    _paragraph_re = regex.compile(_paragraph_pat, regex.DOTALL, other_ws=unicode_white_space_other)
+    _paragraph_re = regex.compile(_paragraph_pat, regex.DOTALL, other_ws=unicode_white_space_other.values())
 
     def __init__(self, min_newlines: int = 2):
         self._re: regex.Pattern
@@ -231,7 +231,7 @@ class Paragraph(NlpComponent):
         if isinstance(val, int):
             self._min_newlines = val
             pat = r'(?:\r?\n\L<other_ws>*){' + str(self._min_newlines) + ',}'
-            self._re = regex.compile(pat, regex.DOTALL, other_ws=unicode_white_space_other)
+            self._re = regex.compile(pat, regex.DOTALL, other_ws=unicode_white_space_other.values())
         else:
             raise Errors.parameter_invalid_type('val', val, int)        
 

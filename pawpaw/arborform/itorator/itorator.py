@@ -20,15 +20,15 @@ class ChildrenConnector(Connector, ABC):
 
 
 class Connectors:
-    class Next(Connector):
+    class Next(Connector):  # Transfer?  Yield_from (overloaded)  Invoke-and-yield?
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
-    class Sub(Connector):
+    class Sub(Connector):  # Non-transfer?  Invoke-and-continue?  
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
-    class Xxx(Connector):
+    class Xxx(Connector):  # Should be "Sub" or "Subroutine", since retval not used
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
@@ -99,7 +99,14 @@ class Itorator(ABC):
     def _transform(self, ito: Ito) -> Types.C_IT_ITOS:
         pass
 
-    # flow 
+    # posterator
+    def _post(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
+        if self._postorator is None:
+            yield from itos
+        else:
+            yield from self._postorator(itos)                
+
+    # pipeline flow
     def _flow(self, ito: Ito, con_idx: int) -> Types.C_IT_ITOS:
         if con_idx >= len(self.connections):
             yield ito
@@ -139,12 +146,6 @@ class Itorator(ABC):
 
             else:
                 yield from self._flow(ito, con_idx + 1)
-
-    def _post(self, itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
-        if self._postorator is None:
-            yield from itos
-        else:
-            yield from self._postorator(itos)                
 
     # soup to nuts
     def _traverse(self, ito: Ito) -> Types.C_IT_ITOS:

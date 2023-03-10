@@ -20,32 +20,42 @@ class ChildrenConnector(Connector, ABC):
 
 
 class Connectors:
-    class Next(Connector):  # Transfer?  Yield_from (overloaded)  Invoke-and-yield?
+    # yield from f(cur)
+    class Next(Connector):  # CONTINUE  Yield, Transfer, Jump, YieldFrom, InvokeAndYield
+
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
-    class Sub(Connector):  # Non-transfer?  Invoke-and-continue?  
+    # cur = f(cur)
+    class Sub(Connector):  # SET  InvokeAndContinue
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
-    class Xxx(Connector):  # Should be "Sub" or "Subroutine", since retval not used
+    # f(cur)
+    class Xxx(Connector):  # SUB   Subroutine
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
     class Children:
+        # cur.children.add(*f(cur))
         class Add(ChildrenConnector):
             def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)
 
+        # cur.children.add_hierarchical(*f(cur))
         class AddHierarchical(ChildrenConnector):
             def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)
 
+        # cur.children.clear
+        # cur.children.add(*f(cur))
         class Replace(ChildrenConnector):
             def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)
 
-        class Delete(ChildrenConnector):
+        # for i in f(cur):
+        #   cur.children.remove(i)
+        class Delete(ChildrenConnector):  # REMOVE
             def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)
 

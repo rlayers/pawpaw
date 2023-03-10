@@ -27,34 +27,40 @@ class Connectors:
             super().__init__(itorator, predicate)
 
     # cur = f(cur)
+    # ...
     class Sub(Connector):  # SET  InvokeAndContinue
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
     # f(cur)
+    # ...
     class Xxx(Connector):  # SUB   Subroutine
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
     class Children:
         # cur.children.add(*f(cur))
+        # ...
         class Add(ChildrenConnector):
             def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)
 
         # cur.children.add_hierarchical(*f(cur))
+        # ...
         class AddHierarchical(ChildrenConnector):
             def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)
 
         # cur.children.clear
         # cur.children.add(*f(cur))
+        # ...
         class Replace(ChildrenConnector):
             def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)
 
         # for i in f(cur):
         #   cur.children.remove(i)
+        # ...
         class Delete(ChildrenConnector):  # REMOVE
             def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)

@@ -19,48 +19,53 @@ class ChildrenConnector(Connector, ABC):
         super().__init__(itorator, predicate)
 
 
+# For cur in transform(ito):
+#   for connection in connections:
+#       connection.do_action(cur)
+#
+# 1.
+#   yield from f(cur)
+#   break
+#
+# 2.
+#   cur = f(cur)
+#
+# 3.
+#   f(cur)
+
+
 class Connectors:
-    # yield from f(cur)
-    class Next(Connector):  # CONTINUE  Yield, Transfer, Jump, YieldFrom, InvokeAndYield
-
+    class Next(Connector):  # YieldBreak  Continue, Yield, Transfer, Jump, YieldFrom, InvokeAndYield
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
-    # cur = f(cur)
-    # ...
-    class Sub(Connector):  # SET  InvokeAndContinue
+    class Sub(Connector):  # Assign  Set, InvokeAndContinue
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
-    # f(cur)
-    # ...
-    class Xxx(Connector):  # SUB   Subroutine
+    class Xxx(Connector):  # Sub  Subroutine
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
     class Children:
         # cur.children.add(*f(cur))
-        # ...
         class Add(ChildrenConnector):
             def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)
 
         # cur.children.add_hierarchical(*f(cur))
-        # ...
         class AddHierarchical(ChildrenConnector):
             def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)
 
         # cur.children.clear
         # cur.children.add(*f(cur))
-        # ...
         class Replace(ChildrenConnector):
             def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)
 
-        # for i in f(cur):
-        #   cur.children.remove(i)
-        # ...
+        # for c in f(cur):
+        #   cur.children.remove(c)
         class Delete(ChildrenConnector):  # REMOVE
             def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
                 super().__init__(itorator, predicate)

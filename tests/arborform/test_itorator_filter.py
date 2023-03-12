@@ -17,7 +17,7 @@ class TestFilter(_TestIto):
             with self.subTest(filter_type=ft):
                 split_chr = split_chr.clone()
                 filter = Filter(f)
-                con = Connectors.Next(filter)
+                con = Connectors.YieldBreak(filter)
                 split_chr.connections.append(con)
                 expected = [i for i in root if f(i)]
                 actual = [*split_chr(root)]

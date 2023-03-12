@@ -35,15 +35,19 @@ class ChildrenConnector(Connector, ABC):
 
 
 class Connectors:
-    class Next(Connector):  # YieldBreak  Continue, Yield, Transfer, Jump, YieldFrom, InvokeAndYield
+    # yield from f(cur)
+    # break
+    class YieldBreak(Connector):
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
-    class Sub(Connector):  # Assign  Set, InvokeAndContinue
+    # cur(s) ~= f(cur)
+    class Assign(Connector):
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
-    class Xxx(Connector):  # Sub  Subroutine
+    # f(cur)
+    class Sub(Connector):
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
@@ -135,7 +139,7 @@ class Itorator(ABC):
         else:
             con = self._connections[con_idx]
             if con.predicate(ito):
-                if isinstance(con, Connectors.Next):
+                if isinstance(con, Connectors.YieldBreak):
                     yield from con.itorator._traverse(ito)
 
                 elif isinstance(con, ChildrenConnector):
@@ -154,11 +158,11 @@ class Itorator(ABC):
 
                     yield from self._flow(ito, con_idx + 1)
 
-                elif isinstance(con, Connectors.Sub):
+                elif isinstance(con, Connectors.Assign):
                     for sub in con.itorator._traverse(ito):
                         yield from self._flow(sub, con_idx + 1)
 
-                elif isinstance(con, Connectors.Xxx):
+                elif isinstance(con, Connectors.Sub):
                     self.__exhaust_iterator(con.itorator._traverse(ito))
                     yield from self._flow(ito, con_idx + 1)
 

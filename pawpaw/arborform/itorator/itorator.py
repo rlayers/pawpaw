@@ -19,21 +19,6 @@ class ChildrenConnector(Connector, ABC):
         super().__init__(itorator, predicate)
 
 
-# For cur in transform(ito):
-#   for connection in connections:
-#       connection.do_action(cur)
-#
-# 1.
-#   yield from f(cur)
-#   break
-#
-# 2.
-#   cur = f(cur)
-#
-# 3.
-#   f(cur)
-
-
 class Connectors:
     # yield from f(cur)
     # break
@@ -47,9 +32,11 @@ class Connectors:
             super().__init__(itorator, predicate)
 
     # f(cur)
-    class Sub(Connector):
+    class Subroutine(Connector):
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
+
+    Sub = Subroutine
 
     class Children:
         # cur.children.add(*f(cur))

@@ -10,7 +10,7 @@ in front of\nyou.\n\nAnd that is a letter [to] Alston\n& Bird...
 itor_split = arborform.Split(regex.compile(r'\n+(?=Q_? )', regex.DOTALL), desc='Q/A tuple')
 
 itor_filt = arborform.Filter(lambda i: i.str_startswith('Q'))  # toss "random text" stuff
-con = arborform.Connectors.YieldBreak(itor_filt)
+con = arborform.Connectors.Delegate(itor_filt)
 itor_split.connections.append(con)
 
 # Assumes only one answer per question

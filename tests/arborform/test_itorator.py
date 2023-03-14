@@ -59,7 +59,7 @@ class TestItorator(_TestIto):
         itor_r.tag = tag
 
         itor_d = self.get_desc('foo')
-        con = Connectors.YieldBreak(itor_d)
+        con = Connectors.Delegate(itor_d)
         itor_r.connections.append(con)
 
         self.assertEqual(tag, itor_r.tag)
@@ -80,15 +80,15 @@ class TestItorator(_TestIto):
         itor_2 = Itorator.wrap(lambda ito: [ito.str_strip('2')])
         itor_3 = Itorator.wrap(lambda ito: [ito.str_strip('3')])
 
-        itor_1.connections.append(Connectors.YieldBreak(itor_2))
-        itor_1.connections.append(Connectors.YieldBreak(itor_3))
+        itor_1.connections.append(Connectors.Delegate(itor_2))
+        itor_1.connections.append(Connectors.Delegate(itor_3))
         rv = [*itor_1(root)]
 
         self.assertSequenceEqual([Ito(root, 2, -2)], rv)
 
         itor_1.connections.clear()
-        itor_1.connections.append(Connectors.YieldBreak(itor_2))
-        itor_2.connections.append(Connectors.YieldBreak(itor_3))
+        itor_1.connections.append(Connectors.Delegate(itor_2))
+        itor_2.connections.append(Connectors.Delegate(itor_3))
         rv = [*itor_1(root)]
 
         self.assertSequenceEqual([Ito(root, 3, -3)], rv)
@@ -109,9 +109,9 @@ class TestItorator(_TestIto):
         for lam_desc, lam_f in lambdas.items():
             with self.subTest(lambda_=lam_desc):
                 if lam_f is None:
-                    itor_r.connections.append(Connectors.YieldBreak(itor_d))
+                    itor_r.connections.append(Connectors.Delegate(itor_d))
                 else:
-                    itor_r.connections.append(Connectors.YieldBreak(itor_d, lam_f))
+                    itor_r.connections.append(Connectors.Delegate(itor_d, lam_f))
 
                 if lam_f is None or lam_f(root):
                     expected = self.change_desc(root, desc)[0]
@@ -129,15 +129,15 @@ class TestItorator(_TestIto):
         itor_2 = Itorator.wrap(lambda ito: [ito.str_strip('2')])
         itor_3 = Itorator.wrap(lambda ito: [ito.str_strip('3')])
 
-        itor_1.connections.append(Connectors.Assign(itor_2))
-        itor_1.connections.append(Connectors.Assign(itor_3))
+        itor_1.connections.append(Connectors.Recurse(itor_2))
+        itor_1.connections.append(Connectors.Recurse(itor_3))
         rv = [*itor_1(root)]
 
         self.assertSequenceEqual([Ito(root, 3, -3)], rv)
 
         itor_1.connections.clear()
-        itor_1.connections.append(Connectors.Assign(itor_2))
-        itor_2.connections.append(Connectors.Assign(itor_3))
+        itor_1.connections.append(Connectors.Recurse(itor_2))
+        itor_2.connections.append(Connectors.Recurse(itor_3))
         rv = [*itor_1(root)]
 
         self.assertSequenceEqual([Ito(root, 3, -3)], rv)
@@ -150,15 +150,15 @@ class TestItorator(_TestIto):
 
         # create sub-pipeline with two endpoints
         itor_tok_split = Itorator.wrap(lambda ito: ito.str_split())
-        con = Connectors.Assign(itor_tok_split)
+        con = Connectors.Recurse(itor_tok_split)
         itor_r.connections.append(con)
 
         itor_desc_word = self.get_desc('word')
-        con = Connectors.YieldBreak(itor_desc_word, lambda ito: not ito.str_isnumeric())
+        con = Connectors.Delegate(itor_desc_word, lambda ito: not ito.str_isnumeric())
         itor_tok_split.connections.append(con)
 
         itor_desc_num = self.get_desc('number')
-        con = Connectors.YieldBreak(itor_desc_num)
+        con = Connectors.Delegate(itor_desc_num)
         itor_tok_split.connections.append(con)
 
         # ensure this works as expected
@@ -172,7 +172,7 @@ class TestItorator(_TestIto):
             return ito,
 
         itor_desc_pre_x = Itorator.wrap(prepend_x)
-        con = Connectors.YieldBreak(itor_desc_pre_x)
+        con = Connectors.Delegate(itor_desc_pre_x)
         itor_r.connections.append(con)
 
         # ensure next connects to all the sub-pipeline's endpoints
@@ -187,7 +187,7 @@ class TestItorator(_TestIto):
         itor_1 = Itorator.wrap(lambda ito: [ito.str_strip('1')])
         itor_2 = Itorator.wrap(lambda ito: [ito.str_strip('2')])
 
-        itor_1.connections.append(Connectors.Sub(itor_2))
+        itor_1.connections.append(Connectors.Subroutine(itor_2))
         rv = [*itor_1(root)]
 
         self.assertSequenceEqual([Ito(root, 1, -1)], rv)
@@ -200,7 +200,7 @@ class TestItorator(_TestIto):
         itor_2 = Itorator.wrap(sec_desc_x)
 
         itor_1.connections.clear()
-        itor_1.connections.append(Connectors.Sub(itor_2))
+        itor_1.connections.append(Connectors.Subroutine(itor_2))
         rv = [*itor_1(root)]
 
         self.assertSequenceEqual([Ito(root, 1, -1, 'x')], rv)
@@ -311,7 +311,7 @@ class TestItorator(_TestIto):
             word_splitter = word_splitter.clone()
 
             char_splitter = Itorator.wrap(lambda ito: ito)
-            con = Connectors.YieldBreak(char_splitter)
+            con = Connectors.Delegate(char_splitter)
             word_splitter.connections.append(con)
             expected = [j for i in word_splitter(root) for j in i]
             rv = [*word_splitter(root)]
@@ -357,7 +357,7 @@ class TestItorator(_TestIto):
         itor_wrd_split = Itorator.wrap(lambda ito: ito.str_split())
 
         itor_wrd_desc = Itorator.wrap(lambda ito: [ito.clone(desc='word'), ])
-        con = Connectors.Assign(itor_wrd_desc)
+        con = Connectors.Recurse(itor_wrd_desc)
         itor_wrd_split.connections.append(con)
 
         itor_char_split = Itorator.wrap(lambda ito: ito)
@@ -365,11 +365,11 @@ class TestItorator(_TestIto):
         itor_wrd_split.connections.append(con)
 
         itor_char_desc = Itorator.wrap(lambda ito: [ito.clone(desc='char'), ])
-        con = Connectors.Assign(itor_char_desc)
+        con = Connectors.Recurse(itor_char_desc)
         itor_char_split.connections.append(con)
 
         itor_char_desc_vowel = Itorator.wrap(lambda ito: [ito.clone(desc='char-vowel'), ])
-        con = Connectors.Assign(itor_char_desc_vowel, lambda ito: str(ito) in 'aeiou')
+        con = Connectors.Recurse(itor_char_desc_vowel, lambda ito: str(ito) in 'aeiou')
         itor_char_desc.connections.append(con)
 
         rv = [*itor_wrd_split(root)]

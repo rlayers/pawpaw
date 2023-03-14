@@ -12,8 +12,21 @@ from pawpaw.visualization import sgr, Highlighter, pepo
 
 
 
+from pawpaw import Ito, arborform, visualization
+s = 'Hello, world!'
+i = Ito(s)
+itor_reflect = arborform.Reflect()  # Reflects current ito (no transformation)
+vis_compact = visualization.pepo.Compact()
+for result in itor_reflect(i):
+    print(vis_compact.dumps(result))
 
+itor_desc = arborform.Desc(lambda ito: 'Changed')  # Changes descriptor
+con = arborform.Connectors.Delegate(itor_desc)
+itor_reflect.connections.append(con)
+for result in itor_reflect(i):
+    print(vis_compact.dumps(result))
 
+exit(0)
 
 itor_funcs: typing.List[typing.Callable[[Ito], bool]]
 

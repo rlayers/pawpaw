@@ -243,7 +243,7 @@ class Paragraph(NlpComponent):
         rv = pawpaw.arborform.Split(self._re, desc='paragraph', tag='para splitter')
 
         ws_trimmer = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.str_strip(''.join(trimmable_ws))], tag='para trimmer')
-        con = pawpaw.arborform.Connectors.Assign(ws_trimmer)
+        con = pawpaw.arborform.Connectors.Recurse(ws_trimmer)
         rv.connections.append(con)
 
         return rv

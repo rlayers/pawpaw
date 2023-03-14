@@ -16,15 +16,15 @@ class TestItoratorConnections(_TestIto):
         itor_2 = Itorator.wrap(lambda ito: [ito.str_strip('2')])
         itor_3 = Itorator.wrap(lambda ito: [ito.str_strip('3')])
         
-        itor_1.connections.append(Connectors.YieldBreak(itor_2))
-        itor_1.connections.append(Connectors.YieldBreak(itor_3))
+        itor_1.connections.append(Connectors.Delegate(itor_2))
+        itor_1.connections.append(Connectors.Delegate(itor_3))
         rv = [*itor_1(root)]
 
         self.assertSequenceEqual([Ito(root, 2, -2)], rv)
 
         itor_1.connections.clear()
-        itor_1.connections.append(Connectors.YieldBreak(itor_2))
-        itor_2.connections.append(Connectors.YieldBreak(itor_3))
+        itor_1.connections.append(Connectors.Delegate(itor_2))
+        itor_2.connections.append(Connectors.Delegate(itor_3))
         rv = [*itor_1(root)]
 
         self.assertSequenceEqual([Ito(root, 3, -3)], rv)
@@ -37,15 +37,15 @@ class TestItoratorConnections(_TestIto):
         itor_2 = Itorator.wrap(lambda ito: [ito.str_strip('2')])
         itor_3 = Itorator.wrap(lambda ito: [ito.str_strip('3')])
         
-        itor_1.connections.append(Connectors.Assign(itor_2))
-        itor_1.connections.append(Connectors.Assign(itor_3))
+        itor_1.connections.append(Connectors.Recurse(itor_2))
+        itor_1.connections.append(Connectors.Recurse(itor_3))
         rv = [*itor_1(root)]
 
         self.assertSequenceEqual([Ito(root, 3, -3)], rv)
 
         itor_1.connections.clear()
-        itor_1.connections.append(Connectors.Assign(itor_2))
-        itor_2.connections.append(Connectors.Assign(itor_3))
+        itor_1.connections.append(Connectors.Recurse(itor_2))
+        itor_2.connections.append(Connectors.Recurse(itor_3))
         rv = [*itor_1(root)]
 
         self.assertSequenceEqual([Ito(root, 3, -3)], rv)
@@ -57,7 +57,7 @@ class TestItoratorConnections(_TestIto):
         itor_1 = Itorator.wrap(lambda ito: [ito.str_strip('1')])
         itor_2 = Itorator.wrap(lambda ito: [ito.str_strip('2')])
         
-        itor_1.connections.append(Connectors.Sub(itor_2))
+        itor_1.connections.append(Connectors.Subroutine(itor_2))
         rv = [*itor_1(root)]
 
         self.assertSequenceEqual([Ito(root, 1, -1)], rv)
@@ -69,7 +69,7 @@ class TestItoratorConnections(_TestIto):
         itor_2 = Itorator.wrap(sec_desc_x)
 
         itor_1.connections.clear()
-        itor_1.connections.append(Connectors.Sub(itor_2))
+        itor_1.connections.append(Connectors.Subroutine(itor_2))
         rv = [*itor_1(root)]
 
         self.assertSequenceEqual([Ito(root, 1, -1, 'x')], rv)
@@ -230,7 +230,7 @@ class TestItoratorConnections(_TestIto):
         itor_wrd_split = Itorator.wrap(lambda ito: ito.str_split())
 
         itor_wrd_desc = Itorator.wrap(lambda ito: [ito.clone(desc='word'), ])
-        con = Connectors.Assign(itor_wrd_desc)
+        con = Connectors.Recurse(itor_wrd_desc)
         itor_wrd_split.connections.append(con)
 
         itor_char_split = Itorator.wrap(lambda ito: ito)
@@ -238,11 +238,11 @@ class TestItoratorConnections(_TestIto):
         itor_wrd_split.connections.append(con)
 
         itor_char_desc = Itorator.wrap(lambda ito: [ito.clone(desc='char'), ])
-        con = Connectors.Assign(itor_char_desc)
+        con = Connectors.Recurse(itor_char_desc)
         itor_char_split.connections.append(con)
 
         itor_char_desc_vowel = Itorator.wrap(lambda ito: [ito.clone(desc='char-vowel'), ])
-        con = Connectors.Assign(itor_char_desc_vowel, lambda ito: str(ito) in 'aeiou')
+        con = Connectors.Recurse(itor_char_desc_vowel, lambda ito: str(ito) in 'aeiou')
         itor_char_desc.connections.append(con)
 
         rv = [*itor_wrd_split(root)]

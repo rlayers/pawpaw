@@ -17,7 +17,7 @@ def get_parser() -> arborform.Itorator:
         regex.compile(r'(?<=\n)(?=Grade =)', regex.DOTALL),
         desc='grade',
         tag='grade splitter')
-    con = arborform.Connectors.YieldBreak(grade_splitter, lambda ito: ito.desc == 'grades')
+    con = arborform.Connectors.Delegate(grade_splitter, lambda ito: ito.desc == 'grades')
     name_grades.connections.append(con)
 
     grade = arborform.Extract(

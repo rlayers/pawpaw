@@ -23,7 +23,7 @@ def get_parser() -> arborform.Itorator:
     a_desc = arborform.Desc(
         desc=lambda ito: 'article' if ito.str_startswith('Article.') else 'preamble',
         tag='article desc')
-    con = arborform.Connectors.YieldBreak(a_desc)
+    con = arborform.Connectors.Delegate(a_desc)
     a_splitter.connections.append(con)
 
     con = arborform.Connectors.Children.Add(pawpaw.nlp.SimpleNlp().itor, lambda ito: ito.desc == 'preamble')

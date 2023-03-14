@@ -5,8 +5,9 @@ from pawpaw import Ito, Span, visualization
 from tests.util import _TestIto, RandSpans
 
 
-# region add
 class TestChildItos(_TestIto):
+    # region add
+
     def test_add_one(self):
         s = 'abcdef'
         parent = Ito(s, desc='parent')
@@ -46,6 +47,10 @@ class TestChildItos(_TestIto):
         parent.children.add(*g)
         self.assertSequenceEqual(s, [str(i) for i in parent.children])
 
+    #endregion
+
+    # region remove
+
     def test_remove_non_contiguous_descendants(self):
         s = " one two three "
         counter = 0
@@ -72,6 +77,10 @@ class TestChildItos(_TestIto):
 
         for i in root.walk_descendants(reverse=True):
             i.parent.children.remove(i)
+
+    #endregion
+
+    # region add hierarchical
 
     def test_add_hierarchical_rand(self):
         s = ' ' * 2048
@@ -126,17 +135,34 @@ class TestChildItos(_TestIto):
     def test_add_hierarchical_with_key(self):
         s = ' abc '
         root = Ito(s, 1, -1, desc='root')
-        adds = list[Ito]()
-        for desc in 'X', 'Y', 'Z':
-            adds += [i.clone(desc=desc) for i in root]
 
-        for i in range(0, 1):
-            random.shuffle(adds)
-            root.children.add_hierarchical(*adds)
-            # Do tests
-            for i in root.walk_descendants(reverse=True):
-                print(visualization.pepo.Tree().dumps(root))
-                i.parent.children.remove(i)                
+        adds = {}
+        adds['low to high'] = (lst := list[Ito]())
+        for i in range(0, 10):
+            lst.append(root.clone(desc=str(i)))
+        
+        adds['high to low'] = lst[::-1]
+
+        adds['shuffled'] = [*lst]
+        random.shuffle(adds['shuffled'])
+
+        for adds_k, adds_l in adds.items():
+            for key_str in None, 'lambda ito: int(ito.desc)':
+                key_lam = None if key_str is None else eval(key_str)
+
+                with self.subTest(adds_sort=adds_k, key=key_str):
+                    root_clone = root.clone()
+                    adds_clone = [a.clone() for a in adds_l]
+                    root_clone.children.add_hierarchical(*adds_clone, key=key_lam)
+                    descs = [*root_clone.walk_descendants()]
+                    if key_str is None:
+                        self.assertListEqual(adds_l, descs)
+                    else:
+                        self.assertListEqual(lst, descs)
+
+    #endregion
+
+    # region del
 
     def test_del_key_int(self):
         s = py_string.ascii_lowercase
@@ -197,6 +223,10 @@ class TestChildItos(_TestIto):
             self.assertEqual(len(s) - 6, len(parent.children))
             self.assertEqual('g', str(parent.children[i-1]))
             self.assertEqual('j', str(parent.children[i]))
+
+    # endregion
+
+    # region set
 
     def test_indexer_set_key_int_invalid(self):
         s = py_string.ascii_lowercase
@@ -281,3 +311,5 @@ class TestChildItos(_TestIto):
             self.assertEqual('h', str(parent.children[i]))
             self.assertEqual('i', str(parent.children[i+1]))
             self.assertEqual('n', str(parent.children[i+2]))
+
+    # endregion

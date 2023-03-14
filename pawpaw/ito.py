@@ -4,6 +4,8 @@ import collections.abc
 import json
 import types
 import typing
+if typing.TYPE_CHECKING:
+    from _typeshed import SupportsRichComparison
 
 import regex
 
@@ -1405,7 +1407,11 @@ class ChildItos(collections.abc.Sequence):
             ito._set_parent(self.__parent)
             self.__store.insert(i, ito)
 
-    def add_hierarchical(self, *itos: pawpaw.Ito):
+    def add_hierarchical(self, *itos: pawpaw.Ito, key: typing.Callable[[Ito], SupportsRichComparison] = None):
+        '''
+            key is None: itos with duplicate spans are added sequentially as children to one another
+            key is not None: itos with duplicate spans are ordered in geneology by key
+        '''
         for ito in itos:
             if not isinstance(ito, pawpaw.Ito):
                 raise Errors.parameter_iterable_contains_invalid_type('itos', ito, pawpaw.Ito)
@@ -1420,20 +1426,20 @@ class ChildItos(collections.abc.Sequence):
 
             while (len(ito.children) > 0):
                 child = ito.children.pop(-1)
-                self.add_hierarchical(child)
+                self.add_hierarchical(child, key=key)
 
             i = self.__bfind_start(ito)
             if i >= 0:
                 tmp = self.__store[i]
-                if ito.stop <= tmp.stop:
-                    tmp.children.add_hierarchical(ito)
+                if ito.stop < tmp.stop:
+                    tmp.children.add_hierarchical(ito, key=key)
                     continue
             else:
                 i = ~i
                 if i > 0:
                     tmp = self.__store[i-1]
                     if ito.stop <= tmp.stop:
-                        tmp.children.add_hierarchical(ito)
+                        tmp.children.add_hierarchical(ito, key=key)
                         continue
 
                     if ito.start < tmp.stop:
@@ -1457,12 +1463,20 @@ class ChildItos(collections.abc.Sequence):
             if i == j:
                 self.__store.insert(i, ito)
                 ito._set_parent(self.__parent)
-            else:
-                tmp = self[i:j]
-                del self[i:j]
-                ito.children.add(*tmp)
-                self.__store.insert(i, ito)
-                ito._set_parent(self.__parent)
+                continue
+
+            if j - i == 1:
+                tmp = self.__store[i]
+                if ito.span == tmp.span:
+                    if key is None or key(ito) >= key(tmp):
+                        tmp.children.add_hierarchical(ito, key=key)
+                        continue
+
+            tmp = self[i:j]
+            del self[i:j]
+            ito.children.add(*tmp)
+            self.__store.insert(i, ito)
+            ito._set_parent(self.__parent)
 
     # endregion
 

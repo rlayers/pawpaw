@@ -3,12 +3,12 @@ import os.path
 
 import regex
 import pawpaw
-from pawpaw import arborform, Ito
+from pawpaw import arborform
 
 """
 DEMO: US CONSTITUTION
 
-This demo shows an exmaple of how to parse, visualize, and query the US Constitution using Pawpaw.
+This demo shows an example of how to parse, visualize, and query the US Constitution using Pawpaw.
 
 Note: The text for the constitution was taken from https://www.archives.gov/founding-docs/constitution-transcript
 """
@@ -34,7 +34,6 @@ def get_parser() -> arborform.Itorator:
         tag='article extractor')
     con = arborform.Connectors.Children.Add(a_extractor, lambda ito: ito.desc == 'article')
     a_desc.connections.append(con)
-    con = arborform.Connectors.Children.Add(pawpaw.nlp.SimpleNlp().itor, lambda ito: ito.desc == 'value')
 
     # Section: only some articles have sections
     s_splitter = arborform.Split(

@@ -74,6 +74,9 @@ class XmlErrors:
     def element_lacks_ito_attr(cls, name: str, value: typing.Any) -> ValueError:
         return ValueError(f'parameter \'{name}\' missing attr \'.ito\' - did you forget to use pawpaw.xml.XmlParser?')
 
+    @classmethod
+    def ito_value_not_element(cls, name: str, value: typing.Any) -> ValueError:
+        return ValueError(f'parameter \'{name}\' has a .value() that is not instance of xml.etree.ElementTree.Element - did you forget to use pawpaw.xml.XmlParser?')
 
 class XmlHelper:
     @classmethod

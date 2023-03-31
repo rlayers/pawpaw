@@ -135,8 +135,14 @@ class XmlHelper:
         return {str(qn.local_part): str(val) for qn, val in cls.get_xmlns(element).items() if qn.prefix is not None}
 
     @classmethod
-    def get_default_namespace(cls, element: ET.ElementTree) -> Ito | None:
-        return next((val for qn, val in cls.get_xmlns(element).items() if qn.prefix is None), None)
+    def get_default_namespace(cls, element: ET.ElementTree) -> str | None:
+        while element is not None:
+            rv = next((val for qn, val in cls.get_xmlns(element).items() if qn.prefix is None), None)
+            if rv is not None:
+                return f'{{{rv}}}'
+            element = cls.get_parent_element(element)
+
+        return None
 
     @classmethod
     def get_element_text_if_found(cls, element: ET.Element, path: str) -> str | None:

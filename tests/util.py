@@ -135,7 +135,7 @@ XML_TEST_SAMPLES: typing.List[XmlTestSample] = [
 
     XmlTestSample(
         source='https://docs.python.org/3/library/xml.etree.elementtree.html',
-        default_namespace='http://people.example.com',
+        default_namespace='{http://people.example.com}',
         root_prefix_map={'fictional': 'http://characters.example.com'},
         descendants_composite_prefix_map={},
         text_containing_descendant_path='.//{http://people.example.com}name',

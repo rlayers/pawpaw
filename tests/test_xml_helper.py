@@ -39,7 +39,7 @@ class TestXmlHelper(_TestIto):
                 if sample.default_namespace is None:
                     self.assertIsNone(xmlns.get('xmlns'))
                 else:
-                    self.assertLessEqual({'xmlns': sample.default_namespace}.items(), xmlns.items())
+                    self.assertLessEqual({'xmlns': sample.default_namespace[1:-1]}.items(), xmlns.items())
                 self.assertLessEqual(sample.root_prefix_map.items(), xmlns.items())
 
     def test_get_prefix_map_root(self):
@@ -62,12 +62,16 @@ class TestXmlHelper(_TestIto):
 
     def test_get_default_namespace(self):
         for sample_index, sample in enumerate(XML_TEST_SAMPLES):
-            with self.subTest(xml_sample_index=sample_index):
-                root = ET.fromstring(sample.xml, xml.XmlParser())
-                if sample.default_namespace is None:
-                    self.assertIsNone(xml.XmlHelper.get_default_namespace(root))
-                else:
-                    self.assertEqual(sample.default_namespace, str(xml.XmlHelper.get_default_namespace(root)))
+            depth = 0
+            element = ET.fromstring(sample.xml, xml.XmlParser())
+            while element is not None:
+                with self.subTest(xml_sample_index=sample_index, depth=depth):
+                    if sample.default_namespace is None:
+                        self.assertIsNone(xml.XmlHelper.get_default_namespace(element))
+                    else:
+                        self.assertEqual(sample.default_namespace, str(xml.XmlHelper.get_default_namespace(element)))
+                depth += 1
+                element = element.find('*')
 
     def test_get_element_text_if_found(self):
         for sample_index, sample in enumerate(XML_TEST_SAMPLES):
@@ -92,9 +96,8 @@ class TestXmlHelper(_TestIto):
                 self.assertIsNone(xml.XmlHelper.get_parent_element(root))
 
             parent = root
-            while (len(parent) > 0):
+            while (child := parent.find('*')) is not None:
                 depth += 1
-                child = parent[0]
                 with self.subTest(xml_sample_index=sample_index, depth=depth):
                     actual = xml.XmlHelper.get_parent_element(child)
                     self.assertIs(parent, actual)

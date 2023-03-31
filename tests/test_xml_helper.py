@@ -83,6 +83,23 @@ class TestXmlHelper(_TestIto):
                 actual = xml.XmlHelper.get_element_text_if_found(root, invalid_path)
                 self.assertIsNone(actual)
 
+    def test_get_parent_element(self):
+        for sample_index, sample in enumerate(XML_TEST_SAMPLES):
+            root = ET.fromstring(sample.xml, xml.XmlParser())
+            
+            depth = 0
+            with self.subTest(xml_sample_index=sample_index, depth=depth):
+                self.assertIsNone(xml.XmlHelper.get_parent_element(root))
+
+            parent = root
+            while (len(parent) > 0):
+                depth += 1
+                child = parent[0]
+                with self.subTest(xml_sample_index=sample_index, depth=depth):
+                    actual = xml.XmlHelper.get_parent_element(child)
+                    self.assertIs(parent, actual)
+                parent = child
+
     def test_reverse_find(self):
         for sample_index, sample in enumerate(XML_TEST_SAMPLES):
             desC_QPATH, anc_pred = sample.descendant_path_with_ancestor_predicate

@@ -190,6 +190,22 @@ class XmlHelper:
         return next(cls.find_all_descendants_by_local_name(element, local_name), None)
 
     @classmethod
+    def get_text_ito(cls, element: ET.ElementTree) -> Ito | None:
+        return element.ito.find(f'*[d:{xml.descriptors.TEXT}]')
+
+    @classmethod
+    def get_parent_element(cls, element: ET.Element) -> ET.Element | None:
+        if not isinstance(element, ET.Element):
+            raise Errors.parameter_invalid_type('element', element, ET.Element)
+        elif not hasattr(element, 'ito'):
+            raise XmlErrors.element_lacks_ito_attr('element', element)
+
+        if (ito := element.ito.find(f'...[d:{xml.descriptors.ELEMENT}]')) is not None:
+            return ito.value()
+
+        return None
+
+    @classmethod
     def reverse_find(cls, element: ET.Element, predicate: str) -> ET.Element | None:
         """ElementTree support for XPATH is limited, and the '..' operator will
         not traverse upwards beyond the node you issued a .find or .find_all with.
@@ -222,9 +238,6 @@ class XmlHelper:
             if element.find(f'.[{predicate}]') is not None:
                 return element
 
-            if (parent := element.ito.find(f'...[d:{xml.descriptors.ELEMENT}]')) is None:
-                return None
-            
-            element = parent.value()
+            element = cls.get_parent_element(element)
 
         return element

@@ -1248,6 +1248,20 @@ class Ito:
 
     # endregion
 
+    # region descends_from & has_descendant
+
+    def descends_from(self, ancestor: Ito) -> bool:
+        cur = self
+        while cur is not None:
+            if (cur := cur._parent) is ancestor:
+                return True
+        return False
+
+    def has_descendant(self, descendant: Ito) -> bool:
+        return descendant.descends_from(self)
+
+    # endregion
+
     # region query
 
     def find_all(

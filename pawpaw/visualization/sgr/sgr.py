@@ -151,7 +151,6 @@ class _Colors:
 
 Colors = _Colors()
 
-
 C_COLOR = Colors.Named | Colors.Rgb | Colors.EightBit
 C_PALETTE = typing.Sequence[C_COLOR]
 

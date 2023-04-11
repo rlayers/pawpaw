@@ -1,3 +1,4 @@
+import itertools
 import typing
 
 import pawpaw
@@ -15,20 +16,11 @@ class Highlighter:
     '''
 
     def __init__(self, palette: sgr.C_PALETTE):
-        self.palette = tuple(sgr.Back.from_color(col) for col in palette)
+        self._backs = tuple(sgr.Back.from_color(col) for col in palette)
 
-    def _palette_it(self, exclude: sgr.Back | None = None) -> typing.Iterable[sgr.Back]:
-        i = 0
-        while True:
-            rv = self.palette[i]
-            if exclude is None or rv is not exclude:
-                yield rv
-            i += 1
-            i %= len(self.palette)
-            
-    def _compose(self, predicate: pawpaw.Types.P_ITO, palette: typing.Iterable[sgr.Back], ito: pawpaw.Ito, str_slice: slice | None = None):
+    def _compose(self, predicate: pawpaw.Types.P_ITO, it_back: typing.Iterator[sgr.Back], ito: pawpaw.Ito, str_slice: slice | None = None):
         if predicate(ito):
-            prefix = f'{next(palette)}'
+            prefix = f'{next(it_back)}'
             suffix = f'{sgr.Back.RESET}'
         else:
             prefix = suffix = ''
@@ -40,20 +32,20 @@ class Highlighter:
 
         return f'{prefix}{s}{suffix}'
             
-    def _print(self, ito: pawpaw.Types.P_ITO, predicate: pawpaw.Types.P_ITO, palette: typing.Iterable[sgr.Back]):
+    def _print(self, ito: pawpaw.Types.P_ITO, predicate: pawpaw.Types.P_ITO, it_back: typing.Iterator[sgr.Back]):
         if ito.children == 0:
             if len(ito) == 0:
-                print(self._compose(predicate, palette, ito), end='')
+                print(self._compose(predicate, it_back, ito), end='')
             return
 
         last = ito.start
         for child in ito.children:
             if last < child.start:
-                print(self._compose(predicate, palette, ito, slice(last, child.start)), end='')
-            self._print(child, predicate, palette)
+                print(self._compose(predicate, it_back, ito, slice(last, child.start)), end='')
+            self._print(child, predicate, it_back)
             last = child.stop
         if last < ito.stop:
-            print(self._compose(predicate, palette, ito, slice(last, ito.stop)), end='')
+            print(self._compose(predicate, it_back, ito, slice(last, ito.stop)), end='')
 
     def print(self, ito: pawpaw.Ito, predicate: pawpaw.Types.P_ITO = lambda ito: True) -> None:
-        self._print(ito, predicate, self._palette_it())
+        self._print(ito, predicate, itertools.cycle(self._backs))

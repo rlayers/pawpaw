@@ -417,10 +417,12 @@ class TestIto(_TestIto):
         grandchildren = [*itertools.chain.from_iterable(ito.children for ito in children)]
 
         adopted = Ito.adopt(children, desc=adopted_desc)
-        self.assertTrue(all(adopted is not child for child in children))
+        self.assertListEqual(children, [*adopted.children])
+        adopted_ids = [id(c) for c in adopted.children]
+        self.assertTrue(all(id(child) not in adopted_ids for child in children))
         self.assertEqual(s, str(adopted))
         self.assertEqual(adopted_desc, adopted.desc)
-        self.assertListEqual(grandchildren, [*adopted.children])
+        self.assertListEqual(grandchildren, [*itertools.chain.from_iterable(ito.children for ito in adopted.children)])
         
     def test_join(self):
         s = 'the quick brown fox'

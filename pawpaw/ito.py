@@ -672,7 +672,7 @@ class Ito:
         string = ito._string
         start = ito.start
         stop = ito.stop
-        children_lists: typing.List[ChildItos] = [ito.children]
+        cached = set[Ito]([ito])
 
         while True:
             try:
@@ -684,12 +684,12 @@ class Ito:
                 raise ValueError(f'parameter \'{itos}\' have differing values for .string')
             start = min(start, ito.start)
             stop = max(stop, ito.stop)
-            children_lists.append(ito.children)
+            cached.add(ito)
             
         rv = cls(string, start, stop, desc)
         
-        for children in children_lists:
-            rv.children.add_hierarchical(*(c.clone() for c in children))
+        for ito in cached:
+            rv.children.add_hierarchical(ito.clone())
 
         return rv
 

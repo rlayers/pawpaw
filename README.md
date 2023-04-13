@@ -277,7 +277,7 @@ If your last line looks like this, you are up and running with Pawpaw!
 <!-- HISTORY & ROADMAP -->
 ## History & Roadmap
 
-Pawpaw is a rewrite of *desponia*, a now-deprecated Python 2.x segmentation framework that was itself based on a prior framework called *Ito*.  Currently in alpha, many components and features are production ready.  However, documentation is still being written and some newer features are still undergoing work.  A rough outline of which components are finalized is as follows:
+Pawpaw is a rewrite of *desponia*, a now-deprecated Python 2.x segmentation framework that was itself based on a prior framework called *Ito*.  Currently in release-candidate status, many components and features are production ready.  However, documentation is still being written and some newer features are still undergoing work.  A rough outline of which components are finalized is as follows:
 
 - [x] arborform
   - [x] itorator
@@ -287,16 +287,14 @@ Pawpaw is a rewrite of *desponia*, a now-deprecated Python 2.x segmentation fram
     - [x] Split
     - [x] ValueFunc
   - [x] postorator
-    - [ ] StackedReduce
+    - [x] StackedReduce
     - [x] WindowedJoin
 - [x] core
   - [x] Errors
-  - [x] Furcation
   - [x] Infix
   - [x] Ito
   - [x] ItoChildren
   - [x] nuco
-  - [x] PredicatedValue
   - [x] Span
   - [x] Types
 - [ ] documentation & examples
@@ -304,10 +302,10 @@ Pawpaw is a rewrite of *desponia*, a now-deprecated Python 2.x segmentation fram
   - [x] radicle query engine
   - [x] plumule
 - [ ] nlp
-- [ ] visualization
+- [x] visualization
   - [x] ascibox
   - [x] highlighter
-  - [ ] pepo
+  - [x] pepo
   - [x] sgr
 - [x] xml
   - [x] XmlHelper

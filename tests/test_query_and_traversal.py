@@ -611,6 +611,23 @@ class TestItoQuery(TestItoTraversal):
                         expected = expected[slice(*index)]
                         actual = [*node.find_all(path)]
                         self.assertSequenceEqual(expected, actual)
+                
+    def test_filter_index_range_unbounded(self):
+        for node_type, node in {'root': self.root}.items():
+            for order in '', '+', '-':
+                for index in 0, 1, 2:
+                    for negation in True, False:
+                        path = f'{order}*[{"~" if negation else ""}i:{index}-]'
+                        with self.subTest(node=node_type, order=order, index=f'{index}-', path=path):
+                            expected = [c for c in node.children]
+                            if order == '-':
+                                expected.reverse()
+                            if negation:
+                                expected = expected[:index]
+                            else:
+                                expected = expected[index:]
+                            actual = [*node.find_all(path)]
+                            self.assertSequenceEqual(expected, actual)
 
     def test_filter_index_mix(self):
         for node_type, node in {'root': self.root}.items():

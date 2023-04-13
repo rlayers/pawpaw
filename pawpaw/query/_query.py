@@ -435,26 +435,39 @@ class EcfFilter(EcfCombined):
                 return lambda ec, values, predicates: any(ec.ito.str_startswith(descape(s)) for s in pawpaw.split_unescaped(value, ','))
 
         if key in FILTER_KEYS['index']:
-            ints: typing.Set[int] = set()
+            ranges = list[tuple[int]]()
+
             for i_chunk in value.split(','):
                 try:
-                    _is = [int(i.strip()) for i in i_chunk.split('-')]
-                except ValueError:
-                    raise ValueError(f'invalid integer in \'value\'')
+                    vals = i_chunk.split('-')
+                    if len(vals) > 2:
+                        raise ValueError()
 
-                len_is = len(_is)
-                if len_is == 1:
-                    ints.add(_is[0])
-                elif len_is == 2:
-                    for i in range(*_is):
-                        ints.add(i)
-                else:
-                    raise ValueError('invalid index item \'value\'')
+                    vals[0] = int(vals[0])
+                    
+                    if len(vals) == 2:
+                        val2 = vals[1]
+                        if val2.isdigit():
+                            val2 = int(val2)
+                        elif val2 == '' or val2.isspace():
+                            val2 = float('inf')
+                        else:
+                            raise ValueError()
+                        vals[1] = val2
+                        vals = tuple(vals)
+
+                    else:  # len == 1
+                        vals = (vals[0], vals[0] + 1)
+
+                except ValueError:
+                    raise ValueError(f'invalid filter index value \'{i_chunk}\'')
+
+                ranges.append(vals)
 
             if not_ == '~':
-                return lambda ec, values, predicates: ec.index not in ints
+                return lambda ec, values, predicates: not any(r[0] <= ec.index < r[1] for r in ranges)
             else:
-                return lambda ec, values, predicates: ec.index in ints
+                return lambda ec, values, predicates: any(r[0] <= ec.index < r[1] for r in ranges)
 
         if key in FILTER_KEYS['predicate']:
             keys = [descape(s) for s in pawpaw.split_unescaped(value, ',')]

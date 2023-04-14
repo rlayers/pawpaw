@@ -79,6 +79,21 @@ unicode_double_quote_marks = {
     'HEAVY LOW DOUBLE COMMA QUOTATION MARK ORNAMENT':       '\u2760',
 }
 
+unicode_bullets = {
+    'BULLET':                                               '\u2022', # •
+    'TRIANGULAR BULLET':                                    '\u2023', # ‣
+    'HYPHEN BULLET':                                        '\u2043', # ⁃
+    'BLACK LEFTWARDS BULLET':                               '\u204C', # ⁌
+    'BLACK RIGHTWARDS BULLET':                              '\u204D', # ⁍
+    'BULLET OPERATOR':                                      '\u2219', # ∙
+    'BLACK VERY SMALL SQUARE':                              '\u2B1D', # ⬝
+    'BLACK SMALL SQUARE aka SQUARE BULLET':                 '\u25AA', # ▪
+    'FISHEYE aka tainome':                                  '\u25C9', # ◉
+    'INVERSE BULLET':                                       '\u25D8', # ◘
+    'WHITE BULLET':                                         '\u25E6', # ◦
+    'REVERSED ROTATED FLORAL HEART BULLET':                 '\u2619', # ☙
+}
+
 trimmable_ws = list(byte_order_controls.values())
 trimmable_ws.extend(unicode_white_space_LF_FF.values())
 trimmable_ws.extend(unicode_white_space_other.values())
@@ -194,26 +209,28 @@ class Number:
     # endregion
 
 
-class List:
+class KeyedPrefix:
     """
-    quantifier patterns
-        \d+  :
-        §{1,2}  :  Section (Silcrow) : "16 U.S.C. § 580(p)",  "§§ 13–21"
-        [A-Z]{1,2}  :
-        [MDCLXVI]+  : Latin numerals (could be case insensitive - but should all be same case)
+    Lists, legal documents, etc.
 
-    prefix patterns:
-        •  : Before quantifier
+    Some ideas:
 
-    suffix patterns
-        -
-        .
-        :
-        .)
+        \d.\d...\d.?    :
+        \d-\d-...\d     :
+        §{1,2}          :  Section (Silcrow) : "16 U.S.C. § 580(p)",  "§§ 13–21"
+        [A-Z]{1,2}      :
+        [MDCLXVI]+      : Latin numerals (could be case insensitive - but should all be same case)
        
     """
 
-    pass
+    # \d+[sepchar]    : 1) 2. 3] 4:
+    __int_pat =  r'(?<key>\d+)[\)\]\.\-:])[ \t]+'
+
+    # \d.\d...\d.?
+    # \d-\d-...\d
+    __compound_int_pat =  r'(?<key>\d+(?:[\.\-]\d+)+\.?[ \t]+'
+
+    _key_prefix_pat = '(?:' + ''.join((__int_pat, __compound_int_pat)) + ')'
 
 
 class Paragraph(NlpComponent):

@@ -191,6 +191,8 @@ class Number:
     def re(self) -> regex.Pattern:
         return self._re
 
+    # endregion
+
 
 class List:
     """

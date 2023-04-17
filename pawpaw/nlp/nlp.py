@@ -224,13 +224,13 @@ class KeyedPrefix:
     """
 
     # \d+[sepchar]    : 1) 2. 3] 4:
-    __int_pat =  r'(?<key>\d+)[\)\]\.\-:])'
+    __int_pat =  r'(?<key>\d+)[\)\]\.\-:]'
 
     # \d.\d...\d.?
     # \d-\d-...\d
-    __compound_int_pat =  r'(?<key>\d+(?:[\.\-]\d+)+\.?'
+    __compound_int_pat = r'(?<key>\d+(?:[\.\-]\d+)+)\.?'
 
-    _key_prefix_pat = '(?:' + '|'.join((__int_pat, __compound_int_pat)) + ')[ \t]+'
+    _key_prefix_pat = r'(?:' + '|'.join((__compound_int_pat, __int_pat)) + r')[ \t]+'
 
 
 class Paragraph(NlpComponent):

@@ -196,8 +196,8 @@ class XmlHelper:
         return next(cls.find_all_descendants_by_local_name(element, local_name), None)
 
     @classmethod
-    def get_text_ito(cls, element: ET.ElementTree) -> Ito | None:
-        return element.ito.find(f'*[d:{xml.descriptors.TEXT}]')
+    def get_text_itos(cls, element: ET.ElementTree) -> typing.Iterable[Ito]:
+        yield from element.ito.find_all(f'*[d:{xml.descriptors.TEXT}]')
 
     @classmethod
     def get_parent_element(cls, element: ET.Element) -> ET.Element | None:

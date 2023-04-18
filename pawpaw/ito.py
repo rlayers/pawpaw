@@ -937,13 +937,19 @@ class Ito:
     # region find, index, rfind, rindex
    
     def str_find(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.find(sub, *Span.from_indices(self, start, end).offset(self.start)) - self.start
+        rv = self._string.find(sub, *Span.from_indices(self, start, end).offset(self.start))
+        if rv != -1:
+            rv -= self.start
+        return rv
 
     def str_index(self, sub: str, start: int | None = None, end: int | None = None) -> int:
         return self._string.index(sub, *Span.from_indices(self, start, end).offset(self.start)) - self.start
     
     def str_rfind(self, sub: str, start: int | None = None, end: int | None = None) -> int:
-        return self._string.rfind(sub, *Span.from_indices(self, start, end).offset(self.start)) - self.start
+        rv = self._string.rfind(sub, *Span.from_indices(self, start, end).offset(self.start))
+        if rv != -1:
+            rv -= self.start
+        return rv
 
     def str_rindex(self, sub: str, start: int | None = None, end: int | None = None) -> int:
         return self._string.rindex(sub, *Span.from_indices(self, start, end).offset(self.start)) - self.start

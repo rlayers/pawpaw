@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod, abstractproperty
-import dataclasses
 import locale
 
 import regex
@@ -80,18 +79,18 @@ unicode_double_quote_marks = {
 }
 
 unicode_bullets = {
-    'BULLET':                                               '\u2022', # •
-    'TRIANGULAR BULLET':                                    '\u2023', # ‣
-    'HYPHEN BULLET':                                        '\u2043', # ⁃
-    'BLACK LEFTWARDS BULLET':                               '\u204C', # ⁌
-    'BLACK RIGHTWARDS BULLET':                              '\u204D', # ⁍
-    'BULLET OPERATOR':                                      '\u2219', # ∙
-    'BLACK VERY SMALL SQUARE':                              '\u2B1D', # ⬝
-    'BLACK SMALL SQUARE aka SQUARE BULLET':                 '\u25AA', # ▪
-    'FISHEYE aka tainome':                                  '\u25C9', # ◉
-    'INVERSE BULLET':                                       '\u25D8', # ◘
-    'WHITE BULLET':                                         '\u25E6', # ◦
-    'REVERSED ROTATED FLORAL HEART BULLET':                 '\u2619', # ☙
+    'BULLET':                                               '\u2022',  # •
+    'TRIANGULAR BULLET':                                    '\u2023',  # ‣
+    'HYPHEN BULLET':                                        '\u2043',  # ⁃
+    'BLACK LEFTWARDS BULLET':                               '\u204C',  # ⁌
+    'BLACK RIGHTWARDS BULLET':                              '\u204D',  # ⁍
+    'BULLET OPERATOR':                                      '\u2219',  # ∙
+    'BLACK VERY SMALL SQUARE':                              '\u2B1D',  # ⬝
+    'BLACK SMALL SQUARE aka SQUARE BULLET':                 '\u25AA',  # ▪
+    'FISHEYE aka tainome':                                  '\u25C9',  # ◉
+    'INVERSE BULLET':                                       '\u25D8',  # ◘
+    'WHITE BULLET':                                         '\u25E6',  # ◦
+    'REVERSED ROTATED FLORAL HEART BULLET':                 '\u2619',  # ☙
 }
 
 trimmable_ws = list(byte_order_controls.values())
@@ -115,24 +114,23 @@ class Number:
     _sci_exp_x10_notation_pat = r' ?[Xx\u2715] ?10\^ ?' + _sign_pat + r'?\d+'
     _sci_exp_pat = r'(?P<exponent>' + '|'.join([_sci_exp_e_notation_pat, _sci_exp_x10_notation_pat]) + r')'
 
-    def build_integer_pat(self) -> None:
-        self._int_pat = r'(?P<integer>\d{1,3}(?:' + regex.escape(self.thousands_sep) + r'\d{3})*'
+    def build_integer_pat(self) -> str:
+        rv = r'(?P<integer>\d{1,3}(?:' + regex.escape(self.thousands_sep) + r'\d{3})*'
         if self.thousands_sep_optional:
-            self._int_pat += r'|\d+'
-        self._int_pat += r')'
+            rv += r'|\d+'
+        rv += r')'
+        return rv
 
-    def build_decimal_pat(self) -> None:
-        self._decimal_pat = r'(?P<decimal>' + regex.escape(self.decimal_point) + r'\d+)'
+    def build_decimal_pat(self) -> str:
+        return r'(?P<decimal>' + regex.escape(self.decimal_point) + r'\d+)'
 
-    def build_num_pat_re(self) -> None:
-        self.build_integer_pat()
-        self.build_decimal_pat()
-        self._num_pat = f'(?P<number>{self._sign_pat}?' \
+    def build_num_pat_re(self) -> tuple[str, regex]:
+        num_pat = f'(?P<number>{self._sign_pat}?' \
             f'(?:{self._int_pat}{self._decimal_pat}?' \
             f'|{self._decimal_pat})' \
             f'{self._sci_exp_pat}?)'
-
-        self._re = regex.compile(self._num_pat, regex.DOTALL)
+        re = regex.compile(num_pat, regex.DOTALL)
+        return num_pat, re
 
     def __init__(self, **kwargs):
         # defaults
@@ -146,12 +144,11 @@ class Number:
             setattr(self, k, v)
 
         # build patterns & re
-        self._int_pat: str
-        self._decimal_pat: str
+        self._int_pat: str = self.build_integer_pat()
+        self._decimal_pat: str = self.build_decimal_pat()
         self._num_pat: str
         self._re: regex.Pattern
-
-        self.build_num_pat_re()
+        self._num_pat, self._re = self.build_num_pat_re()
 
     # region properties
 
@@ -224,7 +221,7 @@ class KeyedPrefix:
     """
 
     # \d+[sepchar]    : 1) 2. 3] 4:
-    __int_pat =  r'(?<key>\d+)[\)\]\.\-:]'
+    __int_pat = r'(?<key>\d+)[\)\]\.\-:]'
 
     # \d.\d...\d.?
     # \d-\d-...\d
@@ -252,7 +249,7 @@ class Paragraph(NlpComponent):
             pat = r'(?:\r?\n\L<other_ws>*){' + str(self._min_newlines) + ',}'
             self._re = regex.compile(pat, regex.DOTALL, other_ws=unicode_white_space_other.values())
         else:
-            raise Errors.parameter_invalid_type('val', val, int)        
+            raise pawpaw.Errors.parameter_invalid_type('val', val, int)
 
     @property
     def re(self) -> regex.Pattern:
@@ -427,10 +424,10 @@ class Sentence(NlpComponent):
 
 
 class SimpleNlp:
-
     _word_pat = r'\w(?:(?:\L<sqs>|-\s*)?\w)*'
 
-    def get_sentence(self) -> pawpaw.arborform.Itorator:
+    @classmethod
+    def get_sentence(cls) -> pawpaw.arborform.Itorator:
         return pawpaw.arborform.Split(Sentence().re, desc='sentence', tag='sentence')
 
     def __init__(self, number: Number | None = None, chars: bool = False):
@@ -451,8 +448,8 @@ class SimpleNlp:
 
         if chars:
             char = pawpaw.arborform.Extract(regex.compile(r'(?P<char>\w)', regex.DOTALL))
-            con = pawpaw.arborform.Connectors.Children.Add(char)
-            word_number.connections.append(con, lambda ito: ito.desc == 'word')
+            con = pawpaw.arborform.Connectors.Children.Add(char, lambda ito: ito.desc == 'word')
+            word_number.connections.append(con)
 
         self.itor = paragraph
 

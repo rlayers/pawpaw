@@ -78,6 +78,7 @@ class XmlErrors:
     def ito_value_not_element(cls, name: str, value: typing.Any) -> ValueError:
         return ValueError(f'parameter \'{name}\' has a .value() that is not instance of xml.etree.ElementTree.Element - did you forget to use pawpaw.xml.XmlParser?')
 
+
 class XmlHelper:
     @classmethod
     def get_qualified_name(cls, ito: Ito) -> QualifiedName:
@@ -217,7 +218,7 @@ class XmlHelper:
         not traverse upwards beyond the node you issued a .find or .find_all with.
         This method applies an XPATH predicate to the current node, and returns if
         it passes.  If it fails, it uses the .ito to traverse UP to the parent,
-        and repeates the process.
+        and repeats the process.
 
         Args:
             element: _description_

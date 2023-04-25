@@ -9,7 +9,7 @@ class Highlighter:
     '''
     - Guarrantee differing color across any Ito boundaries
     - An Ito parent might not have the same color for sub spans, because it is not always possible to do so.
-      Consider a two-color palete with this nesting:
+      Consider a two-color palette with this nesting:
         A-------------A     Prefix and suffix get color 1
             B------B        Assign color 2 so that boundary AB and BA are visible
             C---C           If color 1, boundary AC is invisible.  If color 2, boundary CB invisible)

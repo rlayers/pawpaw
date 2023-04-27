@@ -73,6 +73,56 @@ a b c
    └──(75, 81) 'Word' : 'Irving'
 ```
 
+### Extract children and then extract a second set of children based on the leftover space
+
+**Code:**
+
+```python
+from pawpaw import Ito, arborform, visualization
+import regex
+
+s = 'It measures 10 <!--inches--> long <!--front to back-->'
+
+itor_self = arborform.Reflect()
+
+pat = r"""
+(?<comment>\<\!\-\-
+    (?<value>.*?)
+\-\-\>)
+"""
+re = regex.compile(pat, regex.VERBOSE | regex.DOTALL)
+itor_comment = arborform.Extract(re)
+con = arborform.Connectors.Children.Add(itor_comment)
+itor_self.connections.append(con)
+
+itor_invert_children = arborform.Itorator.wrap(lambda ito: Ito.from_gaps(ito, ito.children, False))
+con = arborform.Connectors.Children.Add(itor_invert_children)
+itor_self.connections.append(con)
+
+re = regex.compile(r'(?<token>\S+)', regex.DOTALL)
+itor_token = arborform.Extract(re)
+con = arborform.Connectors.Delegate(itor_token)
+itor_invert_children.connections.append(con)
+
+ito = Ito(s, desc='phrase')
+v_tree = visualization.pepo.Tree()
+print(v_tree.dumps(next(itor_self(ito))))
+```
+
+**Output:**
+
+```
+(0, 54) 'phrase' : 'It measures 10 <!--i…!--front to back-->'
+├──(0, 2) 'token' : 'It'
+├──(3, 11) 'token' : 'measures'
+├──(12, 14) 'token' : '10'
+├──(15, 28) 'comment' : '<!--inches-->'
+│  └──(19, 25) 'value' : 'inches'
+├──(29, 33) 'token' : 'long'
+└──(34, 54) 'comment' : '<!--front to back-->'
+   └──(38, 51) 'value' : 'front to back'
+```
+
 ## XML
 
 ### Get spans for elements:

@@ -1,2 +1,2 @@
-from .palettes import PAWPAW
+from .palettes import *
 del palettes

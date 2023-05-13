@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import enum
 import typing
 
@@ -135,7 +135,7 @@ class _Colors:
         blue: int
 
         @classmethod
-        def from_24_bit(cls, val: int) -> Rgb:
+        def from_24_bit(cls, val: int) -> _Colors.Rgb:
             return cls(val >> 16, (val >> 8) & 0xFF, val & 0xFF)
 
 
@@ -162,7 +162,7 @@ class Fore(_Sgr):
     RESET        : str = encode(39)
 
     @classmethod
-    def from_color(cls, src: Color) -> str:
+    def from_color(cls, src: C_COLOR) -> str:
         if isinstance(src, Colors.Named):
             nc = getattr(Colors.Named, src.name)
             return encode(nc.value + cls._NAMED_OFFSET)
@@ -171,9 +171,9 @@ class Fore(_Sgr):
         elif isinstance(src, Colors.EightBit):
             return encode(cls._BY_IDX, 5, src)
         else:
-            raise Errors.parameter_invalid_type('src', src, Color)
+            raise Errors.parameter_invalid_type('src', src, Colors.Named, Colors.Rgb, Colors.EightBit)
         
-    def __init__(self, src: Color):
+    def __init__(self, src: C_COLOR):
         object.__setattr__(self, '_value', self.from_color(src))
         
     def __str__(self) -> str:
@@ -186,5 +186,5 @@ class Back(Fore):
     _BY_IDX      : int = Fore._BY_IDX + 10
     RESET        : str = encode(49)
 
-    def __init__(self, src: Color):
+    def __init__(self, src: C_COLOR):
         super().__init__(src)

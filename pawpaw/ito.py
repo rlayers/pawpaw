@@ -397,7 +397,7 @@ class Ito:
     # region JSON
 
     class JsonEncoderStringless(json.JSONEncoder):
-        def default(self, o: typing.Any) -> typing.Dict:
+        def default(self, o: typing.Any) -> dict[str, typing.Any]:
             return {
                 '__type__': 'Ito',
                 'span': o._span,
@@ -406,7 +406,7 @@ class Ito:
             }
 
     class JsonEncoder(json.JSONEncoder):
-        def default(self, o: typing.Any) -> typing.Dict:
+        def default(self, o: typing.Any) -> dict[str, typing.Any]:
             return {
                 '__type__': 'typing.Tuple[str, Ito]',
                 'string': o.string,
@@ -414,7 +414,7 @@ class Ito:
             }
 
     @classmethod
-    def _json_decoder_stringless(cls, obj: typing.Dict) -> pawpaw.Ito | typing.Dict:
+    def _json_decoder_stringless(cls, obj: typing.Dict) -> pawpaw.Ito | dict[str, typing.Any]:
         if (t := obj.get('__type__')) is not None and t == 'Ito':
             rv = cls('', desc=obj['desc'])
             rv._span = Span(*obj['span'])
@@ -430,7 +430,7 @@ class Ito:
         return rv
 
     @classmethod
-    def json_decoder(cls, obj: typing.Dict) -> pawpaw.Ito | typing.Dict:
+    def json_decoder(cls, obj: typing.Dict) -> pawpaw.Ito |  dict[str, typing.Any]:
         if (t := obj.get('__type__')) is not None:
             if t == 'typing.Tuple[str, Ito]':
                 rv = obj['ito']

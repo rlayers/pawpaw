@@ -397,16 +397,18 @@ class Ito:
     # region JSON
 
     class JsonEncoderStringless(json.JSONEncoder):
-        def default(self, o: typing.Any) -> dict[str, typing.Any]:
+        @classmethod
+        def default(cls, o: typing.Any) -> dict[str, typing.Any]:
             return {
                 '__type__': 'Ito',
                 'span': o._span,
                 'desc': o.desc,
-                'children': [self.default(c) for c in o.children]
+                'children': [cls.default(c) for c in o.children]
             }
 
     class JsonEncoder(json.JSONEncoder):
-        def default(self, o: typing.Any) -> dict[str, typing.Any]:
+        @classmethod
+        def default(cls, o: typing.Any) -> dict[str, typing.Any]:
             return {
                 '__type__': 'typing.Tuple[str, Ito]',
                 'string': o.string,

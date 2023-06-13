@@ -1,0 +1,18 @@
+MODEL 1
+REMARK minimizedAffinity -7.11687565
+REMARK CNNscore 0.573647082
+REMARK CNNaffinity 5.82644749
+REMARK  11 active torsions:
+# Lots of text here
+# Lots of text here
+# Lots of text here
+docs/demos/class_grades/input.txt
+docs/demos/class_grades/input.txt
+MODEL 2
+REMARK minimizedAffinity -6.61898327
+REMARK CNNscore 0.55260396
+REMARK CNNaffinity 5.86855984
+REMARK  11 active torsions:
+# Lots of text here
+# Lots of text here
+# Lots of text here

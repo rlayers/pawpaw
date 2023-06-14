@@ -1,6 +1,7 @@
 import sys
 import os.path
 import fnmatch
+import typing
 
 import regex
 import pawpaw
@@ -9,28 +10,48 @@ import pawpaw
 re = regex.compile(r'(?<=^|\n)(?=MODEL \d+)', regex.DOTALL)
 splitter = pawpaw.arborform.Split(re)
 
-re = regex.compile(r'(?<model>MODEL (?<tag>\d+)((?:\n(?<remark>REMARK (?<tag>[^\s]+) (?<value>[^\n]+)))+))', regex.DOTALL)
+pat = r"""
+(?P<model>
+    MODEL\ 
+    (?<tag>\d+)
+    (?:\n
+        (?<remark>
+            REMARK\ 
+            (?<tag>[^\s]+)\ 
+            (?<value>[^\n]+)
+        )
+    )+
+    (?:\n
+        (?>!=REMARK)
+        (?<text>.+)
+    )?
+)+
+"""
+re = regex.compile(pat, regex.VERBOSE | regex.DOTALL)
 extractor = pawpaw.arborform.Extract(re)
 con = pawpaw.arborform.Connectors.Delegate(extractor)
 splitter.connections.append(con)
 
+# Prints using fixed-width for visibility: change to delimited if needed
+def dump_row(cols: list) -> None:
+    print(*(f'{v: <18}' for v in cols))  
+
 # Select desired remark columns
 desired_remarks = ['minimizedAffinity', 'CNNscore', 'CNNaffinity']
 
-# Dump first line (column headers)
-column_headers = ['Compound', 'Model']
-column_headers.extend(desired_remarks)
-print('\t'.join(column_headers))
+# Headers
+headers = ['Compound', 'Model']
+headers.extend(desired_remarks)
+dump_row(headers)
 
-def dump(compound: str, ito: pawpaw.Ito) -> str:
-    rows = []
+# Create rows from compound file
+def compound_vals(compound: str, ito: pawpaw.Ito) -> typing.Iterable[list[str]]:
     for model in ito.children:
-        columns = [compound]
-        columns.append(model.find('*[d:tag]'))
+        vals = [compound]
+        vals.append(str(model.find('*[d:tag]')))
         for dr in desired_remarks:
-            columns.append(model.find(f'*[d:remark]/*[d:tag]&[s:{dr}]/>[d:value]'))
-        rows.append('\t'.join(str(c) for c in columns))
-    return '\n'.join(rows)
+            vals.append(str(model.find(f'*[d:remark]/*[d:tag]&[s:{dr}]/>[d:value]')))
+        yield vals
 
 # Read files and dump contents of each
 for path in os.scandir(os.path.join(sys.path[0])):
@@ -39,4 +60,5 @@ for path in os.scandir(os.path.join(sys.path[0])):
         with open(os.path.join(sys.path[0], path)) as f:
             ito = pawpaw.Ito(f.read(), desc='all')
             ito.children.add(*splitter(ito))
-            print(dump(compound, ito))
+            for vals in compound_vals(compound, ito):
+                dump_row(vals)

@@ -23,7 +23,8 @@ class Split(Itorator):
             group: int | str = 0,
             boundary_retention: BoundaryRetention = BoundaryRetention.NONE,
             return_zero_split: bool = True,
-            desc: str | None = None,
+            boundary_desc: str | Types.F_M_GK_2_DESC | None = None,
+            non_boundary_desc: str | None = None,
             tag: str | None = None
     ):
         """Given P-O-O-S where P is prefix, - is boundary, O is/are middle segments(s), and S is suffix, the
@@ -47,11 +48,12 @@ class Split(Itorator):
         return_zero_split: Indicates how to handle the zero-split condition; when True and splits occur,
           returns a list containing a clone of the input Ito; when False and no splits occur, returns an
           empty list
-        desc: Value used for the .desc of any returned Itos; note that a returned Ito can be surrounded by
-          0, 1, or 2 boundaries, i.e., there is no clear mapping from a result to a boundary.  Note that
-          if BoundaryRetention.DISTINCT is selected, the generated boundary itos are anchored to the their
-          matches will a .desc of '0' and a non-empty .children collection if and only if capture groups
-          are present
+        boundary_desc: If supplied, this value will be passed to Ito.from_match for boundary segments when
+          BoundaryRetention.DISTINCT is selected.  Note that a boundary match can have multiple named-groups,
+          however, the resulting ito will span the entire regex match (i.e., it corresponds to capture group zero).
+          This parameter allows you to override the resulting "0" desc for something else.
+        non_boundary_desc: Value used for the .desc of any returned Itos; note that a returned Ito can be surrounded by
+          0, 1, or 2 boundaries, i.e., there is no clear mapping from a result to a boundary.
         """
         super().__init__(tag)
         self.re = re
@@ -59,7 +61,8 @@ class Split(Itorator):
         self.group = group
         self.boundary_retention = boundary_retention
         self.return_zero_split = return_zero_split
-        self.desc = desc
+        self.boundary_desc = boundary_desc
+        self.non_boundary_desc = non_boundary_desc
 
     def clone(self, tag: str | None = None) -> Split:
         return type(self())(
@@ -68,12 +71,15 @@ class Split(Itorator):
             self.group,
             self.boundary_retention,
             self.return_zero_split,
-            self.desc,
+            self.boundary_desc,
+            self.non_boundary_desc,
             self.tag if tag is None else tag)
 
     def _transform(self, ito: Ito) -> Types.C_IT_ITOS:
         if self.limit == 0:
             return ito,
+
+        boundary_ito_kwargs = {} if self.boundary_desc is None else {'desc': self.boundary_desc}
 
         rv: typing.List[Ito] = []
         
@@ -104,9 +110,10 @@ class Split(Itorator):
             count += 1
 
             if start != stop:
-                rv.append(ito.clone(start, stop, self.desc, False))
-                if self.boundary_retention == self.BoundaryRetention.DISTINCT and (cur.start < cur.stop):
-                    rv.append(ito.from_match(m))
+                rv.append(ito.clone(start, stop, self.non_boundary_desc, False))
+
+            if self.boundary_retention == self.BoundaryRetention.DISTINCT and (cur.start < cur.stop):
+                rv.append(ito.from_match(m, **boundary_ito_kwargs))
 
             prior = cur
 
@@ -117,9 +124,9 @@ class Split(Itorator):
                 start = prior.start
             stop = ito.stop
             if start != stop:
-                rv.append(ito.clone(start, stop, self.desc, False))
+                rv.append(ito.clone(start, stop, self.non_boundary_desc, False))
 
-        if len(rv) == 0 and self.return_zero_split:
-            rv.append(ito.clone(desc=self.desc, clone_children=False))
+        if prior is None and len(rv) == 0 and self.return_zero_split:
+            rv.append(ito.clone(desc=self.non_boundary_desc, clone_children=False))
 
         return rv

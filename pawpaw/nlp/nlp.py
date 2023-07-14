@@ -256,7 +256,7 @@ class Paragraph(NlpComponent):
         return self._re
 
     def get_itor(self) -> pawpaw.arborform.Itorator:
-        rv = pawpaw.arborform.Split(self._re, desc='paragraph', tag='para splitter')
+        rv = pawpaw.arborform.Split(self._re, non_boundary_desc='paragraph', tag='para splitter')
 
         ws_trimmer = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.str_strip(''.join(trimmable_ws))], tag='para trimmer')
         con = pawpaw.arborform.Connectors.Recurse(ws_trimmer)
@@ -420,7 +420,7 @@ class Sentence(NlpComponent):
         return self._re
 
     def get_itor(self) -> pawpaw.arborform.Itorator:
-        return pawpaw.arborform.Split(Sentence().re, desc='sentence', tag='sentence')       
+        return pawpaw.arborform.Split(Sentence().re, non_boundary_desc='sentence', tag='sentence')       
 
 
 class SimpleNlp:
@@ -428,7 +428,7 @@ class SimpleNlp:
 
     @classmethod
     def get_sentence(cls) -> pawpaw.arborform.Itorator:
-        return pawpaw.arborform.Split(Sentence().re, desc='sentence', tag='sentence')
+        return pawpaw.arborform.Split(Sentence().re, non_boundary_desc='sentence', tag='sentence')
 
     def __init__(self, number: Number | None = None, chars: bool = False):
         super().__init__()

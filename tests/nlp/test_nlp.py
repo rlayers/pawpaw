@@ -174,7 +174,7 @@ class TestSentence(_TestIto):
         ]
 
     def test_all(self):
-        sbd = pawpaw.arborform.Split(pawpaw.nlp.Sentence().re, desc='sentence')
+        sbd = pawpaw.arborform.Split(pawpaw.nlp.Sentence().re, non_boundary_desc='sentence')
 
         for td in self.test_data:
             with self.subTest(description=td.description, text=td.text):

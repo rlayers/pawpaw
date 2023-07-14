@@ -39,7 +39,7 @@ def get_parser() -> arborform.Itorator:
     s_splitter = arborform.Split(
         regex.compile(r'(?<=\n+)(?=Section\.)', regex.DOTALL),
         boundary_retention=arborform.Split.BoundaryRetention.LEADING,
-        desc='section',
+        non_boundary_desc='section',
         tag='section splitter')
     con = arborform.Connectors.Children.Add(s_splitter, lambda ito: ito.desc == 'value' and ito.str_startswith('Section.'))
     a_extractor.connections.append(con)

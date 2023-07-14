@@ -20,7 +20,7 @@ class TestSplit(_TestIto):
 
     @classmethod
     def re_from(cls, sep: str) -> regex.Pattern:
-        return regex.compile(rf'(?<{cls.SEP_DESC}>' + regex.escape(sep) + ')', regex.DOTALL)
+        return regex.compile(regex.escape(sep), regex.DOTALL)
     
     @classmethod
     def expected_from(cls, s: str, sep: str, brt: Split.BoundaryRetention) -> typing.List[str]:
@@ -50,11 +50,10 @@ class TestSplit(_TestIto):
                 with self.subTest(string=s, separator=sep, boundary_retention=brt):
                     expected = self.expected_from(s, sep, brt)
                     non_sep_desc = 'split'
-                    split = Split(re, boundary_retention=brt, desc=non_sep_desc)
+                    split = Split(re, boundary_retention=brt, boundary_desc=self.SEP_DESC, non_boundary_desc=non_sep_desc)
                     actual = [*split._transform(ito)]
                     self.assertListEqual(expected, [str(i) for i in actual])
-                    self.assertTrue(all(i.desc in ('0', non_sep_desc) for i in actual))
-                    self.assertTrue(all(i.children[0].desc == self.SEP_DESC for i in filter(lambda j: j.desc == '0', actual)))
+                    self.assertTrue(all(i.desc in (self.SEP_DESC, non_sep_desc) for i in actual))
 
     def test_iter_sep_not_present(self):
         sep = 'XXX'
@@ -64,9 +63,9 @@ class TestSplit(_TestIto):
         desc='post-split'
         for brt in Split.BoundaryRetention:
             for return_zero_split in True, False:
-                with self.subTest(string=s, separator=sep, boundary_retention=brt, return_zero_split=return_zero_split, desc=desc):
+                with self.subTest(string=s, separator=sep, boundary_retention=brt, return_zero_split=return_zero_split, non_boundary_desc=desc):
                     expected = [ito.clone(desc=desc)] if return_zero_split else []
-                    split = Split(re, boundary_retention=brt, return_zero_split=return_zero_split, desc=desc)
+                    split = Split(re, boundary_retention=brt, return_zero_split=return_zero_split, non_boundary_desc=desc)
                     actual = [*split._transform(ito)]
                     self.assertListEqual(expected, actual)
 
@@ -90,7 +89,7 @@ class TestSplit(_TestIto):
                     elif brt == Split.BoundaryRetention.TRAILING:
                         del expected[-1]
                     desc = 'split'
-                    split = Split(re, boundary_retention=brt, desc=desc)
+                    split = Split(re, boundary_retention=brt, non_boundary_desc=desc)
                     actual = [*split._transform(ito)]
                     self.assertListEqual(expected, [str(i) for i in actual])
                     self.assertTrue(all(i.desc == desc for i in actual))

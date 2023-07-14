@@ -1,3 +1,4 @@
+import itertools
 import typing
 
 import regex
@@ -15,9 +16,11 @@ class TestSplit(_TestIto):
     def str_from(cls, sep: str) -> str:
         return sep.join((cls.PREFIX, cls.MIDDLE, cls.MIDDLE, cls.SUFFIX))
     
+    SEP_DESC = 'sep'
+
     @classmethod
     def re_from(cls, sep: str) -> regex.Pattern:
-        return regex.compile(regex.escape(sep), regex.DOTALL)
+        return regex.compile(rf'(?<{cls.SEP_DESC}>' + regex.escape(sep) + ')', regex.DOTALL)
     
     @classmethod
     def expected_from(cls, s: str, sep: str, brt: Split.BoundaryRetention) -> typing.List[str]:
@@ -33,6 +36,8 @@ class TestSplit(_TestIto):
             del rv[-1]
             for i, s in enumerate(rv):
                 rv[i] += sep
+        elif brt == Split.BoundaryRetention.DISTINCT:
+            rv = rv[:1] + list(itertools.chain.from_iterable((sep, i) for i in rv[1:]))
 
         return rv
     
@@ -44,11 +49,12 @@ class TestSplit(_TestIto):
             for brt in Split.BoundaryRetention:
                 with self.subTest(string=s, separator=sep, boundary_retention=brt):
                     expected = self.expected_from(s, sep, brt)
-                    desc = 'split'
-                    split = Split(re, boundary_retention=brt, desc=desc)
+                    non_sep_desc = 'split'
+                    split = Split(re, boundary_retention=brt, desc=non_sep_desc)
                     actual = [*split._transform(ito)]
                     self.assertListEqual(expected, [str(i) for i in actual])
-                    self.assertTrue(all(i.desc == desc for i in actual))
+                    self.assertTrue(all(i.desc in ('0', non_sep_desc) for i in actual))
+                    self.assertTrue(all(i.children[0].desc == self.SEP_DESC for i in filter(lambda j: j.desc == '0', actual)))
 
     def test_iter_sep_not_present(self):
         sep = 'XXX'

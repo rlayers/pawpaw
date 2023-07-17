@@ -18,11 +18,12 @@ class TestGaps(_TestIto):
             regex.compile(r'[a-z]', regex.DOTALL),
             regex.compile(r'\d', regex.DOTALL),
             regex.compile(r'\S', regex.DOTALL),
+            regex.compile(r'_', regex.DOTALL),
         ]
 
         for re in extract_res:
             with self.subTest(re=re.pattern):
-                itor_extract = Extract(re, desc_func=lambda ito, match, group_key: gap_desc, group_filter = None)
+                itor_extract = Extract(re, desc_func=lambda ito, match, group_key: non_gap_desc, group_filter = None)
                 non_gaps = [*itor_extract(root)]
                 gaps = [*Ito.from_gaps(root, non_gaps, gap_desc)]
                 expected = list(non_gaps)

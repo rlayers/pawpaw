@@ -18,3 +18,6 @@ del extract
 
 from .split import Split
 del split
+
+from .gaps import Gaps
+del gaps

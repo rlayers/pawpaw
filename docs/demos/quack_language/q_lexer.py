@@ -30,6 +30,7 @@ others: list[regex.Pattern] = [
 # operators
 operators: list[regex.Pattern] = [
     # grouping
+    regex.compile(r'(?P<COLON>:)', regex.DOTALL),
     regex.compile(r'(?P<LPAREN>\()', regex.DOTALL),
     regex.compile(r'(?P<RPAREN>\))', regex.DOTALL),
 
@@ -117,24 +118,4 @@ extract(*others, *operators, *ids)
 
 remove(*whitespace)
 
-# SAMPLE CODE
 
-source = """
-x = 1
-    + 2
-
-# Here is a comment
-
-my_str = 'Long
-    text with
-    
-blank lines'
-
-y = x + 3 * 4
-"""
-print("SOURCE:")
-print(source)
-
-print("LEXER:")
-vis = pawpaw.visualization.pepo.Compact()
-print(vis.dumps(*lexer(pawpaw.Ito(source))))

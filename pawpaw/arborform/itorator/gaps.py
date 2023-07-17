@@ -21,7 +21,6 @@ class Gaps(Itorator):
 
     def _transform(self, ito: Ito) -> Types.C_IT_ITOS:
         start = ito.start
-        i = None
         for i in self.itorator(ito):
             if start < i.start:
                 yield ito.clone(start, i.start, desc=self.desc)
@@ -29,5 +28,7 @@ class Gaps(Itorator):
                 yield i
             start = i.stop
 
-        if i is not None and i.stop < ito.stop:
+        if start == ito.start:
+            yield ito.clone(desc=self.desc)
+        elif i.stop < ito.stop:
             yield ito.clone(i.stop, ito.stop, self.desc)

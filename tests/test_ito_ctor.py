@@ -188,7 +188,7 @@ class TestItoCtor(_TestIto):
 
             for ngs in non_gaps, [ng.span for ng in non_gaps]:
                 with self.subTest(src=s, non_gaps=ngs):
-                    actual = [*Ito.from_gaps(s, ngs, desc=desc)]
+                    actual = [*Ito.from_gaps(s, ngs, desc)]
                     self.assertSequenceEqual(expected, actual)
 
     def test_from_gaps_src_ito_1(self):
@@ -206,7 +206,7 @@ class TestItoCtor(_TestIto):
 
             for ngs in non_gaps, [ng.span.offset(-1) for ng in non_gaps]:
                 with self.subTest(src=src, non_gaps=ngs):
-                    actual = [*Ito.from_gaps(src, ngs, desc=desc)]
+                    actual = [*Ito.from_gaps(src, ngs, desc)]
                     self.assertSequenceEqual(expected, actual)
 
     def test_from_gaps_src_str_2(self):
@@ -259,20 +259,20 @@ class TestItoCtor(_TestIto):
         src = 'abc'
         desc = 'X'
         expected = Ito(src, desc=desc)
-        actual = next(Ito.from_gaps(src, [], desc=desc), None)
+        actual = next(Ito.from_gaps(src, [], desc), None)
         self.assertIsNotNone(actual)
         self.assertEqual(expected, actual)
 
     def test_from_gaps_identity(self):
         src = 'abc'
         desc = 'X'
-        actual = next(Ito.from_gaps(src, [Ito(src)], desc=desc), None)
+        actual = next(Ito.from_gaps(src, [Ito(src)], desc), None)
         self.assertIsNone(actual)
 
     def test_from_gaps_contiguous_non_gaps(self):
         src = 'abc'
         desc = 'X'
-        actual = next(Ito.from_gaps(src, Ito(src), desc=desc), None)
+        actual = next(Ito.from_gaps(src, Ito(src), desc), None)
         self.assertIsNone(actual)            
 
     def test_from_gaps_with_zero_widths(self):
@@ -283,23 +283,23 @@ class TestItoCtor(_TestIto):
             root = Ito(s, 1, -1)
             root.children.add(*root)
             expected = [Ito(root, i, i, desc) for i in range(1, len(root))]
-            rv = [*root.from_gaps(root, root.children, return_zero_widths=True, desc=desc)]
+            rv = [*root.from_gaps(root, root.children, desc, True)]
             self.assertEqual(len(expected), len(rv))
             self.assertSequenceEqual(expected, rv)
 
         with self.subTest(non_gap_count=2, non_gap_proximity='overlapping', non_gap_extent='contained'):
             overlapping_non_gaps = [Ito(s, *root.span), Ito(s, root.start + 1, root.stop)]
-            rv = [*root.from_gaps(root, overlapping_non_gaps, return_zero_widths=True, desc=desc)]
+            rv = [*root.from_gaps(root, overlapping_non_gaps, desc, True)]
             self.assertEqual(0, len(rv))
 
         with self.subTest(non_gap_count=3, non_gap_proximity='overlapping', non_gap_extent='contained'):
             overlapping_non_gaps = [Ito(s, root.start + i, root.stop) for i in range(0, len(root))]
-            rv = [*root.from_gaps(root, overlapping_non_gaps, return_zero_widths=True, desc=desc)]
+            rv = [*root.from_gaps(root, overlapping_non_gaps, desc, True)]
             self.assertEqual(0, len(rv))
 
         with self.subTest(non_gap_count=2, non_gap_proximity='overlapping', non_gap_extent='non-contained'):
             overlapping_non_gaps = [Ito(s, 0, len(s) - 1), Ito(s, 1, len(s) + 2)]
-            rv = [*root.from_gaps(root, overlapping_non_gaps, return_zero_widths=True, desc=desc)]
+            rv = [*root.from_gaps(root, overlapping_non_gaps, desc, True)]
             self.assertEqual(0, len(rv))
 
         with self.subTest(non_gap_count=1, non_gap_proximity='N/A', non_gap_extent='non-contained', location='prior'):
@@ -310,13 +310,13 @@ class TestItoCtor(_TestIto):
 
         with self.subTest(non_gap_count=1, non_gap_proximity='N/A', non_gap_extent='non-contained', location='after'):
             ng_after = [Ito(s, -1)]
-            rv = [*root.from_gaps(root, ng_after, return_zero_widths=True, desc=desc)]
+            rv = [*root.from_gaps(root, ng_after, desc, True)]
             self.assertEqual(1, len(rv))
             self.assertEqual(root.clone(desc=desc), rv[0])
 
         with self.subTest(non_gap_count=2, non_gap_proximity='overlapping', non_gap_extent='non-contained'):
             ng = ng_prior + ng_after
-            rv = [*root.from_gaps(root, ng, return_zero_widths=True, desc=desc)]
+            rv = [*root.from_gaps(root, ng, desc, True)]
             self.assertEqual(1, len(rv))
             self.assertEqual(root.clone(desc=desc), rv[0])
 
@@ -326,7 +326,7 @@ class TestItoCtor(_TestIto):
         desc = 'x'
         for cls_name, _class in (('Base (Ito)', Ito), ('Derived (IntIto)', IntIto)):
             with self.subTest(_class=cls_name):
-                for i in _class.from_gaps(s, non_gaps, desc=desc):
+                for i in _class.from_gaps(s, non_gaps, desc):
                     self.assertIsInstance(i, _class)
                     self.assertIs(s, i.string)
                     self.assertFalse(any(gap.start <= i.start <= i.stop <= gap.stop for gap in non_gaps))
@@ -346,12 +346,12 @@ class TestItoCtor(_TestIto):
                             _class(s, 0, min(gap.start for gap in non_gaps), desc),
                             _class(s, max(gap.stop for gap in non_gaps), desc=desc)
                         ]
-                        actual = [*_class.from_gaps(s, ngs, desc=desc)]
+                        actual = [*_class.from_gaps(s, ngs, desc)]
                         self.assertListEqual(expected, actual)
                     else:
                         ngs = non_gaps.copy()
                         with self.assertRaises(ValueError):
-                            [*_class.from_gaps(s, ngs, desc=desc)]
+                            [*_class.from_gaps(s, ngs, desc)]
 
     def test_from_substrings(self):
         string = 'abcd' * 10

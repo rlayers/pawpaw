@@ -172,8 +172,8 @@ class Ito:
             cls,
             src: str | pawpaw.Ito,
             non_gaps: typing.Iterable[Span | pawpaw.Ito],
-            return_zero_widths: bool = False,
-            desc: str | None = None
+            desc: str | None = None,
+            return_zero_widths: bool = False
     ) -> typing.Iterable[pawpaw.Ito]:
         """Generate Itos based on negative space (gaps)
 
@@ -769,7 +769,7 @@ class Ito:
         if len(self) == 0:
             return rv
 
-        rv.children.add(*self.from_gaps(rv, self.children, False, desc))
+        rv.children.add(*self.from_gaps(rv, self.children, desc, False))
         return rv
 
     def split_iter(

@@ -15,6 +15,31 @@ class TestItoStrEquivalenceMethods(_TestIto):
                 self.assertEqual(str(i).count(sub, 4), i.str_count(sub, 4))
                 self.assertEqual(str(i).count(sub, None, -4), i.str_count(sub, end=-4))
 
+    def test_str_eq(self):
+        s = 'aabba'
+        for i in range(0, len(s)):
+            for j in range(i, len(s)):
+                ito = Ito(s, i, j)
+                for x in range(0, len(s)):
+                    for y in range(x, len(s)):
+                        substr = s[x:y]
+                        with self.subTest(substr=substr, ito=str(ito)):
+                                expected = s == str(substr)
+                                self.assertEqual(expected, ito.str_eq(s))
+
+        sep = None
+        with self.subTest(src=s, sep=sep):
+            with self.assertRaises(TypeError):
+                ito.str_startswith(sep)
+
+        for sep in ['', 'a', 'b', 'ab', 'bc', 'c', 'abc', 'z']:
+            for start in [-100, -1, None, 0, 1, 100]:
+                for end in [-100, -1, None, 0, 1, 100]:
+                    with self.subTest(src=s, sep=sep, start=start, end=end):
+                        expected = s.strip().endswith(sep, start, end)
+                        actual = ito.str_endswith(sep, start, end)
+                        self.assertEqual(expected, actual)
+
     def test_str_endswith(self):
         s = f' {"abc" * 2} '
         ito = Ito(s, 1, -1)

@@ -884,6 +884,9 @@ class Ito:
     def str_count(self, sub: str, start: int | None = None, end: int | None = None) -> int:
         return self._string.count(sub, *Span.from_indices(self, start, end).offset(self.start))
 
+    def str_eq(self, val: str) -> bool:
+        return len(self) == len(val) and self.str_startswith(val)
+
     # region endswtih, startswtih
         
     def str_endswith(

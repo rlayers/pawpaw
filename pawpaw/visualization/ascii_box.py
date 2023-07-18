@@ -1104,7 +1104,7 @@ class Boxer:
     def _from_lines(self, *lines: Ito) -> typing.List[str]:
         # TODO: Handle SGR, unicode modifying graphemes, etc. to
         # get max column width of printed lines
-        max_line = max(sum(1 for c in line if c.isprintable()) for line in lines)
+        max_line = max(sum(1 for c in line if c.str_isprintable()) for line in lines)
 
         rv = [f'{self.nw}{str(self.n) * (max_line + 2)}{self.ne}']
 

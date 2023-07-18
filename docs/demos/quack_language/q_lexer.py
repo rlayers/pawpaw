@@ -1,4 +1,5 @@
 from __future__ import annotations
+from abc import ABC
 
 import regex
 import pawpaw
@@ -8,11 +9,8 @@ import pawpaw
 # string literals
 STRING_PREFIXES = ['f', 'm', 'r']
 string_literals: list[regex.Pattern] = [
-    regex.compile(r"(?P<LIT_STR>\L<prefix>?\'([^\\]|(\\.))*?\')", regex.DOTALL, prefix=STRING_PREFIXES),
-    regex.compile(r'(?P<LIT_INT_DEC>\d(?:_?\d)*)', regex.DOTALL),  # no prefix
-    regex.compile(r'(?P<LIT_INT_BIN>0[bB][01](?:_?[01])*)', regex.DOTALL),  # 0b or 0B prefix
-    regex.compile(r'(?P<LIT_INT_OCT>0[oO][0..7](?:_?[0..7])*)', regex.DOTALL),  # 0o or 0O prefix
-    regex.compile(r'(?P<LIT_INT_HEX>)0(?i:x[0..9a..z](?:_?[0..9a..z])*)', regex.DOTALL),  # 0x or 0X prefix
+    # strings
+    regex.compile(r"(?P<LIT_STR>\L<prefix>?\'(?P<value>[^\\]|(\\.))*?\')", regex.DOTALL, prefix=STRING_PREFIXES),
 ]
 
 # blank lines
@@ -26,6 +24,62 @@ others: list[regex.Pattern] = [
     regex.compile(r'(?<=^|\L<newline>)(?P<INDENT>\s+)', regex.DOTALL, newline=NEWLINES),
     regex.compile(r'(?<COMMENT>#.*?)(?=\L<newline>)', regex.DOTALL, newline=NEWLINES),
 ]
+
+
+class Matcher(ABC):
+    @abstractmethod
+    def itor(self) -> pawpaw.arborform.Itorator:
+        ...
+
+class MatcherExact:
+    def __init__(self, desc: str, pattern: str):
+        self.desc = desc
+        self.pattern = pattern
+
+    def itor(self) -> pawpaw.arborform.Itorator:
+        return pawpaw.arborform.Itorator.wrap(lambda ito: Ito.clone(ito, desc=tag) if ito.str_eq(self.pattern) else None)
+
+# Reserved words
+reserved: list[regex.Pattern] = [
+        regex.compile(r'(?P<ELIF>elif)', regex.DOTALL),
+        regex.compile(r'(?P<IF>if)', regex.DOTALL),
+        regex.compile(r'(?P<ELSE>else)', regex.DOTALL),
+        
+        regex.compile(r'(?P<CASE>case)', regex.DOTALL),
+
+        regex.compile(r'(?P<FOR>for)', regex.DOTALL),
+
+        regex.compile(r'(?P<DO>do)', regex.DOTALL),
+        regex.compile(r'(?P<WHILE>while)', regex.DOTALL),
+        regex.compile(r'(?P<UNTIL>until)', regex.DOTALL),
+
+        regex.compile(r'(?P<BREAK>break)', regex.DOTALL),
+        regex.compile(r'(?P<CONTINUE>continue)', regex.DOTALL),
+
+    # Logical operators
+        regex.compile(r'(?P<NOT>not)', regex.DOTALL),
+        regex.compile(r'(?P<AND>and)', regex.DOTALL),
+        regex.compile(r'(?P<OR>or)', regex.DOTALL),
+        regex.compile(r'(?P<XOR>xor)', regex.DOTALL),
+
+    # Set operators
+        regex.compile(r'(?P<IN>in)', regex.DOTALL),
+
+    # Types
+        regex.compile(r'(?P<BOOL>bool)', regex.DOTALL),
+        regex.compile(r'(?P<INT>int)', regex.DOTALL),
+        regex.compile(r'(?P<FLOAT>float)', regex.DOTALL),
+        regex.compile(r'(?P<COMPLEX>complex)', regex.DOTALL),
+        regex.compile(r'(?P<CHAR>char)', regex.DOTALL),
+        regex.compile(r'(?P<STR>str)', regex.DOTALL),
+
+    # Bool literals
+        regex.compile(r'(?P<LIT_BOOL_TRUE>true)', regex.DOTALL),
+        regex.compile(r'(?P<LIT_BOOL_FALSE>false)', regex.DOTALL),
+
+    # OOP
+        regex.compile(r'(?P<CLASS>class)', regex.DOTALL),
+)
 
 # operators
 operators: list[regex.Pattern] = [
@@ -76,6 +130,18 @@ operators: list[regex.Pattern] = [
     regex.compile(r'(?P<BIT_XOR>\^)', regex.DOTALL),
     regex.compile(r'(?P<BIT_LS>\<\<)', regex.DOTALL),
     regex.compile(r'(?P<BIT_RS>\>\>)', regex.DOTALL),
+]
+
+# other_literals
+other_literals: list[regex.Pattern] = [
+    # int
+    regex.compile(r'(?P<LIT_INT_DEC>\d(?:_?\d)*)', regex.DOTALL),  # no prefix
+    regex.compile(r'(?P<LIT_INT_BIN>0[bB][01](?:_?[01])*)', regex.DOTALL),  # 0b or 0B prefix
+    regex.compile(r'(?P<LIT_INT_OCT>0[oO][0..7](?:_?[0..7])*)', regex.DOTALL),  # 0o or 0O prefix
+    regex.compile(r'(?P<LIT_INT_HEX>)0(?i:x[0..9a..z](?:_?[0..9a..z])*)', regex.DOTALL),  # 0x or 0X prefix
+
+    # char
+    regex.compile(r'(?P<LIT_CHAR>"(?P<value>[^\\]|(\\.))")', regex.DOTALL, prefix=STRING_PREFIXES),
 ]
 
 # ids

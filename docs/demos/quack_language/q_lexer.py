@@ -9,7 +9,7 @@ import pawpaw
 
 # string literals
 STRING_PREFIXES = ['f', 'm', 'r']
-string_literals: list[regex.Pattern] = [
+string_literals = [
     # strings
     regex.compile(r"(?P<LIT_STR>\L<prefix>?\'(?P<value>(?:[^\\]|\\.)*?)\')", regex.DOTALL, prefix=STRING_PREFIXES),
 ]
@@ -17,111 +17,134 @@ string_literals: list[regex.Pattern] = [
 # blank lines
 NEWLINES = ['\n']
 WHITESPACE = [' ', '\t']
-blank_lines: list[regex.Pattern] = [
+blank_lines = [
     regex.compile(rf'\L<whitespace>*(?=\L<newline>)', regex.DOTALL, whitespace=WHITESPACE, newline=NEWLINES),
     regex.compile(rf'(?:^|\L<newline>)\L<whitespace>*(?=\L<newline>|$)', regex.DOTALL, newline=NEWLINES, whitespace=WHITESPACE),
 ]
 
-
-# other
-others: list[regex.Pattern] = [
+# indents
+indents = [
     regex.compile(rf'(?<INDENT>(?:^|\L<newline>)(?P<value>\L<whitespace>*))(?!\L<newline>)', regex.DOTALL, newline=NEWLINES, whitespace=WHITESPACE),
-    # regex.compile(r'(?<COMMENT>#(?P<value>.*))', regex.DOTALL),
 ]
 
-# Reserved words
-reserved: list[regex.Pattern] = [
-        # regex.compile(r'(?P<ELIF>elif)', regex.DOTALL),
-        ('ELIF', 'elif'),
-        regex.compile(r'(?P<IF>if)', regex.DOTALL),
-        regex.compile(r'(?P<ELSE>else)', regex.DOTALL),
-        
-        regex.compile(r'(?P<CASE>case)', regex.DOTALL),
+# comments
+comments = [
+    regex.compile(r'(?<COMMENT>#(?P<value>.*))', regex.DOTALL),
+]
 
-        regex.compile(r'(?P<FOR>for)', regex.DOTALL),
-
-        regex.compile(r'(?P<DO>do)', regex.DOTALL),
-        regex.compile(r'(?P<WHILE>while)', regex.DOTALL),
-        regex.compile(r'(?P<UNTIL>until)', regex.DOTALL),
-
-        regex.compile(r'(?P<BREAK>break)', regex.DOTALL),
-        regex.compile(r'(?P<CONTINUE>continue)', regex.DOTALL),
-
-    # Logical operators
-        regex.compile(r'(?P<NOT>not)', regex.DOTALL),
-        regex.compile(r'(?P<AND>and)', regex.DOTALL),
-        regex.compile(r'(?P<OR>or)', regex.DOTALL),
-        regex.compile(r'(?P<XOR>xor)', regex.DOTALL),
-
-    # Set operators
-        regex.compile(r'(?P<IN>in)', regex.DOTALL),
-
-    # Types
-        regex.compile(r'(?P<BOOL>bool)', regex.DOTALL),
-        regex.compile(r'(?P<INT>int)', regex.DOTALL),
-        regex.compile(r'(?P<FLOAT>float)', regex.DOTALL),
-        regex.compile(r'(?P<COMPLEX>complex)', regex.DOTALL),
-        regex.compile(r'(?P<CHAR>char)', regex.DOTALL),
-        regex.compile(r'(?P<STR>str)', regex.DOTALL),
-
-    # Bool literals
-        regex.compile(r'(?P<LIT_BOOL_TRUE>true)', regex.DOTALL),
-        regex.compile(r'(?P<LIT_BOOL_FALSE>false)', regex.DOTALL),
-
-    # OOP
-        regex.compile(r'(?P<CLASS>class)', regex.DOTALL),
+# whitespace
+whitespace: list[regex.Pattern] = [
+    regex.compile(r'\L<whitespace>+', regex.DOTALL, whitespace=WHITESPACE),
 ]
 
 # operators
 operators: list[regex.Pattern] = [
-    # grouping
-    ('COLON', ':'),
-    # regex.compile(r'(?P<COLON>:)', regex.DOTALL),
-    regex.compile(r'(?P<LPAREN>\()', regex.DOTALL),
-    regex.compile(r'(?P<RPAREN>\))', regex.DOTALL),
+    {
+        # grouping
+        ':': 'COLON',
+        '(': 'LPAREN',
+        ')': 'RPAREN',
 
-    # comparitor
-    regex.compile(r'(?P<LE>\<=)', regex.DOTALL),
-    regex.compile(r'(?P<LT>\<)', regex.DOTALL),
-    regex.compile(r'(?P<GE>\>=)', regex.DOTALL),
-    regex.compile(r'(?P<GT>\>)', regex.DOTALL),
-    regex.compile(r'(?P<NE>!=)', regex.DOTALL),
-    regex.compile(r'(?P<EQ>==)', regex.DOTALL),
+        # comparitor
+        '<=': 'LE',
+        '<': 'LT',
+        '>': 'GE',
+        '>=': 'GT',
+        '!=': 'NE',
+        '==': 'EQ',
 
-    # assignment
-    regex.compile(r'(?P<ASSIGN>=)', regex.DOTALL),
-    regex.compile(r'(?P<ASSIGN_POW>\*\*=)', regex.DOTALL),
-    regex.compile(r'(?P<ASSIGN_IDIV>//=)', regex.DOTALL),
-    regex.compile(r'(?P<ASSIGN_ADD>\+=)', regex.DOTALL),
-    regex.compile(r'(?P<ASSIGN_SUB>-=)', regex.DOTALL),
-    regex.compile(r'(?P<ASSIGN_MUL>\*=)', regex.DOTALL),
-    regex.compile(r'(?P<ASSIGN_DIV>/=)', regex.DOTALL),
-    regex.compile(r'(?P<ASSIGN_MOD>%=)', regex.DOTALL),
+        # assignment
+        '=': 'ASSIGN',
+        '**=': 'ASSIGN_POW',
+        '//=': 'ASSIGN_IDIV',
+        '+=': 'ASSIGN_ADD',
+        '-=': 'ASSIGN_SUB',
+        '*=': 'ASSIGN_MUL',
+        '/=': 'ASSIGN_DIV',
+        '%=': 'ASSIGN_MOD',
+        '&=': 'ASSIGN_BIT_AND',
+        '|=': 'ASSIGN_BIT_OR',
+        '~=': 'ASSIGN_BIT_NOT',
+        '\^=': 'ASSIGN_BIT_XOR',
+        '<<=': 'ASSIGN_BIT_LS',
+        '>>=': 'ASSIGN_BIT_RS',
 
-    regex.compile(r'(?P<ASSIGN_BIT_AND>&=)', regex.DOTALL),
-    regex.compile(r'(?P<ASSIGN_BIT_OR>\|=)', regex.DOTALL),
-    regex.compile(r'(?P<ASSIGN_BIT_NOT>~=)', regex.DOTALL),
-    regex.compile(r'(?P<ASSIGN_BIT_XOR>\^=)', regex.DOTALL),
-    regex.compile(r'(?P<ASSIGN_BIT_LS>\<\<=)', regex.DOTALL),
-    regex.compile(r'(?P<ASSIGN_BIT_RS>\>\>=)', regex.DOTALL),
+        # math
+        '++': 'PLUSPLUS',
+        '--': 'MINUSMINUS',
+        '**': 'POW',
+        '//': 'IDIV',
+        '+': 'ADD',
+        '-': 'SUB',
+        '*': 'MUL',
+        '/': 'DIV',
+        '%': 'MOD',
+        '&': 'BIT_AND',
+        '|': 'BIT_OR',
+        '~': 'BIT_NOT',
+        '^': 'BIT_XOR',
+        '<<': 'BIT_LS',
+        '>>': 'BIT_RS',
+    }
+]
 
-    # math
-    regex.compile(r'(?P<PLUSPLUS>\+\+)', regex.DOTALL),
-    regex.compile(r'(?P<MINUSMINUS>\-\-)', regex.DOTALL),
-    regex.compile(r'(?P<POW>\*\*)', regex.DOTALL),
-    regex.compile(r'(?P<IDIV>\/\/)', regex.DOTALL),
-    regex.compile(r'(?P<ADD>\+)', regex.DOTALL),
-    regex.compile(r'(?P<SUB>\-)', regex.DOTALL),
-    regex.compile(r'(?P<MUL>\*)', regex.DOTALL),
-    regex.compile(r'(?P<DIV>\/)', regex.DOTALL),
-    regex.compile(r'(?P<MOD>%)', regex.DOTALL),
+# IDs
+"""
+1. Identifiers must start with a unicode letter or underscore (_).
+2. Identifiers may contain Unicode letter characters, decimal digit characters, Unicode connecting characters,
+   Unicode combining characters, or Unicode formatting characters.
+"""
+ids: list[regex.Pattern] = [
+    regex.compile(r'(?P<ID>[\p{Letter}_][\p{Letter}\p{Decimal_Number}\p{Connector_Punctuation}\p{Lm}_]*)', regex.DOTALL),
+]
 
-    regex.compile(r'(?P<BIT_AND>&)', regex.DOTALL),
-    regex.compile(r'(?P<BIT_OR>\|)', regex.DOTALL),
-    regex.compile(r'(?P<BIT_NOT>~)', regex.DOTALL),
-    regex.compile(r'(?P<BIT_XOR>\^)', regex.DOTALL),
-    regex.compile(r'(?P<BIT_LS>\<\<)', regex.DOTALL),
-    regex.compile(r'(?P<BIT_RS>\>\>)', regex.DOTALL),
+# Keywords
+keywords = [
+    {
+        # Functions
+        'func': 'FUNC',
+
+        # Control structures
+        'if': 'IF',
+        'elif': 'ELIF',
+        'else': 'ELSE',
+
+        'case': 'CASE',
+
+        'for': 'FOR',
+
+        'do': 'DO',
+        'while': 'WHILE',
+        'until': 'UNTIL',
+
+        'break': 'BREAK',
+        'continue': 'CONTINUE',
+
+        # Logical operators
+        'not': 'NOT',
+        'and': 'AND',
+        'or': 'OR',
+        'xor': 'XOR',
+
+        # Set operators
+        'in': 'IN',
+        # union (+, ∪), intersection (+, ∩), complement (~), difference (-)
+
+        # Types
+        'bool': 'BOOL',
+        'int': 'INT',
+        'float': 'FLOAT',
+        'complex': 'COMPLEX',
+        'char': 'CHAR',
+        'str': 'STR',
+
+        # Bool literals
+        'true': 'LIT_BOOL_TRUE',
+        'false': 'LIT_BOOL_FALSE',
+
+        # OOP
+        'class': 'CLASS',
+    }
 ]
 
 # other_literals
@@ -136,21 +159,6 @@ other_literals: list[regex.Pattern] = [
     regex.compile(r'(?P<LIT_CHAR>"(?P<value>[^\\]|\\.)")', regex.DOTALL),
 ]
 
-# ids
-"""
-1. Identifiers must start with a letter or underscore (_).
-2. Identifiers may contain Unicode letter characters, decimal digit characters, Unicode connecting characters,
-   Unicode combining characters, or Unicode formatting characters.
-"""
-ids: list[regex.Pattern] = [
-    regex.compile(r'(?P<ID>[\p{Letter}_][\p{Letter}\p{Decimal_Number}\p{Connector_Punctuation}\p{Lm}_]*)', regex.DOTALL),
-]
-
-# whitespace
-whitespace: list[regex.Pattern] = [
-    regex.compile(r'\s+', regex.DOTALL),
-]
-
 # BUILD LEXER
 
 def to_connection(*args) -> pawpaw.arborform.Connector:
@@ -159,6 +167,11 @@ def to_connection(*args) -> pawpaw.arborform.Connector:
     if len(args) == 1:
         if isinstance(re := args[0], regex.Pattern):
             e = pawpaw.arborform.Extract(re)
+            itor = pawpaw.arborform.Gaps(e)
+
+        elif isinstance(d := args[0], dict):
+            re = regex.compile(rf'(?P<__named_list__>\L<__named_list__>)', regex.DOTALL, __named_list__=list(d.keys()))
+            e = pawpaw.arborform.Extract(re, desc_func=lambda i, m, gk: d[m[0]])
             itor = pawpaw.arborform.Gaps(e)
 
     elif len(args) == 2:
@@ -177,7 +190,7 @@ def to_connection(*args) -> pawpaw.arborform.Connector:
             )
 
     if itor is None:
-        raise ValueError(f'unknown action for args of type(s) f{[type(a) for a in args]}')
+        raise ValueError(f'unknown action for args {args}')
 
     return pawpaw.arborform.Connectors.Recurse(itor, lambda ito: ito.desc is None)
 
@@ -192,12 +205,24 @@ def append_deletes(res: typing.Iterable[regex.Pattern]) -> None:
         con = pawpaw.arborform.Connectors.Recurse(s, lambda ito: ito.desc is None)
         lexer.connections.append(con)
 
+def append_exacts(items: typing.Iterable):
+    for i in items:
+        itor = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.clone(desc=i[s])] if (s := str(ito)) in i.keys() else [ito])
+        con = pawpaw.arborform.Connectors.Recurse(itor, lambda ito: ito.desc is None)
+        lexer.connections.append(con)
+
 lexer = pawpaw.arborform.Reflect()
 
 append_extractions(string_literals)
 
 append_deletes(blank_lines)
 
-# TODO : Split on whitespace
+append_extractions(itertools.chain(indents, comments))
 
-append_extractions(itertools.chain(others)) #, operators, ids, other_literals))
+append_deletes(whitespace)
+
+append_extractions(operators)
+
+append_exacts(keywords)
+
+append_extractions(itertools.chain(ids, other_literals))

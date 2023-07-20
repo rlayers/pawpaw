@@ -1,5 +1,6 @@
 from __future__ import annotations
-from abc import ABC
+import itertools
+import typing
 
 import regex
 import pawpaw
@@ -10,38 +11,28 @@ import pawpaw
 STRING_PREFIXES = ['f', 'm', 'r']
 string_literals: list[regex.Pattern] = [
     # strings
-    regex.compile(r"(?P<LIT_STR>\L<prefix>?\'(?P<value>[^\\]|(\\.))*?\')", regex.DOTALL, prefix=STRING_PREFIXES),
+    regex.compile(r"(?P<LIT_STR>\L<prefix>?\'(?P<value>(?:[^\\]|\\.)*?)\')", regex.DOTALL, prefix=STRING_PREFIXES),
 ]
 
 # blank lines
 NEWLINES = ['\n']
+WHITESPACE = [' ', '\t']
 blank_lines: list[regex.Pattern] = [
-    regex.compile(r'(?<=^|\L<newline>)(?:\s*\L<newline>)+', regex.DOTALL, newline=NEWLINES),
+    regex.compile(rf'\L<whitespace>*(?=\L<newline>)', regex.DOTALL, whitespace=WHITESPACE, newline=NEWLINES),
+    regex.compile(rf'(?:^|\L<newline>)\L<whitespace>*(?=\L<newline>|$)', regex.DOTALL, newline=NEWLINES, whitespace=WHITESPACE),
 ]
+
 
 # other
 others: list[regex.Pattern] = [
-    regex.compile(r'(?<=^|\L<newline>)(?P<INDENT>\s+)', regex.DOTALL, newline=NEWLINES),
-    regex.compile(r'(?<COMMENT>#.*?)(?=\L<newline>)', regex.DOTALL, newline=NEWLINES),
+    regex.compile(rf'(?<INDENT>(?:^|\L<newline>)(?P<value>\L<whitespace>*))(?!\L<newline>)', regex.DOTALL, newline=NEWLINES, whitespace=WHITESPACE),
+    # regex.compile(r'(?<COMMENT>#(?P<value>.*))', regex.DOTALL),
 ]
-
-
-class Matcher(ABC):
-    @abstractmethod
-    def itor(self) -> pawpaw.arborform.Itorator:
-        ...
-
-class MatcherExact:
-    def __init__(self, desc: str, pattern: str):
-        self.desc = desc
-        self.pattern = pattern
-
-    def itor(self) -> pawpaw.arborform.Itorator:
-        return pawpaw.arborform.Itorator.wrap(lambda ito: Ito.clone(ito, desc=tag) if ito.str_eq(self.pattern) else None)
 
 # Reserved words
 reserved: list[regex.Pattern] = [
-        regex.compile(r'(?P<ELIF>elif)', regex.DOTALL),
+        # regex.compile(r'(?P<ELIF>elif)', regex.DOTALL),
+        ('ELIF', 'elif'),
         regex.compile(r'(?P<IF>if)', regex.DOTALL),
         regex.compile(r'(?P<ELSE>else)', regex.DOTALL),
         
@@ -79,12 +70,13 @@ reserved: list[regex.Pattern] = [
 
     # OOP
         regex.compile(r'(?P<CLASS>class)', regex.DOTALL),
-)
+]
 
 # operators
 operators: list[regex.Pattern] = [
     # grouping
-    regex.compile(r'(?P<COLON>:)', regex.DOTALL),
+    ('COLON', ':'),
+    # regex.compile(r'(?P<COLON>:)', regex.DOTALL),
     regex.compile(r'(?P<LPAREN>\()', regex.DOTALL),
     regex.compile(r'(?P<RPAREN>\))', regex.DOTALL),
 
@@ -141,7 +133,7 @@ other_literals: list[regex.Pattern] = [
     regex.compile(r'(?P<LIT_INT_HEX>)0(?i:x[0..9a..z](?:_?[0..9a..z])*)', regex.DOTALL),  # 0x or 0X prefix
 
     # char
-    regex.compile(r'(?P<LIT_CHAR>"(?P<value>[^\\]|(\\.))")', regex.DOTALL, prefix=STRING_PREFIXES),
+    regex.compile(r'(?P<LIT_CHAR>"(?P<value>[^\\]|\\.)")', regex.DOTALL),
 ]
 
 # ids
@@ -151,7 +143,7 @@ other_literals: list[regex.Pattern] = [
    Unicode combining characters, or Unicode formatting characters.
 """
 ids: list[regex.Pattern] = [
-    regex.compile(r'(?P<ID>[\p{Letter}_][\p{Letter}\p{Decimal_Number}\p{Connector_Punctuation}\p{Lm}\p{Bidi_Class}_]*)', regex.DOTALL),
+    regex.compile(r'(?P<ID>[\p{Letter}_][\p{Letter}\p{Decimal_Number}\p{Connector_Punctuation}\p{Lm}_]*)', regex.DOTALL),
 ]
 
 # whitespace
@@ -161,27 +153,51 @@ whitespace: list[regex.Pattern] = [
 
 # BUILD LEXER
 
-lexer = pawpaw.arborform.Reflect()
+def to_connection(*args) -> pawpaw.arborform.Connector:
+    itor: pawpaw.arborform.Itorator | None = None
 
-def extract(*res: regex.Pattern):
-    for re in res:
-        e = pawpaw.arborform.Extract(re)
-        g = pawpaw.arborform.Gaps(e)
-        c = pawpaw.arborform.Connectors.Recurse(g, lambda ito: ito.desc is None)
-        lexer.connections.append(c)
+    if len(args) == 1:
+        if isinstance(re := args[0], regex.Pattern):
+            e = pawpaw.arborform.Extract(re)
+            itor = pawpaw.arborform.Gaps(e)
 
-def remove(*res: regex.Pattern):
+    elif len(args) == 2:
+        desc, val = args
+
+        if isinstance(val, str):
+            re = regex.compile(rf'(?P<{desc}>{regex.escape(val)})', regex.DOTALL)
+            return to_connection(re)
+
+        if isinstance(val, regex.Pattern):
+            itor = pawpaw.arborform.Split(
+                val,
+                group=0,
+                boundary_retention=pawpaw.arborform.Split.BoundaryRetention.DISTINCT,
+                boundary_desc=desc
+            )
+
+    if itor is None:
+        raise ValueError(f'unknown action for args of type(s) f{[type(a) for a in args]}')
+
+    return pawpaw.arborform.Connectors.Recurse(itor, lambda ito: ito.desc is None)
+
+def append_extractions(items: typing.Iterable) -> None:
+    for i in items:
+        con = to_connection(*i) if isinstance(i, tuple) else to_connection(i)
+        lexer.connections.append(con)
+
+def append_deletes(res: typing.Iterable[regex.Pattern]) -> None:
     for re in res:
         s = pawpaw.arborform.Split(re, boundary_retention=pawpaw.arborform.Split.BoundaryRetention.NONE)
-        c = pawpaw.arborform.Connectors.Recurse(s, lambda ito: ito.desc is None)
-        lexer.connections.append(c)        
+        con = pawpaw.arborform.Connectors.Recurse(s, lambda ito: ito.desc is None)
+        lexer.connections.append(con)
 
-extract(*string_literals)
+lexer = pawpaw.arborform.Reflect()
 
-remove(*blank_lines)
+append_extractions(string_literals)
 
-extract(*others, *operators, *ids)
+append_deletes(blank_lines)
 
-remove(*whitespace)
+# TODO : Split on whitespace
 
-
+append_extractions(itertools.chain(others)) #, operators, ids, other_literals))

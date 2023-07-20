@@ -2,7 +2,7 @@
 
 A demonstration of a pawpaw-based language lexer for a programming language I created called 'Quack'.
 
-## Language Features of Quack
+## Language Features
 
 * an [off-side rule language](https://en.wikipedia.org/wiki/Off-side_rule)
 * strongly typed with implicit type detection
@@ -14,7 +14,7 @@ A demonstration of a pawpaw-based language lexer for a programming language I cr
   * char
   * str
 
-### Expression Boundaries
+## Expression Boundaries
 
 Like Python, Quack uses indentation to define blocks.  However, whereas Python uses end-of-line (EOL) markers to identify naked[^naked_expression] expression boundaries, Quack uses a combination of EOL and indentation.  This allows an expression to continue on the next line without a continuation operator ('\').
 
@@ -62,7 +62,7 @@ x = 1 + a + f()  # expr_1 start
 x = 2 * x        # expr_2
 ```
 
-### Code Blocks
+## Code Blocks
 
 Code blocks are always delimited with a semicolon (``:``), after which the next non-blank line *must* have a higher indentation level.  The code block then continues until a non-blank line with indent less than or equal to code block's starting line:
 
@@ -87,12 +87,9 @@ Code blocks are locally scoped
   a = 1 + 2
 b = a  # Error - 'a' not in scope
 ```
-### Control structures
+## Control structures
 
-* Control structure (CS) boundary ends in a colon (``:``), after which the next
-non-whitespace line must have an indent
-
-* CS ends at the first non-whitespace line without the indent
+A control structure (CS) boundary starts with a colon (``:``), which must be followed by at least one non-blank line with a relative indent.  The CS ends with the first non-blank line without the relative indent
 
 * Remember that "indent" refers to the indentation at the **start** of the expression defining a CS:
  
@@ -103,7 +100,7 @@ while a
 d          # CS-stop; outside CS
 ```
 
-There is no requirement that the indent of the CS body lines match that of the CS start expr continuation lines:
+Likewise:
 
 ```quack
 while a
@@ -115,8 +112,7 @@ while a
   c         # OK; in CS
 ```
 
-* A naked control structure is allowed, which can be
-used to define scope:
+A naked CS is allowed, which can be used to define scope:
 
 ```quack
 a = 1
@@ -125,8 +121,6 @@ a = 1
   f(b)   # in CS
 --a      # CS-stop; outside CS
 ```
-
-## Control Structures
 
 ### if, elif, else
 

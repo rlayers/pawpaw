@@ -12,6 +12,8 @@ source = """x = 1
 
 # Here is a comment
 
+f_str = f'x: {x}'
+
 my_str = 'Long
     text with
     

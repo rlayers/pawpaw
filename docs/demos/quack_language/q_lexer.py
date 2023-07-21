@@ -11,7 +11,7 @@ import pawpaw
 STRING_PREFIXES = ['f', 'm', 'r']
 string_literals = [
     # strings
-    regex.compile(r"(?P<LIT_STR>\L<prefix>?\'(?P<value>(?:[^\\]|\\.)*?)\')", regex.DOTALL, prefix=STRING_PREFIXES),
+    regex.compile(r"(?P<LIT_STR>(?P<prefix>\L<prefix>?)\'(?P<value>(?:[^\\]|\\.)*?)\')", regex.DOTALL, prefix=STRING_PREFIXES),
 ]
 
 # blank lines

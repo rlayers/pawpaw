@@ -2,6 +2,7 @@ from __future__ import annotations
 import bisect
 import collections.abc
 import json
+import os
 import types
 import typing
 if typing.TYPE_CHECKING:
@@ -17,7 +18,6 @@ from .util import find_escapes
 nuco = Infix(lambda x, y: y if x is None else x)
 """Null coalescing operator
 """
-
 
 class Ito:
     # region ctors & clone
@@ -1293,6 +1293,20 @@ class Ito:
 
     # endregion
 
+    # region utility
+
+    def to_line_col(self, eol: str = os.linesep) -> tuple[int, int]:
+        prior_eol_idx = self.string.rfind(eol, 0, self.start)
+        if prior_eol_idx == -1:
+            line = 1
+            col = self.start + 1
+        else:
+            line = self.string.count(eol, 0, prior_eol_idx) + 2
+            col = self.start - prior_eol_idx
+
+        return line, col
+
+    # endregion
 
 class ChildItos(collections.abc.Sequence):
     def __init__(self, parent: pawpaw.Ito, *itos: pawpaw.Ito):

@@ -159,6 +159,14 @@ other_literals: list[regex.Pattern] = [
     regex.compile(r'(?P<LIT_CHAR>"(?P<value>[^\\]|\\.)")', regex.DOTALL),
 ]
 
+# operators
+finals: list[regex.Pattern] = [
+    {
+        # grouping
+        '.': 'DOT',
+    }
+]
+
 # BUILD LEXER
 
 def to_connection(*args) -> pawpaw.arborform.Connector:
@@ -225,4 +233,4 @@ append_extractions(operators)
 
 append_exacts(keywords)
 
-append_extractions(itertools.chain(ids, other_literals))
+append_extractions(itertools.chain(ids, other_literals, finals))

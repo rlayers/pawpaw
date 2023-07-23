@@ -7,8 +7,8 @@ from q_lexer import lexer
 vis_boxer = visualization.ascii_box.from_corners('└')
 vis_compact = visualization.pepo.Compact()
 
-source = """x = 1
-    + 2
+source = """x = 11
+    + 12
 
 # Here is a comment
 
@@ -19,7 +19,7 @@ my_str = 'Long
     
 blank lines'
 
-y = (x + 3) * 4   
+y = (x + 30) * 4  
    """
 print(*vis_boxer.from_srcs('SOURCE',), sep=os.linesep)
 print(source)

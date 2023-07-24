@@ -85,6 +85,16 @@ operators: list[regex.Pattern] = [
         '^': 'BIT_XOR',
         '<<': 'BIT_LS',
         '>>': 'BIT_RS',
+
+        # null coalesce
+        '??': 'NULL_COALESCE',
+        '?.': 'NULL_CONDITIONAL',
+
+        # range
+        '..': 'RANGE',
+
+        # lambda expr
+        '=>': 'LAMBDA_EXPR',
     }
 ]
 

@@ -55,7 +55,7 @@ def compound_vals(compound: str, ito: pawpaw.Ito) -> typing.Iterable[list[str]]:
 
 # Read files and dump contents of each
 for path in os.scandir(os.path.join(sys.path[0])):
-    if path.is_file() and fnmatch.fnmatch(path.name, 'compound_*.pdbqt'):
+    if path.is_file() and fnmatch.fnmatch(path.name, 'compound_*.txt'):
         compound = path.name.split('_', 1)[-1].split('.', 1)[0]  # compound number
         with open(os.path.join(sys.path[0], path)) as f:
             ito = pawpaw.Ito(f.read(), desc='all')

@@ -18,13 +18,15 @@ string_literals = [
 NEWLINES = ['\n']
 WHITESPACE = [' ', '\t']
 blank_lines = [
-    regex.compile(rf'\L<whitespace>*(?=\L<newline>)', regex.DOTALL, whitespace=WHITESPACE, newline=NEWLINES),
-    regex.compile(rf'(?:^|\L<newline>)\L<whitespace>*(?=\L<newline>|$)', regex.DOTALL, newline=NEWLINES, whitespace=WHITESPACE),
+    regex.compile(r'\L<whitespace>*(?=\L<newline>)', regex.DOTALL, whitespace=WHITESPACE, newline=NEWLINES),
+    regex.compile(r'(?:^|\L<newline>)\L<whitespace>*(?=\L<newline>|$)', regex.DOTALL, newline=NEWLINES, whitespace=WHITESPACE),
 ]
 
 # indents
 indents = [
-    regex.compile(rf'(?<INDENT>(?:^|\L<newline>)(?P<value>\L<whitespace>*))(?!\L<newline>)', regex.DOTALL, newline=NEWLINES, whitespace=WHITESPACE),
+    regex.compile(r'(?<BOF>^)', regex.DOTALL),
+    regex.compile(r'(?<INDENT>(?:^|\L<newline>)(?P<value>\L<whitespace>*))(?!\L<newline>)', regex.DOTALL, newline=NEWLINES, whitespace=WHITESPACE),
+    regex.compile(r'(?<EOF>(?:\L<newline>\L<whitespace>*)*$)', regex.DOTALL, newline=NEWLINES, whitespace=WHITESPACE),
 ]
 
 # comments
@@ -174,10 +176,14 @@ finals: list[regex.Pattern] = [
     {
         # grouping
         '.': 'DOT',
-    }
+    },
+
+    regex.compile(r'(?<EOL>$)', regex.DOTALL),  # no prefix
 ]
 
 # BUILD LEXER
+
+Lexer = pawpaw.arborform.Reflect()
 
 def to_connection(*args) -> pawpaw.arborform.Connector:
     itor: pawpaw.arborform.Itorator | None = None
@@ -188,7 +194,7 @@ def to_connection(*args) -> pawpaw.arborform.Connector:
             itor = pawpaw.arborform.Gaps(e)
 
         elif isinstance(d := args[0], dict):
-            re = regex.compile(rf'(?P<__named_list__>\L<__named_list__>)', regex.DOTALL, __named_list__=list(d.keys()))
+            re = regex.compile(r'(?P<__named_list__>\L<__named_list__>)', regex.DOTALL, __named_list__=list(d.keys()))
             e = pawpaw.arborform.Extract(re, desc_func=lambda i, m, gk: d[m[0]])
             itor = pawpaw.arborform.Gaps(e)
 
@@ -215,21 +221,19 @@ def to_connection(*args) -> pawpaw.arborform.Connector:
 def append_extractions(items: typing.Iterable) -> None:
     for i in items:
         con = to_connection(*i) if isinstance(i, tuple) else to_connection(i)
-        lexer.connections.append(con)
+        Lexer.connections.append(con)
 
 def append_deletes(res: typing.Iterable[regex.Pattern]) -> None:
     for re in res:
         s = pawpaw.arborform.Split(re, boundary_retention=pawpaw.arborform.Split.BoundaryRetention.NONE)
         con = pawpaw.arborform.Connectors.Recurse(s, lambda ito: ito.desc is None)
-        lexer.connections.append(con)
+        Lexer.connections.append(con)
 
 def append_exacts(items: typing.Iterable):
     for i in items:
         itor = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.clone(desc=i[s])] if (s := str(ito)) in i.keys() else [ito])
         con = pawpaw.arborform.Connectors.Recurse(itor, lambda ito: ito.desc is None)
-        lexer.connections.append(con)
-
-lexer = pawpaw.arborform.Reflect()
+        Lexer.connections.append(con)
 
 append_extractions(string_literals)
 

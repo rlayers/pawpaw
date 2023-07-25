@@ -1,7 +1,8 @@
 import os
 
 from pawpaw import Ito, visualization
-from q_lexer import lexer
+from q_lexer import Lexer
+from q_parser import Parser
 
 
 vis_boxer = visualization.ascii_box.from_corners('└')
@@ -26,3 +27,6 @@ print(source)
 
 print(*vis_boxer.from_srcs('LEXER',), sep=os.linesep)
 print(vis_compact.dumps(*lexer(Ito(source))))
+
+print(*vis_boxer.from_srcs('PARSER',), sep=os.linesep)
+print(*Parser(source))

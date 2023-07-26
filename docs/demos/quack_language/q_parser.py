@@ -15,6 +15,13 @@ def Parser(source: str) -> typing.Iterable[str]:
     indents = list[pawpaw.Ito]()
     expression = list[pawpaw.Ito]()
 
+    def do_expression() -> typing.Iterable[str]:
+        yield 'EXPRESSION_START'
+        yield f'expr: {pawpaw.Ito.join(*expression):%substr!r}'
+        # yield f'expr: {[i.desc for i in expression]}'
+        expression.clear()
+        yield 'EXPRESSION_STOP'
+
     yield 'PROGRAM_START'
 
     final = pawpaw.Ito(source, -1, desc='EOF')
@@ -28,7 +35,6 @@ def Parser(source: str) -> typing.Iterable[str]:
                 if ito.desc == 'INDENT':
                     yield 'BLOCK_START'
                     indents.append(ito)
-                    yield 'EXPRESSION_START'
             
             else:
                 indent_cur = 0 if ito.desc == 'EOF' else len(ito.find('*[d:value]'))
@@ -38,30 +44,22 @@ def Parser(source: str) -> typing.Iterable[str]:
 
                     if indent_cur > indent_last:
                         if len(expression) > 0 and expression[-1].desc == 'COLON':
-                            yield f'expr: {pawpaw.Ito.join(*expression):%substr!r}'
-                            # yield f'expr: {[i.desc for i in expression]}'
-                            expression.clear()
-                            yield 'EXPRESSION_STOP'
+                            yield from do_expression()
                             yield 'BLOCK_START'
                             indents.append(ito)
-                            yield 'EXPRESSION_START'
                         break
 
                     if len(expression) > 0 and expression[-1].desc == 'COLON':
                         raise Exception(f'missing indent at {line_col(ito)} following colon at {line_col(expression[-1])}')
 
                     if len(expression) > 0:
-                        yield f'expr: {pawpaw.Ito.join(*expression):%substr!r}'
-                        # yield f'expr: {[i.desc for i in expression]}'
-                        expression.clear()
-                        yield 'EXPRESSION_STOP'
+                        yield from do_expression()
                         
                     if indent_cur < indent_last or ito.desc == 'EOF':
                         yield 'BLOCK_STOP'
                         indents.pop()
 
                     if ito.desc == 'INDENT' and indent_cur == indent_last:
-                        yield 'EXPRESSION_START'
                         break
 
         else:

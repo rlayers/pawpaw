@@ -26,7 +26,7 @@ print(*vis_boxer.from_srcs('SOURCE',), sep=os.linesep)
 print(source)
 
 print(*vis_boxer.from_srcs('LEXER',), sep=os.linesep)
-print(vis_compact.dumps(*lexer(Ito(source))))
+print(vis_compact.dumps(*Lexer(Ito(source))))
 
 print(*vis_boxer.from_srcs('PARSER',), sep=os.linesep)
 for p in Parser(source):

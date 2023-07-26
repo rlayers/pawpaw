@@ -11,17 +11,15 @@ def Parser(source: str) -> typing.Iterable[str]:
     indents = list[pawpaw.Ito]()
     expression = list[pawpaw.Ito]()
 
-    final = pawpaw.Ito(source, -1, desc='EOF')
-    final.children.add(final.clone(desc='value'))
-
     yield 'PROGRAM_START'
 
+    final = pawpaw.Ito(source, -1, desc='EOF')
     for ito in itertools.chain.from_iterable([Lexer(pawpaw.Ito(source)), (final,)]):
+
         if ito.desc is None:
             raise f'unknown token {ito:%substr!r} at {ito.to_line_col(NEWLINES[0])}'
         
         if ito.desc in ('INDENT', 'EOF'):
-
             if len(indents) == 0:
                 if ito.desc == 'INDENT':
                     yield 'BLOCK_START'

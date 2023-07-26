@@ -11,7 +11,7 @@ def Parser(source: str) -> typing.Iterable[str]:
     indents = list[pawpaw.Ito]()
     expression = list[pawpaw.Ito]()
 
-    final = pawpaw.Ito(source, -1, desc='INDENT')
+    final = pawpaw.Ito(source, -1, desc='EOF')
     final.children.add(final.clone(desc='value'))
 
     yield 'PROGRAM_START'
@@ -20,7 +20,8 @@ def Parser(source: str) -> typing.Iterable[str]:
         if ito.desc is None:
             raise f'unknown token {ito:%substr!r} at {ito.to_line_col(NEWLINES[0])}'
         
-        if ito.desc in ('INDENT'):
+        if ito.desc in ('INDENT', 'EOF'):
+
             if len(indents) == 0:
                 if ito.desc == 'INDENT':
                     yield 'BLOCK_START'
@@ -28,23 +29,25 @@ def Parser(source: str) -> typing.Iterable[str]:
                     indents.append(ito)
             
             else:
+                indent_cur = 0 if ito.desc == 'EOF' else len(ito.find('*[d:value]'))
+                
                 while len(indents) > 0:
-                    indent_cur = 0 if ito.desc == 'EOF' else len(ito.find('*[d:value]'))
                     indent_last = len(indents[-1].find('*[d:value]'))
 
                     if indent_cur > indent_last:
                         break
 
                     if len(expression) > 0:
-                        yield f'expr: {[str(i) for i in expression]}'
+                        # yield f'expr: {[str(i) for i in expression]}'
+                        yield f'expr: {[i.desc for i in expression]}'
                         expression.clear()
                         yield 'EXPRESSION_STOP'
                         
-                    if indent_cur < indent_last:
+                    if indent_cur < indent_last or ito.desc == 'EOF':
                         yield 'BLOCK_STOP'
                         indents.pop()
 
-                    elif indent_cur == indent_last:
+                    if ito.desc == 'INDENT' and indent_cur == indent_last:
                         yield 'EXPRESSION_START'
                         break
 

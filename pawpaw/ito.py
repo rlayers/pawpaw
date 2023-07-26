@@ -1522,7 +1522,8 @@ class ChildItos(collections.abc.Sequence):
     # region __repr__
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}(parent={self.__parent.__repr__()}, *{self.__store.__repr__()}'    
+        return f'{type(self).__name__}(parent={self.__parent.__repr__()}, *{self.__store.__repr__()}'
+        # return f'{type(self).__name__}({self:span=%span, desc=%desc!r, substr=%substr!r'})'  # TODO: Use this for repr & update docs
 
     # endregion
 

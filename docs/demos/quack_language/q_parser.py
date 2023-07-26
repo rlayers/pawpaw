@@ -7,6 +7,10 @@ import pawpaw
 from q_lexer import Lexer, NEWLINES
 
 
+def line_col(ito: pawpaw.Ito) -> str:
+    lc = ito.to_line_col(NEWLINES[0])
+    return f'Ln {lc[0]}, Col {lc[1]}'
+
 def Parser(source: str) -> typing.Iterable[str]:
     indents = list[pawpaw.Ito]()
     expression = list[pawpaw.Ito]()
@@ -17,14 +21,14 @@ def Parser(source: str) -> typing.Iterable[str]:
     for ito in itertools.chain.from_iterable([Lexer(pawpaw.Ito(source)), (final,)]):
 
         if ito.desc is None:
-            raise f'unknown token {ito:%substr!r} at {ito.to_line_col(NEWLINES[0])}'
+            raise Exception(f'unknown token {ito:%substr!r} at {ito.to_line_col(NEWLINES[0])}')
         
         if ito.desc in ('INDENT', 'EOF'):
             if len(indents) == 0:
                 if ito.desc == 'INDENT':
                     yield 'BLOCK_START'
-                    yield 'EXPRESSION_START'
                     indents.append(ito)
+                    yield 'EXPRESSION_START'
             
             else:
                 indent_cur = 0 if ito.desc == 'EOF' else len(ito.find('*[d:value]'))
@@ -33,11 +37,22 @@ def Parser(source: str) -> typing.Iterable[str]:
                     indent_last = len(indents[-1].find('*[d:value]'))
 
                     if indent_cur > indent_last:
+                        if len(expression) > 0 and expression[-1].desc == 'COLON':
+                            yield f'expr: {pawpaw.Ito.join(*expression):%substr!r}'
+                            # yield f'expr: {[i.desc for i in expression]}'
+                            expression.clear()
+                            yield 'EXPRESSION_STOP'
+                            yield 'BLOCK_START'
+                            indents.append(ito)
+                            yield 'EXPRESSION_START'
                         break
 
+                    if len(expression) > 0 and expression[-1].desc == 'COLON':
+                        raise Exception(f'missing indent at {line_col(ito)} following colon at {line_col(expression[-1])}')
+
                     if len(expression) > 0:
-                        # yield f'expr: {[str(i) for i in expression]}'
-                        yield f'expr: {[i.desc for i in expression]}'
+                        yield f'expr: {pawpaw.Ito.join(*expression):%substr!r}'
+                        # yield f'expr: {[i.desc for i in expression]}'
                         expression.clear()
                         yield 'EXPRESSION_STOP'
                         

@@ -33,10 +33,10 @@ Pawpaw is a high performance parsing & text segmentation framework that allows y
   - Quickly and easily convert unstructured text into structured, indexed, & searchable tree graphs
   - Pre-process text for downstream NLP/AI/ML consumers
 - XML Processing
-  - Features a drop-in replacement for ElementTree.XmlParser
+  - Features a drop-in replacement for ``ElementTree.XmlParser``
   - Full text indices for all elements, attributes, tags, text, etc.
   - Search the resulting XML using either XPATH and/or plumule
-  - Extract *both* ElementTree and Pawpaw datastructures in one go; with cross-linked nodes between trees
+  - Extract *both* ``ElementTree`` and Pawpaw datastructures in one go; with cross-linked nodes between trees
 - NLP Support:
   - Pawpaw is ideal for both a) *preprocessing* unstructured text for downstream NLP consumption and b) *storing and searching* NLP generated content
   - Works with other libraries, such as [NLTK](https://www.nltk.org/)
@@ -44,7 +44,7 @@ Pawpaw is a high performance parsing & text segmentation framework that allows y
   - Security option enables persistence of index-only data, with reference strings re-injected during de-serialization 
 - Stable & Defect Free
   - Over 4,500 unit tests and counting!
-  - Pure python, with only one external dependency: [regex](https://github.com/mrabarnett/mrab-regex)
+  - Pure Python, with only one external dependency: [regex](https://github.com/mrabarnett/mrab-regex)
 
 <div align="center">
   <a href="https://github.com/rlayers/pawpaw/tree/master/docs">Explore the docs</a>

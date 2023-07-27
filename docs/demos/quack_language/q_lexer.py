@@ -7,6 +7,11 @@ import pawpaw
 
 # DEFINE PATTERNS
 
+# EOF
+eofs = [
+    regex.compile(r'(?r)(?<EOF>\s*\Z)'),  # use reverse search to get around zero-width condition multiple matches
+]
+
 # string literals
 STRING_PREFIXES = ['f', 'm', 'r']
 string_literals = [
@@ -15,7 +20,7 @@ string_literals = [
 ]
 
 # blank lines
-NEWLINES = ['\n']
+NEWLINES = ['\n', '\r\n']
 WHITESPACE = [' ', '\t']
 blank_lines = [
     regex.compile(r'\L<whitespace>*(?=\L<newline>)', regex.DOTALL, whitespace=WHITESPACE, newline=NEWLINES),
@@ -24,9 +29,7 @@ blank_lines = [
 
 # indents
 indents = [
-    regex.compile(r'(?<BOF>^)', regex.DOTALL),
     regex.compile(r'(?<INDENT>(?:^|\L<newline>)(?P<value>\L<whitespace>*))(?!\L<newline>)', regex.DOTALL, newline=NEWLINES, whitespace=WHITESPACE),
-    regex.compile(r'(?<EOF>(?:\L<newline>\L<whitespace>*)*$)', regex.DOTALL, newline=NEWLINES, whitespace=WHITESPACE),
 ]
 
 # comments
@@ -235,7 +238,7 @@ def append_exacts(items: typing.Iterable):
         con = pawpaw.arborform.Connectors.Recurse(itor, lambda ito: ito.desc is None)
         Lexer.connections.append(con)
 
-append_extractions(string_literals)
+append_extractions(itertools.chain(eofs, string_literals))
 
 append_deletes(blank_lines)
 

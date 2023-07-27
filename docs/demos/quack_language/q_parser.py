@@ -24,8 +24,7 @@ def Parser(source: str) -> typing.Iterable[str]:
 
     yield 'PROGRAM_START'
 
-    final = pawpaw.Ito(source, -1, desc='EOF')
-    for ito in itertools.chain.from_iterable([Lexer(pawpaw.Ito(source)), (final,)]):
+    for ito in Lexer(pawpaw.Ito(source)):
 
         if ito.desc is None:
             raise Exception(f'unknown token {ito:%substr!r} at {ito.to_line_col(NEWLINES[0])}')

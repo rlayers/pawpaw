@@ -496,7 +496,7 @@ class Ito:
         return not self.__eq__(o)
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}({self._string.__repr__()}, {self.start}, {self.stop}, {self.desc.__repr__()})'
+        return f'{type(self).__name__}({self:span=%span, desc=%desc!r, substr=%substr!r})'
 
     def __str__(self) -> str:
         return self._string[slice(*self.span)]
@@ -1523,7 +1523,6 @@ class ChildItos(collections.abc.Sequence):
 
     def __repr__(self) -> str:
         return f'{type(self).__name__}(parent={self.__parent.__repr__()}, *{self.__store.__repr__()}'
-        # return f'{type(self).__name__}({self:span=%span, desc=%desc!r, substr=%substr!r'})'  # TODO: Use this for repr & update docs
 
     # endregion
 

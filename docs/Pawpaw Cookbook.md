@@ -8,7 +8,8 @@
 >>> s = ' abc '
 >>> i = Ito(s, 1, -1)
 >>> [*i]
-[Ito(' abc ', 1, 2, None), Ito(' abc ', 2, 3, None), Ito(' abc ', 3, 4, None)]
+[Ito(span=(1, 2), desc='', substr='a'), Ito(span=(2, 3), desc='', substr='b'), Ito(span=(3, 4), desc='', substr='c')]
+
 ```
 
 ### Extract all characters as ``str`` 
@@ -35,7 +36,7 @@ a b c
 >>> i = Ito(s, 1, -1)
 >>> i.children.add(*i)
 >>> [*i.children]
-[Ito(' abc ', 1, 2, None), Ito(' abc ', 2, 3, None), Ito(' abc ', 3, 4, None)]
+[Ito(span=(1, 2), desc='', substr='a'), Ito(span=(2, 3), desc='', substr='b'), Ito(span=(3, 4), desc='', substr='c')]
 ```
 
 ### Create a char-extracting ``Itorator``
@@ -73,7 +74,7 @@ a b c
    └──(75, 81) 'Word' : 'Irving'
 ```
 
-### Extract children and then extract a second set of children based on the leftover space
+### Extract children and then extract a second set of children based on the leftover space without using ``Gaps``
 
 **Code:**
 

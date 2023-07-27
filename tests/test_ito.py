@@ -218,11 +218,10 @@ class TestIto(_TestIto):
         desc = 'd'
         for ito in Ito(s, *span, desc), IntIto(s, *span, desc):
             with self.subTest(string=s, ito=ito):
-                expected = f'{type(ito).__name__}({s.__repr__()}, {span.start}, {span.stop}, {desc.__repr__()})'
+                expected = f'{type(ito).__name__}(span=({ito.start}, {ito.stop}), desc={ito.desc!r}, substr={str(ito)!r})'
                 actual = ito.__repr__()
                 self.assertEqual(expected, actual)
-                self.assertEqual(ito, eval(actual))
-    
+
     def test_str(self):
         s = 'x123x'
         for span in Span(0, len(s)), Span(1, len(s) - 1):

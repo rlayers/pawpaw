@@ -43,8 +43,8 @@ Pawpaw is a high performance parsing & text segmentation framework that allows y
 - Efficient pickling and JSON persistence
   - Security option enables persistence of index-only data, with reference strings re-injected during de-serialization 
 - Stable & Defect Free
-  - Over 4,300 unit tests and counting!
-  - Pure python, with a single external dependency ([regex](https://github.com/mrabarnett/mrab-regex))
+  - Over 4,500 unit tests and counting!
+  - Pure python, with only one external dependency: [regex](https://github.com/mrabarnett/mrab-regex)
 
 <div align="center">
   <a href="https://github.com/rlayers/pawpaw/tree/master/docs">Explore the docs</a>
@@ -267,7 +267,7 @@ Whichever way you fetch Pawpaw, you can easily verify that it is installed corre
 ```python
 >>> from pawpaw import Ito
 >>> Ito('Hello, World!')
-Ito('Hello, World!', 0, 13, None)
+Ito(span=(0, 13), desc='', substr='Hello, World!')
 ```
   
 If your last line looks like this, you are up and running with Pawpaw!

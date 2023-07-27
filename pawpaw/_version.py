@@ -3,7 +3,7 @@ import typing
 
 import regex
 
-__version__ = '1.0.0rc3'
+__version__ = '1.0.0rc4'
 """The str literal that build, setup, documentation, and other tools typically want."""
 
 class Version:

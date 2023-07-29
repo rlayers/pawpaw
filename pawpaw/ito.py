@@ -1295,16 +1295,34 @@ class Ito:
 
     # region utility
 
-    def to_line_col(self, eol: str = os.linesep) -> tuple[int, int]:
-        prior_eol_idx = self.string.rfind(eol, 0, self.start)
-        if prior_eol_idx == -1:
+    def to_line_col(self, eol: str | regex.Pattern = os.linesep) -> tuple[int, int]:
+        if isinstance(eol, regex.Pattern):
             line = 1
-            col = self.start + 1
-        else:
-            line = self.string.count(eol, 0, prior_eol_idx) + 2
-            col = self.start - prior_eol_idx
+            col = 1
 
-        return line, col
+            m: regex.Match | None = None
+            for m in eol.finditer(self.string, endpos=self.start):
+                line += 1
+
+            if m is None:
+                col += self.start
+            else:
+                col += self.start - m.span()[1]
+
+            return line, col
+
+        if isinstance(eol, str):
+            prior_eol_idx = self.string.rfind(eol, 0, self.start)
+            if prior_eol_idx == -1:
+                line = 1
+                col = self.start + 1
+            else:
+                line = self.string.count(eol, 0, prior_eol_idx) + 2
+                col = self.start - (prior_eol_idx + len(eol)) + 1
+
+            return line, col
+
+        raise Errors.parameter_invalid_type('eol', eol, str, regex.Pattern)
 
     # endregion
 

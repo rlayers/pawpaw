@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod, abstractproperty
 import locale
+import typing
 
 import regex
 import pawpaw
@@ -8,94 +9,111 @@ from pawpaw import nuco
 # See https://www.unicode.org/Public/UNIDATA/NamesList.txt
 
 byte_order_controls = {
-    'Big-endian byte order mark':       '\uFEFF',   # "UTF-16BE"
-    'Little-endian byte order mark':    '\uFFFE',   # "UTF-16LE"
+    'Big-endian byte order mark': '\uFEFF',  # "UTF-16BE"
+    'Little-endian byte order mark': '\uFFFE',  # "UTF-16LE"
 }
 
 unicode_white_space_LF_FF = {
-    'LINE FEED':                    '\u000A',
-    'FORM FEED':                    '\u000C',
+    'LINE FEED': '\u000A',
+    'FORM FEED': '\u000C',
+}
+
+unicode_white_space_eol = {
+    'CARRIAGE RETURN': '\u000D',
+    'LINE FEED': '\u000A',
+    'NEXT LINE': '\u0085',
+    'LINE SEPARATOR': '\u2028',
+    'PARAGRAPH SEPARATOR': '\u2029',
 }
 
 unicode_white_space_other = {
-    'CHARACTER TABULATION':         '\u0009',
+    'CHARACTER TABULATION': '\u0009',
 
-    'CARRIAGE RETURN':              '\u000D',
+    'SPACE': '\u0020',
 
-    'SPACE':                        '\u0020',
+    'NO-BREAK SPACE': '\u00A0',
 
-    'NO-BREAK SPACE':               '\u00A0',
+    'EN QUAD': '\u2000',
+    'EM QUAD': '\u2001',
+    'EN SPACE': '\u2002',
+    'EM SPACE': '\u2003',
+    'THREE-PER-EM SPACE': '\u2004',
+    'FOUR-PER-EM SPACE': '\u2005',
+    'SIX-PER-EM SPACE': '\u2006',
+    'FIGURE SPACE': '\u2007',
+    'PUNCTUATION SPACE': '\u2008',
+    'THIN SPACE': '\u2009',
+    'HAIR SPACE': '\u200A',
+    'ZERO WIDTH SPACE': '\u200B',
 
-    'EN QUAD':                      '\u2000',
-    'EM QUAD':                      '\u2001',
-    'EN SPACE':                     '\u2002',
-    'EM SPACE':                     '\u2003',
-    'THREE-PER-EM SPACE':           '\u2004',
-    'FOUR-PER-EM SPACE':            '\u2005',
-    'SIX-PER-EM SPACE':             '\u2006',
-    'FIGURE SPACE':                 '\u2007',
-    'PUNCTUATION SPACE':            '\u2008',
-    'THIN SPACE':                   '\u2009',
-    'HAIR SPACE':                   '\u200A',
-    'ZERO WIDTH SPACE':             '\u200B',
+    'NARROW NO-BREAK SPACE': '\u202F',
 
-    'NARROW NO-BREAK SPACE':        '\u202F',
-    
-    'MEDIUM MATHEMATICAL SPACE':    '\u205F',
+    'MEDIUM MATHEMATICAL SPACE': '\u205F',
 
-    'IDEOGRAPHIC SPACE':            '\u3000',
+    'IDEOGRAPHIC SPACE': '\u3000',
 }
 
 unicode_single_quote_marks = {
-    'APOSTROPHE':                                           '\u0027',
-    'GRAVE ACCENT':                                         '\u0060',
-    'ACUTE ACCENT':                                         '\u00B4',
+    'APOSTROPHE': '\u0027',
+    'GRAVE ACCENT': '\u0060',
+    'ACUTE ACCENT': '\u00B4',
 
-    'LEFT SINGLE QUOTATION MARK':                           '\u2018',
-    'RIGHT SINGLE QUOTATION MARK':                          '\u2019',
+    'LEFT SINGLE QUOTATION MARK': '\u2018',
+    'RIGHT SINGLE QUOTATION MARK': '\u2019',
 
-    'SINGLE LOW-9 QUOTATION MARK':                          '\u201A',
-    'SINGLE HIGH-REVERSED-9 QUOTATION MARK':                '\u201B',
+    'SINGLE LOW-9 QUOTATION MARK': '\u201A',
+    'SINGLE HIGH-REVERSED-9 QUOTATION MARK': '\u201B',
 
-    'HEAVY SINGLE TURNED COMMA QUOTATION MARK ORNAMENT':    '\u275B',
-    'HEAVY SINGLE COMMA QUOTATION MARK ORNAMENT':           '\u275C',
+    'HEAVY SINGLE TURNED COMMA QUOTATION MARK ORNAMENT': '\u275B',
+    'HEAVY SINGLE COMMA QUOTATION MARK ORNAMENT': '\u275C',
 
-    'HEAVY LOW SINGLE COMMA QUOTATION MARK ORNAMENT':       '\u275F',
+    'HEAVY LOW SINGLE COMMA QUOTATION MARK ORNAMENT': '\u275F',
 }
 
 unicode_double_quote_marks = {
-    'QUOTATION MARK':                                       '\u0022',
+    'QUOTATION MARK': '\u0022',
 
-    'LEFT DOUBLE QUOTATION MARK':                           '\u201C',
-    'RIGHT DOUBLE QUOTATION MARK':                          '\u201D',
+    'LEFT DOUBLE QUOTATION MARK': '\u201C',
+    'RIGHT DOUBLE QUOTATION MARK': '\u201D',
 
-    'DOUBLE LOW-9 QUOTATION MARK':                          '\u201E',
-    'DOUBLE HIGH-REVERSED-9 QUOTATION MARK':                '\u201F',
+    'DOUBLE LOW-9 QUOTATION MARK': '\u201E',
+    'DOUBLE HIGH-REVERSED-9 QUOTATION MARK': '\u201F',
 
-    'HEAVY DOUBLE TURNED COMMA QUOTATION MARK ORNAMENT':    '\u275D',
-    'HEAVY DOUBLE COMMA QUOTATION MARK ORNAMENT':           '\u275E',
+    'HEAVY DOUBLE TURNED COMMA QUOTATION MARK ORNAMENT': '\u275D',
+    'HEAVY DOUBLE COMMA QUOTATION MARK ORNAMENT': '\u275E',
 
-    'HEAVY LOW DOUBLE COMMA QUOTATION MARK ORNAMENT':       '\u2760',
+    'HEAVY LOW DOUBLE COMMA QUOTATION MARK ORNAMENT': '\u2760',
 }
 
 unicode_bullets = {
-    'BULLET':                                               '\u2022',  # •
-    'TRIANGULAR BULLET':                                    '\u2023',  # ‣
-    'HYPHEN BULLET':                                        '\u2043',  # ⁃
-    'BLACK LEFTWARDS BULLET':                               '\u204C',  # ⁌
-    'BLACK RIGHTWARDS BULLET':                              '\u204D',  # ⁍
-    'BULLET OPERATOR':                                      '\u2219',  # ∙
-    'BLACK VERY SMALL SQUARE':                              '\u2B1D',  # ⬝
-    'BLACK SMALL SQUARE aka SQUARE BULLET':                 '\u25AA',  # ▪
-    'FISHEYE aka tainome':                                  '\u25C9',  # ◉
-    'INVERSE BULLET':                                       '\u25D8',  # ◘
-    'WHITE BULLET':                                         '\u25E6',  # ◦
-    'REVERSED ROTATED FLORAL HEART BULLET':                 '\u2619',  # ☙
+    'BULLET': '\u2022',  # •
+    'TRIANGULAR BULLET': '\u2023',  # ‣
+    'HYPHEN BULLET': '\u2043',  # ⁃
+    'BLACK LEFTWARDS BULLET': '\u204C',  # ⁌
+    'BLACK RIGHTWARDS BULLET': '\u204D',  # ⁍
+    'BULLET OPERATOR': '\u2219',  # ∙
+    'BLACK VERY SMALL SQUARE': '\u2B1D',  # ⬝
+    'BLACK SMALL SQUARE aka SQUARE BULLET': '\u25AA',  # ▪
+    'FISHEYE aka tainome': '\u25C9',  # ◉
+    'INVERSE BULLET': '\u25D8',  # ◘
+    'WHITE BULLET': '\u25E6',  # ◦
+    'REVERSED ROTATED FLORAL HEART BULLET': '\u2619',  # ☙
 }
+
+
+def to_re_char_set(chars: typing.Iterable[str] | dict[str, str], inclusive: bool = True) -> str:
+    if isinstance(chars, dict):
+        chars = list(chars.values())
+    elif not pawpaw._type_magic.isinstance_ex(chars, typing.Iterable[str]):
+        raise pawpaw.Errors.parameter_invalid_type('chars', chars, typing.Iterable)
+    return f'[{"" if inclusive else "^"}{regex.escape("".join(chars))}]'
+
 
 trimmable_ws = list(byte_order_controls.values())
 trimmable_ws.extend(unicode_white_space_LF_FF.values())
+trimmable_ws.extend(unicode_white_space_eol.values())
 trimmable_ws.extend(unicode_white_space_other.values())
+
 
 class NlpComponent(ABC):
     @abstractproperty
@@ -126,9 +144,9 @@ class Number:
 
     def build_num_pat_re(self) -> tuple[str, regex]:
         num_pat = f'(?P<number>{self._sign_pat}?' \
-            f'(?:{self._int_pat}{self._decimal_pat}?' \
-            f'|{self._decimal_pat})' \
-            f'{self._sci_exp_pat}?)'
+                  f'(?:{self._int_pat}{self._decimal_pat}?' \
+                  f'|{self._decimal_pat})' \
+                  f'{self._sci_exp_pat}?)'
         re = regex.compile(num_pat, regex.DOTALL)
         return num_pat, re
 
@@ -181,7 +199,7 @@ class Number:
     @thousands_sep_optional.setter
     def thousands_sep_optional(self, thousands_sep_optional: bool) -> None:
         self._thousands_sep_optional = thousands_sep_optional
-        self.build_num_pat_re()        
+        self.build_num_pat_re()
 
     @property
     def integer_pat(self) -> str:
@@ -217,7 +235,7 @@ class KeyedPrefix:
         §{1,2}          :  Section (Silcrow) : "16 U.S.C. § 580(p)",  "§§ 13–21"
         [A-Z]{1,2}      :
         [MDCLXVI]+      : Latin numerals (could be case insensitive - but should all be same case)
-       
+
     """
 
     # \d+[sepchar]    : 1) 2. 3] 4:
@@ -231,23 +249,19 @@ class KeyedPrefix:
 
 
 class Paragraph(NlpComponent):
-    _paragraph_pat = r'(?:\r?\n\L<other_ws>*){2,}'
-    _paragraph_re = regex.compile(_paragraph_pat, regex.DOTALL, other_ws=unicode_white_space_other.values())
-
     def __init__(self, min_newlines: int = 2):
         self._re: regex.Pattern
         self.min_newlines = min_newlines
 
     @property
     def min_newlines(self) -> int:
-        return self._min_newlines 
+        return self._min_newlines
 
     @min_newlines.setter
     def min_newlines(self, val: int):
         if isinstance(val, int):
             self._min_newlines = val
-            pat = r'(?:\r?\n\L<other_ws>*){' + str(self._min_newlines) + ',}'
-            self._re = regex.compile(pat, regex.DOTALL, other_ws=unicode_white_space_other.values())
+            self._re = regex.compile(fr'{to_re_char_set(unicode_white_space_eol)}{{{val},}}', regex.DOTALL)
         else:
             raise pawpaw.Errors.parameter_invalid_type('val', val, int)
 
@@ -258,7 +272,8 @@ class Paragraph(NlpComponent):
     def get_itor(self) -> pawpaw.arborform.Itorator:
         rv = pawpaw.arborform.Split(self._re, non_boundary_desc='paragraph', tag='para splitter')
 
-        ws_trimmer = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.str_strip(''.join(trimmable_ws))], tag='para trimmer')
+        ws_trimmer = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.str_strip(''.join(trimmable_ws))],
+                                                    tag='para trimmer')
         con = pawpaw.arborform.Connectors.Recurse(ws_trimmer)
         rv.connections.append(con)
 
@@ -271,9 +286,9 @@ class Sentence(NlpComponent):
     _prefix_chars.extend(c for c in '([{')
 
     _terminators = [
-        r'\.',      # Full stop
+        r'\.',  # Full stop
         r'\.{3,}',  # Ellipses; three periods
-        r'…',       # Ellipses char
+        r'…',  # Ellipses char
         r'[\!\?]+'  # Exclamation & Question mark(s)
     ]
 
@@ -299,76 +314,76 @@ class Sentence(NlpComponent):
 
     # Common abbrs that are typically followed by a digit
     _numeric_abbrs = [
-        'c.',      # circa
-        'ca.',     # circa
-        'ed.',     # edition
+        'c.',  # circa
+        'ca.',  # circa
+        'ed.',  # edition
         'illus.',  # circa
-        'no.',     # number
-        'p.',      # page
-        'pp.',     # pages
-        'ver.',    # version
-        'vol.',    # volume
+        'no.',  # number
+        'p.',  # page
+        'pp.',  # pages
+        'ver.',  # version
+        'vol.',  # volume
     ]
 
     # Common abbrs that are typically not sentence boundaries, even when followed by uppercase
     _ignore_abbrs = [
-        'Ald.',     # Alderman
-        'Asst.',    # Assistent
-        'Dr.',      # Doctor
-        'Drs.',     # Doctors
-        'ed.',      # editor
-        'e.g.',     # exempli gratia
-        'Fr.',      # Father
-        'Gov.',     # Governor
-        'Hon.',     # Honorable (sometimes Rt. Hon. for Right Honorable)
-        'ibid.',    # ibidem
-        'i.e.',     # ed est
-        'illus.',   # illustrated by
-        'Insp.',    # Inspector
+        'Ald.',  # Alderman
+        'Asst.',  # Assistent
+        'Dr.',  # Doctor
+        'Drs.',  # Doctors
+        'ed.',  # editor
+        'e.g.',  # exempli gratia
+        'Fr.',  # Father
+        'Gov.',  # Governor
+        'Hon.',  # Honorable (sometimes Rt. Hon. for Right Honorable)
+        'ibid.',  # ibidem
+        'i.e.',  # ed est
+        'illus.',  # illustrated by
+        'Insp.',  # Inspector
         'Messrs.',  # plural of Mr.
-        'Mlle.',    # Mademoiselle
-        'Mmes.',    # Missus
-        'Mr.',      # Mister
-        'Mrs.',     # plural of Mrs.
-        'Ms.',      # Miss
-        'Msgr.',    # Monsignor  
-        'Mt.',      # Mount / Mountain
-        'pub.',     # published by / publisher
-        'pseud.',   # pseudonym
-        'Pres.',    # President
-        'Prof.',    # Professor
-        'qtd.',     # quoted in
-        'Rep.',     # Representative
-        'Reps.',    # Representatives
-        'Rev.',     # Reverend
-        'Sen.',     # Senator
-        'Sens.',    # Senators
-        'St.',      # Saint
-        'vis.',     # videlicet
-        'v.',       # versus
-        'vs.',      # versus
+        'Mlle.',  # Mademoiselle
+        'Mmes.',  # Missus
+        'Mr.',  # Mister
+        'Mrs.',  # plural of Mrs.
+        'Ms.',  # Miss
+        'Msgr.',  # Monsignor
+        'Mt.',  # Mount / Mountain
+        'pub.',  # published by / publisher
+        'pseud.',  # pseudonym
+        'Pres.',  # President
+        'Prof.',  # Professor
+        'qtd.',  # quoted in
+        'Rep.',  # Representative
+        'Reps.',  # Representatives
+        'Rev.',  # Reverend
+        'Sen.',  # Senator
+        'Sens.',  # Senators
+        'St.',  # Saint
+        'vis.',  # videlicet
+        'v.',  # versus
+        'vs.',  # versus
     ]
 
     # Military officer abbrs: see https://pavilion.dinfos.edu/Article/Article/2205094/military-rank-abbreviations/
     _mil_officer_abbrs = [
-        'Lt.',         # Lieutenant
-        'Capt.',       # Captain
-        'Cpt.',        # Captain
-        'Maj.',        # Major
-        'Cmdr.',       # Commander
-        'Col.',        # Colonel
-        'Brig.',       # Brigadier (as in Brigadier General)
-        'Gen.',        # General
-        'Adm.',        # Admiral
+        'Lt.',  # Lieutenant
+        'Capt.',  # Captain
+        'Cpt.',  # Captain
+        'Maj.',  # Major
+        'Cmdr.',  # Commander
+        'Col.',  # Colonel
+        'Brig.',  # Brigadier (as in Brigadier General)
+        'Gen.',  # General
+        'Adm.',  # Admiral
     ]
 
     # Military enlisted abbrs: see https://pavilion.dinfos.edu/Article/Article/2205094/military-rank-abbreviations/
     _mil_enlisted_abbrs = [
-        'Pvt.',      # Private
-        'Pfc.',      # Private First Class
-        'Spc.',      # Specialist
-        'Cpl.',      # Corporal
-        'Sgt.',      # Sergeant
+        'Pvt.',  # Private
+        'Pfc.',  # Private First Class
+        'Spc.',  # Specialist
+        'Cpl.',  # Corporal
+        'Sgt.',  # Sergeant
     ]
 
     _ignores = _ignore_abbrs
@@ -379,10 +394,10 @@ class Sentence(NlpComponent):
     _sen_ws.extend(unicode_white_space_other.values())
 
     _exceptions = [
-        r'(?<!\L<ignores>)',                                            # Ignores 
-        r'(?<!\L<num_abbrs>(?=\L<sen_ws>\d))',                          # Numeric abbr followed by a digit
+        r'(?<!\L<ignores>)',  # Ignores
+        r'(?<!\L<num_abbrs>(?=\L<sen_ws>\d))',  # Numeric abbr followed by a digit
         r'(?<![A-Z][a-z]+\L<sen_ws>[A-Z]\.(?=\L<sen_ws>[A-Z][a-z]+))',  # Common human name pattern
-        r'(?<!U\.S\.(?=\L<sen_ws>Government))',                         # "U.S. Government"
+        r'(?<!U\.S\.(?=\L<sen_ws>Government))',  # "U.S. Government"
     ]
 
     _rules = [
@@ -391,13 +406,13 @@ class Sentence(NlpComponent):
 
         # Suffix
         # r'(?<=\L<sen_suf>+)\L<sen_ws>*',
-        
+
         # Two or more whitespace
         r'\L<sen_ws>{2,}',
-        
+
         # High frequency sentence start word
         r'\L<sen_ws>(?=\L<sen_pre>*\L<hf_starts>\L<sen_ws>)',
-        
+
         # Catch all with exceptions
         r''.join(_exceptions) + r'\L<sen_ws>(?=\L<sen_pre>*[A-Z\d])',
     ]
@@ -420,7 +435,7 @@ class Sentence(NlpComponent):
         return self._re
 
     def get_itor(self) -> pawpaw.arborform.Itorator:
-        return pawpaw.arborform.Split(Sentence().re, non_boundary_desc='sentence', tag='sentence')       
+        return pawpaw.arborform.Split(Sentence().re, non_boundary_desc='sentence', tag='sentence')
 
 
 class SimpleNlp:
@@ -439,8 +454,9 @@ class SimpleNlp:
         con = pawpaw.arborform.Connectors.Children.Add(sentence)
         paragraph.connections.append(con)
 
-        self._number = number |nuco| Number()
-        word_num_re = regex.compile(self._number.num_pat + r'|(?P<word>' + self._word_pat + r')', regex.DOTALL, sqs=list(unicode_single_quote_marks.values()))
+        self._number = number | nuco | Number()
+        word_num_re = regex.compile(self._number.num_pat + r'|(?P<word>' + self._word_pat + r')', regex.DOTALL,
+                                    sqs=list(unicode_single_quote_marks.values()))
 
         word_number = pawpaw.arborform.Extract(word_num_re)
         con = pawpaw.arborform.Connectors.Children.Add(word_number)

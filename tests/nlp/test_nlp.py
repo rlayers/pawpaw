@@ -199,7 +199,7 @@ class TestSimpleNlp(_TestIto):
             },
 
             'One sentence with 5 words': {
-                'Dick said, "Look, look up!"':
+                'Dick said\r\n\r, "Look, look up!"':
                     {'Document': 1, 'paragraph': 1, 'sentence': 1, 'word': 5, 'number': 0}
             },
 

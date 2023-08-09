@@ -13,13 +13,7 @@ byte_order_controls = {
     'Little-endian byte order mark': '\uFFFE',  # "UTF-16LE"
 }
 
-unicode_white_space_LF_FF = {
-    'LINE FEED': '\u000A',
-    'FORM FEED': '\u000C',
-}
-
 unicode_white_space_eol = {
-    'CARRIAGE RETURN': '\u000D',
     'LINE FEED': '\u000A',
     'NEXT LINE': '\u0085',
     'LINE SEPARATOR': '\u2028',
@@ -28,9 +22,9 @@ unicode_white_space_eol = {
 
 unicode_white_space_other = {
     'CHARACTER TABULATION': '\u0009',
-
+    'FORM FEED': '\u000C',
+    'CARRIAGE RETURN': '\u000D',
     'SPACE': '\u0020',
-
     'NO-BREAK SPACE': '\u00A0',
 
     'EN QUAD': '\u2000',
@@ -110,7 +104,6 @@ def to_re_char_set(chars: typing.Iterable[str] | dict[str, str], inclusive: bool
 
 
 trimmable_ws = list(byte_order_controls.values())
-trimmable_ws.extend(unicode_white_space_LF_FF.values())
 trimmable_ws.extend(unicode_white_space_eol.values())
 trimmable_ws.extend(unicode_white_space_other.values())
 
@@ -142,7 +135,7 @@ class Number:
     def build_decimal_pat(self) -> str:
         return r'(?P<decimal>' + regex.escape(self.decimal_point) + r'\d+)'
 
-    def build_num_pat_re(self) -> tuple[str, regex]:
+    def build_num_pat_re(self) -> tuple[str, regex.Pattern]:
         num_pat = f'(?P<number>{self._sign_pat}?' \
                   f'(?:{self._int_pat}{self._decimal_pat}?' \
                   f'|{self._decimal_pat})' \
@@ -249,19 +242,35 @@ class KeyedPrefix:
 
 
 class Paragraph(NlpComponent):
-    def __init__(self, min_newlines: int = 2):
-        self._re: regex.Pattern
-        self.min_newlines = min_newlines
+    def __init__(self, min_separators: int = 2):
+        self._separators: list[str] = list(unicode_white_space_eol.values())
+        self._min_separators: int = min_separators
+        self._re: regex.Pattern = self._build_re()
+
+    def _build_re(self) -> regex.Pattern:
+        return regex.compile(rf'(?:{to_re_char_set(unicode_white_space_other)}*\L<para_seps>){{{self._min_separators},}}', regex.DOTALL, para_seps=self._separators)
 
     @property
-    def min_newlines(self) -> int:
-        return self._min_newlines
+    def separators(self) -> list[str]:
+        return list[self._separators]
 
-    @min_newlines.setter
-    def min_newlines(self, val: int):
+    @separators.setter
+    def separators(self, val: typing.Iterable[str]):
+        if pawpaw._type_magic.isinstance_ex(val, typing.Iterable[str]):
+            self._separators = list[val]
+            self._re = self._build_re()
+        else:
+            raise pawpaw.Errors.parameter_invalid_type('val', val, typing.Iterable[str])
+
+    @property
+    def min_separators(self) -> int:
+        return self._min_separators
+
+    @min_separators.setter
+    def min_separators(self, val: int):
         if isinstance(val, int):
-            self._min_newlines = val
-            self._re = regex.compile(fr'{to_re_char_set(unicode_white_space_eol)}{{{val},}}', regex.DOTALL)
+            self._min_separators = val
+            self._re = self._build_re()
         else:
             raise pawpaw.Errors.parameter_invalid_type('val', val, int)
 
@@ -270,14 +279,16 @@ class Paragraph(NlpComponent):
         return self._re
 
     def get_itor(self) -> pawpaw.arborform.Itorator:
-        rv = pawpaw.arborform.Split(self._re, non_boundary_desc='paragraph', tag='para splitter')
+        ws_trimmer = pawpaw.arborform.Itorator.wrap(
+            lambda ito: [ito.str_strip(''.join(trimmable_ws))],
+            tag='para trimmer'
+        )
 
-        ws_trimmer = pawpaw.arborform.Itorator.wrap(lambda ito: [ito.str_strip(''.join(trimmable_ws))],
-                                                    tag='para trimmer')
-        con = pawpaw.arborform.Connectors.Recurse(ws_trimmer)
-        rv.connections.append(con)
+        para_splitter = pawpaw.arborform.Split(self._re, non_boundary_desc='paragraph', tag='para splitter')
+        con = pawpaw.arborform.Connectors.Recurse(para_splitter)
+        ws_trimmer.connections.append(con)
 
-        return rv
+        return ws_trimmer
 
 
 class Sentence(NlpComponent):

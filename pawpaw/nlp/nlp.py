@@ -1,10 +1,9 @@
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 import locale
 import typing
 
 import regex
 import pawpaw
-from pawpaw import nuco
 
 # See https://www.unicode.org/Public/UNIDATA/NamesList.txt
 
@@ -109,7 +108,7 @@ trimmable_ws.extend(unicode_white_space_other.values())
 
 
 class NlpComponent(ABC):
-    @abstractproperty
+    @abstractmethod
     @property
     def re(self) -> regex.Pattern:
         ...
@@ -252,7 +251,7 @@ class Paragraph(NlpComponent):
 
     @property
     def separators(self) -> list[str]:
-        return list[self._separators]
+        return list(self._separators)
 
     @separators.setter
     def separators(self, val: typing.Iterable[str]):
@@ -456,7 +455,7 @@ class SimpleNlp:
     def get_sentence(cls) -> pawpaw.arborform.Itorator:
         return pawpaw.arborform.Split(Sentence().re, non_boundary_desc='sentence', tag='sentence')
 
-    def __init__(self, number: Number | None = None, chars: bool = False):
+    def __init__(self, number: Number | None = Number(), chars: bool = False):
         super().__init__()
 
         paragraph = Paragraph().get_itor()
@@ -465,7 +464,7 @@ class SimpleNlp:
         con = pawpaw.arborform.Connectors.Children.Add(sentence)
         paragraph.connections.append(con)
 
-        self._number = number | nuco | Number()
+        self._number = number
         word_num_re = regex.compile(self._number.num_pat + r'|(?P<word>' + self._word_pat + r')', regex.DOTALL,
                                     sqs=list(unicode_single_quote_marks.values()))
 

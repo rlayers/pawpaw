@@ -36,7 +36,9 @@ class Connectors:
         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
             super().__init__(itorator, predicate)
 
-    Sub = Subroutine
+    class Nuco(Connector):
+         def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+            super().__init__(itorator, predicate)
 
     class Children:
         # cur.children.add(*f(cur))

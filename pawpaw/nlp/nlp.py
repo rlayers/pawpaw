@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, abstractproperty
 import locale
 import typing
 
@@ -108,7 +108,7 @@ trimmable_ws.extend(unicode_white_space_other.values())
 
 
 class NlpComponent(ABC):
-    @abstractmethod
+    @abstractproperty
     @property
     def re(self) -> regex.Pattern:
         ...
@@ -212,6 +212,13 @@ class Number:
     @property
     def re(self) -> regex.Pattern:
         return self._re
+    
+    def get_itor(self) -> pawpaw.arborform.Itorator:
+        return pawpaw.arborform.Extract(
+            self._re,
+            group_filter=lambda ito, m, gk: True,
+            tag='number extractor'
+        )
 
     # endregion
 

@@ -36,7 +36,7 @@ class Split(Itorator):
 
           * BoundaryRetention.TRAILING -> P- O- O- : boundaries kept as suffixes, trailing S is discarded
 
-          * BoundaryRetention.DISTINCT -> P- O- O- : all non-zero-length boundaries kept as distincts
+          * BoundaryRetention.DISTINCT -> P – O – O – : all non-zero-length boundaries kept as distincts
 
         Zero-length boundaries are allowable, and any resulting empty Ito's are discarded
 

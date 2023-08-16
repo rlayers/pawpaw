@@ -288,17 +288,18 @@ class Ito:
             yield cls(s, i, k, desc)
             i = k
 
+    __clone_desc_default = object()
     def clone(self,
               start: int | None = None,
               stop: int | None = None,
-              desc: str | None = None,
+              desc: str | None = __clone_desc_default,
               clone_children: bool = True
               ) -> pawpaw.Ito:
         rv = self.__class__(
             self._string,
             self.start if start is None else start,
             self.stop if stop is None else stop,
-            self.desc if desc is None else desc
+            self.desc if desc is self.__clone_desc_default else desc
         )
 
         if self._value_func is not None:

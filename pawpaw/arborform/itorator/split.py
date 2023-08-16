@@ -93,8 +93,8 @@ class Split(Itorator):
             self.tag if tag is None else tag)
 
     def _transform(self, ito: Ito) -> Types.C_IT_ITOS:
-        if self.limit == 0:
-            return ito,
+        if self.limit == 0 and self.return_zero_split:
+            return ito.clone(desc=self.non_boundary_desc, clone_children=False),
 
         rv: typing.List[Ito] = []
         
@@ -128,7 +128,7 @@ class Split(Itorator):
                 rv.append(ito.clone(start, stop, self.non_boundary_desc, False))
 
             if self.boundary_retention == self.BoundaryRetention.DISTINCT and (cur.start < cur.stop):
-                rv.append(ito.from_match(m, desc=self._boundary_desc(m, self.group_key)))
+                rv.append(ito.from_match_group(m, self.group_key, self._boundary_desc))
 
             prior = cur
 

@@ -127,3 +127,6 @@ class Ontology(dict):
             rv |= d
 
         return rv
+
+# MATHEMATICAL LEFT WHITE SQUARE BRACKET (U+27E6, Ps): ⟦
+# MATHEMATICAL RIGHT WHITE SQUARE BRACKET (U+27E7, Pe): ⟧

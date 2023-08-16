@@ -26,7 +26,7 @@ class TestPostorator(_TestIto):
     def test_post(self):
         for s in 'One', 'One Two', 'One Two Three', 'One Two Three Four':
             root = Ito(s, desc='root')
-            splitter = Split(regex.compile(r'\s+'))
+            splitter = Split(regex.compile(r'\s+'), non_boundary_desc=root.desc)
 
             rv = [*splitter(root)]
             self.assertListEqual(root.str_split(), rv)

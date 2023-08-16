@@ -24,7 +24,8 @@ class TestNumber(_TestIto):
         re = pawpaw.nlp.Number().re
         for name, s in self._valid_numbers.items():
             with self.subTest(name=name, string=s):
-                self.assertTrue(re.fullmatch(s) is not None)
+                m = next(re.finditer(s))
+                self.assertEqual(m.group(0), s)
 
     def test_num_invalid(self):
         re = pawpaw.nlp.Number().re
@@ -45,6 +46,15 @@ class TestNumber(_TestIto):
             with self.subTest(thousands_seps=sep):
                 with self.assertRaises((ValueError, TypeError)):
                     pawpaw.nlp.Number(thousands_sep=sep)
+
+    def test_itor(self):
+        s = ' '.join(self._valid_numbers.values())
+        s += ' word'
+        root = pawpaw.Ito(s)
+        rv = [i for i in pawpaw.nlp.Number().get_itor()(root) if not i.str_eq(' ')]
+        self.assertEqual(len(self._valid_numbers) + 1, len(rv))
+        self.assertTrue(all(i.desc == 'number' for i in rv[:-1]))
+        self.assertEqual('', rv[-1].desc)
 
 
 class TestSentence(_TestIto):
@@ -237,8 +247,8 @@ class TestSimpleNlp(_TestIto):
             }
         }.items():
             for text, counts in data.items():
+                result = nlp.from_text(text)
                 for desc, count in counts.items():
-                    result = nlp.from_text(text)
                     with self.subTest(name=name, desc=desc):
                         if result.desc == desc:
                             actual = 0 if result is None else 1

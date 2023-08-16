@@ -118,14 +118,14 @@ class NlpComponent(ABC):
         ...
 
 
-class Number:
+class Number(NlpComponent):
     _sign_pat = r'(?P<sign>[-+])'
     _sci_exp_e_notation_pat = r'[Ee]' + _sign_pat + r'?\d+'
     _sci_exp_x10_notation_pat = r' ?[Xx\u2715] ?10\^ ?' + _sign_pat + r'?\d+'
     _sci_exp_pat = r'(?P<exponent>' + '|'.join([_sci_exp_e_notation_pat, _sci_exp_x10_notation_pat]) + r')'
 
     def build_integer_pat(self) -> str:
-        rv = r'(?P<integer>\d{1,3}(?:' + regex.escape(self.thousands_sep) + r'\d{3})*'
+        rv = r'(?P<integer>\d{1,3}(?:' + regex.escape(self.thousands_sep) + r'\d{3})+'
         if self.thousands_sep_optional:
             rv += r'|\d+'
         rv += r')'
@@ -213,14 +213,15 @@ class Number:
     def re(self) -> regex.Pattern:
         return self._re
     
-    def get_itor(self) -> pawpaw.arborform.Itorator:
-        return pawpaw.arborform.Extract(
-            self._re,
-            group_filter=lambda ito, m, gk: True,
-            tag='number extractor'
-        )
-
     # endregion
+
+    def get_itor(self) -> pawpaw.arborform.Itorator:
+        return pawpaw.arborform.Split(
+            self._re,
+            group_key='number',
+            boundary_retention=pawpaw.arborform.Split.BoundaryRetention.DISTINCT,
+            tag='number splitter'
+        )
 
 
 class KeyedPrefix:
@@ -471,18 +472,20 @@ class SimpleNlp:
         con = pawpaw.arborform.Connectors.Children.Add(sentence)
         paragraph.connections.append(con)
 
-        self._number = number
-        word_num_re = regex.compile(self._number.num_pat + r'|(?P<word>' + self._word_pat + r')', regex.DOTALL,
-                                    sqs=list(unicode_single_quote_marks.values()))
-
-        word_number = pawpaw.arborform.Extract(word_num_re)
-        con = pawpaw.arborform.Connectors.Children.Add(word_number)
+        itor_num = number.get_itor()
+        con = pawpaw.arborform.Connectors.Children.Add(itor_num)
         sentence.connections.append(con)
+
+        word = pawpaw.arborform.Extract(
+            regex.compile(r'(?P<word>' + self._word_pat + r')', regex.DOTALL, sqs=list(unicode_single_quote_marks.values()))
+        )
+        con = pawpaw.arborform.Connectors.Delegate(word, lambda ito: ito.desc is None)
+        itor_num.connections.append(con)
 
         if chars:
             char = pawpaw.arborform.Extract(regex.compile(r'(?P<char>\w)', regex.DOTALL))
-            con = pawpaw.arborform.Connectors.Children.Add(char, lambda ito: ito.desc == 'word')
-            word_number.connections.append(con)
+            con = pawpaw.arborform.Connectors.Children.Add(char)
+            itor_num.connections.append(con)
 
         self.itor = paragraph
 

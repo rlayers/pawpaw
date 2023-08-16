@@ -4,7 +4,7 @@ import typing
 import itertools
 
 import regex
-from pawpaw import Span, Ito, Types
+from pawpaw import Errors, Span, Ito, Types, type_magic
 from pawpaw.arborform.itorator import Itorator
 
 
@@ -20,10 +20,10 @@ class Split(Itorator):
             self,
             re: regex.Pattern,
             limit: int | None = None,
-            group: int | str = 0,
+            group_key: int | str = 0,
             boundary_retention: BoundaryRetention = BoundaryRetention.NONE,
             return_zero_split: bool = True,
-            boundary_desc: str | Types.F_M_GK_2_DESC | None = None,
+            boundary_desc: str | Types.F_M_GK_2_DESC = lambda m, gk: str(gk),
             non_boundary_desc: str | None = None,
             tag: str | None = None
     ):
@@ -42,7 +42,7 @@ class Split(Itorator):
 
        Args:
         re: A regex pattern used to find matches
-        group: A key used to identify a group from the matches; the resulting group will be used as the
+        group_key: A key used to identify a group from the matches; the resulting group will be used as the
           boundary; defaults to 0 (the entire match)
         boundary_retention: A rule used to determine if boundaries are discarded, or else how they are kept
         return_zero_split: Indicates how to handle the zero-split condition; when True and splits occur,
@@ -58,17 +58,34 @@ class Split(Itorator):
         super().__init__(tag)
         self.re = re
         self.limit = limit
-        self.group = group
+        self.group_key = group_key
         self.boundary_retention = boundary_retention
         self.return_zero_split = return_zero_split
-        self.boundary_desc = boundary_desc
+
+        if isinstance(boundary_desc, str):
+            self._boundary_desc = lambda m, g: boundary_desc
+        else:
+            self.boundary_desc = boundary_desc
+
         self.non_boundary_desc = non_boundary_desc
+
+
+    @property
+    def boundary_desc(self) -> Types.F_M_GK_2_DESC:
+        return self._boundary_desc
+
+    @boundary_desc.setter
+    def boundary_desc(self, val: Types.F_M_GK_2_DESC) -> None:
+        if type_magic.functoid_isinstance(val, Types.F_M_GK_2_DESC):
+            self._boundary_desc = val
+        else:
+            raise Errors.parameter_invalid_type('val', val, Types.F_M_GK_2_DESC)
 
     def clone(self, tag: str | None = None) -> Split:
         return type(self())(
             self._re,
             self.limit,
-            self.group,
+            self.group_key,
             self.boundary_retention,
             self.return_zero_split,
             self.boundary_desc,
@@ -79,14 +96,12 @@ class Split(Itorator):
         if self.limit == 0:
             return ito,
 
-        boundary_ito_kwargs = {} if self.boundary_desc is None else {'desc': self.boundary_desc}
-
         rv: typing.List[Ito] = []
         
         count = 0
         prior: Span | None = None
         for m in itertools.takewhile(lambda i: self.limit is None or count < self.limit, ito.regex_finditer(self.re)):
-            cur = Span(*m.span(self.group))
+            cur = Span(*m.span(self.group_key))
             if prior is None:
                 if self.boundary_retention == self.BoundaryRetention.LEADING:
                     start = stop = 0
@@ -113,7 +128,7 @@ class Split(Itorator):
                 rv.append(ito.clone(start, stop, self.non_boundary_desc, False))
 
             if self.boundary_retention == self.BoundaryRetention.DISTINCT and (cur.start < cur.stop):
-                rv.append(ito.from_match(m, **boundary_ito_kwargs))
+                rv.append(ito.from_match(m, desc=self._boundary_desc(m, self.group_key)))
 
             prior = cur
 

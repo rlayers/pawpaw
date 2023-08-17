@@ -50,7 +50,7 @@ class RegexItorator(Itorator):
         elif type_magic.functoid_isinstance(group_filter, Types.P_ITO_M_GK):
             self._group_filter = group_filter
 
-        elif isinstance(group_filter, collections.abc.Container):
+        elif type_magic.isinstance_ex(group_filter, collections.abc.Container[Types.C_GK]):
             self._group_filter = lambda i, m_, gk: gk in group_filter
 
         else:

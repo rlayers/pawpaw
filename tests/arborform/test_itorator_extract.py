@@ -7,6 +7,38 @@ from tests.util import _TestIto
 
 
 class TestExtract(_TestIto):
+    valid_ctor_params = {
+        're': [regex.compile(r'\s+', regex.DOTALL)],
+        'limit': [-1, -0, 1, None],
+        'desc_func': [lambda ito, match, group_key: str(group_key)],
+        'group_filter': [[], ['a', 'b'], lambda ito, m, gk: isinstance(gk, int)],
+        'tag': ['abc', None],
+    }
+
+    def test_ctor_valid(self):
+        keys, values = zip(*self.valid_ctor_params.items())
+        for kwargs in [dict(zip(keys, v)) for v in itertools.product(*values)]:
+            with self.subTest(**kwargs):
+                itor = Extract(**kwargs)
+
+    invalid_ctor_params = {
+        're': [None, 1, 'abc'],
+        'limit': [1.0, 'abc'],
+        'desc_func': [None, 1, 'abc'],
+        'group_filter': [1],
+        'tag': [True, 1.3],
+    }
+
+    def test_ctor_invalid(self):
+        valids = {k: v[0] for k, v in self.valid_ctor_params.items()}
+        for k, vs in self.invalid_ctor_params.items():
+            invalids = dict(**valids)
+            for v in vs:
+                invalids[k] = v
+                with self.subTest(**invalids):
+                    with self.assertRaises(TypeError):
+                        itor = Extract(**invalids)
+
     def test_transform(self):
         s = 'ten 10 eleven 11 twelve 12 '
         root = Ito(s)

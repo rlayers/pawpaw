@@ -1,6 +1,9 @@
 from .itorator import Connectors, Itorator
 del itorator
 
+from .regex_itorator import RegexItorator
+del regex_itorator
+
 from .reflect import Reflect
 del reflect
 

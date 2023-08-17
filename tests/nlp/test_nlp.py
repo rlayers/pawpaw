@@ -54,7 +54,7 @@ class TestNumber(_TestIto):
         rv = [i for i in pawpaw.nlp.Number().get_itor()(root) if not i.str_eq(' ')]
         self.assertEqual(len(self._valid_numbers) + 1, len(rv))
         self.assertTrue(all(i.desc == 'number' for i in rv[:-1]))
-        self.assertEqual('', rv[-1].desc)
+        self.assertIsNone(rv[-1].desc)
 
 
 class TestSentence(_TestIto):

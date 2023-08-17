@@ -4,7 +4,7 @@ from pawpaw import arborform
 def get_parser() -> arborform.Itorator:
     school_splitter = arborform.Split(
         regex.compile(r'(?<=(?:^|\n))(?=School =)', regex.DOTALL),
-        non_boundary_desc='school',
+        desc='school',
         tag='school splitter')
 
     name_grades = arborform.Extract(
@@ -15,7 +15,7 @@ def get_parser() -> arborform.Itorator:
 
     grade_splitter = arborform.Split(
         regex.compile(r'(?<=\n)(?=Grade =)', regex.DOTALL),
-        non_boundary_desc='grade',
+        desc='grade',
         tag='grade splitter')
     con = arborform.Connectors.Delegate(grade_splitter, lambda ito: ito.desc == 'grades')
     name_grades.connections.append(con)

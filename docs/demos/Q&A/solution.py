@@ -7,7 +7,7 @@ in front of\nyou.\n\nAnd that is a letter [to] Alston\n& Bird...
 \n\nIs that correct?\n\nA This is correct.\n\nQ Okay."""
 
 # BUILD PARSER
-itor_split = arborform.Split(regex.compile(r'\n+(?=Q_? )', regex.DOTALL), non_boundary_desc='Q/A tuple')
+itor_split = arborform.Split(regex.compile(r'\n+(?=Q_? )', regex.DOTALL), desc='Q/A tuple')
 
 itor_filt = arborform.Filter(lambda i: i.str_startswith('Q'))  # toss "random text" stuff
 con = arborform.Connectors.Delegate(itor_filt)

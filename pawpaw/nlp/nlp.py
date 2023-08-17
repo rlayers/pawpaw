@@ -217,9 +217,8 @@ class Number(NlpComponent):
 
     def get_itor(self) -> pawpaw.arborform.Itorator:
         return pawpaw.arborform.Split(
-            self._re,
-            group_key='number',
-            boundary_retention=pawpaw.arborform.Split.BoundaryRetention.DISTINCT,
+            pawpaw.arborform.Extract(self._re),
+            boundary_retention=pawpaw.arborform.Split.BoundaryRetention.ALL,
             tag='number splitter'
         )
 
@@ -291,7 +290,7 @@ class Paragraph(NlpComponent):
             tag='para trimmer'
         )
 
-        para_splitter = pawpaw.arborform.Split(self._re, non_boundary_desc='paragraph', tag='para splitter')
+        para_splitter = pawpaw.arborform.Split(self._re, desc='paragraph', tag='para splitter')
         con = pawpaw.arborform.Connectors.Recurse(para_splitter)
         ws_trimmer.connections.append(con)
 
@@ -453,15 +452,11 @@ class Sentence(NlpComponent):
         return self._re
 
     def get_itor(self) -> pawpaw.arborform.Itorator:
-        return pawpaw.arborform.Split(Sentence().re, non_boundary_desc='sentence', tag='sentence')
+        return pawpaw.arborform.Split(Sentence().re, desc='sentence', tag='sentence')
 
 
 class SimpleNlp:
     _word_pat = r'\w(?:(?:\L<sqs>|-\s*)?\w)*'
-
-    @classmethod
-    def get_sentence(cls) -> pawpaw.arborform.Itorator:
-        return pawpaw.arborform.Split(Sentence().re, non_boundary_desc='sentence', tag='sentence')
 
     def __init__(self, number: Number | None = Number(), chars: bool = False):
         super().__init__()

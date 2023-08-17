@@ -5,7 +5,7 @@ import itertools
 
 import regex
 from pawpaw import Errors, Span, Ito, Types, type_magic
-from pawpaw.arborform.itorator import Itorator
+from pawpaw.arborform.itorator import Itorator, Extract
 
 
 class Split(Itorator):
@@ -14,17 +14,15 @@ class Split(Itorator):
         NONE = 0
         LEADING = 1
         TRAILING = 2
-        DISTINCT = 3
+        ALL = 3
 
     def __init__(
             self,
-            re: regex.Pattern,
+            splitter: Itorator | regex.Pattern,
             limit: int | None = None,
-            group_key: int | str = 0,
             boundary_retention: BoundaryRetention = BoundaryRetention.NONE,
             return_zero_split: bool = True,
-            boundary_desc: str | Types.F_M_GK_2_DESC = lambda m, gk: str(gk),
-            non_boundary_desc: str | None = None,
+            desc: str | None = None,
             tag: str | None = None
     ):
         """Given P-O-O-S where P is prefix, - is boundary, O is/are middle segments(s), and S is suffix, the
@@ -36,83 +34,93 @@ class Split(Itorator):
 
           * BoundaryRetention.TRAILING -> P- O- O- : boundaries kept as suffixes, trailing S is discarded
 
-          * BoundaryRetention.DISTINCT -> P – O – O – : all non-zero-length boundaries kept as distincts
+          * BoundaryRetention.ALL -> P – O – O – : all non-zero-length boundaries kept as distincts
 
         Zero-length boundaries are allowable, and any resulting empty Ito's are discarded
 
        Args:
+        splitter: An Itorator used to generate boundariesto locate boundaries; if a regex.Pattern is supplied,
+          splitter is set to a pawpaw.itorator.Extract as follows:
+
+            splitter = pawpaw.itorator.Extract(
+                re,
+                desc_func = lambda ito, match, group_key: None,
+                group_filter = lambda ito, m, gk: gk == 0,
+                tag = f'generated Split for \\{re.pattern}\\'
+            )
+
         re: A regex pattern used to find matches
+
         group_key: A key used to identify a group from the matches; the resulting group will be used as the
           boundary; defaults to 0 (the entire match)
+
         boundary_retention: A rule used to determine if boundaries are discarded, or else how they are kept
+
         return_zero_split: Indicates how to handle the zero-split condition; when True and splits occur,
           returns a list containing a clone of the input Ito; when False and no splits occur, returns an
           empty list
-        boundary_desc: If supplied, this value will be passed to Ito.from_match for boundary segments when
-          BoundaryRetention.DISTINCT is selected.  Note that a boundary match can have multiple named-groups,
-          however, the resulting ito will span the entire regex match (i.e., it corresponds to capture group zero).
-          This parameter allows you to override the resulting "0" desc for something else.
-        non_boundary_desc: Value used for the .desc of any returned Itos; note that a returned Ito can be surrounded by
-          0, 1, or 2 boundaries, i.e., there is no clear mapping from a result to a boundary.
+
+        desc: Value used for the .desc of any yielded non-boundary Itos.
         """
         super().__init__(tag)
-        self.re = re
+        
+        if isinstance(splitter, Itorator):
+            self.splitter = splitter
+        elif isinstance(splitter, regex.Pattern):
+            self.splitter = Extract(
+                splitter,
+                desc_func = lambda ito, match, group_key: None,
+                group_filter = lambda ito, m, gk: gk == 0,
+                tag = f'generated Split for \\{splitter.pattern}\\'
+            )
+        else:
+            raise Errors.parameter_invalid_type('splitter', splitter, Itorator, regex.Pattern)
+        
+        if not isinstance(limit, (int, type(None))):
+            raise Errors.parameter_invalid_type('limit', limit, int, types.NoneType)
         self.limit = limit
-        self.group_key = group_key
+
+        if not isinstance(boundary_retention, BoundaryRetention):
+            raise Errors.parameter_invalid_type('boundary_retention', boundary_retention, BoundaryRetention)
         self.boundary_retention = boundary_retention
+
+        if not isinstance(return_zero_split, bool):
+            raise Errors.parameter_invalid_type('return_zero_split', return_zero_split, bool)
         self.return_zero_split = return_zero_split
 
-        if isinstance(boundary_desc, str):
-            self._boundary_desc = lambda m, g: boundary_desc
-        else:
-            self.boundary_desc = boundary_desc
-
-        self.non_boundary_desc = non_boundary_desc
-
-
-    @property
-    def boundary_desc(self) -> Types.F_M_GK_2_DESC:
-        return self._boundary_desc
-
-    @boundary_desc.setter
-    def boundary_desc(self, val: Types.F_M_GK_2_DESC) -> None:
-        if type_magic.functoid_isinstance(val, Types.F_M_GK_2_DESC):
-            self._boundary_desc = val
-        else:
-            raise Errors.parameter_invalid_type('val', val, Types.F_M_GK_2_DESC)
+        if not isinstance(desc, (str, type(None))):
+            raise Errors.parameter_invalid_type('desc', desc, str, types.NoneType)
+        self.desc = desc
 
     def clone(self, tag: str | None = None) -> Split:
         return type(self())(
-            self._re,
+            self.splitter,
             self.limit,
-            self.group_key,
             self.boundary_retention,
             self.return_zero_split,
-            self.boundary_desc,
-            self.non_boundary_desc,
+            self.desc,
             self.tag if tag is None else tag)
 
     def _transform(self, ito: Ito) -> Types.C_IT_ITOS:
         if self.limit == 0 and self.return_zero_split:
-            return ito.clone(desc=self.non_boundary_desc, clone_children=False),
+            return ito.clone(desc=self.desc, clone_children=False),
 
         rv: typing.List[Ito] = []
         
         count = 0
         prior: Span | None = None
-        for m in itertools.takewhile(lambda i: self.limit is None or count < self.limit, ito.regex_finditer(self.re)):
-            cur = Span(*m.span(self.group_key))
+        for cur in itertools.takewhile(lambda i: self.limit is None or count < self.limit, self.splitter(ito)):
             if prior is None:
                 if self.boundary_retention == self.BoundaryRetention.LEADING:
                     start = stop = 0
                 else:
                     start = ito.start
-                    if self.boundary_retention in (self.BoundaryRetention.NONE, self.BoundaryRetention.DISTINCT):
+                    if self.boundary_retention in (self.BoundaryRetention.NONE, self.BoundaryRetention.ALL):
                         stop = cur.start
                     else:  # TRAILING
                         stop = cur.stop
             else:
-                if self.boundary_retention in (self.BoundaryRetention.NONE, self.BoundaryRetention.DISTINCT):
+                if self.boundary_retention in (self.BoundaryRetention.NONE, self.BoundaryRetention.ALL):
                     start = prior.stop
                     stop = cur.start
                 elif self.boundary_retention == self.BoundaryRetention.LEADING:
@@ -125,23 +133,23 @@ class Split(Itorator):
             count += 1
 
             if start != stop:
-                rv.append(ito.clone(start, stop, self.non_boundary_desc, False))
+                rv.append(ito.clone(start, stop, self.desc, False))
 
-            if self.boundary_retention == self.BoundaryRetention.DISTINCT and (cur.start < cur.stop):
-                rv.append(ito.from_match_group(m, self.group_key, self._boundary_desc))
+            if self.boundary_retention == self.BoundaryRetention.ALL and (cur.start < cur.stop):
+                rv.append(cur)
 
             prior = cur
 
         if prior is not None and self.boundary_retention != self.BoundaryRetention.TRAILING:
-            if self.boundary_retention in (self.BoundaryRetention.NONE, self.BoundaryRetention.DISTINCT):
+            if self.boundary_retention in (self.BoundaryRetention.NONE, self.BoundaryRetention.ALL):
                 start = prior.stop
             else:  # LEADING
                 start = prior.start
             stop = ito.stop
             if start != stop:
-                rv.append(ito.clone(start, stop, self.non_boundary_desc, False))
+                rv.append(ito.clone(start, stop, self.desc, False))
 
         if prior is None and len(rv) == 0 and self.return_zero_split:
-            rv.append(ito.clone(desc=self.non_boundary_desc, clone_children=False))
+            rv.append(ito.clone(desc=self.desc, clone_children=False))
 
         return rv

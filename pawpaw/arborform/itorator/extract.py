@@ -16,10 +16,12 @@ class Extract(RegexItorator):
                  tag: str | None = None):
         super().__init__(re, group_filter, tag)
 
-        if limit is not None and not isinstance(limit, int):
-            raise Errors.parameter_invalid_type('limit', limit, int)
+        if not not isinstance(limit, (int, type(None))):
+            raise Errors.parameter_invalid_type('limit', limit, int, types.NoneType)
         self.limit = limit
 
+        if not type_magic.functoid_isinstance(desc_func, Types.F_ITO_M_GK_2_DESC):
+            raise Errors.parameter_invalid_type('desc_func', desc_func, Types.F_ITO_M_GK_2_DESC)
         self.desc_func = desc_func
 
     def clone(self, tag: str | None = None) -> Extract:

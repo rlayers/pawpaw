@@ -1,5 +1,6 @@
 from __future__ import annotations
 import collections
+import types
 import typing
 
 import regex
@@ -16,7 +17,7 @@ class Extract(RegexItorator):
                  tag: str | None = None):
         super().__init__(re, group_filter, tag)
 
-        if not not isinstance(limit, (int, type(None))):
+        if not isinstance(limit, (int, type(None))):
             raise Errors.parameter_invalid_type('limit', limit, int, types.NoneType)
         self.limit = limit
 

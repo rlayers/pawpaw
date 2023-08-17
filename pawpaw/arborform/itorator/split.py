@@ -1,5 +1,6 @@
 from __future__ import annotations
 import enum
+import types
 import typing
 import itertools
 
@@ -80,8 +81,8 @@ class Split(Itorator):
             raise Errors.parameter_invalid_type('limit', limit, int, types.NoneType)
         self.limit = limit
 
-        if not isinstance(boundary_retention, BoundaryRetention):
-            raise Errors.parameter_invalid_type('boundary_retention', boundary_retention, BoundaryRetention)
+        if not isinstance(boundary_retention, self.BoundaryRetention):
+            raise Errors.parameter_invalid_type('boundary_retention', boundary_retention, self.BoundaryRetention)
         self.boundary_retention = boundary_retention
 
         if not isinstance(return_zero_split, bool):

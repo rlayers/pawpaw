@@ -3,7 +3,7 @@ import typing
 
 import regex
 from pawpaw import Ito
-from pawpaw.arborform import Split
+from pawpaw.arborform import Itorator, Split
 from tests.util import _TestIto
 
 
@@ -41,6 +41,40 @@ class TestSplit(_TestIto):
 
         return rv
     
+    valid_ctor_params = {
+        'splitter': [Itorator.wrap(lambda ito: ito.str_split()), regex.compile(r'\s+', regex.DOTALL)],
+        'limit': [-1, -0, 1, None],
+        'boundary_retention': list(Split.BoundaryRetention),
+        'return_zero_split': [False, True],
+        'desc': ['abc', None],
+        'tag': ['abc', None],
+    }
+
+    def test_ctor_valid(self):
+        keys, values = zip(*self.valid_ctor_params.items())
+        for kwargs in [dict(zip(keys, v)) for v in itertools.product(*values)]:
+            with self.subTest(**kwargs):
+                itor = Split(**kwargs)
+
+    invalid_ctor_params = {
+        'splitter': [None, True, 1, 'abc'],
+        'limit': [1.0, 'abc'],
+        'boundary_retention': [None, True, 1, 'abc'],
+        'return_zero_split': [None, 1, 'abc'],
+        'desc': [True, 1],
+        'tag': [True, 1.3],
+    }
+
+    def test_ctor_invalid(self):
+        valids = {k: v[0] for k, v in self.valid_ctor_params.items()}
+        for k, vs in self.invalid_ctor_params.items():
+            invalids = dict(**valids)
+            for v in vs:
+                invalids[k] = v
+                with self.subTest(**invalids):
+                    with self.assertRaises(TypeError):
+                        itor = Split(**invalids)
+
     def test_iter_simple(self):
         for sep in ' ', '-':  # '', ' ', '-':
             s = self.str_from(sep)

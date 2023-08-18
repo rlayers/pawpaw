@@ -1,10 +1,10 @@
 import regex
 from pawpaw import Ito
-from pawpaw.arborform import Extract, Gaps
+from pawpaw.arborform import Extract, Invert
 from tests.util import _TestIto
 
 
-class TestGaps(_TestIto):
+class TestInvert(_TestIto):
     def test_transform(self):
         s = ' a1b2c '
         root = Ito(s)
@@ -30,5 +30,5 @@ class TestGaps(_TestIto):
                 expected.extend(gaps)
                 expected.sort(key=lambda ito: ito.start)
 
-                itor_gaps = Gaps(itor_extract, desc=gap_desc)
+                itor_gaps = Invert(itor_extract, desc=gap_desc)
                 self.assertSequenceEqual(expected, [*itor_gaps(root)])

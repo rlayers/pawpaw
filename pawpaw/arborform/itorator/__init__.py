@@ -22,8 +22,8 @@ del extract
 from .split import Split
 del split
 
-from .gaps import Gaps
-del gaps
+from .invert import Invert
+del invert
 
 from .nuco import Nuco
 del nuco

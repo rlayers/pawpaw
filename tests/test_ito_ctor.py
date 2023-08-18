@@ -40,6 +40,55 @@ class TestItoCtor(_TestIto):
                             self.assertEqual(src.string, ito.string)
                             self.assertEqual(src[start:stop], ito)
 
+    def test_from_re(self):
+        s = 'the quick brown fox'
+
+        re = 1
+        with self.subTest(re=re):
+            with self.assertRaises(TypeError):
+                [*Ito.from_re_ex(re, s)]
+
+        group_filter = lambda m, gk: isinstance(gk, str)
+        for re in [(pat := r'(?<word>\w+)'), regex.compile(pat)]:
+            with self.subTest(re=re, group_filter=group_filter):
+                expected = [*Ito.from_substrings(s, *s.split(), desc='word')]
+                actual = [*Ito.from_re_ex(re, s, group_filter)]
+                self.assertListEqual(expected, actual)
+
+        re = r'(?<phrase>(?:(?<word>(?<char>\w)+)(?:$|\s+))+)'
+        with self.subTest(re=re):
+            expected = [Ito(s, desc='0')]
+            actual = [*Ito.from_re_ex(re, s, group_filter=lambda m, gk: True)]
+            self.assertListEqual(expected, actual)
+
+        
+        with self.subTest(re=re, group_filter=group_filter):
+            expected = [Ito(s, desc='phrase')]
+            actual = [*Ito.from_re_ex(re, s, group_filter)]
+            self.assertListEqual(expected, actual)
+            
+            expected = [*Ito.from_substrings(s, *s.split(), desc='word')]
+            self.assertSequenceEqual(expected, actual[0].children)
+
+            for child in actual[0].children:
+                self.assertSequenceEqual([Ito(i, desc='char') for i in child], child.children)
+
+        group_filter = lambda m, gk: gk in ['word', 'char']
+        with self.subTest(re=re, group_filter=group_filter):
+            actual = [*Ito.from_re_ex(re, s, group_filter)]
+            self.assertListEqual(expected, actual)
+
+        for limit in -1, 0, 1, 2:
+            with self.subTest(re=re, group_filter=group_filter, limit=limit):
+                actual = [*Ito.from_re_ex(re, s, group_filter, limit=limit)]
+                self.assertEqual(max(limit, 0), len(actual))
+
+        desc = 'other'
+        with self.subTest(re=re, desc=desc):
+            expected = [Ito(s, desc=desc)]
+            actual = [*Ito.from_re_ex(re, s, desc=desc)]
+            self.assertListEqual(expected, actual)
+
     def test_from_match_group(self):
         first = 'John'
         last = 'Doe'
@@ -86,32 +135,6 @@ class TestItoCtor(_TestIto):
                     if i.desc.isnumeric():
                         k = int(k)
                     self.assertEqual(m.group(k), str(i))
-
-    def test_from_re(self):
-        s = 'the quick brown fox'
-
-        re = 'abc'
-        with self.subTest(re='abc'):
-            with self.assertRaises(TypeError):
-                [*Ito.from_re(re, s)]
-
-        re = regex.compile(r'(?<word>\w+)')
-        with self.subTest(re=re, limit=None):
-            expected = [*Ito.from_substrings(s, *s.split(), desc='0')]
-            for e in expected:
-                e.children.add(e.clone(desc='word'))
-            actual = [*Ito.from_re(re, s)]
-            self.assertListEqual(expected, actual)
-            for e, a in zip(expected, actual):
-                self.assertListEqual(list(e.children), list(a.children))
-
-        limit = 2
-        with self.subTest(re=re, limit=limit):
-            expected = expected[:limit]
-            actual = [*Ito.from_re(re, s, limit=limit)]
-            self.assertListEqual(expected, actual)
-            for e, a in zip(expected, actual):
-                self.assertListEqual(list(e.children), list(a.children))
 
     def test_from_match_complex(self):
         s = 'nine 9 ten 10 eleven 11 TWELVE 12 thirteen 13'

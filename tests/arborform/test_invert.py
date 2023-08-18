@@ -25,10 +25,7 @@ class TestInvert(_TestIto):
             with self.subTest(re=re.pattern):
                 itor_extract = Extract(re, desc_func=lambda ito, match, group_key: non_gap_desc, group_filter = None)
                 non_gaps = [*itor_extract(root)]
-                gaps = [*Ito.from_gaps(root, non_gaps, gap_desc)]
-                expected = list(non_gaps)
-                expected.extend(gaps)
-                expected.sort(key=lambda ito: ito.start)
+                expected = [*Ito.from_gaps(root, non_gaps, gap_desc)]
 
                 itor_gaps = Invert(itor_extract, desc=gap_desc)
                 self.assertSequenceEqual(expected, [*itor_gaps(root)])

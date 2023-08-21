@@ -20,7 +20,7 @@ itor_filt.connections.append(con)
 
 itor_extract = arborform.Extract(
     regex.compile(r'([QA])_? (?<QorA>.+)', regex.DOTALL),
-    desc_func=lambda ito, match, group: match.group(1))
+    desc=lambda match, group: match.group(1))
 con = arborform.Connectors.Children.Add(itor_extract)
 itor_qa_split.connections.append(con)
 

@@ -92,6 +92,7 @@ class TestItoCtor(_TestIto):
 
         group_filter = [2]
         with self.subTest(re=re, group_filter=group_filter):
+            expected = [i.clone(desc='2') for i in expected]
             actual = [*Ito.from_re_ex(re, s, group_filter)]
             self.assertListEqual(expected, actual)
             # self.assertTrue(all(len(i.children) == 0 for i in actual))

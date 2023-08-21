@@ -114,7 +114,7 @@ class Ito:
             raise Errors.parameter_invalid_type('src', src, str, Ito)
 
         if type_magic.isinstance_ex(group_filter, collections.abc.Container[Types.C_GK]):
-            gf = lambda gk: gk in group_filter
+            gf = lambda m, gk: gk in group_filter
         elif type_magic.functoid_isinstance(group_filter, Types.P_M_GK):
             gf = group_filter
         else:

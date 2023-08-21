@@ -83,6 +83,19 @@ class TestItoCtor(_TestIto):
                 actual = [*Ito.from_re_ex(re, s, group_filter, limit=limit)]
                 self.assertEqual(max(limit, 0), len(actual))
 
+        group_filter = lambda m, gk: gk in ['word']
+        with self.subTest(re=re, group_filter=group_filter):
+            actual = [*Ito.from_re_ex(re, s, group_filter)]
+            self.assertListEqual(expected, actual)
+
+            self.assertTrue(all(len(i.children) == 0 for i in actual))
+
+        group_filter = [2]
+        with self.subTest(re=re, group_filter=group_filter):
+            actual = [*Ito.from_re_ex(re, s, group_filter)]
+            self.assertListEqual(expected, actual)
+            # self.assertTrue(all(len(i.children) == 0 for i in actual))
+
         desc = 'other'
         with self.subTest(re=re, desc=desc):
             expected = [Ito(s, desc=desc)]

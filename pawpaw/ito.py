@@ -114,7 +114,7 @@ class Ito:
             raise Errors.parameter_invalid_type('src', src, str, Ito)
 
         if type_magic.isinstance_ex(group_filter, collections.abc.Container[Types.C_GK]):
-            gf = lambda ito: gk in group_filter
+            gf = lambda gk: gk in group_filter
         elif type_magic.functoid_isinstance(group_filter, Types.P_M_GK):
             gf = group_filter
         else:
@@ -132,7 +132,12 @@ class Ito:
 
         rv: typing.List[Ito] = []
         for m in src.regex_finditer(re):
-            filtered_gks = tuple(gk for i, gk in enumerate(group_keys) if gf(m, i) or gf(m, gk)) 
+            filtered_gks = []
+            for i, gk in enumerate(group_keys):
+                if gf(m, gk):
+                    filtered_gks.append(gk)
+                elif gf(m, i):
+                    filtered_gks.append(i)
             rv.extend(cls.from_match_ex(m, df, filtered_gks))
             if limit is not None and len(rv) >= limit:
                 break

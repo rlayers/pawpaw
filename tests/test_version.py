@@ -50,7 +50,7 @@ class TestVersion(unittest.TestCase):
         v = '1.2a34.dev567+xyz.8'
         m = pawpaw.Version.parse_re.fullmatch(v)
         self.assertIsNotNone(m)
-        ito = pawpaw.Ito.from_match(m)
+        ito = pawpaw.Ito.from_match(m)[0]
 
         tests: list[tuple[str]] = [
             ('release', '*[d:release]', '1.2'),

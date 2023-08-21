@@ -1,5 +1,5 @@
 import regex
-from pawpaw import Ito, Span
+from pawpaw import GroupKeys, Ito, Span
 from tests.util import _TestIto, IntIto, RandSpans, RandSubstrings
 
 
@@ -40,87 +40,6 @@ class TestItoCtor(_TestIto):
                             self.assertEqual(src.string, ito.string)
                             self.assertEqual(src[start:stop], ito)
 
-    def test_from_re(self):
-        s = 'the quick brown fox'
-
-        re = 1
-        with self.subTest(re=re):
-            with self.assertRaises(TypeError):
-                [*Ito.from_re_ex(re, s)]
-
-        group_filter = lambda m, gk: isinstance(gk, str)
-        for re in [(pat := r'(?<word>\w+)'), regex.compile(pat)]:
-            with self.subTest(re=re, group_filter=group_filter):
-                expected = [*Ito.from_substrings(s, *s.split(), desc='word')]
-                actual = [*Ito.from_re_ex(re, s, group_filter)]
-                self.assertListEqual(expected, actual)
-
-        re = r'(?<phrase>(?:(?<word>(?<char>\w)+)(?:$|\s+))+)'
-        with self.subTest(re=re):
-            expected = [Ito(s, desc='0')]
-            actual = [*Ito.from_re_ex(re, s, group_filter=lambda m, gk: True)]
-            self.assertListEqual(expected, actual)
-
-        
-        with self.subTest(re=re, group_filter=group_filter):
-            expected = [Ito(s, desc='phrase')]
-            actual = [*Ito.from_re_ex(re, s, group_filter)]
-            self.assertListEqual(expected, actual)
-            
-            expected = [*Ito.from_substrings(s, *s.split(), desc='word')]
-            self.assertSequenceEqual(expected, actual[0].children)
-
-            for child in actual[0].children:
-                self.assertSequenceEqual([Ito(i, desc='char') for i in child], child.children)
-
-        group_filter = lambda m, gk: gk in ['word', 'char']
-        with self.subTest(re=re, group_filter=group_filter):
-            actual = [*Ito.from_re_ex(re, s, group_filter)]
-            self.assertListEqual(expected, actual)
-
-        for limit in -1, 0, 1, 2:
-            with self.subTest(re=re, group_filter=group_filter, limit=limit):
-                actual = [*Ito.from_re_ex(re, s, group_filter, limit=limit)]
-                self.assertEqual(max(limit, 0), len(actual))
-
-        group_filter = lambda m, gk: gk in ['word']
-        with self.subTest(re=re, group_filter=group_filter):
-            actual = [*Ito.from_re_ex(re, s, group_filter)]
-            self.assertListEqual(expected, actual)
-
-            self.assertTrue(all(len(i.children) == 0 for i in actual))
-
-        group_filter = [2]
-        with self.subTest(re=re, group_filter=group_filter):
-            expected = [i.clone(desc='2') for i in expected]
-            actual = [*Ito.from_re_ex(re, s, group_filter)]
-            self.assertListEqual(expected, actual)
-            # self.assertTrue(all(len(i.children) == 0 for i in actual))
-
-        desc = 'other'
-        with self.subTest(re=re, desc=desc):
-            expected = [Ito(s, desc=desc)]
-            actual = [*Ito.from_re_ex(re, s, desc=desc)]
-            self.assertListEqual(expected, actual)
-
-    def test_from_match_group(self):
-        first = 'John'
-        last = 'Doe'
-        string = ' '.join((first, last))
-        re = regex.compile(r'(?P<fn>.+)\s(?P<ln>.+)')
-        m = re.fullmatch(string)
-
-        for group in None, 0, 1, 'fn', 2, 'ln':
-            with self.subTest(group=group):
-                if group is None:
-                    ito = Ito.from_match_group(m)
-                    desc = '0'
-                else:
-                    ito = Ito.from_match_group(m, group)
-                    desc = str(group)
-                self.assertEqual(m.group() if group is None else m.group(group), str(ito))
-                self.assertEqual(desc, ito.desc)
-
     def test_from_match_simple(self):
         first = 'John'
         last = 'Doe'
@@ -128,22 +47,9 @@ class TestItoCtor(_TestIto):
         re = regex.compile(r'(?P<fn>.+)\s(?P<ln>.+)')
         m = re.fullmatch(string)
 
-        for exclude_keys in None, [1], ['fn'], [2], ['ln'], ['fn', 2], [1, 'ln']:
-            with self.subTest(exclude_keys=exclude_keys):
-                if exclude_keys is None:
-                    ito = Ito.from_match(m)
-                else:
-                    ito = Ito.from_match(m, *exclude_keys)
-
-                itos = [ito, *ito.walk_descendants()]
-
-                if exclude_keys is not None:
-                    for k in exclude_keys:
-                        if k == 0:
-                            self.assertIn('0', [i.desc for i in itos])
-                        else:
-                            self.assertNotIn(k, [i.desc for i in itos])
-
+        for group_keys in [1], ['fn'], [2], ['ln'], ['fn', 2], [1, 'ln']:
+            with self.subTest(group_keys=group_keys):
+                itos = Ito.from_match(m, group_keys=group_keys)
                 for i in itos:
                     k = i.desc
                     if i.desc.isnumeric():
@@ -155,29 +61,77 @@ class TestItoCtor(_TestIto):
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)\s*)+')
         m = re.fullmatch(s)
 
-        for exclude_keys in None, [1], ['phrase'], ['char', 'digit']:
-            with self.subTest(exclude_keys=exclude_keys):
-                if exclude_keys is None:
-                    ito = Ito.from_match(m)
-                else:
-                    ito = Ito.from_match(m, *exclude_keys)
+        for group_keys in GroupKeys.preferred(re), [1], ['phrase'], ['phrase', 'word', 'number'], ['char', 'digit']:
+            with self.subTest(group_keys=group_keys):
+                itos = Ito.from_match(m, group_keys=group_keys)
+                for ito in itos:
+                    branch = [ito]
+                    branch.extend(ito.walk_descendants())
+                    for i in branch:
+                        self.assertTrue(any(i.desc == str(gk) for gk in group_keys))
 
-                itos = [ito, *ito.walk_descendants()]
+    def test_from_re(self):
+        s = 'the quick brown fox'
 
-                if exclude_keys is not None:
-                    for k in exclude_keys:
-                        if k == 0:
-                            self.assertIn('0', [i.desc for i in itos])
-                        else:
-                            self.assertNotIn(k, [i.desc for i in itos])
+        re = 1
+        with self.subTest(re=re):
+            with self.assertRaises(TypeError):
+                [*Ito.from_re(re, s)]
 
-                for i in itos:
-                    k = i.desc
-                    if i.desc.isnumeric():
-                        k = int(k)
-                    for span in m.spans(k):
-                        j = s[slice(*span)]
-                        self.assertIn(j, [str(i) for i in itos if i.desc == str(k)])
+        group_filter = lambda m, gk: isinstance(gk, str)
+        for re in [(pat := r'(?<word>\w+)'), regex.compile(pat)]:
+            with self.subTest(re=re, group_filter=group_filter):
+                expected = [*Ito.from_substrings(s, *s.split(), desc='word')]
+                actual = [*Ito.from_re(re, s, group_filter)]
+                self.assertListEqual(expected, actual)
+
+        re = r'(?<phrase>(?:(?<word>(?<char>\w)+)(?:$|\s+))+)'
+        with self.subTest(re=re):
+            expected = [Ito(s, desc='0')]
+            actual = [*Ito.from_re(re, s, group_filter=lambda m, gk: True)]
+            self.assertListEqual(expected, actual)
+
+        
+        with self.subTest(re=re, group_filter=group_filter):
+            expected = [Ito(s, desc='phrase')]
+            actual = [*Ito.from_re(re, s, group_filter)]
+            self.assertListEqual(expected, actual)
+            
+            expected = [*Ito.from_substrings(s, *s.split(), desc='word')]
+            self.assertSequenceEqual(expected, actual[0].children)
+
+            for child in actual[0].children:
+                self.assertSequenceEqual([Ito(i, desc='char') for i in child], child.children)
+
+        group_filter = lambda m, gk: gk in ['word', 'char']
+        with self.subTest(re=re, group_filter=group_filter):
+            actual = [*Ito.from_re(re, s, group_filter)]
+            self.assertListEqual(expected, actual)
+
+        for limit in -1, 0, 1, 2:
+            with self.subTest(re=re, group_filter=group_filter, limit=limit):
+                actual = [*Ito.from_re(re, s, group_filter, limit=limit)]
+                self.assertEqual(max(limit, 0), len(actual))
+
+        group_filter = lambda m, gk: gk in ['word']
+        with self.subTest(re=re, group_filter=group_filter):
+            actual = [*Ito.from_re(re, s, group_filter)]
+            self.assertListEqual(expected, actual)
+
+            self.assertTrue(all(len(i.children) == 0 for i in actual))
+
+        group_filter = [2]
+        with self.subTest(re=re, group_filter=group_filter):
+            expected = [i.clone(desc='2') for i in expected]
+            actual = [*Ito.from_re(re, s, group_filter)]
+            self.assertListEqual(expected, actual)
+            self.assertTrue(all(len(i.children) == 0 for i in actual))
+
+        desc = 'other'
+        with self.subTest(re=re, desc=desc):
+            expected = [Ito(s, desc=desc)]
+            actual = [*Ito.from_re(re, s, desc=desc)]
+            self.assertListEqual(expected, actual)
 
     def test_from_spans_simple(self):
         s = 'abcd' * 100

@@ -45,8 +45,8 @@ class Split(Itorator):
 
             splitter = pawpaw.itorator.Extract(
                 re,
-                desc_func = lambda ito, match, group_key: None,
-                group_filter = lambda ito, m, gk: gk == 0,
+                desc = lambda match, group_key: None,
+                group_filter = lambda m, gk: gk == 0,
                 tag = f'generated Split for \\{re.pattern}\\'
             )
 
@@ -70,8 +70,8 @@ class Split(Itorator):
         elif isinstance(splitter, regex.Pattern):
             self.splitter = Extract(
                 splitter,
-                desc_func = lambda ito, match, group_key: None,
-                group_filter = lambda ito, m, gk: gk == 0,
+                desc = lambda match, group_key: None,
+                group_filter = lambda m, gk: gk == 0,
                 tag = f'generated Split for \\{splitter.pattern}\\'
             )
         else:

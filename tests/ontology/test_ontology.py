@@ -31,7 +31,7 @@ class TestOntology(_TestIto):
                             }
                         ),                        
                     },
-                    rules=[pawpaw.arborform.Extract(regex.compile(r'vehicles?', regex.IGNORECASE), group_filter=None)]
+                    rules=[pawpaw.arborform.Extract(regex.compile(r'(?P<vehicle>vehicles?)', regex.IGNORECASE))]
                 )
             }
         )

@@ -23,7 +23,7 @@ class TestInvert(_TestIto):
 
         for re in extract_res:
             with self.subTest(re=re.pattern):
-                itor_extract = Extract(re, desc_func=lambda ito, match, group_key: non_gap_desc, group_filter = None)
+                itor_extract = Extract(re, desc=lambda match, gk: non_gap_desc)
                 non_gaps = [*itor_extract(root)]
                 expected = [*Ito.from_gaps(root, non_gaps, gap_desc)]
 

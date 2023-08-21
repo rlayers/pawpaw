@@ -9,7 +9,6 @@ if typing.TYPE_CHECKING:
     from _typeshed import SupportsRichComparison
 
 import regex
-
 import pawpaw.query
 from pawpaw import Infix, Span, Errors, type_magic
 from .util import find_escapes
@@ -18,6 +17,53 @@ from .util import find_escapes
 nuco = Infix(lambda x, y: y if x is None else x)
 """Null coalescing operator
 """
+
+class GroupKeys:
+    @staticmethod
+    def preferred(
+        re: regex.Pattern
+    ) -> list[Types.C_GK]:
+        rv = [i for i in range(0, re.groups + 1)]
+        for n, i in re.groupindex.items():
+            rv[i] = n
+        return rv
+
+    @staticmethod
+    def from_filter(
+        match = regex.Match,
+        preferred_gks: list[Types.C_GK] | None = None,
+        filter: Types.P_M_GK = lambda m, gk: True,
+    ) -> list[Types.C_GK]:
+        rv = list[Types.C_GK]()
+        preferred_gks = preferred_gks |nuco| GroupKeys.preferred(match.re)
+        for i, gk in enumerate(preferred_gks):
+            if filter(match, gk):
+                rv.append(gk)
+            elif filter(match, i):
+                rv.append(i)
+        return rv
+
+    @staticmethod
+    def validate(
+        re: regex.Pattern,
+        group_keys: typing.Collection[Types.C_GK]
+    ) -> list[Types.C_GK]:
+        tmp: list[Types.C_GK] = [None] * (re.groups + 1)
+        for gk in group_keys:
+            if isinstance(gk, str):
+                i = re.groupindex.get(gk, None)
+                if i is None:
+                    raise ValueError(f'group key {gk!r} not present in re.pattern {re.pattern!r}')
+            elif isinstance(gk, int):
+                i = gk
+                if not 0 <= i < len(tmp):
+                    raise ValueError(f'group key {gk} not present in re.pattern {re.pattern!r}')
+
+            if tmp[i] is not None:
+                raise ValueError(f'duplicate group keys present: {tmp[i]} and {gk}')
+            else:
+                tmp[i] = gk
+
 
 class Ito:
     # region ctors & clone
@@ -50,34 +96,24 @@ class Ito:
         self._children = ChildItos(self)
 
     @classmethod
-    def preferred_group_keys(
-        cls,
-        re: regex.Pattern
-    ) -> list[Types.C_GK]:
-        rv = [i for i in range(0, re.groups + 1)]
-        for n, i in re.groupindex.items():
-            rv[i] = n
-        return rv
-
-    @classmethod
-    def from_match_ex(
+    def from_match(
         cls,
         match: regex.Match,
         desc_func: Types.F_M_GK_2_DESC = lambda match, group_key: str(group_key),
-        group_keys: collections.abc.Container[str] | None = None,
-    ) -> Types.C_IT_ITOS:
+        group_keys: collections.abc.Container[Types.C_GK] | None = None,
+    ) -> list[Ito]:
 
         if not type_magic.functoid_isinstance(desc_func, Types.F_M_GK_2_DESC):
             raise Errors.parameter_invalid_type('desc_func', desc_func, Types.F_M_GK_2_DESC)
 
         if group_keys is None:
-            group_keys = cls.preferred_group_keys(match.re)
+            group_keys = GroupKeys.preferred(match.re)
         elif not type_magic.isinstance_ex(group_keys, collections.abc.Container[str]):
             raise Errors.parameter_invalid_type('group_keys', group_keys, collections.abc.Container[str], None)
 
-        rv: typing.List[Ito] = []
-        path_stack: typing.List[Ito] = []
-        match_itos: typing.List[Ito] = []
+        rv = list[Ito]()
+        path_stack = list[Ito]()
+        match_itos = list[Ito]()
         span_gks = ((span, gk) for gk in group_keys for span in match.spans(gk))
         for span, gk in sorted(span_gks, key=lambda val: (val[0][0], -val[0][1])):
             ito = cls(match.string, *span, desc=desc_func(match, gk))
@@ -93,20 +129,18 @@ class Ito:
         return match_itos
 
     @classmethod
-    def from_re_ex(
-            cls,
-            re: regex.Pattern | str,
-            src: str | pawpaw.Ito,
-            group_filter: collections.abc.Container[Types.C_GK] | Types.P_M_GK = lambda m, gk: True,
-            desc: str | Types.F_M_GK_2_DESC = lambda m, gk: str(gk),
-            limit: int | None = None,
+    def from_re(
+        cls,
+        re: regex.Pattern | str,
+        src: str | pawpaw.Ito,
+        group_filter: collections.abc.Container[Types.C_GK] | Types.P_M_GK = lambda m, gk: True,
+        desc: str | Types.F_M_GK_2_DESC = lambda m, gk: str(gk),
+        limit: int | None = None,
     ) -> typing.Iterable[pawpaw.Ito]:
         if isinstance(re, str):
             re = regex.compile(re)
         elif not isinstance(re, regex.Pattern):
             raise Errors.parameter_invalid_type('re', re, regex.Pattern, str)
-
-        group_keys = cls.preferred_group_keys(re)
 
         if isinstance(src, str):
             src = cls(src)
@@ -114,9 +148,13 @@ class Ito:
             raise Errors.parameter_invalid_type('src', src, str, Ito)
 
         if type_magic.isinstance_ex(group_filter, collections.abc.Container[Types.C_GK]):
-            gf = lambda m, gk: gk in group_filter
+            GroupKeys.validate(re, group_filter)
+            def gf():
+                return group_filter
         elif type_magic.functoid_isinstance(group_filter, Types.P_M_GK):
-            gf = group_filter
+            pgks = GroupKeys.preferred(re)
+            def gf():
+                return GroupKeys.from_filter(m, pgks, group_filter)
         else:
             raise Errors.parameter_invalid_type('group_filter', group_filter, collections.abc.Container[Types.C_GK], Types.P_M_GK)
 
@@ -132,13 +170,7 @@ class Ito:
 
         rv: typing.List[Ito] = []
         for m in src.regex_finditer(re):
-            filtered_gks = []
-            for i, gk in enumerate(group_keys):
-                if gf(m, gk):
-                    filtered_gks.append(gk)
-                elif gf(m, i):
-                    filtered_gks.append(i)
-            rv.extend(cls.from_match_ex(m, df, filtered_gks))
+            rv.extend(cls.from_match(m, df, gf()))
             if limit is not None and len(rv) >= limit:
                 break
 
@@ -146,61 +178,6 @@ class Ito:
             yield from rv
         elif limit > 0:
             yield from rv[:limit]
-
-    @classmethod
-    def from_match(
-        cls,
-        match: regex.Match,
-        *exclude_keys: Types.C_GK,
-        desc: str | Types.F_M_GK_2_DESC = lambda m, gk: str(gk)
-    ) -> pawpaw.Ito:
-        if match is None:
-            raise Errors.parameter_not_none('match')
-        elif not isinstance(match, regex.Match):
-            raise Errors.parameter_invalid_type('match', match, regex.Match)
-
-        if 0 in exclude_keys:
-            raise ValueError('group key 0 cannot be excluded')
-
-        # Include all named keys, unless in exclude_keys or same group excluded by index
-        gn_spans: typing.Dict[Types.C_GK, typing.List[typing.Tuple[int]]] = {
-            k: match.spans(k)
-            for k in match.re.groupindex.keys()
-            if k not in exclude_keys and match.re.groupindex[k] not in exclude_keys
-        }
-
-        # Include all remaining int keys
-        gn_spans |= {
-            i: match.spans(i)
-            for i in range(1, match.re.groups + 1)
-            if i not in exclude_keys and i not in match.re.groupindex.values()
-        }
-
-        if isinstance(desc, str):
-            desc_func = lambda m, gk: desc
-        elif type_magic.functoid_isinstance(desc, Types.F_M_GK_2_DESC):
-            desc_func = desc
-        else:
-            raise Errors.parameter_invalid_type('desc', desc, Types.F_M_GK_2_DESC)
-
-        path_stack: typing.List[pawpaw.Ito] = []
-        match_itos: typing.List[pawpaw.Ito] = []
-        gn_span_tups = [(gn, span) for gn, spans in gn_spans.items() for span in spans]
-        for gn, span in sorted(gn_span_tups, key=lambda val: (val[1][0], -val[1][1])):
-            ito = cls(match.string, *span, desc=desc_func(match, gn))
-            while len(path_stack) > 0 and (ito.start < path_stack[-1].start or ito.stop > path_stack[-1].stop):
-                path_stack.pop()
-            if len(path_stack) == 0:
-                match_itos.append(ito)
-            else:
-                path_stack[-1].children.add(ito)
-
-            path_stack.append(ito)
-
-        # Entire match serves as root
-        rv = cls(match.string, *match.span(), desc=desc_func(match, 0))
-        rv.children.add(*match_itos)
-        return rv
 
     @classmethod
     def from_match_group(cls,
@@ -251,32 +228,6 @@ class Ito:
             rv.children.add(*match_itos)
 
         return rv
-
-    @classmethod
-    def from_re(
-            cls,
-            re: regex.Pattern,
-            src: str | pawpaw.Ito,
-            *exclude_keys: Types.C_GK,
-            desc: str | Types.F_M_GK_2_DESC = lambda m, gk: str(gk),
-            limit: int | None = None,
-    ) -> typing.Iterable[pawpaw.Ito]:
-        if not isinstance(re, regex.Pattern):
-            raise Errors.parameter_invalid_type('re', re, regex.Pattern)
-
-        if isinstance(src, str):
-            s = src
-            span = Span.from_indices(s)
-        elif isinstance(src, Ito):
-            s = src.string
-            span = src.span
-        else:
-            raise Errors.parameter_invalid_type('src', src, str, Ito)
-
-        for count, m in enumerate(re.finditer(s, *span), 1):
-            yield cls.from_match(m, *exclude_keys, desc=desc)
-            if limit is not None and count >= limit:
-                break
 
     @classmethod
     def from_spans(cls, src: str | pawpaw.Ito, spans: typing.Iterable[Span], desc: str | None = None) -> typing.Iterable[pawpaw.Ito]:
@@ -1462,10 +1413,11 @@ class Ito:
 
     # endregion
 
+
 class ChildItos(collections.abc.Sequence):
     def __init__(self, parent: pawpaw.Ito, *itos: pawpaw.Ito):
         self.__parent = parent
-        self.__store: typing.List[pawpaw.Ito] = []
+        self.__store = list[pawpaw.Ito]()
         self.add(*itos)
 
     # region search & index
@@ -1701,7 +1653,7 @@ class Types:
     F_ITO_2_IT_ITOS = typing.Callable[[Ito], C_IT_ITOS]
     F_ITOS_2_ITOS = typing.Callable[[C_IT_ITOS], C_IT_ITOS]
 
-    # Regex
+    # Group Keys
     C_GK = int | str
 
     P_M_GK = typing.Callable[[regex.Match, C_GK], bool]

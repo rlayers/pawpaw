@@ -13,7 +13,7 @@ del _type_magic
 from pawpaw.span import Span
 del span
 
-from pawpaw.ito import Types, nuco, Ito, ChildItos
+from pawpaw.ito import nuco, GroupKeys, Ito, ChildItos, Types
 del ito
 
 from pawpaw.util import find_unescaped, split_unescaped

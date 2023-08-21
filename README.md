@@ -141,7 +141,7 @@ You can then use this regex to feed **Pawpaw**:
 
  ```python
 >>> import pawpaw 
->>> doc = pawpaw.Ito.from_match(re.fullmatch(s))
+>>> doc = pawpaw.Ito.from_match(re.fullmatch(s))[0]
  ```
 
 With this single line of code, Pawpaw generates a fully hierarchical, tree of phrases, words, chars, numbers, and digits.  You can visualize the tree:

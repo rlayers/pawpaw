@@ -88,7 +88,7 @@ class Axis:
         m = phrase.regex_match(self._re)
         if m is None:
             raise ValueError(f'invalid phrase \'{phrase}\'')
-        self.ito = phrase.from_match(m)
+        self.ito = phrase.from_match(m)[0]
 
         try:
             self.key = next(str(i) for i in self.ito.children if i.desc == 'key')
@@ -538,7 +538,7 @@ class EcfSubquery(EcfCombined):
         if m is None:
             raise ValueError(f'Invalid parameter \'subquery\' value: {ito}')
 
-        sqm = pawpaw.Ito.from_match_group(m, 'sq')
+        sqm = pawpaw.Ito.from_match(m, group_keys=['sq'])[0]
         if sum(1 for i in sqm.regex_finditer(self._re_open_cur)) != sum(1 for i in sqm.regex_finditer(self._re_close_cur)):
             raise ValueError(f'unbalanced curly braces in sub-query(ies) \'{sqm}\'')
 
@@ -552,7 +552,7 @@ class EcfSubquery(EcfCombined):
                 raise ValueError(f'missing operator between subqueries \'{last}\' and \'{sq}\'')
             operands.append(op)
 
-            subqueries.append(self._func(pawpaw.Ito.from_match(sq)[1:-1]))
+            subqueries.append(self._func(pawpaw.Ito.from_match(sq)[0][1:-1]))
             last = sq
 
         if last is not None:

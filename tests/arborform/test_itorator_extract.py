@@ -8,10 +8,10 @@ from tests.util import _TestIto
 
 class TestExtract(_TestIto):
     valid_ctor_params = {
-        're': [regex.compile(r'\s+', regex.DOTALL)],
+        're': [regex.compile(r'(?P<a>.)\s+(?P<b>.)', regex.DOTALL)],
         'limit': [-1, -0, 1, None],
-        'desc_func': [lambda ito, match, group_key: str(group_key)],
-        'group_filter': [[], ['a', 'b'], lambda ito, m, gk: isinstance(gk, int)],
+        'desc': ['abc', lambda m, gk: str(gk)],
+        'group_filter': [[], ['a', 'b'], lambda m, gk: str(gk) != '0'],
         'tag': ['abc', None],
     }
 
@@ -24,7 +24,7 @@ class TestExtract(_TestIto):
     invalid_ctor_params = {
         're': [None, 1, 'abc'],
         'limit': [1.0, 'abc'],
-        'desc_func': [None, 1, 'abc'],
+        'desc': [1.1],
         'group_filter': [1],
         'tag': [True, 1.3],
     }
@@ -72,18 +72,7 @@ class TestExtract(_TestIto):
         re = regex.compile(r'.(.).')
 
         extract = Extract(re)
-        rv = [*extract(root)]
-        self.assertEqual(0, len(rv))
-
-    def test_group_filter_none(self):
-        s = 'abc'
-        root = Ito(s)
-        name = 'X'
-        re = regex.compile(r'.(.).')
-
-        extract = Extract(re, group_filter=None)
-        expected = root.clone(desc='0')
-        expected.children.add(root.clone(1, 2, desc='1'))
+        expected = root.clone(1, 2, desc='1')
         rv = [*extract(root)]
         self.assertEqual(1, len(rv))
         self.assertEqual(expected, rv[0])
@@ -95,7 +84,7 @@ class TestExtract(_TestIto):
         name = 'X'
         re = regex.compile(r'.(.).')
 
-        extract = Extract(re, group_filter=lambda ito, match, gk: False)
+        extract = Extract(re, group_filter=lambda match, gk: False)
         rv = [*extract(root)]
         self.assertEqual(0, len(rv))
 
@@ -103,18 +92,18 @@ class TestExtract(_TestIto):
         s = 'AB'
         root = Ito(s)
         re = regex.compile(r'(.)(?<foo>.)')
-        d = lambda ito, match, group: match.group(1)  # Used first (unnamed) group as descriptor for 'foo'
-        extract = Extract(re, desc_func=d)
-        rv = [*extract(Ito(s))]
-        self.assertEqual(1, len(rv))
-        self.assertEqual(root.clone(1, desc=s[0]), rv[0])
 
-    def test_desc_func(self):
+        extract = Extract(re)
+        expected = [root.clone(0, 1, '1'), root.clone(1, 2, 'foo')]
+        rv = [*extract(Ito(s))]
+        self.assertListEqual(expected, rv)
+
+    def test_desc(self):
         s = 'ten 10 eleven 11 twelve 12 '
         root = Ito(s)
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
-        df = lambda i, m, gk: str(gk) + 'x' if str(gk) == 'char' else str(gk)
-        itor = Extract(re, desc_func=df)
+        df = lambda m, gk: str(gk) + 'x' if str(gk) == 'char' else str(gk)
+        itor = Extract(re, desc=df)
         rv = itor._transform(root)
         itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]
         grouped = {k: [v for v in itos if v.desc == k] for k, val in itertools.groupby(itos, lambda x: x.desc)}
@@ -190,7 +179,7 @@ class TestExtract(_TestIto):
         s = 'ten 10 eleven 11 twelve 12 '
         root = Ito(s)
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+) )+')
-        gf = lambda i, m, g: g in ('phrase', 'number')
+        gf = lambda m, gk: gk in ('phrase', 'number')
         itor = Extract(re, group_filter=gf)
         rv = itor._transform(root)
         itos = rv + [*itertools.chain(*(i.walk_descendants() for i in rv))]

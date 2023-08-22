@@ -1,3 +1,4 @@
+import itertools
 import typing
 
 import regex
@@ -10,8 +11,6 @@ class TestOntology(_TestIto):
     def setUp(self) -> None:
         super().setUp()
 
-        self.ito = pawpaw.Ito('The vehicle John loves to drive most is his F-150, not his Cessna 172.')
-
         self.ontology = Ontology(
             {
                 'vehicle': Ontology(
@@ -19,14 +18,53 @@ class TestOntology(_TestIto):
                         'car': Ontology(
                             {
                                 'Ford': Ontology(
-                                    rules=[pawpaw.arborform.Extract(regex.compile(r'(?P<F150>F\-150)', regex.IGNORECASE))]
+                                    rules=[
+                                        pawpaw.arborform.Extract(
+                                            regex.compile(
+                                                r'(?P<Mustang>(?:Ford\s+)?Mustang(?:(?:-|\s+)\L<subtypes>)?)',
+                                                regex.IGNORECASE | regex.DOTALL,
+                                                subtypes=['EcoBoost', 'LX', 'GT', 'GT350', 'GT500', 'Mach-E', 'Dark Horse']
+                                            )
+                                        ),
+                                        pawpaw.arborform.Extract(
+                                            regex.compile(
+                                                r'(?P<F_Series>F(?:ord)?-(?:150(?:\s+Lightningt)?|[3-7]50|600))',
+                                                regex.IGNORECASE | regex.DOTALL
+                                            )
+                                        ),
+                                    ]
                                 )
                             }
                         ),
                         'airplane': Ontology(
                             {
                                 'Cessna': Ontology(
-                                    rules=[pawpaw.arborform.Extract(regex.compile(r'(?P<Skyhawk>Cessna\s172(?:\sSkyhawk)?)', regex.IGNORECASE))]
+                                    rules=[
+                                        pawpaw.arborform.Extract(
+                                            regex.compile(
+                                                r'(?P<Skyhawk>Cessna\s+172(?:\s+Skyhawk)?|(?:Cessna\s+)?172\s+Skyhawk)',
+                                                regex.IGNORECASE | regex.DOTALL
+                                            )
+                                        ),
+                                        pawpaw.arborform.Extract(
+                                            regex.compile(
+                                                r'(?P<Skylane>Cessna\s+182(?:\s+Skylane)?|(?:Cessna\s+)?182\s+Skylane)',
+                                                regex.IGNORECASE | regex.DOTALL
+                                            )
+                                        ),
+                                        pawpaw.arborform.Extract(
+                                            regex.compile(
+                                                r'(?P<Stationair>Cessna\s+206(?:\s+Stationair)?|(?:Cessna\s+)?206\s+Stationair)',
+                                                regex.IGNORECASE | regex.DOTALL
+                                            )
+                                        ),
+                                        pawpaw.arborform.Extract(
+                                            regex.compile(
+                                                r'(?P<Caravan>Cessna\s+208(?:\s+Caravan)?|(?:Cessna\s+)?208\s+Caravan)',
+                                                regex.IGNORECASE | regex.DOTALL
+                                            )
+                                        ),
+                                    ]
                                 )
                             }
                         ),                        
@@ -73,16 +111,19 @@ class TestOntology(_TestIto):
                 self.assertIs(expected, self.ontology[path])
 
     def test_discover(self):
-        discoveries = self.ontology.discover(self.ito)
+        s = 'The vehicle John loves to drive most is his F-150, not his Cessna 172.'
+        ito = pawpaw.Ito(s)
 
-        vehicles = [*self.ontology['vehicle'].rules[0](self.ito)]
+        discoveries = self.ontology.discover(ito)
+
+        vehicles = [*itertools.chain.from_iterable(rule(ito) for rule in self.ontology['vehicle'].rules)]
         self.assertLess(0, len(vehicles))
         self.assertSequenceEqual(vehicles, discoveries['vehicle'].itos)
 
-        fords = [*self.ontology['vehicle']['car']['Ford'].rules[0](self.ito)]
+        fords = [*itertools.chain.from_iterable(rule(ito) for rule in self.ontology['vehicle']['car']['Ford'].rules)]
         self.assertLess(0, len(fords))
         self.assertSequenceEqual(fords, discoveries['vehicle']['car']['Ford'].itos)
 
-        cessnas = [*self.ontology['vehicle']['airplane']['Cessna'].rules[0](self.ito)]
+        cessnas = [*itertools.chain.from_iterable(rule(ito) for rule in self.ontology['vehicle']['airplane']['Cessna'].rules)]
         self.assertLess(0, len(cessnas))
         self.assertSequenceEqual(cessnas, discoveries['vehicle']['airplane']['Cessna'].itos)

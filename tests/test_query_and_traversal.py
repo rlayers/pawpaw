@@ -22,7 +22,7 @@ class TestItoTraversal(_TestIto):
         re = regex.compile(r'(?P<phrase>(?P<word>(?P<char>\w)+) (?P<number>(?P<digit>\d)+)(?: |$))+')
         m = re.fullmatch(self.src)
 
-        self.root = Ito.from_match(m)
+        self.root = Ito.from_match(m)[0]
         self.desc = 'root'
         self.descendants_count = self.count_descendants(self.root)
 

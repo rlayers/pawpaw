@@ -1,4 +1,5 @@
 from __future__ import annotations
+import dataclasses
 import json
 import typing
 
@@ -27,14 +28,15 @@ class Discoveries(dict):
         c = ', '.join(f'{k}: {str(v)}' for k, v in self.items())
         return f'{{itos: {[str(i) for i in self._itos]}, {c}}}'
     
-    def transform(
-        self, 
-        entity_start_char: str = mathematical_white_square_brackets.LEFT,
-        entity_stop_char: str = mathematical_white_square_brackets.RIGHT
-    ) -> str:
-        raise NotImplemented()
-        
+    def _flatten(self, filter_empties: bool = True, path: C_PATH = tuple()) -> dict[C_PATH, list[Ito]]:
+        rv = {} if len(self.itos) == 0 and filter_empties else {tuple(path): self.itos}
+        for key in self.keys():
+            rv |= self[key]._flatten(filter_empties, path + (key,))
+        return rv
 
+    def flatten(self, filter_empties: bool = True) -> dict[C_PATH, list[Ito]]:
+        return self._flatten(filter_empties, )
+    
 class Ontology(dict):
     def __missing__(self, key):
         if isinstance(key, typing.Sequence) and (lk := len(key)) > 0 and not isinstance(key, str):
@@ -69,15 +71,43 @@ class Ontology(dict):
 
         return rv
 
-    def discover_flat(self, *itos: Ito) -> dict[C_PATH, list[Ito]]:
-        rv: dict[C_PATH, list[Ito]] = {}
 
-        for v in self.rules:
-            for i in itos:
-                rv[tuple()] = [*v(i)]
 
-        for k, v in self.items():
-            d = {(k, *sk): sv for sk, sv in v.discover_flat(*itos).items()}
-            rv |= d
+# [car](?:[verb]|[prep]){1,}
 
-        return rv
+# {{nodepath ^ subexpression}[Qauntifier]}...
+
+# @dataclasses.dataclass
+# class Node:
+#     ...
+
+#     def matches(start: int | Ito) -> typing.Iterable[list[Ito]]:
+#         ...
+
+# class Singular(Node):
+#     ...
+
+# class Alternates(Node)
+#     ...
+
+
+
+
+# @dataclasses.dataclass
+# class PathEx(list[])
+
+
+# @dataclasses.dataclass
+# class Quantifier:
+#     min: int | None = 1
+#     max: int | None = 2
+
+# @dataclasses.dataclass
+# class QueryPhrase:
+#     self.path: C_PATH = tuple()
+
+# class Q():
+#     def __init__(self, *args, **kwargs):
+#         self.path: C_PATH = tuple()
+#         self.quantifier = tuple(int)
+#         dict.__init__(self, *args, **kwargs )

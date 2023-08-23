@@ -3,7 +3,7 @@ import dataclasses
 import json
 import typing
 
-from pawpaw import Ito, Types
+from pawpaw import Ito, Types, Errors
 from pawpaw.arborform import Itorator
 
 C_RULE = Itorator | Types.F_ITO_2_IT_ITOS
@@ -11,11 +11,6 @@ C_RULES = dict[str, C_RULE]
 C_PATH = typing.Sequence[str]
 
 class Discoveries(dict):
-    mathematical_white_square_brackets = {
-        'LEFT': '\u27E6',   # ⟦
-        'RIGHT': '\u27E7',  # ⟧
-    }
-
     def __init__(self, *args, **kwargs):
         self._itos: list[Ito] = list(kwargs.pop('itos', tuple()))
         dict.__init__(self, *args, **kwargs )
@@ -71,43 +66,37 @@ class Ontology(dict):
 
         return rv
 
+class Query():
+    mathematical_white_square_brackets = {
+        'LEFT': '\u27E6',   # ⟦
+        'RIGHT': '\u27E7',  # ⟧
+    }
 
+    class Term:
+        _pat = r'''(?P<entity>
+                    [a-z_]+
+                    |
+                    ⟦.+?⟧
+                )
+                (?P<quantifier>
+                    \{
+                        (?P<qty_min>\d+)?
+                        (?:,(?P<qty_max>\d+)?)?
+                    \}
+                    |
+                    (?P<symbol>
+                        [?*+]
+                    )
+                )?'''
 
-# [car](?:[verb]|[prep]){1,}
+    def __init__(self, path: Types.C_QPATH):
+        if isinstance(path, str):
+            path = pawpaw.Ito(path)
+        elif not isinstance(path, pawpaw.Ito):
+            raise pawpaw.Errors.parameter_invalid_type('path', path, pawpaw.Types.C_QPATH)
 
-# {{nodepath ^ subexpression}[Qauntifier]}...
+        self._lbound = mathematical_white_square_brackets['LEFT']
+        self._rbound = mathematical_white_square_brackets['RIGHT']
 
-# @dataclasses.dataclass
-# class Node:
-#     ...
-
-#     def matches(start: int | Ito) -> typing.Iterable[list[Ito]]:
-#         ...
-
-# class Singular(Node):
-#     ...
-
-# class Alternates(Node)
-#     ...
-
-
-
-
-# @dataclasses.dataclass
-# class PathEx(list[])
-
-
-# @dataclasses.dataclass
-# class Quantifier:
-#     min: int | None = 1
-#     max: int | None = 2
-
-# @dataclasses.dataclass
-# class QueryPhrase:
-#     self.path: C_PATH = tuple()
-
-# class Q():
-#     def __init__(self, *args, **kwargs):
-#         self.path: C_PATH = tuple()
-#         self.quantifier = tuple(int)
-#         dict.__init__(self, *args, **kwargs )
+        self._re = regex.compile(_pat, regex.DOTALL | regex.VERBOSE)
+        self._chain: list[term]

@@ -67,13 +67,32 @@ class Ontology(dict):
         return rv
 
 class Query():
+
+    # query := phrase [ &_or_| phrase ]...
+
+    # phrase := [not] entity_or_query [quantifier]
+    
+    # not = !...
+
+    # entity = [a-z\d_]+,  ⟦.+?⟧
+
+    # quantifier = ?, +, *, {[n][,[m]]}
+
+    # / / / /
+
+    # penalty for interstitial entities (or non-ws characters) ~(ito_last.stop - ito_first.start) / sum(i.length for i in itos)
+
+
     mathematical_white_square_brackets = {
         'LEFT': '\u27E6',   # ⟦
         'RIGHT': '\u27E7',  # ⟧
     }
 
     class Term:
-        _pat = r'''(?P<entity>
+        _pat = r'''(?P<not>
+                    !*
+                )
+                (?P<entity>
                     [a-z_]+
                     |
                     ⟦.+?⟧
@@ -88,6 +107,8 @@ class Query():
                         [?*+]
                     )
                 )?'''
+
+    # Terms optionally separated by spacing indicator: <
 
     def __init__(self, path: Types.C_QPATH):
         if isinstance(path, str):

@@ -180,56 +180,6 @@ class Ito:
             yield from rv[:limit]
 
     @classmethod
-    def from_match_group(cls,
-        match: regex.Match,
-        group: Types.C_GK = 0,
-        desc: str | Types.F_M_GK_2_DESC = lambda m, gk: str(gk),
-        add_child_groups: bool = True
-    ) -> pawpaw.Ito:
-        if match is None:
-            raise Errors.parameter_not_none('match')
-        elif not isinstance(match, regex.Match):
-            raise Errors.parameter_invalid_type('match', match, regex.Match)
-
-        if group is None:
-            raise Errors.parameter_not_none('group')
-
-        if isinstance(desc, str):
-            desc_func = lambda m, g: desc
-        elif type_magic.functoid_isinstance(desc, Types.F_M_GK_2_DESC):
-            desc_func = desc
-        else:
-            raise Errors.parameter_invalid_type('desc', desc, Types.F_M_GK_2_DESC)
-
-        rv = cls(match.string, *match.span(group), desc=desc_func(match, group))
-
-        if add_child_groups:
-            gks = [i for i in range(0, match.re.groups + 1)]
-            for n, i in match.re.groupindex.items():
-                if i != group:
-                    gks[i] = n
-            gks = gks[gks.index(group)+1:]  # child keys are to the right
-
-            span_gks = ((span, gk) for gk in gks for span in match.spans(gk) if rv.start <= span[0] and span[1] <= rv.stop)
-            
-            path_stack: typing.List[Ito] = []
-            match_itos: typing.List[Ito] = []
-            for span, gk in sorted(span_gks, key=lambda val: (val[0][0], -val[0][1])):
-                ito = rv.clone(*span, desc=gk, clone_children=False)
-                while len(path_stack) > 0 and (ito.start < path_stack[-1].start or ito.stop > path_stack[-1].stop):
-                    path_stack.pop()
-                if len(path_stack) == 0:
-                    match_itos.append(ito)
-                else:
-                    path_stack[-1].children.add(ito)
-
-                path_stack.append(ito)
-
-            rv.children.add(*match_itos)
-
-        return rv
-
-    @classmethod
     def from_spans(cls, src: str | pawpaw.Ito, spans: typing.Iterable[Span], desc: str | None = None) -> typing.Iterable[pawpaw.Ito]:
         """Generate Itos from spans
         

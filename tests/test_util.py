@@ -108,3 +108,34 @@ class TestSplitUnescaped(_TestIto):
                         expected = [src]
                     actual = [*pawpaw.split_unescaped(src, chars)]
                     self.assertListEqual(expected, actual)
+
+
+class TestFindBalanced(_TestIto):
+    def test_find_balanced(self):
+        lchar = '('
+        rchar = ')'
+        balanced_segments = [r'(\))', r'(\()', '()', '(a)', '(a(b))', '()', '(123(abc)(def)456)']
+
+        for b in [*balanced_segments]:
+            with self.subTest(src=b, lchar=lchar, rchar=rchar):
+                actual = next(pawpaw.find_balanced(b, lchar, rchar))
+                self.assertEqual(b, actual)
+
+            b = pawpaw.Ito(b)
+            lcito = pawpaw.Ito(lchar)
+            rcito = pawpaw.Ito(rchar)
+            with self.subTest(src=b, lchar=lcito, rchar=rcito):
+                actual = next(pawpaw.find_balanced(b, lcito, rcito))
+                self.assertEqual(b, actual)
+
+            b = pawpaw.Ito(f'({b})')
+            lcito = pawpaw.Ito(lchar)
+            rcito = pawpaw.Ito(rchar)
+            with self.subTest(src=b, lchar=lcito, rchar=rcito, start=1, stop=-1):
+                actual = next(pawpaw.find_balanced(b, lcito, rcito, start=1, stop=-1))
+                self.assertEqual(b[1:-1], actual)
+
+        b = ''.join(balanced_segments)
+        with self.subTest(src=b, lchar=lchar, rchar=rchar):
+            actual = [*pawpaw.find_balanced(b, lchar, rchar)]
+            self.assertListEqual(balanced_segments, actual)

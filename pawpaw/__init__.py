@@ -16,7 +16,7 @@ del span
 from pawpaw.ito import nuco, GroupKeys, Ito, ChildItos, Types
 del ito
 
-from pawpaw.util import find_unescaped, split_unescaped
+from pawpaw.util import find_unescaped, split_unescaped, find_balanced
 del util
 
 import pawpaw.arborform

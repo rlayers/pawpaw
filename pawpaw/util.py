@@ -91,3 +91,50 @@ def split_unescaped(
         yield src[cur:i]
         cur = i + 1
     yield src[cur:]
+
+
+def find_balanced(
+    src: str | pawpaw.Ito,
+    lchar: str | pawpaw.Ito,
+    rchar: str | pawpaw.Ito,
+    escape: str = '\\',
+    start: int | None = None,
+    stop: int | None = None
+) -> typing.Iterable[str] | typing.Iterable[pawpaw.Ito]:
+    if isinstance(src, str):
+        s = src
+        offset = 0
+    elif isinstance(src, pawpaw.Ito):
+        s = src.string
+        offset = src.start
+    else:
+        raise pawpaw.Errors.parameter_invalid_type('src', src, str, pawpaw.Ito)
+
+    if not (isinstance(lchar, str) or isinstance(lchar, pawpaw.Ito)):
+        raise pawpaw.Errors.parameter_invalid_type('left', lchar, str, pawpaw.Ito)
+    elif len(lchar) != 1:
+        raise ValueError('parameter \'left\' must have length 1')
+    lchar = str(lchar)
+
+    if not (isinstance(rchar, str) or isinstance(rchar, pawpaw.Ito)):
+        raise pawpaw.Errors.parameter_invalid_type('right', rchar, str, pawpaw.Ito)
+    elif len(rchar) != 1:
+        raise ValueError('parameter \'right\' must have length 1')
+    rchar = str(rchar)
+
+    lefts = []
+    for i in find_unescaped(src, lchar + rchar, escape, start, stop):
+        c = s[offset + i]
+        if c == lchar:
+            lefts.append(i)
+        else:
+            len_lefts = len(lefts)
+            if len_lefts > 1:
+                lefts.pop()
+            elif len_lefts == 1:
+                yield src[lefts.pop():i+1]
+            else:
+                raise ValueError(f'unbalanced right char {rchar} found at index {i}')
+        
+    if len(lefts) != 0:
+        raise ValueError(f'unbalanced left char {lchar} found at index {lefts.pop()}')

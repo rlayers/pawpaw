@@ -160,7 +160,7 @@ print(v_tree.dumps(next(itor_self(ito))))
 
 **Output:**
 
-```
+```python
 (0, 54) 'phrase' : 'It measures 10 <!--i…!--front to back-->'
 ├──(0, 2) 'token' : 'It'
 ├──(3, 11) 'token' : 'measures'
@@ -170,6 +170,51 @@ print(v_tree.dumps(next(itor_self(ito))))
 ├──(29, 33) 'token' : 'long'
 └──(34, 54) 'comment' : '<!--front to back-->'
    └──(38, 51) 'value' : 'front to back'
+```
+
+### Build a recursive parser
+
+Because itorator chains are linked via ``Connection`` objects, the same ``Itorator`` can be used multiple times in a chain:
+
+**Code:**
+
+```python
+import regex
+from pawpaw import Ito, find_balanced, arborform, visualization
+
+itor = arborform.Reflect()
+itor.connections.append(arborform.Connectors.Recurse(arborform.Desc('expression')))
+
+itor_entities = arborform.Itorator.wrap(lambda ito: find_balanced(ito, '(', ')'))
+itor_entities.connections.append(arborform.Connectors.Recurse(arborform.Desc('subexpression')))
+
+itor_split = arborform.Split(itor_entities, boundary_retention=arborform.Split.BoundaryRetention.ALL, desc='expression')
+
+itor_trim_parens = arborform.Itorator.wrap(lambda ito: (Ito(ito, 1, -1, ito.desc),))
+itor_split.connections.append(arborform.Connectors.Recurse(itor_trim_parens, lambda ito: ito.desc == 'subexpression'))
+
+# Add itor to its own itorator chain
+itor_split.connections.append(arborform.Connectors.Recurse(itor, lambda ito: ito.desc == 'subexpression'))
+
+itor.connections.append(arborform.Connectors.Children.Add(itor_split, lambda ito: ito.str_find('(') > -1))
+
+v_tree = visualization.pepo.Tree()
+s = 'a + (b + (c * d) / (g * h))'
+i = Ito(s)
+print(v_tree.dumps(next(itor(i))))
+
+```
+
+**Output:**
+
+```python
+(0, 27) 'expression' : 'a + (b + (c * d) / (g * h))'
+├──(0, 4) 'expression' : 'a +'
+└──(5, 26) 'expression' : 'b + (c * d) / (g * h)'
+   ├──(5, 9) 'expression' : 'b + '
+   ├──(10, 15) 'expression' : 'c * d'
+   ├──(16, 19) 'expression' : ' / '
+│  └──(20, 25) 'expression' : 'g * h'
 ```
 
 ## XML

@@ -109,35 +109,35 @@ class Query():
         filter_empties = arborform.Filter(lambda ito: ito.desc is not None)
         itor.connections.append(arborform.Connectors.Recurse(filter_empties))
 
-        def combine_phrases(itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
-            entity = None
-            def to_phrase(quantifier: Ito | None = None) -> Ito:
-                if quantifier is None:
-                    parts = [entity]
-                elif entity is None:
-                    raise ValueError('quantifier {quantifier} does not follow an entity')
-                else:
-                    parts = [quantifier, entity]
-                rv = Ito.join(*parts, desc='phrase')
-                rv.children.add(*parts)
-                entity = None
-                return rv
+        # def combine_phrases(itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
+        #     entity = None
+        #     def to_phrase(quantifier: Ito | None = None) -> Ito:
+        #         if quantifier is None:
+        #             parts = [entity]
+        #         elif entity is None:
+        #             raise ValueError('quantifier {quantifier} does not follow an entity')
+        #         else:
+        #             parts = [quantifier, entity]
+        #         rv = Ito.join(*parts, desc='phrase')
+        #         rv.children.add(*parts)
+        #         entity = None
+        #         return rv
 
-            for ito in itos:
-                if ito.desc == 'quantifier':
-                    yield to_phrase(ito)
-                elif ito.desc == 'entity':
-                    entity = ito
-                else:
-                    if entity is not None:
-                        yield to_phrase(None, entity)
-                    yield ito
+        #     for ito in itos:
+        #         if ito.desc == 'quantifier':
+        #             yield to_phrase(ito)
+        #         elif ito.desc == 'entity':
+        #             entity = ito
+        #         else:
+        #             if entity is not None:
+        #                 yield to_phrase(None, entity)
+        #             yield ito
 
-            if entity is not None:
-                yield to_phrase(None, entity)
+        #     if entity is not None:
+        #         yield to_phrase(None, entity)
 
-        entity_join = arborform.Postorator.wrap(combine_phrases)
-        itor.posterator = entity_join
+        # entity_join = arborform.Postorator.wrap(combine_phrases)
+        # itor.posterator = entity_join
 
         rv.connections.append(arborform.Connectors.Children.Add(itor))
         return rv

@@ -74,12 +74,14 @@ class TestItoratorConnections(_TestIto):
 
         self.assertSequenceEqual([Ito(root, 1, -1, 'x')], actual)
         
-    def test_connect_recurse(self):
+    def test_connect_delegate(self):
         s = ' abc '
-        root = Ito(s, 1, -1)
-        desc = 'x'
+        root = Ito(s, 1, -1, 'initial')
+        del_desc = 'delegate'
         itor_r = arborform.Reflect()
-        itor_d = arborform.Desc(desc)
+        itor_d = arborform.Desc(del_desc)
+        final_suf = '-final'
+        itor_f = Itorator.wrap(lambda ito: (ito.clone(desc=ito.desc + final_suf),))
 
         lambdas = {
             '[default]': None,
@@ -88,58 +90,69 @@ class TestItoratorConnections(_TestIto):
         }
 
         for lam_desc, lam_f in lambdas.items():
-            with self.subTest(lambda_=lam_desc):
-                itor_r.connections.clear()
+            itor_r.connections.clear()
 
-                if lam_f is None:
-                    itor_r.connections.append(Connectors.Recurse(itor_d))
-                else:
-                    itor_r.connections.append(Connectors.Recurse(itor_d, lam_f))
-                
+            if lam_f is None:
+                itor_r.connections.append(Connectors.Delegate(itor_d))
+            else:
+                itor_r.connections.append(Connectors.Delegate(itor_d, lam_f))
+            
+            with self.subTest(lambda_=lam_desc, successor_itor=False):
                 if lam_f is None or lam_f(root):
-                    expected = root.clone(desc=desc)
+                    expected = root.clone(desc=del_desc)
                 else:
                     expected = root
 
                 actual = next(itor_r(root))
                 self.assertEqual(expected, actual)
 
-    # def test_connect_sub(self):
-    #     s = ' one 123 two 456 '
-    #     root = Ito(s, 1, -1)
-        
-    #     itor_r = self.get_reflect()
+            with self.subTest(lambda_=lam_desc, successor_itor=True):
+                itor_r.connections.append(Connectors.Recurse(itor_f))
+                if not(lam_f is None or lam_f(root)):
+                    expected = next(itor_f(root))
+                actual = next(itor_r(root))
+                self.assertEqual(expected, actual)
 
-    #     # create sub-pipeline with two endpoints
-    #     itor_tok_split = Itorator.wrap(lambda ito: ito.str_split())
-    #     con = Connectors.Sub(itor_tok_split)
-    #     itor_r.connections.append(con)
+    def test_connect_recurse(self):
+        s = ' abc '
+        root = Ito(s, 1, -1, 'initial')
+        del_desc = 'recurse'
+        itor_r = arborform.Reflect()
+        itor_d = arborform.Desc(del_desc)
+        final_suf = '-final'
+        itor_f = Itorator.wrap(lambda ito: (ito.clone(desc=ito.desc + final_suf),))
 
-    #     itor_desc_word = self.get_desc('word')
-    #     con = Connectors.Next(itor_desc_word, lambda ito: not ito.str_isnumeric())
-    #     itor_tok_split.connections.append(con)
+        lambdas = {
+            '[default]': None,
+            'Always True': lambda ito: True,
+            'Always False': lambda ito: False,
+        }
 
-    #     itor_desc_num = self.get_desc('number')
-    #     con = Connectors.Next(itor_desc_num)
-    #     itor_tok_split.connections.append(con)
+        for lam_desc, lam_f in lambdas.items():
+            itor_r.connections.clear()
 
-    #     # ensure this works as expected
-    #     rv = [*itor_r(root)]
-    #     self.assertEqual(len(root.str_split()), len(rv))
-    #     self.assertTrue(all(i.desc in ['word', 'number'] for i in rv))
+            if lam_f is None:
+                itor_r.connections.append(Connectors.Recurse(itor_d))
+            else:
+                itor_r.connections.append(Connectors.Recurse(itor_d, lam_f))
+            
+            with self.subTest(lambda_=lam_desc, successor_itor=False):
+                if lam_f is None or lam_f(root):
+                    expected = root.clone(desc=del_desc)
+                else:
+                    expected = root
 
-    #     # now add a Next connection AFTER the sub-pipeline
-    #     def prepend_x(ito) -> Types.C_IT_ITOS:
-    #         ito.desc = 'x' + ito.desc
-    #         return ito,
-    #     itor_desc_pre_x = Itorator.wrap(prepend_x)
-    #     con = Connectors.Next(itor_desc_pre_x)
-    #     itor_r.connections.append(con)
+                actual = next(itor_r(root))
+                self.assertEqual(expected, actual)
 
-    #     # ensure next connects to all the sub-pipeline's endpoints
-    #     rv = [*itor_r(root)]
-    #     self.assertEqual(len(root.str_split()), len(rv))
-    #     self.assertTrue(all(i.desc.startswith('x') for i in rv))
+            with self.subTest(lambda_=lam_desc, successor_itor=True):
+                itor_r.connections.append(Connectors.Recurse(itor_f))
+                if lam_f is None or lam_f(root):
+                    expected = next(itor_f(expected))
+                else:
+                    expected = next(itor_f(root))
+                actual = next(itor_r(root))
+                self.assertEqual(expected, actual)
 
     def test_connect_children(self):
         s = ' one 123 two 456 '

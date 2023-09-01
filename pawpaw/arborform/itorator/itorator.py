@@ -9,13 +9,23 @@ from pawpaw.arborform.postorator.postorator import Postorator
 
 
 class Connector(ABC):
-    def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+    def __init__(self, itorator: Itorator, predicate: Types.P_ITO | str | None = lambda ito: True):
+        if not isinstance(itorator, Itorator):
+            raise Errors.parameter_invalid_type('itorator', itorator, Itorator)
         self.itorator = itorator
-        self.predicate = predicate
+
+        if type_magic.functoid_isinstance(predicate, Types.P_ITO):
+            self.predicate = predicate
+        elif isinstance(predicate, str):
+            self.predicate = lambda ito: ito.desc == predicate
+        elif predicate is None:
+            self.predicate = lambda ito: ito.desc is None
+        else:
+            raise Errors.parameter_invalid_type('predicate', predicate, Types.P_ITO, str, None)
 
 
 class ChildrenConnector(Connector, ABC):
-    def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+    def __init__(self, itorator: Itorator, predicate: Types.P_ITO | str | None = lambda ito: True):
         super().__init__(itorator, predicate)
 
 
@@ -23,40 +33,40 @@ class Connectors:
     # yield from f(cur)
     # break
     class Delegate(Connector):
-        def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+        def __init__(self, itorator: Itorator, predicate: Types.P_ITO | str | None = lambda ito: True):
             super().__init__(itorator, predicate)
 
     # cur(s) ~= f(cur)
     class Recurse(Connector):
-        def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+        def __init__(self, itorator: Itorator, predicate: Types.P_ITO | str | None = lambda ito: True):
             super().__init__(itorator, predicate)
 
     # f(cur)
     class Subroutine(Connector):
-        def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+        def __init__(self, itorator: Itorator, predicate: Types.P_ITO | str | None = lambda ito: True):
             super().__init__(itorator, predicate)
 
     class Children:
         # cur.children.add(*f(cur))
         class Add(ChildrenConnector):
-            def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+            def __init__(self, itorator: Itorator, predicate: Types.P_ITO | str | None = lambda ito: True):
                 super().__init__(itorator, predicate)
 
         # cur.children.add_hierarchical(*f(cur))
         class AddHierarchical(ChildrenConnector):
-            def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+            def __init__(self, itorator: Itorator, predicate: Types.P_ITO | str | None = lambda ito: True):
                 super().__init__(itorator, predicate)
 
         # cur.children.clear
         # cur.children.add(*f(cur))
         class Replace(ChildrenConnector):
-            def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+            def __init__(self, itorator: Itorator, predicate: Types.P_ITO | str | None = lambda ito: True):
                 super().__init__(itorator, predicate)
 
         # for c in f(cur):
         #   cur.children.remove(c)
         class Delete(ChildrenConnector):  # REMOVE
-            def __init__(self, itorator: Itorator, predicate: Types.P_ITO = lambda ito: True):
+            def __init__(self, itorator: Itorator, predicate: Types.P_ITO | str | None = lambda ito: True):
                 super().__init__(itorator, predicate)
 
 

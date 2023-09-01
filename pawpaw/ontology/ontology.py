@@ -79,67 +79,41 @@ class Query():
         rv = arborform.Reflect()
         rv.connections.append(arborform.Connectors.Recurse(arborform.Desc('query')))
 
-        itor_entities = arborform.Itorator.wrap(lambda ito: find_balanced(ito, '⟦', '⟧'))
-        itor_entities.connections.append(arborform.Connectors.Recurse(arborform.Desc('entity')))
+        itor_child_placeholder = arborform.Reflect() 
 
-        itor = arborform.Split(itor_entities, boundary_retention=arborform.Split.BoundaryRetention.ALL)
+        itor_entities = arborform.Itorator.wrap(lambda ito: find_balanced(ito, '[', ']'))
+        itor_entities.connections.append(arborform.Connectors.Delegate(arborform.Desc('entity')))
+        itor_split_brackets = arborform.Split(itor_entities, boundary_retention=arborform.Split.BoundaryRetention.ALL)
+        itor_child_placeholder.connections.append(arborform.Connectors.Recurse(itor_split_brackets))
         
-        itor_bal = arborform.Itorator.wrap(lambda ito: find_balanced(ito, '(', ')'))
-        itor_bal.connections.append(arborform.Connectors.Recurse(arborform.Desc('subquery')))
+        itor_trim_brackets = arborform.Itorator.wrap(lambda ito: (Ito(ito, 1, -1, ito.desc),))
+        itor_child_placeholder.connections.append(arborform.Connectors.Recurse(itor_trim_brackets, 'entity'))
 
-        itor_sq = arborform.Split(itor_bal, boundary_retention=arborform.Split.BoundaryRetention.ALL)
-        itor.connections.append(arborform.Connectors.Recurse(itor_sq, lambda ito: ito.desc is None))
+        itor_sqs = arborform.Itorator.wrap(lambda ito: find_balanced(ito, '(', ')'))
+        itor_sqs.connections.append(arborform.Connectors.Delegate(arborform.Desc('subquery')))
+        itor_split_sqs = arborform.Split(itor_sqs, boundary_retention=arborform.Split.BoundaryRetention.ALL)
+        itor_child_placeholder.connections.append(arborform.Connectors.Recurse(itor_split_sqs, None))
 
         itor_trim_parens = arborform.Itorator.wrap(lambda ito: (Ito(ito, 1, -1, ito.desc),))
-        itor.connections.append(arborform.Connectors.Recurse(itor_trim_parens, lambda ito: ito.desc == 'subquery'))
+        itor_child_placeholder.connections.append(arborform.Connectors.Recurse(itor_trim_parens, 'subquery'))
 
-        itor.connections.append(arborform.Connectors.Recurse(rv, lambda ito: ito.desc == 'subquery'))
-
+        itor_child_placeholder.connections.append(arborform.Connectors.Recurse(rv, 'subquery'))
+                                            
         pat_not = r'(?P<op_not>!*)'
         pat_and = r'(?P<op_and>&)'
         pat_or = r'(?P<op_or>\|)'
         pat_entity = r'(?P<entity>[a-z\d_]+)'
-        pat_quantifier = r'(?P<quantifier>\{(?P<qty_min>\d+)?(?:,(?P<qty_max>\d+)?)?\}|(?P<symbol>[?*+]))'
+        pat_quantifier = r'(?P<op_quantifier>\{(?P<qty_min>\d+)?(?:,(?P<qty_max>\d+)?)?\}|(?P<qty_symbol>[?*+]))'
         itor_residual = arborform.Split(
             arborform.Extract(regex.compile('|'.join([pat_not, pat_and, pat_or, pat_entity, pat_quantifier]), regex.DOTALL | regex.IGNORECASE)),
             boundary_retention=arborform.Split.BoundaryRetention.ALL
         )
-        itor.connections.append(arborform.Connectors.Recurse(itor_residual, lambda ito: ito.desc is None))
+        itor_child_placeholder.connections.append(arborform.Connectors.Recurse(itor_residual, None))
 
         filter_empties = arborform.Filter(lambda ito: ito.desc is not None)
-        itor.connections.append(arborform.Connectors.Recurse(filter_empties))
+        itor_child_placeholder.connections.append(arborform.Connectors.Recurse(filter_empties))
 
-        # def combine_phrases(itos: Types.C_IT_ITOS) -> Types.C_IT_ITOS:
-        #     entity = None
-        #     def to_phrase(quantifier: Ito | None = None) -> Ito:
-        #         if quantifier is None:
-        #             parts = [entity]
-        #         elif entity is None:
-        #             raise ValueError('quantifier {quantifier} does not follow an entity')
-        #         else:
-        #             parts = [quantifier, entity]
-        #         rv = Ito.join(*parts, desc='phrase')
-        #         rv.children.add(*parts)
-        #         entity = None
-        #         return rv
-
-        #     for ito in itos:
-        #         if ito.desc == 'quantifier':
-        #             yield to_phrase(ito)
-        #         elif ito.desc == 'entity':
-        #             entity = ito
-        #         else:
-        #             if entity is not None:
-        #                 yield to_phrase(None, entity)
-        #             yield ito
-
-        #     if entity is not None:
-        #         yield to_phrase(None, entity)
-
-        # entity_join = arborform.Postorator.wrap(combine_phrases)
-        # itor.posterator = entity_join
-
-        rv.connections.append(arborform.Connectors.Children.Add(itor))
+        rv.connections.append(arborform.Connectors.Children.Add(itor_child_placeholder))
         return rv
     
     _itor = _build_itor()

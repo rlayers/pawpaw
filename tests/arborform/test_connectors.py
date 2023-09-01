@@ -70,37 +70,39 @@ class TestItoratorConnections(_TestIto):
 
         itor_1.connections.clear()
         itor_1.connections.append(Connectors.Subroutine(itor_2))
-        rv = [*itor_1(root)]
+        actual = [*itor_1(root)]
 
-        self.assertSequenceEqual([Ito(root, 1, -1, 'x')], rv)
+        self.assertSequenceEqual([Ito(root, 1, -1, 'x')], actual)
         
-    # def test_connect_next(self):
-    #     s = ' abc '
-    #     root = Ito(s, 1, -1)
-    #     desc = 'x'
-    #     itor_r = self.get_reflect()
-    #     itor_d = self.get_desc(desc)
+    def test_connect_recurse(self):
+        s = ' abc '
+        root = Ito(s, 1, -1)
+        desc = 'x'
+        itor_r = arborform.Reflect()
+        itor_d = arborform.Desc(desc)
 
-    #     lambdas = {
-    #         '[default]': None,
-    #         'Always True': lambda ito: True,
-    #         'Always False': lambda ito: False,
-    #     }
+        lambdas = {
+            '[default]': None,
+            'Always True': lambda ito: True,
+            'Always False': lambda ito: False,
+        }
 
-    #     for lam_desc, lam_f in lambdas.items():
-    #         with self.subTest(lambda_=lam_desc):
-    #             if lam_f is None:
-    #                 itor_r.connections.append(Connectors.Next(itor_d))
-    #             else:
-    #                 itor_r.connections.append(Connectors.Next(itor_d, lam_f))
+        for lam_desc, lam_f in lambdas.items():
+            with self.subTest(lambda_=lam_desc):
+                itor_r.connections.clear()
+
+                if lam_f is None:
+                    itor_r.connections.append(Connectors.Recurse(itor_d))
+                else:
+                    itor_r.connections.append(Connectors.Recurse(itor_d, lam_f))
                 
-    #             if lam_f is None or lam_f(root):
-    #                 expected = self.change_desc(root, desc)[0]
-    #             else:
-    #                 expected = root
+                if lam_f is None or lam_f(root):
+                    expected = root.clone(desc=desc)
+                else:
+                    expected = root
 
-    #             rv = next(itor_r(root))
-    #             self.assertEqual(expected, rv)
+                actual = next(itor_r(root))
+                self.assertEqual(expected, actual)
 
     # def test_connect_sub(self):
     #     s = ' one 123 two 456 '

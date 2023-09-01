@@ -50,30 +50,6 @@ class TestItoratorConnections(_TestIto):
 
         self.assertSequenceEqual([Ito(root, 3, -3)], rv)
 
-    def test_sub(self):
-        s = '123a321'
-        root = Ito(s)
-
-        itor_1 = Itorator.wrap(lambda ito: [ito.str_strip('1')])
-        itor_2 = Itorator.wrap(lambda ito: [ito.str_strip('2')])
-        
-        itor_1.connections.append(Connectors.Subroutine(itor_2))
-        rv = [*itor_1(root)]
-
-        self.assertSequenceEqual([Ito(root, 1, -1)], rv)
-
-        def sec_desc_x(ito) -> typing.Iterable[Ito]:
-            ito.desc = 'x'
-            return  # don't yield anything
-            yield  # this forces interpretation as a generator method
-        itor_2 = Itorator.wrap(sec_desc_x)
-
-        itor_1.connections.clear()
-        itor_1.connections.append(Connectors.Subroutine(itor_2))
-        actual = [*itor_1(root)]
-
-        self.assertSequenceEqual([Ito(root, 1, -1, 'x')], actual)
-        
     def test_connect_delegate(self):
         s = ' abc '
         root = Ito(s, 1, -1, 'initial')
@@ -146,6 +122,55 @@ class TestItoratorConnections(_TestIto):
                 self.assertEqual(expected, actual)
 
             with self.subTest(lambda_=lam_desc, successor_itor=True):
+                itor_r.connections.append(Connectors.Recurse(itor_f))
+                if lam_f is None or lam_f(root):
+                    expected = next(itor_f(expected))
+                else:
+                    expected = next(itor_f(root))
+                actual = next(itor_r(root))
+                self.assertEqual(expected, actual)
+
+    def test_connect_subroutine(self):
+        s = ' abc '
+        root = Ito(s, 1, -1, 'initial')
+        del_desc = 'recurse'
+        itor_r = arborform.Reflect()
+        itor_g = Itorator.wrap(lambda ito: [*ito])
+        itor_d = arborform.Desc(del_desc)
+        final_suf = '-final'
+        itor_f = Itorator.wrap(lambda ito: (ito.clone(desc=ito.desc + final_suf),))
+
+        lambdas = {
+            '[default]': None,
+            'Always True': lambda ito: True,
+            'Always False': lambda ito: False,
+        }
+
+        with self.subTest(itor_type='generative'):
+            self.assertNotEqual(root, next(itor_g(root)))
+            itor_r.connections.append(Connectors.Subroutine(itor_g))
+            expected = root
+            actual = next(itor_r(root))
+            self.assertEqual(expected, actual)
+            
+        for lam_desc, lam_f in lambdas.items():
+            itor_r.connections.clear()
+
+            if lam_f is None:
+                itor_r.connections.append(Connectors.Subroutine(itor_d))
+            else:
+                itor_r.connections.append(Connectors.Subroutine(itor_d, lam_f))
+            
+            with self.subTest(itor_type='modifying', lambda_=lam_desc, successor_itor=False):
+                if lam_f is None or lam_f(root):
+                    expected = root.clone(desc=del_desc)
+                else:
+                    expected = root
+
+                actual = next(itor_r(root))
+                self.assertEqual(expected, actual)
+
+            with self.subTest(itor_type='modifying', lambda_=lam_desc, successor_itor=True):
                 itor_r.connections.append(Connectors.Recurse(itor_f))
                 if lam_f is None or lam_f(root):
                     expected = next(itor_f(expected))

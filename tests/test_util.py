@@ -111,7 +111,7 @@ class TestSplitUnescaped(_TestIto):
 
 
 class TestFindBalanced(_TestIto):
-    def test_find_balanced(self):
+    def test_find_balanced_differing(self):
         lchar = '('
         rchar = ')'
         balanced_segments = [r'(\))', r'(\()', '()', '(a)', '(a(b))', '()', '(123(abc)(def)456)']
@@ -139,3 +139,13 @@ class TestFindBalanced(_TestIto):
         with self.subTest(src=b, lchar=lchar, rchar=rchar):
             actual = [*pawpaw.find_balanced(b, lchar, rchar)]
             self.assertListEqual(balanced_segments, actual)
+
+    def test_find_balanced_homogenous(self):
+        lchar = '"'
+        rchar = '"'
+        tokens = ("A", "B", "C")
+        src = ' '.join(f'"{t}"' for t in tokens)
+
+        with self.subTest(src=src, lchar=lchar, rchar=rchar):
+            actual = [*pawpaw.find_balanced(src, lchar, rchar)]
+            self.assertListEqual([f'"{t}"' for t in tokens], [str(i) for i in actual])

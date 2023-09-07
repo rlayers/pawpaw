@@ -125,7 +125,7 @@ def find_balanced(
     lefts = []
     for i in find_unescaped(src, lchar + rchar, escape, start, stop):
         c = s[offset + i]
-        if c == lchar:
+        if c == lchar and (lchar != rchar or len(lefts) == 0):
             lefts.append(i)
         else:
             len_lefts = len(lefts)

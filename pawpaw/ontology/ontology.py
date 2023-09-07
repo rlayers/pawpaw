@@ -5,10 +5,6 @@ from pawpaw import Ito, Types
 from pawpaw.arborform import Itorator
 import regex
 
-C_RULE = Itorator | Types.F_ITO_2_IT_ITOS
-C_RULES = dict[str, C_RULE]
-C_PATH = typing.Sequence[str]
-
 
 class Discoveries(dict):
     def __init__(self, *args, **kwargs):
@@ -23,13 +19,13 @@ class Discoveries(dict):
         c = ', '.join(f'{k}: {str(v)}' for k, v in self.items())
         return f'{{itos: {[str(i) for i in self._itos]}, {c}}}'
     
-    def _flatten(self, filter_empties: bool = True, path: C_PATH = tuple()) -> dict[C_PATH, list[Ito]]:
+    def _flatten(self, filter_empties: bool = True, path: Types.C_OPATH = tuple()) -> dict[Types.C_OPATH, list[Ito]]:
         rv = {} if len(self.itos) == 0 and filter_empties else {tuple(path): self.itos}
         for key in self.keys():
             rv |= self[key]._flatten(filter_empties, path + (key,))
         return rv
 
-    def flatten(self, filter_empties: bool = True) -> dict[C_PATH, list[Ito]]:
+    def flatten(self, filter_empties: bool = True) -> dict[Types.C_OPATH, list[Ito]]:
         return self._flatten(filter_empties, )
 
 
@@ -44,11 +40,11 @@ class Ontology(dict):
             raise KeyError(key)
 
     def __init__(self, *args, **kwargs):
-        self._rules: list[C_RULE] = kwargs.pop('rules', [])
+        self._rules: list[Types.C_ORULE] = kwargs.pop('rules', [])
         dict.__init__(self, *args, **kwargs )
 
     @property
-    def rules(self) -> list[C_RULE]:
+    def rules(self) -> list[Types.C_ORULE]:
         return self._rules
 
     def __str__(self):

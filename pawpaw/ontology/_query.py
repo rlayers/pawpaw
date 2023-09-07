@@ -1,7 +1,7 @@
 from __future__ import annotations
 import operator
 
-from pawpaw import Ito, Errors, Types, arborform, find_balanced
+from pawpaw import Ito, Errors, Types, arborform, find_balanced, split_unescaped
 from pawpaw.ontology import Ontology, Discoveries
 import regex
 
@@ -14,7 +14,7 @@ OPERATORS = {
     '|': operator.or_,
 }
 
-MUST_ESCAPE_CHARS = ('\\', '[',)
+MUST_ESCAPE_CHARS = ('\\', ']', '.')
 
 def escape(value: str) -> str:
     rv = value.replace('\\', '\\\\')  # Must do backslash before other chars
@@ -67,7 +67,7 @@ class Query():
         pat_and = r'(?P<op_and>&)'
         pat_xor = r'(?P<op_xor>\^)'
         pat_or = r'(?P<op_or>\|)'
-        pat_entity = r'(?P<entity>[a-z\d_]+)'
+        pat_entity = r'(?P<entity>[a-z\d_\.]+)'
         pat_quantifier = r'(?P<op_quantifier>\{(?P<qty_min>\d+)?(?:,(?P<qty_max>\d+)?)?\}|(?P<qty_symbol>[?*+]))'
         itor_residual = arborform.Split(
             arborform.Extract(regex.compile('|'.join([pat_not, pat_and, pat_xor, pat_or, pat_entity, pat_quantifier]), regex.DOTALL | regex.IGNORECASE)),
@@ -77,6 +77,10 @@ class Query():
 
         filter_empties = arborform.Filter(lambda ito: ito.desc is not None)
         itor_child_placeholder.connections.append(arborform.Connectors.Recurse(filter_empties))
+
+        itor_entity_split = arborform.Itorator.wrap(lambda ito: split_unescaped(ito, '.'))
+        itor_entity_split.connections.append(arborform.Connectors.Delegate(arborform.Desc('path_step')))
+        itor_child_placeholder.connections.append(arborform.Connectors.Children.Add(itor_entity_split, 'entity'))
 
         rv.connections.append(arborform.Connectors.Children.Add(itor_child_placeholder))
         return rv
@@ -94,20 +98,29 @@ class Query():
         
         rv = [*self._itor(src)]
         if len(rv) != 1:
-            raise ValueError(f'parse error')
+            raise ValueError(f'parse error...')
+        
+        if len(rv[0].children) == 0:
+            raise ValueError(f'parse error...')
         
         self._parse = rv[0]
     
     def find_all(
         self,
-        ontology: Ontology,
+        discoveries: Discoveries,
         src: str | Ito
     ) -> Types.C_IT_ITOS:
+        cur = self._parse.children[0]
+        if cur.desc == 'query':
+            xxx
+
+
+
         raise NotImplemented()
 
     def find(
         self,
-        ontology: Ontology,
+        discoveries: Discoveries,
         src: str | Ito
     ) -> Ito | None:
         return next(self.find_all(ontology, src), None)
@@ -118,14 +131,14 @@ def compile(path: Types.C_QPATH) -> Query:
 
 def find_all(
         query: str | Ito,
-        ontology: Ontology,
+        discoveries: Discoveries,
         src: str | Ito
 ) -> Types.C_IT_ITOS:
     yield from Query(query).find_all(ontology, src)
 
 def find(
         query: str | Ito,
-        ontology: Ontology,
+        discoveries: Discoveries,
         src: str | Ito
 ) -> Ito | None:
     return next(find_all(query, ontology, src), None)

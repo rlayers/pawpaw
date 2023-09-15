@@ -1,4 +1,5 @@
 from __future__ import annotations
+import itertools
 import typing
 
 from pawpaw import Ito, Types
@@ -27,6 +28,11 @@ class Discoveries(dict):
 
     def flatten(self, filter_empties: bool = True) -> dict[Types.C_OPATH, list[Ito]]:
         return self._flatten(filter_empties, )
+    
+    def walk(self) -> Types.C_IT_ITOS:
+        yield from self._itos
+        for child in self.values():
+            yield from child.walk()
 
 
 class Ontology(dict):

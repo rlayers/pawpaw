@@ -1,7 +1,10 @@
 from __future__ import annotations
+from abc import ABC, abstractmethod
+import dataclasses
 import operator
+import typing
 
-from pawpaw import Ito, Errors, Types, arborform, find_balanced, split_unescaped
+from pawpaw import Span, Ito, Errors, Types, arborform, find_balanced, split_unescaped
 from pawpaw.ontology import Ontology, Discoveries
 import regex
 
@@ -36,6 +39,47 @@ def descape(value: str) -> str:
         raise ValueError(f'found escape with no succeeding character in \'value\'')
 
     return rv
+
+@dataclasses.dataclass
+class _StackFrame:
+    discoveries: Discoveries
+    start: int
+    stop: int
+    op_stack: list[_Op] = dataclasses.field(default_factory=list)
+
+class _Op(ABC):
+    @abstractmethod
+    def __call__(self, stack_frame: _StackFrame) -> typing.Iterable[Types.C_IT_ITOS]:
+        pass
+
+class _Entity(_Op):
+    def __init__(self, entity: Ito):
+        self._entity = entity
+
+    def __call__(self, stack_frame: _StackFrame) -> typing.Iterable[Types.C_IT_ITOS]:
+        discovery = stack_frame.discoveries
+        for path_step in split_unescaped(self._entity, '.'):
+            discovery = discovery[str(path_step)]
+        if id(discovery) == id(stack_frame.discoveries):
+            raise Exception(f'discoveries missing entity \'{str(self._entity)}\'')
+        
+        yield tuple(
+            filter(
+                lambda ito: stack_frame.start <= ito.start and ito.stop <= stack_frame.stop,
+                discovery.walk()
+            )
+        )
+
+
+class _Mul(_Op):
+    def __call__(self, stack_frame: _StackFrame) -> Types.C_IT_ITOS:
+        it1, it2 = stack_frame.op_stack[-2:]
+        sf1 = _StackFrame(stack_frame.discoveries, stack_frame.start, stack_frame.stop, stack_frame.op_stack[:-2])
+        for i1 in next(it1(sf1)):
+            sf2 = _StackFrame(stack_frame.discoveries, i1.stop, stack_frame.stop, stack_frame.op_stack[:-2])
+            for i2 in next(it2(sf2)):
+                yield [i1, i2]
+
 
 class Query():
     @staticmethod
@@ -78,7 +122,7 @@ class Query():
         filter_empties = arborform.Filter(lambda ito: ito.desc is not None)
         itor_child_placeholder.connections.append(arborform.Connectors.Recurse(filter_empties))
 
-        itor_entity_split = arborform.Itorator.wrap(lambda ito: split_unescaped(ito, '.'))
+        itor_entity_split = arborform.Itorator.wrap(lambda ito: (s[0].clone(),) if len(s := [*split_unescaped(ito, '.')]) == 1 and id(s[0]) == id(ito) else s)
         itor_entity_split.connections.append(arborform.Connectors.Delegate(arborform.Desc('path_step')))
         itor_child_placeholder.connections.append(arborform.Connectors.Children.Add(itor_entity_split, 'entity'))
 
@@ -86,6 +130,51 @@ class Query():
         return rv
     
     _itor = _build_itor()
+
+    # Ordered low to high
+    _OPERATOR_PRECEDENCES = [['op_xor', 'op_or'], ['op_and'], ['op_not', 'op_quantifier'], ['query', 'LPAREN', 'RPAREN']]
+
+    @classmethod
+    def _get_precedence(cls, token: Ito) -> int | None:
+        for i, sublst in enumerate(cls._OPERATOR_PRECEDENCES):
+            if token.desc in sublst:
+                return i
+        return
+
+    @classmethod
+    def _shunting_yard(cls, expression: Types.C_IT_ITOS):
+        output_queue = []
+        operator_stack = []
+        
+        for token in expression:
+            token_p = cls._get_precedence(token)
+            if token_p is None:
+                output_queue.append(token)
+
+            elif token.desc == 'LPAREN':
+                operator_stack.append(token)
+
+            elif token.desc == 'RPAREN':
+                while operator_stack[-1] != 'LPAREN':
+                    output_queue.append(operator_stack.pop())
+                operator_stack.pop()
+
+            elif token.desc == 'query':
+                output_queue.extend(cls._shunting_yard(token.children))
+
+            else:
+                if len(operator_stack) == 0:
+                    op_stack_p = None
+                else:
+                    op_stack_p = cls._get_precedence(operator_stack[-1])
+                while len(operator_stack) and op_stack_p is not None and token_p <= op_stack_p:
+                    output_queue.append(operator_stack.pop())
+                operator_stack.append(token)
+
+        while operator_stack:
+            output_queue.append(operator_stack.pop())
+
+        return output_queue
 
     @classmethod
     def __init__(self, src: str | Ito) -> Ito:
@@ -103,18 +192,24 @@ class Query():
         if len(rv[0].children) == 0:
             raise ValueError(f'parse error...')
         
-        self._parse = rv[0]
+        self._parse = self._shunting_yard(rv[0].children)
+        
+        for i in self._parse:
+            print(f'{i:%substr: %desc}')
+
+        exit(0)
     
     def find_all(
         self,
         discoveries: Discoveries,
         src: str | Ito
     ) -> Types.C_IT_ITOS:
-        cur = self._parse.children[0]
-        if cur.desc == 'query':
-            xxx
+        
+        if isinstance(src, str):
+            src = Ito(src)
 
-
+        start, stop = src.span
+        stack = []
 
         raise NotImplemented()
 
@@ -123,7 +218,7 @@ class Query():
         discoveries: Discoveries,
         src: str | Ito
     ) -> Ito | None:
-        return next(self.find_all(ontology, src), None)
+        return next(self.find_all(discoveries, src), None)
 
 
 def compile(path: Types.C_QPATH) -> Query:
@@ -134,11 +229,11 @@ def find_all(
         discoveries: Discoveries,
         src: str | Ito
 ) -> Types.C_IT_ITOS:
-    yield from Query(query).find_all(ontology, src)
+    yield from Query(query).find_all(discoveries, src)
 
 def find(
         query: str | Ito,
         discoveries: Discoveries,
         src: str | Ito
 ) -> Ito | None:
-    return next(find_all(query, ontology, src), None)
+    return next(find_all(query, discoveries, src), None)

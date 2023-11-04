@@ -1620,6 +1620,5 @@ class Types:
     P_EITO_V_QPS = typing.Callable[[C_EITO, C_VALUES, C_QPS], bool]
 
     # Ontology
-    C_ORULE = Itorator | Types.F_ITO_2_IT_ITOS
-    C_ORULES = dict[str, C_RULE]
+    C_ORULE = F_ITO_2_IT_ITOS
     C_OPATH = typing.Sequence[str]

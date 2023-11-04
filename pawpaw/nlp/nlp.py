@@ -247,6 +247,67 @@ class KeyedPrefix:
     _key_prefix_pat = r'(?:' + '|'.join((__compound_int_pat, __int_pat)) + r')[ \t]+'
 
 
+class KeyedList(NlpComponent):
+    def __init__(self, min_keys: int = 2):
+        self._separators: list[str] = list(unicode_white_space_eol.values())
+        self._min_keys: int = min_keys
+        self._re: regex.Pattern = self._build_re()
+
+    def _build_re(self) -> regex.Pattern:
+        return regex.compile(
+            rf'(?:\L<line_seps>{to_re_char_set(unicode_white_space_other)}*)+',
+            regex.DOTALL,
+            line_seps=self._separators)
+
+    @property
+    def separators(self) -> list[str]:
+        return list(self._separators)
+
+    @separators.setter
+    def separators(self, val: typing.Iterable[str]):
+        if pawpaw._type_magic.isinstance_ex(val, typing.Iterable[str]):
+            self._separators = list[val]
+            self._re = self._build_re()
+        else:
+            raise pawpaw.Errors.parameter_invalid_type('val', val, typing.Iterable[str])
+
+    @property
+    def min_keys(self) -> int:
+        return self._min_keys
+
+    @min_keys.setter
+    def min_keys(self, val: int):
+        if isinstance(val, int):
+            self._min_keys = val
+            self._re = self._build_re()
+        else:
+            raise pawpaw.Errors.parameter_invalid_type('val', val, int)
+
+    @property
+    def re(self) -> regex.Pattern:
+        return self._re
+
+    def _as_list(self, ito: pawpaw.Ito) -> pawpaw.Types.C_IT_ITOS:
+        line_splitter = pawpaw.arborform.Split(self._re, return_zero_split=False, desc='line')
+        lines = [*line_splitter(ito)]
+
+        key_prefixes = [
+            r'(?<key>(?:\d{1,2}|[A-Z]{1,2}))[\)\]\.\-:]\s+(?<value>.+)',
+            r'(?<key>\d+(?:[\.\-]\d+)+)[\.:]?\s+(?<value>.+)',
+        ]
+        for kp in key_prefixes:
+            kvs = [kv for line in lines for kv in pawpaw.Ito.from_re(kp, line, limit=1) if kv.start == line.start]
+            if len(kvs) >= self._min_keys:
+                # Also check ordering
+                rv = pawpaw.Ito.join(*kvs, desc='list')
+                rv.children.add(*kvs)
+                return (rv,)
+
+        return tuple()
+
+    def get_itor(self) -> pawpaw.arborform.Itorator:
+        return pawpaw.arborform.Itorator.wrap(self._as_list, tag='list finder')
+
 class Paragraph(NlpComponent):
     def __init__(self, min_separators: int = 2):
         self._separators: list[str] = list(unicode_white_space_eol.values())

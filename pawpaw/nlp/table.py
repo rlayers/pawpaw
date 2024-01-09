@@ -43,6 +43,20 @@ class StyledTable(Table):
 
 class Tables:
     """
+    Notes:
+
+    MUST HAVE CHARACTERISTICS:
+
+        - Must be able to determine start and stop in order to identify within larger
+          unstructured text
+
+        - Have way to distinguish columns and ROWS (i.e., a table represented with tabs
+          doesn't allow for row delineations
+
+        - Optionally has a header row(s)
+
+    STYLES:
+
     Style 1: md style
 
     | A | B | C |
@@ -50,32 +64,7 @@ class Tables:
     | a | b | c |
     | d | e | f |
 
-    Style 2: Misc ASCII
-
-    +───+───+───+
-    | A | B | C |
-    +───+───+───+
-    | a | b | c |
-    | d | e | f |
-    +───+───+───+
-
-    +---+---+---+
-    | A | B | C |
-    +---+---+---+
-    | a | b | c |
-    +---+---+---+
-    | d | e | f |
-    +---+---+---+
-
-    ╔═══╦═══╦═══╗
-    ║ A ║ B ║ C ║
-    ╠═══╬═══╬═══╣
-    ║ a ║ b ║ c ║
-    ╠═══╬═══╬═══╣
-    ║ d ║ e ║ f ║
-    ╚═══╩═══╩═══╝    
-
-    Style 3a: rst  Simple
+    Style 2a: rst  Simple
 
     =====  =====  ======
        Inputs     Output
@@ -88,7 +77,7 @@ class Tables:
     True   True   True
     =====  =====  ======
 
-    Style 3b: rst Grid
+    Style 2b: rst Grid
 
     +------------+------------+-----------+
     | Header 1   | Header 2   | Header 3  |
@@ -102,7 +91,7 @@ class Tables:
     | body row 4 |            | - blocks. |
     +------------+------------+-----------+
 
-    Style 4: Ascii doc
+    Style 3: Ascii doc
 
     [cols="e,m,^,>s",width="25%"]
     |============================
@@ -112,7 +101,72 @@ class Tables:
     |9 2+>|10
     |============================
 
-    Style 5: [Unamed]
+    Style 4: Misc ASCII
+
+    pipe, hypen, plus
+    
+    +---+---+---+
+    | A | B | C |
+    +---+---+---+
+    | a | b | c |
+    +---+---+---+
+    | d | e | f |
+    +---+---+---+
+
+    pipe, em-dash, plus
+
+    +———+———+———+
+    | A | B | C |
+    +———+———+———+
+    | a | b | c |
+    +———+———+———+
+    | d | e | f |
+    +———+———+———+
+
+    misc ascii box drawing line styles
+    
+    ┌───┬───┬───┐
+    │ A │ B │ C │
+    ├───┼───┼───┤
+    │ a │ b │ c │
+    ├───┼───┼───┤
+    │ d │ e │ f │
+    └───┴───┴───┘    
+
+    ┏━━━┳━━━┳━━━┓
+    ┃ A ┃ B ┃ C ┃
+    ┣━━━╋━━━╋━━━┫
+    ┃ a ┃ b ┃ c ┃
+    ┣━━━╋━━━╋━━━┫
+    ┃ d ┃ e ┃ f ┃
+    ┗━━━┻━━━┻━━━┛
+
+    ┏━━━┳━━━┳━━━┓
+    ┃ A ┃ B ┃ C ┃
+    ┡━━━╇━━━╇━━━┩
+    │ a │ b │ c │
+    ├───┼───┼───┤
+    │ d │ e │ f │
+    └───┴───┴───┘
+        
+    ╔═══╦═══╦═══╗
+    ║ A ║ B ║ C ║
+    ╠═══╬═══╬═══╣
+    ║ a ║ b ║ c ║
+    ╠═══╬═══╬═══╣
+    ║ d ║ e ║ f ║
+    ╚═══╩═══╩═══╝    
+
+    ╔═══╤═══╤═══╗
+    ║ A │ B │ C ║
+    ╟───┼───┼───╢
+    ║ a │ b │ c ║
+    ╟───┼───┼───╢
+    ║ d │ e │ f ║
+    ╚═══╧═══╧═══╝    
+    
+
+    Style 5a: [Unamed]
 
     -----+-----+-----
       A  |  B  |  C
@@ -120,20 +174,16 @@ class Tables:
      aaa | bbb | ccc
     -----+-----+-----      
 
-    Style 6: Tabbed
+    Style 5b: [Unamed]
 
-    A\tB\tC
-    a\tb\tc
+    -------------------
+    |  A  |  B  |  C  |
+    -------------------     
+    | aaa | bbb | ccc |
+    -------------------     
+
     """
 
-    '''
-        ---+---+---
-         A | B | C
-        ---+---+---
-         a | b | c
-         a |   | c
-        ---+---+---         
-    '''
     p = r'-{2,}[\-\+]*-{2,}'
     style = TableStyle(p, p, p, p)
     Style_A = StyledTable(style, 'table type A extractor')

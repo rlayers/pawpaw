@@ -64,20 +64,20 @@ class Tables:
         | a | b | c |
         | d | e | f |
 
-    Style 2a: rst  Simple
+    Style 2: rst
+    
+        2.a rst Simple Table
 
-        =====  =====  ======
-        Inputs     Output
-        ------------  ------
-        A      B    A or B
-        =====  =====  ======
+        =====  =====  =======
+        A      B      A and B
+        =====  =====  =======
         False  False  False
-        True   False  True
-        False  True   True
+        True   False  False
+        False  True   False
         True   True   True
-        =====  =====  ======
+        =====  =====  =======
 
-    Style 2b: rst Grid
+        2.b rst Grid Table
 
         +------------+------------+-----------+
         | Header 1   | Header 2   | Header 3  |

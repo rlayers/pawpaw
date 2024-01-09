@@ -308,6 +308,7 @@ class KeyedList(NlpComponent):
     def get_itor(self) -> pawpaw.arborform.Itorator:
         return pawpaw.arborform.Itorator.wrap(self._as_list, tag='list finder')
 
+
 class Paragraph(NlpComponent):
     def __init__(self, min_separators: int = 2):
         self._separators: list[str] = list(unicode_white_space_eol.values())

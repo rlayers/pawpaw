@@ -58,7 +58,9 @@ Style 3: Ascii doc
     ^|8
     |9 2+>|10
     |============================
-
+"""
+    
+"""
 Style 4: Misc ASCII
 
     pipe, hypen, plus
@@ -122,33 +124,38 @@ Style 4: Misc ASCII
     ╟───┼───┼───╢
     ║ d │ e │ f ║
     ╚═══╧═══╧═══╝    
+"""
 
+"""
 Style 5 [Unamed]
 
-    -----+-----+-----
-        A  |  B  |  C
-    -----+-----+-----      
-        aaa | bbb | ccc
-    -----+-----+-----      
-
-Style 6 [Unamed]
-
-    -------------------
-    |  A  |  B  |  C  |
-    -------------------     
-    | aaa | bbb | ccc |
-    -------------------     
+-----+-----+-----
+  A  |  B  |  C
+-----+-----+-----      
+ aaa | bbb | ccc
+-----+-----+-----      
 
 """
 
 p = r'-{2,}[\-\+]*-{2,}'
-style = TableStyle(p, p, p, p)
+style = TableStyle(p, None, p, None)
 TYPE_5 = StyledTable(style, 'Table Style 5')
 del style
 del p
 
+"""
+Style 6 [Unamed]
+
+-------------------
+|  A  |  B  |  C  |
+-------------------     
+| aaa | bbb | ccc |
+-------------------     
+
+"""
+
 p = r'-{2,}'
-style = TableStyle(p, p, p, p)
+style = TableStyle(p, None, p, None)
 TYPE_6 = StyledTable(style, 'Table Style 6')
 del style
 del p

@@ -8,9 +8,9 @@ import pawpaw
 @dataclasses.dataclass(frozen=True)
 class TableStyle:
     start_pat: str = ''
-    header_end_pat: str = ''
+    header_end_pat: str | None = None
     row_end_pat: str = ''
-    end_pat: str = ''
+    end_pat: str | None = None
 
 
 class Table(ABC):
@@ -26,7 +26,20 @@ class Table(ABC):
 class StyledTable(Table):
     @classmethod
     def _build_re(cls, style: TableStyle) -> regex.Pattern:
-        return regex.compile('(?<=\n)(?<table>' + style.start_pat + '\n(?:.+?\n' + style.end_pat + ')+)', regex.DOTALL)
+        re = r'(?<=\n)(?<table>' \
+            rf'{style.start_pat}' \
+
+        if style.header_end_pat is not None:
+            re += rf'(?:\n(?<header_row>.+?)\n{style.header_end_pat})?'
+            
+        re += rf'(?:\n(?<row>.+?)\n{style.row_end_pat})+'
+
+        if style.end_pat is not None:
+            re += rf'\n{style.end_pat}'
+            
+        re += r')'
+
+        return regex.compile(re, regex.DOTALL)
 
     def __init__(self, style: TableStyle, tag: str | None):
         self.style = style

@@ -138,10 +138,12 @@ Style 5 [Unamed]
 """
 
 p = r'-{2,}\+[\-\+]*-{2,}'
-style = TableStyle(p, None, p, None)
-TYPE_5 = StyledTable(style, 'Table Style 5')
-del style
+TYPE_5 = TableStyle(
+    table_start_pat = p,
+    row_sep_pat = p
+)
 del p
+
 
 """
 Style 6 [Unamed]
@@ -155,7 +157,9 @@ Style 6 [Unamed]
 """
 
 p = r'-{2,}'
-style = TableStyle(p, None, r'\|(?:-+\|)+', p)
-TYPE_6 = StyledTable(style, 'Table Style 6')
-del style
+TYPE_6 = TableStyle(
+    table_start_pat = p,
+    row_sep_pat = r'\|(?:-+\|)+',
+    table_end_pat = p
+)
 del p

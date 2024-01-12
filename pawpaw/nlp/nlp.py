@@ -265,7 +265,7 @@ class KeyedList(NlpComponent):
 
     @separators.setter
     def separators(self, val: typing.Iterable[str]):
-        if pawpaw._type_magic.isinstance_ex(val, typing.Iterable[str]):
+        if pawpaw.type_magic.isinstance_ex(val, typing.Iterable[str]):
             self._separators = list[val]
             self._re = self._build_re()
         else:
@@ -324,7 +324,7 @@ class Paragraph(NlpComponent):
 
     @separators.setter
     def separators(self, val: typing.Iterable[str]):
-        if pawpaw._type_magic.isinstance_ex(val, typing.Iterable[str]):
+        if pawpaw.type_magic.isinstance_ex(val, typing.Iterable[str]):
             self._separators = list[val]
             self._re = self._build_re()
         else:

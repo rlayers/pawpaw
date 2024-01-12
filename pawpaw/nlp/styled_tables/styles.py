@@ -137,7 +137,7 @@ Style 5 [Unamed]
 
 """
 
-p = r'-{2,}[\-\+]*-{2,}'
+p = r'-{2,}\+[\-\+]*-{2,}'
 style = TableStyle(p, None, p, None)
 TYPE_5 = StyledTable(style, 'Table Style 5')
 del style
@@ -148,14 +148,14 @@ Style 6 [Unamed]
 
 -------------------
 |  A  |  B  |  C  |
--------------------     
+|-----------------|
 | aaa | bbb | ccc |
 -------------------     
 
 """
 
 p = r'-{2,}'
-style = TableStyle(p, None, p, None)
+style = TableStyle(p, None, r'\|(?:-+\|)+', p)
 TYPE_6 = StyledTable(style, 'Table Style 6')
 del style
 del p

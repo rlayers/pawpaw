@@ -1,5 +1,5 @@
 from pawpaw._version import __version__, Version
-del _version
+# del _version
 
 from pawpaw.infix import Infix
 del infix
@@ -23,6 +23,7 @@ import pawpaw.arborform
 import pawpaw.query
 import pawpaw.xml
 import pawpaw.nlp
+import pawpaw.table
 import pawpaw.visualization
 
 del pawpaw

@@ -7,7 +7,6 @@ import pawpaw
 import pawpaw.xml as xml
 from tests.util import _TestIto, XML_TEST_SAMPLES
 
-
 class TestQualifiedName(_TestIto):
     def test_from_src(self):
         for s in 'a', 'a:b':

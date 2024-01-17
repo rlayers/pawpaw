@@ -248,9 +248,10 @@ class KeyedPrefix:
 
 
 class Paragraph(NlpComponent):
-    def __init__(self, min_separators: int = 2):
+    def __init__(self, min_separators: int = 2, trim_ws: bool = False):
         self._separators: list[str] = list(unicode_white_space_eol.values())
         self._min_separators: int = min_separators
+        self._trim_ws = trim_ws
         self._re: regex.Pattern = self._build_re()
 
     def _build_re(self) -> regex.Pattern:
@@ -284,13 +285,26 @@ class Paragraph(NlpComponent):
     def re(self) -> regex.Pattern:
         return self._re
 
+    @property
+    def trim_ws(self) -> bool:
+        return self._trim_ws
+
+    @trim_ws.setter
+    def trim_ws(self, val: bool):
+        if isinstance(val, bool):
+            self._trim_ws = val
+        else:
+            raise pawpaw.Errors.parameter_invalid_type('val', val, bool)
+        
     def get_itor(self) -> pawpaw.arborform.Itorator:
+        para_splitter = pawpaw.arborform.Split(self._re, desc='paragraph', tag='para splitter')
+        if not self._trim_ws:
+            return para_splitter
+
         ws_trimmer = pawpaw.arborform.Itorator.wrap(
             lambda ito: [ito.str_strip(''.join(trimmable_ws))],
             tag='para trimmer'
         )
-
-        para_splitter = pawpaw.arborform.Split(self._re, desc='paragraph', tag='para splitter')
         con = pawpaw.arborform.Connectors.Recurse(para_splitter)
         ws_trimmer.connections.append(con)
 

@@ -43,7 +43,7 @@ Pawpaw is a high performance parsing & text segmentation framework that allows y
 - Efficient pickling and JSON persistence
   - Security option enables persistence of index-only data, with reference strings re-injected during de-serialization 
 - Stable & Defect Free
-  - Over 4,800 unit tests and counting!
+  - Over 5,000 unit tests and counting!
   - Pure Python, with only one external dependency: [regex](https://github.com/mrabarnett/mrab-regex)
 
 <div align="center">

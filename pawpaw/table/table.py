@@ -4,14 +4,6 @@ import dataclasses
 import regex
 import pawpaw
 
-# Notes : Check span for equidistant indentation (zero or more spaces or tabs), and then for each chunk, check table rules
-#
-#
-#
-# (?<=\n)(?P<chunk>(?P<indent>[ \t]*)[^ \t][^\n]+?\n((?:(?P=indent)[^ \t][^\n]+?\n)+))
-
-
-
 
 class Table(ABC):
     @property
@@ -36,28 +28,38 @@ class TableStyle:
 
 
 class StyledTable(Table):
-    _re_equi_ident = regex.compile(r'(?<=^|\n)(?P<chunk>(?P<indent>[ \t]*)[^ \t][^\n]+?\n(?:(?P=indent)[^ \t][^\n]+?(?:$|\n))+)', regex.DOTALL)
+    # finds equidistant indentation (zero or more spaces or tabs) chunks
+    _pat_indent = r'[ \t]*'
+    _re_equi_ident = regex.compile(rf'(?<=^|\n)(?P<chunk>(?P<indent>{_pat_indent})[^ \t][^\n]+?\n(?:(?P=indent)[^ \t][^\n]+?(?:\n|$))+)', regex.DOTALL)
 
     @classmethod
     def _build_re(cls, style: TableStyle) -> regex.Pattern:
-        re = r'(?<=^|\n)(?<table>'
+        re = r'(?<=^|\n)'
+
+        if style.equi_distant_indent:
+            re = rf'(?P<indent>{cls._pat_indent})'
+            pat_indent = r'(?P=indent)'
+        else:
+            pat_indent = r''
+
+        re += r'(?<table>'
 
         if style.pre_caption_pat is not None:
-            re += rf'(?:{style.pre_caption_pat}\n)?'
+            re += rf'(?:{style.pre_caption_pat}\n{pat_indent})?'
 
         re += rf'{style.table_start_pat}'
 
         if style.header_row_end_pat is not None:
-            re += rf'(?:\n(?<header_row>.+?)\n{style.header_row_end_pat})?'
+            re += rf'(?:\n{pat_indent}(?<header_row>.+?)\n{pat_indent}{style.header_row_end_pat})?'
             
         if style.table_end_pat is None:
-            re += rf'(?:\n(?<row>.+?)\n{style.row_sep_pat})+'
+            re += rf'(?:\n{pat_indent}(?<row>.+?)\n{pat_indent}{style.row_sep_pat})+'
         else:
-            re += rf'(?:\n(?<row>.+?)\n{style.row_sep_pat})*\n(?<row>.+?)'
-            re += rf'\n{style.table_end_pat}'
+            re += rf'(?:\n{pat_indent}(?<row>.+?)\n{pat_indent}{style.row_sep_pat})*\n{pat_indent}(?<row>.+?)'
+            re += rf'\n{pat_indent}{style.table_end_pat}'
             
         if style.post_caption_pat is not None:
-            re += rf'\n{style.post_caption_pat}(?=$|\n)'
+            re += rf'\n{pat_indent}{style.post_caption_pat}(?=\n|$)'
 
         re += r')(?=$|\n)'
 
@@ -73,7 +75,7 @@ class StyledTable(Table):
         return self._re
 
     def get_itor(self) -> pawpaw.arborform.Itorator:
-        itor_table = pawpaw.arborform.Extract(self._re, tag=self.tag)
+        itor_table = pawpaw.arborform.Extract(self._re, tag=self.tag, group_filter=lambda m, gk: gk in ('table', 'header_row', 'row'))
         if not self.style.equi_distant_indent:
             return itor_table
 

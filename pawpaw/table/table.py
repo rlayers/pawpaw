@@ -45,7 +45,7 @@ class StyledTable(Table):
         re += r'(?<table>'
 
         if style.pre_caption_pat is not None:
-            re += rf'(?:{style.pre_caption_pat}\n{pat_indent})?'
+            re += rf'(?:(?<pre_caption>{style.pre_caption_pat})\n{pat_indent})?'
 
         re += rf'{style.table_start_pat}'
 
@@ -59,7 +59,7 @@ class StyledTable(Table):
             re += rf'\n{pat_indent}{style.table_end_pat}'
             
         if style.post_caption_pat is not None:
-            re += rf'\n{pat_indent}{style.post_caption_pat}(?=\n|$)'
+            re += rf'\n{pat_indent}(?<post_caption>{style.post_caption_pat})(?=\n|$)'
 
         re += r')(?=$|\n)'
 
@@ -75,7 +75,7 @@ class StyledTable(Table):
         return self._re
 
     def get_itor(self) -> pawpaw.arborform.Itorator:
-        itor_table = pawpaw.arborform.Extract(self._re, tag=self.tag, group_filter=lambda m, gk: gk in ('table', 'header_row', 'row'))
+        itor_table = pawpaw.arborform.Extract(self._re, tag=self.tag, group_filter=lambda m, gk: gk in ('pre_caption', 'table', 'header_row', 'row', 'post_caption'))
         if not self.style.equi_distant_indent:
             return itor_table
 

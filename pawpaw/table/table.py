@@ -4,6 +4,14 @@ import dataclasses
 import regex
 import pawpaw
 
+# Notes : Check span for equidistant indentation (zero or more spaces or tabs), and then for each chunk, check table rules
+#
+#
+#
+# (?<=\n)(?P<chunk>(?P<indent>[ \t]*)[^ \t][^\n]+?\n((?:(?P=indent)[^ \t][^\n]+?\n)+))
+
+
+
 
 class Table(ABC):
     @property
@@ -24,13 +32,13 @@ class TableStyle:
     row_sep_pat: str = ''
     table_end_pat: str | None = None
     post_caption_pat: str | None = None
+    equi_distant_indent: bool = True
 
 
 class StyledTable(Table):
+    _re_equi_ident = regex.compile(r'(?<=^|\n)(?P<chunk>(?P<indent>[ \t]*)[^ \t][^\n]+?\n(?:(?P=indent)[^ \t][^\n]+?(?:$|\n))+)', regex.DOTALL)
+
     @classmethod
-
-    # (?P<table>---(?:\n(?P<row>.+?)\n---)+)
-
     def _build_re(cls, style: TableStyle) -> regex.Pattern:
         re = r'(?<=^|\n)(?<table>'
 
@@ -49,7 +57,7 @@ class StyledTable(Table):
             re += rf'\n{style.table_end_pat}'
             
         if style.post_caption_pat is not None:
-            re += rf'\n{style.post_caption_pat}\n'
+            re += rf'\n{style.post_caption_pat}(?=$|\n)'
 
         re += r')(?=$|\n)'
 
@@ -65,4 +73,11 @@ class StyledTable(Table):
         return self._re
 
     def get_itor(self) -> pawpaw.arborform.Itorator:
-        return pawpaw.arborform.Extract(self._re, tag=self.tag)
+        itor_table = pawpaw.arborform.Extract(self._re, tag=self.tag)
+        if not self.style.equi_distant_indent:
+            return itor_table
+
+        itor_equi_ident = pawpaw.arborform.Extract(self._re_equi_ident, tag='equidistant indentation', group_filter=('chunk',))
+        con = pawpaw.arborform.Connectors.Delegate(itor_table, 'chunk')
+        itor_equi_ident.connections.append(con)
+        return itor_equi_ident

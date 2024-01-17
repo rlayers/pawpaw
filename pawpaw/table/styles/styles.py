@@ -27,7 +27,8 @@ Style 1 [Unnamed]
 p = r'(?:-{2,}(?:\+-+)+)'
 TYPE_1 = TableStyle(
     table_start_pat = p,
-    row_sep_pat = p
+    row_sep_pat = p,
+    equi_distant_indent=False
 )
 del p
 
@@ -46,7 +47,8 @@ p = r'-{2,}'
 TYPE_2 = TableStyle(
     table_start_pat = p,
     row_sep_pat = r'\|(?:-+\|)+',
-    table_end_pat = p
+    table_end_pat = p,
+    equi_distant_indent=True
 )
 del p
 

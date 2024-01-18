@@ -40,10 +40,10 @@ class Split(Itorator):
         Zero-length boundaries are allowable, and any resulting empty Ito's are discarded
 
        Args:
-        splitter: An Itorator used to generate boundariesto locate boundaries; if a regex.Pattern is supplied,
+        splitter: An Itorator used to generate boundaries; if a regex.Pattern is supplied,
           splitter is set to a pawpaw.itorator.Extract as follows:
 
-            splitter = pawpaw.itorator.Extract(
+            splitter = pawpaw.Itorator.Extract(
                 re,
                 desc = lambda match, group_key: None,
                 group_filter = lambda m, gk: gk == 0,

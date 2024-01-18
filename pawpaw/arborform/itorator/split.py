@@ -43,7 +43,7 @@ class Split(Itorator):
         splitter: An Itorator used to generate boundaries; if a regex.Pattern is supplied,
           splitter is set to a pawpaw.itorator.Extract as follows:
 
-            splitter = pawpaw.Itorator.Extract(
+            splitter = pawpaw.arborform.Extract(
                 re,
                 desc = lambda match, group_key: None,
                 group_filter = lambda m, gk: gk == 0,

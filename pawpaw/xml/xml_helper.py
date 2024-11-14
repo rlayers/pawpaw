@@ -97,17 +97,16 @@ class XmlHelper:
     __query_xmlns: query.Query = None
 
     # Lazily instantiate to avoid some circular dependencies
-    @classmethod
-    @property
-    def _query_xmlns(cls) -> query.Query:
-        if cls.__query_xmlns is None:
-            cls.__query_xmlns = query.compile(f'*[d:{xml.descriptors.START_TAG}]/*[d:{xml.descriptors.ATTRIBUTES}]/*[d:{xml.descriptors.ATTRIBUTE}]' + '{*[p:is_xmlns]}')
+    @staticmethod  # Changed from class-level property, which has been removed from Python 3.13
+    def _query_xmlns() -> query.Query:
+        if XmlHelper.__query_xmlns is None:
+            XmlHelper.__query_xmlns = query.compile(f'*[d:{xml.descriptors.START_TAG}]/*[d:{xml.descriptors.ATTRIBUTES}]/*[d:{xml.descriptors.ATTRIBUTE}]' + '{*[p:is_xmlns]}')
 
-        return cls.__query_xmlns
+        return XmlHelper.__query_xmlns
 
     @classmethod
     def get_xmlns(cls, element: ET.Element) -> typing.Dict[QualifiedName, Ito]:
-        if cls._query_xmlns is None:
+        if cls._query_xmlns() is None:
             cls.__query_xmlns = query.compile(f'*[d:{xml.descriptors.START_TAG}]/*[d:{xml.descriptors.ATTRIBUTES}]/*[d:{xml.descriptors.ATTRIBUTE}]' + '{*[p:is_xmlns]}')
 
         if not isinstance(element, ET.Element):

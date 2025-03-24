@@ -92,6 +92,20 @@ class TestXmlParser(_TestIto):
             else:
                 self.assertEqual(descendant.tail, str(next_sibling))
 
+    def test_self_closings(self):
+        fragment = '<td style="vertical-align:bottom;background-color:#efefef;"><div style="text-align:left;font-size:10pt;"><span style="font-family:inherit;font-size:10pt;"><br/></span></div></td>'
+        root = ET.fromstring(fragment, parser=xml.XmlParser()).ito
+
+        start_tags = list(root.find_all('**!![d:' + xml.descriptors.START_TAG + ']/*[d:' + xml.descriptors.TAG + ']'))
+        self.assertSequenceEqual(('td', 'div', 'span', 'br'), tuple(str(st) for st in start_tags))
+
+        end_tags = list(root.find_all('**!![d:' + xml.descriptors.END_TAG + ']/*[d:' + xml.descriptors.TAG + ']'))
+        self.assertSequenceEqual(('span', 'div', 'td'), tuple(str(et) for et in end_tags))
+        
+        span = root.find('**![s:<\/span>]')
+        self.assertIsNotNone(span)
+        self.assertEqual(xml.descriptors.END_TAG, span.desc)
+
     def test_xml_entity_references(self):
         # Ensure that entity references (e.g., "&amp;") don't cause issues with span computations and Ito construction
         sample = \

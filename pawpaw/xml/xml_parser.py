@@ -133,9 +133,8 @@ class XmlParser(ET.XMLParser):
             qn = xml.QualifiedName.from_src(tag)
             tag.value_func = lambda i: qn
 
-        if self._text[element._spans.char.stop-2:element._spans.char.stop] not in ('/>', '?>') \
-                and (element._spans.char.stop + 2) < len(self._text) \
-                and self._text[element._spans.char.stop:element._spans.char.stop + 2] == '</':
+        if self._text[element._spans.char.stop-2:element._spans.char.stop] not in ('/>', '?>') or any(element.iter()):
+            # Not self-closing
             end_tag = Ito(
                 self._text,
                 element._spans.char.stop,
@@ -146,6 +145,7 @@ class XmlParser(ET.XMLParser):
                 end_tag.children.add(c)
             end_index = end_tag.stop
         else:
+            # Self-closing
             end_tag = None
             end_index = element._spans.char.stop
 

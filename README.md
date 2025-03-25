@@ -14,7 +14,7 @@
 
 # Pawpaw  [![High Performance Text Segmentation, Parsing, & Query][byline-img]][repo]
 
-Pawpaw is a high performance parsing & text segmentation framework that allows you to quickly and easily build complex, pipelined parsers.  Segments are automatically organized into tree graphs that can be serialized, traversed, and searched using a powerful structured query language called *plumule*.
+Pawpaw is a high-performance framework for parsing and text segmentation. The segments it generates are automatically organized into tree graphs, which can be easily serialized, traversed, and queried using a powerful structured query language called *plumule*. Creating a tree graph is simple — just provide spans, gaps, substrings, or even a regex/match object. Additionally, Pawpaw includes a flexible pipelining engine, enabling you to create complex, multi-step, rules-based text parsers.
 
 <img align="right" width="30%" height="30%" alt="Botanical Drawing: Asimina triloba: the American papaw" src="https://raw.githubusercontent.com/rlayers/pawpaw/master/images/pawpaw.png" /> 
 
@@ -25,8 +25,8 @@ Pawpaw is a high performance parsing & text segmentation framework that allows y
   - Runtime & polymorphic value extraction
   - Tree graphs for all indexed text
 - Search and Query
-  - Search trees using plumule: a powerful structured query language similar to XPATH
-  - Combined multiple axes, filters, and subqueries sequentially and recursively to any depth
+  - Search trees using *plumule*: a powerful structured query language similar to XPATH
+  - Combine multiple axes, filters, and subqueries sequentially and recursively to any depth
   - Optionally pre-compile queries for increased performance
 - Rules Pipelining Engine
   - Develop complex lexical parsers with just a few lines of code
@@ -38,10 +38,10 @@ Pawpaw is a high performance parsing & text segmentation framework that allows y
   - Search the resulting XML using either XPATH and/or plumule
   - Extract *both* ``ElementTree`` and Pawpaw datastructures in one go; with cross-linked nodes between trees
 - NLP Support:
-  - Pawpaw is ideal for both a) *preprocessing* unstructured text for downstream NLP consumption and b) *storing and searching* NLP generated content
-  - Works with other libraries, such as [NLTK](https://www.nltk.org/)
+  - Ideal for *preprocessing* unstructured text for downstream NLP consumption
+  - Integrates well with other libraries, such as [NLTK](https://www.nltk.org/)
 - Efficient pickling and JSON persistence
-  - Security option enables persistence of index-only data, with reference strings re-injected during de-serialization 
+  - A security option allows persistence of index-only data, reinjecting referenced strings during deserialization
 - Stable & Defect Free
   - Over 5,000 unit tests and counting!
   - Pure Python, with only one external dependency: [regex](https://github.com/mrabarnett/mrab-regex)

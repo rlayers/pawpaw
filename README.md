@@ -315,10 +315,18 @@ Pawpaw is a rewrite of *desponia*, a now-deprecated Python 2.x segmentation fram
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-<!-- CONTRIBUTING -->
-## Contributing
+<!-- DONATIONS -->
+## Donations
 
-Contributions to Pawpaw are **greatly appreciated** - please refer to the [contributing guildelines](/contributing.md) for details.
+Pawpaw is open source and free to use, however, if you would like to donate to the project, you may do so via Paypal:
+
+<div align="center">
+  
+|  Link   | QR Code |
+| :-----: | :-----: | 
+| [![](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/donate/?hosted_button_id=SLWYZJ74Q93AN) | <img align="right" width="100%" height="100%" alt="Paypal QR Code" src="https://raw.githubusercontent.com/rlayers/pawpaw/master/images/paypal_qr_code.png" />  |
+
+</div>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

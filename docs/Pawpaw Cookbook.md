@@ -172,6 +172,30 @@ print(v_tree.dumps(next(itor_self(ito))))
    └──(38, 51) 'value' : 'front to back'
 ```
 
+### Create an itorator to strip whitespace
+
+**Code:**
+
+```python
+import pawpaw
+
+ito = pawpaw.Ito('ABC def   ')  # Basis str has trailing whitespace
+print(f'Input: "{ito}"')
+
+itor = pawpaw.arborform.Itorator.wrap(
+   lambda ito: (ito.str_rstrip(),)  # Passed func must return sequence
+)
+print(f'Output: "{next(itor(ito))}"')
+
+```
+
+**Output:**
+
+```python
+Input: "ABC def   "
+Output: "ABC def"
+```
+
 ### Build a recursive parser
 
 Because itorator chains are linked via ``Connection`` objects, the same ``Itorator`` can be used multiple times in a chain:

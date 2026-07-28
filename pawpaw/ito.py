@@ -398,6 +398,14 @@ class Ito:
             setattr(self, 'value', lambda: f(self))
         self._value_func = f
 
+    @property
+    def path(self) -> Types.C_QPATH:
+        if self.parent is None:
+            return '.'
+        else:
+            i = next(i for i, c in enumerate(self.parent.children) if c is self)
+            return f'{self.parent.path}/*[i:{i}]'
+
     # endregion
 
     # region serialization
@@ -412,6 +420,25 @@ class Ito:
             '_children': self._children,
         }
 
+    class _ItoEncoder(json.JSONEncoder):
+        def __init__(self, *json_args, full_tree: bool = True, **json_kwargs):
+            super().__init__(*json_args, **json_kwargs)
+            self.full_tree = full_tree
+
+        def default(self, o: typing.Any) -> dict[str, typing.Any]:
+            rv = {
+                'span': o._span,
+                'desc': o.desc
+            }
+            if self.full_tree:
+                rv['children'] = [self.default(c) for c in o.children]
+
+            return rv
+
+    # endregion
+
+    # region JSON
+
     def __setstate__(self, state):
         self.__dict__.update(state)
         self._value_func = None
@@ -419,55 +446,69 @@ class Ito:
         for child in self.children:
             child._parent = self
 
-    # endregion
-
-    # region JSON
-
-    class JsonEncoderStringless(json.JSONEncoder):
-        @classmethod
-        def default(cls, o: typing.Any) -> dict[str, typing.Any]:
-            return {
-                '__type__': 'Ito',
-                'span': o._span,
-                'desc': o.desc,
-                'children': [cls.default(c) for c in o.children]
-            }
-
     class JsonEncoder(json.JSONEncoder):
-        @classmethod
-        def default(cls, o: typing.Any) -> dict[str, typing.Any]:
-            return {
-                '__type__': 'typing.Tuple[str, Ito]',
-                'string': o.string,
-                'ito': Ito.JsonEncoderStringless().default(o)
+        @property
+        def _js_type_value(self) -> str:
+            return f'{Ito.__module__}.{Ito.__qualname__}'
+
+        def __init__(self, *json_args, stringless: bool = False, full_tree: bool = True, **json_kwargs):
+            super().__init__(*json_args, **json_kwargs)
+            self.stringless = stringless
+            self.full_tree = full_tree
+            self._ito_encoder = Ito._ItoEncoder(*json_args, full_tree=full_tree, **json_kwargs)
+
+        def default(self, o: typing.Any) -> dict[str, typing.Any]:
+            rv = {
+                '__type__': self._js_type_value,
+                '__version__': pawpaw.__version__
             }
 
-    @classmethod
-    def _json_decoder_stringless(cls, obj: typing.Dict) -> pawpaw.Ito | dict[str, typing.Any]:
-        if (t := obj.get('__type__')) is not None and t == 'Ito':
-            rv = cls('', desc=obj['desc'])
-            rv._span = Span(*obj['span'])
-            rv.children.add(*obj['children'])
+            if not self.stringless:
+                rv['string'] = o.string
+
+            if self.full_tree:
+                basis = o.find('....')
+                rv['path'] = o.path
+            else:
+                basis = o
+                rv['path'] = '.'
+
+            rv['ito'] = self._ito_encoder.default(basis)
+
             return rv
-        else:
-            return obj
 
-    @classmethod
-    def json_decode_stringless(cls, string: str, json_data: str) -> pawpaw.Ito:
-        rv = json.loads(json_data, object_hook=cls._json_decoder_stringless)
-        rv._set_string(string)
-        return rv
+    class _ItoDecoderHook:
+        def __init__(self, string: str | None = None):
+            self.string = string
 
-    @classmethod
-    def json_decoder(cls, obj: typing.Dict) -> pawpaw.Ito |  dict[str, typing.Any]:
-        if (t := obj.get('__type__')) is not None:
-            if t == 'typing.Tuple[str, Ito]':
-                rv = obj['ito']
-                rv._string = obj['string']
-                return rv
-            elif t == 'Ito':
-                return cls._json_decoder_stringless(obj)
-        else:
+        def __call__(self, obj: typing.Dict) -> typing.Any:
+            rv = Ito(self.string, *obj['span'], desc=obj['desc'])
+            if (children := obj.get('children')) is not None:
+                rv.children.add_hierarchical(*(self(c) for c in children))
+            return rv
+
+    class JsonDecoderHook:
+        def __init__(self, string: str | None = None):
+            self.string = string
+
+        def __call__(self, obj: typing.Dict) -> typing.Any:
+            if (t := obj.get('__type__')) is not None:
+                if t == Ito.JsonEncoder()._js_type_value:
+                    if (v := obj.get('__version__')) is not None:
+                        if v == pawpaw.__version__:
+                            if (s := obj.get('string')) is None:
+                                if self.string is None:
+                                    raise(ValueError('You must provide a value for init parameter "string" when deserializing stringless Ito data.'))
+                                s = self.string
+
+                            rv = Ito(s, *obj['ito']['span'], desc=obj['ito']['desc'])
+
+                            if (children := obj['ito'].get('children')) is not None:
+                                ito_decoder_hook = Ito._ItoDecoderHook(string=s)
+                                rv.children.add_hierarchical(*(ito_decoder_hook(c) for c in children))
+
+                            return rv.find(obj['path'])
+
             return obj
 
     # endregion
